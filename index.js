@@ -22,7 +22,7 @@ const WebSocket = require('ws');
 const {GameWorld} = require("./server/game-world.js");
 const app = express();
 
-const port = 8080;
+const port = 6000;
 
 
 //create headless websocket server
