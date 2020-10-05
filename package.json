@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "webpack --env.env=dev && node index.js",
+    "prod": "webpack --env.env=prod && node index.js",
+    "build-dev": "webpack --env.env=dev",
+    "build-prod": "webpack --env.env=prod"
   },
   "repository": {
     "type": "git",
@@ -17,6 +20,16 @@
   },
   "homepage": "https://github.com/esnyder232/stockheimer#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.1.0",
+    "file-loader": "^6.1.0",
+    "phaser": "^3.24.1",
+    "planck-js": "^0.3.22",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.1.4",
+    "ws": "^7.3.1"
   }
 }

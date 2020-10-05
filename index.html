@@ -2,9 +2,22 @@
 <html lang="en"> 
 	<head> 
 		<meta charset="UTF-8" />
-		<title>Stockheimer</title>
+		<title>planck-server-testing</title>
 	</head>
 	<body>
-		This is index.html. 2123123
+		This is index.html.
+		<div id="game-div"></div>
+		<input type="button" value="Start" onclick="window.dispatchEvent(startEvent);"/>
+		<input type="button" value="Stop" onclick="window.dispatchEvent(stopEvent);"/>
+		<input type="button" value="Restart" onclick="window.dispatchEvent(restartEvent);"/>
 	</body>
+	<script src="client-dist/vendors.bundle.js"></script>
+	<script src="client-dist/app.bundle.js"></script>
+
+	<script>
+		//custom events so i can have the dom push things to phaser scenes
+		var startEvent = new CustomEvent('start-event');
+		var stopEvent = new CustomEvent('stop-event');
+		var restartEvent = new CustomEvent('restart-event');
+	</script>
 </html>
