@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-const port = 8080;
+const port = 6000;
 
 //create http server
 const server = app.listen(port, () => {console.log('Webserver listening on port %s', port)});
