@@ -11,7 +11,11 @@
 		<input type="button" value="Stop" onclick="window.dispatchEvent(stopEvent);"/>
 		<input type="button" value="Restart" onclick="window.dispatchEvent(restartEvent);"/>
 	</body>
-	<!--#SCRIPTS#-->
+	
+	<!--#BUNDLES_START#-->
+	<script src="client-dist/vendors.bundle.js"></script>
+	<script src="client-dist/app.bundle.js"></script>
+	<!--#BUNDLES_END#-->
 
 	<script>
 		//custom events so i can have the dom push things to phaser scenes
