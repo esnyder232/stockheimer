@@ -1,3 +1,5 @@
+import config from '../client-config.json';
+
 export default class ServerConnectionScene extends Phaser.Scene {
 	constructor(config) {
 		super(config);
@@ -11,9 +13,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 	init() {
 		console.log('init on ' + this.scene.key + ' start');
 		
-		/*#WEBSOCK_START#*/
-		this.ws = new WebSocket("ws://localhost:7000");
-		/*#WEBSOCK_END#*/
+		this.ws = new WebSocket(config.ws_address);
 
 		//prod
 		//this.ws = new WebSocket("wss://stockheimer.dontcodethis.com");
