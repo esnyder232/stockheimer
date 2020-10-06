@@ -14,5 +14,7 @@ jspm_packages/
 dist
 
 # client
-client-dist
+client-dist/
 
+# configs
+configs/
