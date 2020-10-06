@@ -10,7 +10,13 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 	init() {
 		console.log('init on ' + this.scene.key + ' start');
-		this.ws = new WebSocket("ws://localhost:8080");
+		
+		//localhost
+		this.ws = new WebSocket("ws://localhost:7000");
+
+		//prod
+		//this.ws = new WebSocket("wss://stockheimer.dontcodethis.com");
+
 		this.ws.onmessage = this.onmessage.bind(this);
 		console.log(this.ws);
 	}
