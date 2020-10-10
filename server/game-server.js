@@ -1,12 +1,13 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('./global-funcs.js');
+const serverConfig = require('./server-config.json');
 const {performance} = require('perf_hooks');
 
 class GameServer {
 	constructor() {
 		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = 30; //fps
+		this.frameRate = 20; //fps
 		this.isRunning = false;
 		this.frameNum = 0;
 		this.socketArr = [];
@@ -262,7 +263,7 @@ class GameServer {
 			//this.update();
 			//setInterval(this.update.bind(this), this.frameTimeStep);
 			//setImmediate(this.update.bind(this));
-			this.previousTick = performance.now();
+			//this.previousTick = performance.now();
 			this.gameLoop();
 		}
 	}
@@ -275,8 +276,11 @@ class GameServer {
 		}
 	}
 
-	//this gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
+	//the gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
 	//credit: (https://timetocode.tumblr.com/post/71512510386/an-accurate-nodejs-game-loop-inbetween-settimeout)
+	//There is additional tuning parameters used because setTimeout does NOT have the same variance across operating systems.
+	//For example: setTimeout(..., 50) has +16ms variance on Windows 10, and +1ms variance on Debian 10 
+	//(iow, setimeout will be called between 50-66ms on windows, and 50-51ms on debian 10)
 	gameLoop() {
 
 		//if its the designated time has passed, run the update function
@@ -288,11 +292,11 @@ class GameServer {
 
 		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
 		//the ' -16' is because the setTimeout will always add 0-16 ms to the callback.
-		if(performance.now() - this.previousTick < (this.frameTimeStep - 16))
+		if(performance.now() - this.previousTick < (this.frameTimeStep - serverConfig.set_timout_variance))
 		{
 			//call the sloppy timer
 			//console.log('sloppy timer %s', performance.now());
-			setTimeout(this.gameLoop.bind(this), 0);
+			setTimeout(this.gameLoop.bind(this), 1);
 		}
 		else
 		{
