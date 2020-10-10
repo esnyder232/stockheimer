@@ -1,20 +1,40 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('./global-funcs.js');
+const {performance} = require('perf_hooks');
 
-class GameWorld {
+class GameServer {
 	constructor() {
 		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
 		this.frameRate = 30; //fps
-		this.framePeriod = 1000 / this.frameRate; //ms
 		this.isRunning = false;
 		this.frameNum = 0;
 		this.socketArr = [];
 		this.wsIDCounter = 1;
+		
+		this.physicsTimeStep = 1/this.frameRate; //seconds
+		this.frameTimeStep = 1000/this.frameRate; //ms
+		this.velocityIterations = 6;
+		this.positionIterations = 2;
+
+		this.actualDtArr = [];
+		this.actualDtArrMaxLength = 30;
+		this.actualDtArrCurrentIndex = 0;
+		this.actualDtAvg = 0; //actual dt per second (should be 1 second)
+		this.actualDtTotal = 0; //temp variable
+
+		this.previousTick = 0;
+
+		this.dtPrevious = 0;
+		this.dtStart = 0;
 	}
 
-	create() {
-		console.log('creating gameworld now');
+	init() {
+		console.log('initializing game server');
+		for(var i = 0; i < this.actualDtArrMaxLength; i++)
+		{
+			this.actualDtArr.push(0);
+		}
 		const pl = planck;
 		const Vec2 = pl.Vec2;
 		
@@ -84,9 +104,17 @@ class GameWorld {
 	}
 
 	onopen(socket) {
+		console.log('Websocket connected!');
+
 		socket.id = this.wsIDCounter;
 		this.wsIDCounter++;
 		this.socketArr.push(socket);
+
+		socket.on("close", this.onclose.bind(this, socket));
+		socket.on("error", this.onerror.bind(this, socket));
+		socket.on("message", this.onmessage.bind(this, socket));
+		socket.on("pong", this.onpong.bind(this, socket));
+		socket.ping("this is a ping");
 	}
 
 	onclose(socket, m) {	
@@ -221,6 +249,7 @@ class GameWorld {
 	
 	restartEvent(socket, jsonMsg) {
 		console.log('restarting simulation');
+		
 	}
 
 	//starts the gameworld game loop
@@ -229,7 +258,12 @@ class GameWorld {
 		{
 			this.isRunning = true;
 			console.log("Starting game loop");
-			this.update(this.framePeriod);
+			this.dtPrevious = performance.now();
+			//this.update();
+			//setInterval(this.update.bind(this), this.frameTimeStep);
+			//setImmediate(this.update.bind(this));
+			this.previousTick = performance.now();
+			this.gameLoop();
 		}
 	}
 
@@ -241,29 +275,71 @@ class GameWorld {
 		}
 	}
 
+	//this gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
+	//credit: (https://timetocode.tumblr.com/post/71512510386/an-accurate-nodejs-game-loop-inbetween-settimeout)
+	gameLoop() {
 
-	update(dt) {
-		console.log('=== frame %s ===', this.frameNum);
-		//simulate
-		var timeStep = 1/30;
-		var velocityIterations = 6;
-		var positionIterations = 2;
-	
-		console.log('begining world step');
-		this.world.step(timeStep, velocityIterations, positionIterations);
-		console.log('ending world step');
-		var p = this.boxBody.getPosition();
-		var a = this.boxBody.getAngle();
-		console.log('box position: %s, %s. Angle: %s', p.x, p.y, a);
-
-		//recall update loop
-		if(this.isRunning)
+		//if its the designated time has passed, run the update function
+		if(this.previousTick + (this.frameTimeStep) < performance.now())
 		{
-			setTimeout(this.update.bind(this, this.framePeriod), this.framePeriod)
+			this.previousTick = performance.now();
+			this.update();
 		}
 
-		this.sendWorldDeltas();
+		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
+		//the ' -16' is because the setTimeout will always add 0-16 ms to the callback.
+		if(performance.now() - this.previousTick < (this.frameTimeStep - 16))
+		{
+			//call the sloppy timer
+			//console.log('sloppy timer %s', performance.now());
+			setTimeout(this.gameLoop.bind(this), 0);
+		}
+		else
+		{
+			//call the accurate timer
+			//console.log('accurate timer %s', performance.now());
+			setImmediate(this.gameLoop.bind(this));
+		}
+	}
 
+
+	update() {
+
+		this.dtStart = performance.now();
+		var dtDiff = this.dtStart - this.dtPrevious;
+		this.dtPrevious = this.dtStart;
+		console.log('UPDATE CALLED: ' + dtDiff);
+
+		//recall update loop
+		//setTimeout(this.update.bind(this), this.frameTimeStep)
+		//setImmediate(this.update.bind(this));
+
+		//process input here
+
+		//physics update
+		//this.world.step(this.timeStep, this.velocityIterations, this.positionIterations);
+		
+		//if its time, send 
+		//this.sendWorldDeltas();
+
+		// this.actualDtArr[this.actualDtArrCurrentIndex] = dtDiff;
+		// this.actualDtArrCurrentIndex++;
+
+		// if(this.actualDtArrCurrentIndex >= this.actualDtArrMaxLength)
+		// {
+		// 	this.actualDtArrCurrentIndex = 0;
+		// 	this.actualDtTotal = 0;
+		// 	for(var i = 0; i < this.actualDtArrMaxLength; i++)
+		// 	{
+		// 		this.actualDtTotal += this.actualDtArr[i];
+		// 	}
+
+		// 	//this.actualDtAvg = Math.round(this.actualDtTotal / 30);
+		// 	console.log(this.actualDtTotal);
+		// }
+
+
+		
 		this.frameNum++;
 	}
 
@@ -280,4 +356,4 @@ class GameWorld {
 
 }
 
-exports.GameWorld = GameWorld;
+exports.GameServer = GameServer;
