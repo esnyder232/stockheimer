@@ -292,7 +292,7 @@ class GameServer {
 
 		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
 		//the ' -16' is because the setTimeout will always add 0-16 ms to the callback.
-		if(performance.now() - this.previousTick < (this.frameTimeStep - serverConfig.set_timout_variance))
+		if(performance.now() - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
 		{
 			//call the sloppy timer
 			//console.log('sloppy timer %s', performance.now());
