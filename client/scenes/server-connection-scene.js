@@ -19,6 +19,9 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		//this.ws = new WebSocket("wss://stockheimer.dontcodethis.com");
 
 		this.ws.onmessage = this.onmessage.bind(this);
+		this.ws.onclose = this.onclose.bind(this);
+		this.ws.onerror = this.onerror.bind(this);
+		this.ws.onopen = this.onopen.bind(this);
 		console.log(this.ws);
 	}
 
@@ -77,6 +80,20 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			this.messageSent = true;
 		}
 	}
+
+	onclose(e) {
+		console.log('Websocket is now closed.');
+	}
+
+	onopen(e) {
+		console.log('Websocket is now opened.');
+	}
+
+	onerror(e) {
+		console.log('Websocket error: ' + e);
+	}
+
+
 
 	onmessage(e) {
 		var jsonMsg = this.getJsonEvent(e.data);
