@@ -7,7 +7,7 @@ class GameServer {
 	constructor() {
 		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = 20; //fps
+		this.frameRate = 1; //fps
 		this.isRunning = false;
 		this.frameNum = 0;
 		this.socketArr = [];
@@ -108,6 +108,7 @@ class GameServer {
 		console.log('Websocket connected!');
 
 		socket.id = this.wsIDCounter;
+		socket.sn = 1;
 		this.wsIDCounter++;
 		this.socketArr.push(socket);
 
@@ -135,9 +136,7 @@ class GameServer {
 	}
 
 	onmessage(socket, m) {
-		console.log('socket onmessage: ' + m);
 		var jsonMsg = this.globalfuncs.getJsonEvent(m);
-		console.log("event is: " + jsonMsg.event + ". msg is: " + jsonMsg.msg);
 	
 		switch(jsonMsg.event.toLowerCase())
 		{
@@ -260,10 +259,6 @@ class GameServer {
 			this.isRunning = true;
 			console.log("Starting game loop");
 			this.dtPrevious = performance.now();
-			//this.update();
-			//setInterval(this.update.bind(this), this.frameTimeStep);
-			//setImmediate(this.update.bind(this));
-			//this.previousTick = performance.now();
 			this.gameLoop();
 		}
 	}
@@ -278,7 +273,7 @@ class GameServer {
 
 	//the gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
 	//credit: (https://timetocode.tumblr.com/post/71512510386/an-accurate-nodejs-game-loop-inbetween-settimeout)
-	//There is additional tuning parameters used because setTimeout does NOT have the same variance across operating systems.
+	//There is additional tuning parameters (set_timeout_variance) used because setTimeout does NOT have the same variance across operating systems.
 	//For example: setTimeout(..., 50) has +16ms variance on Windows 10, and +1ms variance on Debian 10 
 	//(iow, setimeout will be called between 50-66ms on windows, and 50-51ms on debian 10)
 	gameLoop() {
@@ -291,17 +286,14 @@ class GameServer {
 		}
 
 		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
-		//the ' -16' is because the setTimeout will always add 0-16 ms to the callback.
 		if(performance.now() - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
 		{
 			//call the sloppy timer
-			//console.log('sloppy timer %s', performance.now());
 			setTimeout(this.gameLoop.bind(this), 1);
 		}
 		else
 		{
 			//call the accurate timer
-			//console.log('accurate timer %s', performance.now());
 			setImmediate(this.gameLoop.bind(this));
 		}
 	}
@@ -314,9 +306,16 @@ class GameServer {
 		this.dtPrevious = this.dtStart;
 		console.log('UPDATE CALLED: ' + dtDiff);
 
-		//recall update loop
-		//setTimeout(this.update.bind(this), this.frameTimeStep)
-		//setImmediate(this.update.bind(this));
+		//send out just a packet with a sequence number
+		for(var i = 0; i < this.socketArr.length; i++)
+		{
+			var m = {sn: this.socketArr[i].sn};
+			this.globalfuncs.sendJsonEvent(this.socketArr[i], "sn-test", JSON.stringify(m));
+			console.log('Sent packet for client: %s, sn: %s', this.socketArr[i].id, this.socketArr[i].sn);
+			this.socketArr[i].sn++;
+		}
+
+
 
 		//process input here
 

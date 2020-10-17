@@ -80,7 +80,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 	onmessage(e) {
 		var jsonMsg = this.getJsonEvent(e.data);
-		console.log('message recieved from server. Event: ' + jsonMsg.event);
+		//console.log('message recieved from server. Event: ' + jsonMsg.event);
 		switch(jsonMsg.event.toLowerCase())
 		{
 			case "get-world-response":
@@ -97,6 +97,10 @@ export default class ServerConnectionScene extends Phaser.Scene {
 				console.log('got world deltas');
 				var deltas = JSON.parse(jsonMsg.msg);
 				this.processDeltas(deltas);
+				break;
+			case "sn-test":
+				var msg = JSON.parse(jsonMsg.msg);
+				console.log('Recieved packet. sn: %s', msg.sn)
 				break;
 		}
 		if(jsonMsg.event == "get-world-response")
