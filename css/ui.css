@@ -1,0 +1,123 @@
+body {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+#game-container {
+	position: relative;
+	margin-left: 200px;
+}
+
+#game-div {
+	position: absolute;
+	top:0px;
+	left:0px;
+	z-index:0;
+}
+
+#ui-div {
+	position: absolute;
+	top:0px;
+	left:0px;
+	z-index: 100;
+	width:800px;
+	height:600px;
+}
+
+#player-name-container {
+	display:none;
+	position: absolute;
+	width:25%;
+	height:15%;
+	top: 15%;
+	left: 35%;
+	background-color: #444444;
+	border-color:#cccccc;
+	border-radius: 20px;
+	border-width: 14px;
+	border-style: solid;
+	padding:12px;
+	color: #cccccc;
+}
+
+#player-name {
+	width: 96%;
+	margin-top:4px;
+}
+
+#player-submit {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	margin: 12px;
+}
+
+.form-input {
+	/* intentionally blank for now */
+}
+
+.form-button {
+	/* intentionally blank for now */
+}
+
+.form-text {
+	/* intentionally blank for now */
+}
+
+
+
+
+
+
+/* workding */
+/* 
+body {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+#game-container {
+	position: relative;
+	margin-left: 200px;
+}
+
+#game-div {
+	position: absolute;
+	top:0px;
+	left:0px;
+	z-index:0;
+}
+
+#ui-div {
+	position: absolute;
+	top:0px;
+	left:0px;
+	z-index: 100;
+	width:800px;
+	height:600px;
+}
+
+#player-name-container {
+	position: absolute;
+	width:25%;
+	height:15%;
+	top: 0%;
+	left: 0%;
+	background-color: #444444;
+	border-color:#cccccc;
+	border-radius: 20px;
+	border-width: 14px;
+	border-style: solid;
+	padding:12px;
+	color: #cccccc;
+}
+
+#player-name {
+	width: 96%;
+	margin-top:4px;
+}
+
+#player-submit {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	margin: 12px;
+} */

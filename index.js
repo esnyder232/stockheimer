@@ -26,6 +26,7 @@ app.get('/index.html', (req, res) => {res.sendFile(path.join(__dirname, "index.h
 //static files
 app.use('/assets', express.static(path.join(__dirname, "assets")));
 app.use('/client-dist', express.static(path.join(__dirname, "client-dist")));
+app.use('/css', express.static(path.join(__dirname, "css")));
 
 //make the game server
 var gs = new GameServer();

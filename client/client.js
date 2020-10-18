@@ -9,8 +9,8 @@ export default class Client {
 		this.config = {
 			type: Phaser.AUTO,
 			backgroundColor: '#333333',
-			width: 256,
-			height:256,
+			width: 800,
+			height:600,
 			parent: 'game-div',
 			pixelArt: true,
 			physics: {
@@ -26,7 +26,7 @@ export default class Client {
 				}
 			},
 			scale: {
-				zoom:3
+				zoom:1
 			}
 		}
 
