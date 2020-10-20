@@ -23,8 +23,20 @@ body {
 	height:600px;
 }
 
-#player-name-container {
+.scene-root {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
+}
+
+.hide {
 	display:none;
+}
+
+
+#player-name-container {
 	position: absolute;
 	width:25%;
 	height:15%;
@@ -51,6 +63,29 @@ body {
 	margin: 12px;
 }
 
+#game-server-details {
+	position: absolute;
+	width: 25%;
+	top: 40%;
+	left: 38%;
+	color: #cccccc;
+}
+
+#server-connection-scene-log {
+	position: absolute;
+	width: 90%;
+	height: 100px;
+	background-color: rgba(0, 0, 0, 0.5);
+	bottom: 12px;
+	left: 5%;
+	overflow-y: scroll;
+	resize: none;
+}
+
+.log-message {
+	width:100%;
+}
+
 .form-input {
 	/* intentionally blank for now */
 }
@@ -66,58 +101,3 @@ body {
 
 
 
-
-
-/* workding */
-/* 
-body {
-	font-family: Arial, Helvetica, sans-serif;
-}
-
-#game-container {
-	position: relative;
-	margin-left: 200px;
-}
-
-#game-div {
-	position: absolute;
-	top:0px;
-	left:0px;
-	z-index:0;
-}
-
-#ui-div {
-	position: absolute;
-	top:0px;
-	left:0px;
-	z-index: 100;
-	width:800px;
-	height:600px;
-}
-
-#player-name-container {
-	position: absolute;
-	width:25%;
-	height:15%;
-	top: 0%;
-	left: 0%;
-	background-color: #444444;
-	border-color:#cccccc;
-	border-radius: 20px;
-	border-width: 14px;
-	border-style: solid;
-	padding:12px;
-	color: #cccccc;
-}
-
-#player-name {
-	width: 96%;
-	margin-top:4px;
-}
-
-#player-submit {
-	position: absolute;
-	bottom: 0px;
-	right: 0px;
-	margin: 12px;
-} */

@@ -357,6 +357,38 @@ class GameServer {
 	}
 
 
+	/* apis */
+	getServerDetails(req, res) {
+		console.log('get server details called');
+		var bError = false;
+		var data = {};
+		var main = [];
+		var userMessage = "";
+
+		try {
+			userMessage = "hello from game server.";
+			var gameData = {
+				currentPlayers: this.socketArr.length,
+				maxPlayers: 30
+			}
+			main.push(gameData);
+		}
+		catch(ex) {
+			userMessage = "Internal server error.";
+			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
+			console.log(ex);
+			var bError = true;
+		}
+
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		data.main = main;
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
 }
 
 exports.GameServer = GameServer;

@@ -9,18 +9,23 @@
 		<div id="game-container">
 			<div id="game-div"></div>
 			<div id="ui-div">
-				<div id="player-name-container">
-					<div class="form-text" id="player-text">Player Name:</div>
-					<input type="text" class="form-input" id="player-name"/>
-					<input type="button" class="form-button" id="player-submit" value="Play"/>
+				<div class="scene-root hide" id="server-connection-scene-root">
+					<div id="player-name-container">
+						<div class="form-text" id="player-text">Player Name:</div>
+						<input type="text" class="form-input" id="player-name"/>
+						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'))"/>
+					</div>
+					<div id="game-server-details">
+						hello
+					</div>
+					<div id="server-connection-scene-log" readonly></div>
 				</div>
-				
 			</div>
 		</div>
 		
-		<input type="button" value="Start" onclick="window.dispatchEvent(startEvent);"/>
-		<input type="button" value="Stop" onclick="window.dispatchEvent(stopEvent);"/>
-		<input type="button" value="Restart" onclick="window.dispatchEvent(restartEvent);"/>
+		<input type="button" value="Start" onclick="window.dispatchEvent(new CustomEvent('start-event'));"/>
+		<input type="button" value="Stop" onclick="window.dispatchEvent(new CustomEvent('stop-event'));"/>
+		<input type="button" value="Restart" onclick="window.dispatchEvent(new CustomEvent('restart-event'));"/>
 		
 	</body>
 	
@@ -28,11 +33,4 @@
 	<script src="client-dist/vendors.bundle.js"></script>
 	<script src="client-dist/app.bundle.js"></script>
 	<!--#BUNDLES_END#-->
-
-	<script>
-		//custom events so i can have the dom push things to phaser scenes
-		var startEvent = new CustomEvent('start-event');
-		var stopEvent = new CustomEvent('stop-event');
-		var restartEvent = new CustomEvent('restart-event');
-	</script>
 </html>

@@ -18,6 +18,9 @@ const wss = new websocket.Server(wssConfig);
 //create http server
 const expressServer = app.listen(port, () => {console.log('Webserver listening on port %s', port)});
 
+//make the game server
+var gs = new GameServer();
+gs.init();
 
 //adding basic http endpoints
 app.get('/', (req, res) => {res.sendFile(path.join(__dirname, "index.html"));});
@@ -28,9 +31,8 @@ app.use('/assets', express.static(path.join(__dirname, "assets")));
 app.use('/client-dist', express.static(path.join(__dirname, "client-dist")));
 app.use('/css', express.static(path.join(__dirname, "css")));
 
-//make the game server
-var gs = new GameServer();
-gs.init();
+//other apis
+app.get('/api/get-server-details', gs.getServerDetails.bind(gs));
 
 //create http upgrade endpoint to do websocket handshake
 expressServer.on('upgrade', (req, socket, head) => {

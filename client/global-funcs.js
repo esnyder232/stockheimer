@@ -12,31 +12,67 @@ export default class GlobalFuncs {
 	// Each mapping needs the following format:
 	// eventMapping = [
 	// {
-	//	 	target: this.load,
 	//	 	event: 'progress',
-	//	 	delegate: this.loadProgress
+	//	 	func: this.loadProgress
+	//	 	target: this.sys.events,
 	// },
 	// {}...
 	// ]
-	// 		target - the event emitter in phaser
 	//		event - the name of the event
-	//		delegate - the delegate to call
+	//		func - the function to call
+	// 		target - the event emitter in phaser. Its usually scene.sys.events
 
-	registerEvents(scene, eventMapping) {
+	registerPhaserEvents(eventMapping) {
 		for(var i = 0; i < eventMapping.length; i++)
 		{
-			eventMapping[i].target.on(eventMapping[i].event, eventMapping[i].delegate)
+			console.log('i: ' + i);
+			console.log(eventMapping[i].target);
+			eventMapping[i].target.on(eventMapping[i].event, eventMapping[i].func)
 		}
 	}
 
-	//Helper function to unregister events from emitters in phaser. This is the opposite of GlobalFuncs.registerEvents().
+	//Helper function to unregister events from emitters in phaser. This is the opposite of GlobalFuncs.registerPhaserEvents().
 	//This is to be called in the "shutdown" event.
-	unregisterEvents(scene, eventMapping) {
+	unregisterPhaserEvents(eventMapping) {
 		for(var i = 0; i < eventMapping.length; i++)
 		{
-			eventMapping[i].target.off(eventMapping[i].event, eventMapping[i].delegate)
+			eventMapping[i].target.off(eventMapping[i].event, eventMapping[i].func)
 		}
 	}
+
+	//Helper function to register to custom events in the browser.
+	//eventMapping - array of mappings for events
+	// Each mapping needs the following format:
+	// eventMapping = [
+	// {
+	//	 	event: 'my-custom-event',
+	//	 	func: this.loadProgress
+	// },
+	// {}...
+	// ]
+	//		event - the name of the event
+	//		func - the function to call
+
+	registerWindowEvents(eventMapping) {
+		for(var i = 0; i < eventMapping.length; i++)
+		{
+			window.addEventListener(eventMapping[i]["event"], eventMapping[i]["func"]);
+		}
+	}
+
+
+
+
+	//Helper function to unregister custom events from the browser. 
+	//This is meant to be paried with registerWindowsEvents function.
+	//This is to be called in the "shutdown" event in phaser, but can be called anywhere when your down with the eventMapping.
+	unregisterWindowEvents(eventMapping) {
+		for(var i = 0; i < eventMapping.length; i++)
+		{
+			window.removeEventListener(eventMapping[i]["event"], eventMapping[i]["func"]);
+		}
+	}
+
 
 	createSceneAnimsFromAseprite(scene, asepriteSpritesheetKey, asepriteJsonKey) {
 		//find the aseprite json file to parse from
@@ -92,5 +128,29 @@ export default class GlobalFuncs {
 		arcadeSprite.body.width = Math.floor(arcadeSprite.body.width * arcadeSprite.scaleX);
 		arcadeSprite.body.height = Math.floor(arcadeSprite.body.height * arcadeSprite.scaleY);
 	}
+
+	//if the object is an array, it returns it. Otherwise, it returns a blank array.
+	getDataArray(arr) {
+		return Array.isArray(arr) ? arr : [];
+	}
+
+	//if the object is a json object, it returns it. Otherwise it returns a blank object.
+	getDataObject(obj) {
+		return typeof obj === 'object' ? obj : {};
+	}
+
+	//this gets the specific object from the data array. Returns a blank object otherwise.
+	getDataObjectFromArray(arr, i) {
+		var result = {};
+
+		if(Array.isArray(arr) && arr.length > i)
+		{
+			result = arr[i];
+		}
+
+		return result;
+	}
+
+
 
 }
