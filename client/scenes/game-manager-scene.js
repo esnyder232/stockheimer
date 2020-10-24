@@ -13,11 +13,11 @@ export default class GameManagerScene extends Phaser.Scene {
 	}
 
 	init() {
+		console.log('init on game manager scene');
 		this.phaserEventMapping = [
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
 		];
 		this.windowsEventMapping = [
-			{event: 'join-game', func: this.joinGame.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -58,9 +58,14 @@ export default class GameManagerScene extends Phaser.Scene {
 		})
 	}
 
-	joinGame() {
-		console.log('now joining game');
-		
+	connectedToServer() {
+		console.log('connected to server called on game manager scene');
+
+		//take the websocket from server connection scene, and load up main scene
+		this.ws = this.scene.manager.getScene("server-connection-scene").ws;
+		this.scene.manager.add("main-scene", MainScene, true, {ws: this.ws});
+		this.scene.manager.stop("server-connection-scene");
+		this.scene.manager.remove("server-connection-scene");
 	}
 
 	shutdown() {

@@ -33,6 +33,7 @@ app.use('/css', express.static(path.join(__dirname, "css")));
 
 //other apis
 app.get('/api/get-server-details', gs.getServerDetails.bind(gs));
+app.get('/api/try-connect', gs.tryConnect.bind(gs));
 
 //create http upgrade endpoint to do websocket handshake
 expressServer.on('upgrade', (req, socket, head) => {

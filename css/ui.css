@@ -71,7 +71,7 @@ body {
 	color: #cccccc;
 }
 
-#server-connection-scene-log {
+#temp-log {
 	position: absolute;
 	width: 90%;
 	height: 100px;

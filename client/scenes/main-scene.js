@@ -1,28 +1,23 @@
 import config from '../client-config.json';
 
 export default class MainScene extends Phaser.Scene {
-	constructor(config) {
+	constructor() {
 		super(config);
-		this.ws = null;
 		this.messageSent = false;
 		this.tempLineGraphicsArr = [];
 		this.planckUnitsToPhaserUnitsRatio = 4;
 		this.radiansToDegreesRatio = 180/3.14
+		this.ws = null;
 	}
 
-	init() {
+	init(data) {
 		console.log('init on ' + this.scene.key + ' start');
+		this.ws = data.ws;
 		
-		this.ws = new WebSocket(config.ws_address);
-
-		//prod
-		//this.ws = new WebSocket("wss://stockheimer.dontcodethis.com");
-
 		this.ws.onmessage = this.onmessage.bind(this);
 		this.ws.onclose = this.onclose.bind(this);
 		this.ws.onerror = this.onerror.bind(this);
 		this.ws.onopen = this.onopen.bind(this);
-		console.log(this.ws);
 	}
 
 	preload() {
@@ -81,7 +76,7 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	onclose(e) {
-		console.log('Websocket is now closed.');
+		console.log('Websocket is now closed by main-scene.');
 	}
 
 	onopen(e) {

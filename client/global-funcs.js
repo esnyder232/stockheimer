@@ -1,8 +1,7 @@
-var tempGlobalMessages = [];
+import $ from "jquery"
 
 export default class GlobalFuncs {
 	constructor() {
-		this.tempGlobalMessages = tempGlobalMessages;
 	}
 
 	
@@ -152,5 +151,20 @@ export default class GlobalFuncs {
 	}
 
 
+	
+	appendToLog(msg) {		
+		var timestamp = new Date().toLocaleTimeString('en-US', {hour12: false});
+		var msgWithTimestamp = timestamp + ": " + msg;
+
+		console.log(msgWithTimestamp);
+
+		var s = document.createElement('div');
+		s.textContent = msgWithTimestamp;
+
+		var log = $("#temp-log")[0];
+		log.appendChild(s)
+		log.scrollTop = log.scrollHeight;
+		
+	}
 
 }

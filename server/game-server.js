@@ -12,30 +12,18 @@ class GameServer {
 		this.frameNum = 0;
 		this.socketArr = [];
 		this.wsIDCounter = 1;
+		this.maxPlayers = 30;
 		
 		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
 		this.velocityIterations = 6;
 		this.positionIterations = 2;
 
-		this.actualDtArr = [];
-		this.actualDtArrMaxLength = 30;
-		this.actualDtArrCurrentIndex = 0;
-		this.actualDtAvg = 0; //actual dt per second (should be 1 second)
-		this.actualDtTotal = 0; //temp variable
-
 		this.previousTick = 0;
-
-		this.dtPrevious = 0;
-		this.dtStart = 0;
 	}
 
 	init() {
 		console.log('initializing game server');
-		for(var i = 0; i < this.actualDtArrMaxLength; i++)
-		{
-			this.actualDtArr.push(0);
-		}
 		const pl = planck;
 		const Vec2 = pl.Vec2;
 		
@@ -258,7 +246,6 @@ class GameServer {
 		{
 			this.isRunning = true;
 			console.log("Starting game loop");
-			this.dtPrevious = performance.now();
 			this.gameLoop();
 		}
 	}
@@ -301,11 +288,6 @@ class GameServer {
 
 	update() {
 
-		this.dtStart = performance.now();
-		var dtDiff = this.dtStart - this.dtPrevious;
-		this.dtPrevious = this.dtStart;
-		console.log('UPDATE CALLED: ' + dtDiff);
-
 		//send out just a packet with a sequence number
 		for(var i = 0; i < this.socketArr.length; i++)
 		{
@@ -325,23 +307,6 @@ class GameServer {
 		//if its time, send 
 		//this.sendWorldDeltas();
 
-		// this.actualDtArr[this.actualDtArrCurrentIndex] = dtDiff;
-		// this.actualDtArrCurrentIndex++;
-
-		// if(this.actualDtArrCurrentIndex >= this.actualDtArrMaxLength)
-		// {
-		// 	this.actualDtArrCurrentIndex = 0;
-		// 	this.actualDtTotal = 0;
-		// 	for(var i = 0; i < this.actualDtArrMaxLength; i++)
-		// 	{
-		// 		this.actualDtTotal += this.actualDtArr[i];
-		// 	}
-
-		// 	//this.actualDtAvg = Math.round(this.actualDtTotal / 30);
-		// 	console.log(this.actualDtTotal);
-		// }
-
-
 		
 		this.frameNum++;
 	}
@@ -359,17 +324,15 @@ class GameServer {
 
 	/* apis */
 	getServerDetails(req, res) {
-		console.log('get server details called');
 		var bError = false;
 		var data = {};
 		var main = [];
 		var userMessage = "";
 
 		try {
-			userMessage = "hello from game server.";
 			var gameData = {
 				currentPlayers: this.socketArr.length,
-				maxPlayers: 30
+				maxPlayers: this.maxPlayers
 			}
 			main.push(gameData);
 		}
@@ -387,6 +350,40 @@ class GameServer {
 
 		data.main = main;
 		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
+	//used to see if the connection is allowed. 
+	//This is where we can do checks for if the players are at maximum capicity, or player name filtering, etc.
+	tryConnect(req, res) {
+		console.log("try connect called")
+		var bError = false;
+		var data = {};
+		var main = [];
+		var userMessage = "";
+
+		try {
+			//check for max players
+			if(this.socketArr.length >= this.maxPlayers)
+			{
+				bError = true;
+				userMessage = "Server is full.";
+			}
+		}
+		catch(ex) {
+			userMessage = "Internal server error.";
+			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
+			console.log(ex);
+			var bError = true;
+		}
+
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		data.main = main;
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+
 	}
 
 }
