@@ -1,18 +1,37 @@
+import $ from "jquery"
+import GlobalFuncs from "../global-funcs.js"
 import config from '../client-config.json';
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
 		super(config);
+		this.globalfuncs = new GlobalFuncs();
 		this.messageSent = false;
 		this.tempLineGraphicsArr = [];
 		this.planckUnitsToPhaserUnitsRatio = 4;
 		this.radiansToDegreesRatio = 180/3.14
 		this.ws = null;
+		this.playerName = "";
+		this.players = [];
 	}
 
 	init(data) {
 		console.log('init on ' + this.scene.key + ' start');
+		this.phaserEventMapping = [
+			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
+		];
+		this.windowsEventMapping = [
+			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
+			{event: 'start-event', func: this.startEvent.bind(this)},
+			{event: 'stop-event', func: this.stopEvent.bind(this)},
+			{event: 'restart-event', func: this.restartEvent.bind(this)}
+		];
+
+		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
+		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
+
 		this.ws = data.ws;
+		this.playerName = data.playerName;
 		
 		this.ws.onmessage = this.onmessage.bind(this);
 		this.ws.onclose = this.onclose.bind(this);
@@ -27,8 +46,11 @@ export default class MainScene extends Phaser.Scene {
 	  
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
-		this.cameras.main.scrollX = -150;
-		this.cameras.main.scrollY = -150;
+		$("#main-scene-root").removeClass("hide");
+
+		this.cameras.main.setZoom(2);
+		this.cameras.main.scrollX = -400;
+		this.cameras.main.scrollY = -320;
 
 		this.xAxisGraphic = this.add.graphics();
 		this.xAxisGraphic.lineStyle(1, 0xff0000, 1.0);
@@ -41,11 +63,24 @@ export default class MainScene extends Phaser.Scene {
 		this.yAxisGraphic.moveTo(0, 0);
 		this.yAxisGraphic.lineTo(0, 10);
 		this.yAxisGraphic.strokePath();
+	}
 
-		//create functions for the start/stop/restart buttons
-		window.addEventListener("start-event", this.startEvent.bind(this));
-		window.addEventListener("stop-event", this.stopEvent.bind(this));
-		window.addEventListener("restart-event", this.restartEvent.bind(this));
+	shutdown() {
+		console.log('shutdown on ' + this.scene.key);
+		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
+		$("#main-scene-root").addClass("hide");
+	}
+
+	exitGameClick() {
+		this.globalfuncs.appendToLog("Disconnecting from server.");
+		
+		try{
+			this.ws.close();
+		} catch(ex) {
+			this.globalfuncs.appendToLog("Exception caught when closing websocket: " + ex);
+		}
+		this.scene.manager.getScene("game-manager-scene").exitServer();
 	}
 
 	startEvent() {
@@ -76,7 +111,7 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	onclose(e) {
-		console.log('Websocket is now closed by main-scene.');
+		console.log('Websocket is now closed.');
 	}
 
 	onopen(e) {

@@ -2,7 +2,7 @@
 <html lang="en"> 
 	<head> 
 		<meta charset="UTF-8" />
-		<title>planck-server-testing</title>
+		<title>Stockheimer</title>
 		<link rel="stylesheet" href="css/ui.css" />
 	</head>
 	<body>
@@ -13,12 +13,14 @@
 					<div id="player-name-container">
 						<div class="form-text" id="player-text">Player Name:</div>
 						<input type="text" class="form-input" id="player-name"/>
-						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'))"/>
+						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
 					</div>
 					<div id="game-server-details">
 						<div id="game-server-details-players">Players:</div>
 					</div>
-					
+				</div>
+				<div class="scene-root hide" id="main-scene-root">
+					<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
 				</div>
 				<div id="temp-log" readonly></div>
 			</div>

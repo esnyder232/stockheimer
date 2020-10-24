@@ -13,6 +13,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		this.globalfuncs = new GlobalFuncs();
 		this.main = {};
 		this.ws = null;
+		this.playerName = "";
 	}
 
 	init() {
@@ -27,7 +28,6 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
-
 	}
 
 	preload() {
@@ -37,7 +37,11 @@ export default class ServerConnectionScene extends Phaser.Scene {
 	  
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
+
+		//enable ui
 		$("#server-connection-scene-root").removeClass("hide");
+		$("#player-name").attr("disabled", false);
+		$("#player-submit").attr("disabled", false);
 
 		var data = {};
 		//get server details, like ip, how many people are currently playing, etc
@@ -81,9 +85,9 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			playerNameInput[0].disabled = true;
 			playerSubmitButton[0].disabled = true;
 
-			var playerName = playerNameInput[0].value;
+			this.playerName = playerNameInput[0].value;
 			
-			var data = {playerName: playerName};
+			var data = {playerName: this.playerName};
 			
 			this.globalfuncs.appendToLog("Connecting...");
 
