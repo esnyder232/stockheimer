@@ -10,9 +10,9 @@
 			<div id="game-div"></div>
 			<div id="ui-div">
 				<div class="scene-root hide" id="server-connection-scene-root">
-					<div id="player-name-container">
-						<div class="form-text" id="player-text">Player Name:</div>
-						<input type="text" class="form-input" id="player-name"/>
+					<div id="user-name-container">
+						<div class="form-text" id="player-text">User Name:</div>
+						<input type="text" class="form-input" id="user-name"/>
 						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
 					</div>
 					<div id="game-server-details">
@@ -28,7 +28,6 @@
 		
 		<input type="button" value="Start" onclick="window.dispatchEvent(new CustomEvent('start-event'));"/>
 		<input type="button" value="Stop" onclick="window.dispatchEvent(new CustomEvent('stop-event'));"/>
-		<input type="button" value="Restart" onclick="window.dispatchEvent(new CustomEvent('restart-event'));"/>
 		
 	</body>
 	

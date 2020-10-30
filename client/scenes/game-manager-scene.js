@@ -63,10 +63,10 @@ export default class GameManagerScene extends Phaser.Scene {
 
 		//take the websocket from server connection scene, and load up main scene
 		this.ws = this.scene.manager.getScene("server-connection-scene").ws;
-		this.playerName = this.scene.manager.getScene("server-connection-scene").playerName;
+		this.userName = this.scene.manager.getScene("server-connection-scene").userName;
 		this.scene.manager.add("main-scene", MainScene, true, {
 			ws: this.ws,
-			playerName: this.playerName
+			userName: this.userName
 		});
 		this.scene.manager.stop("server-connection-scene");
 		this.scene.manager.remove("server-connection-scene");

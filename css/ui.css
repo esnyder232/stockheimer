@@ -36,7 +36,7 @@ body {
 }
 
 
-#player-name-container {
+#user-name-container {
 	position: absolute;
 	width:25%;
 	height:15%;
@@ -51,7 +51,7 @@ body {
 	color: #cccccc;
 }
 
-#player-name {
+#user-name {
 	width: 96%;
 	margin-top:4px;
 }

@@ -1,6 +1,7 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 import config from '../client-config.json';
+import PlayerController from "../classes/player-controller.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -11,8 +12,10 @@ export default class MainScene extends Phaser.Scene {
 		this.planckUnitsToPhaserUnitsRatio = 4;
 		this.radiansToDegreesRatio = 180/3.14
 		this.ws = null;
-		this.playerName = "";
+		this.userName = "";
 		this.players = [];
+		this.playerInputKeyboardMap = {};
+		this.playerController = {};
 	}
 
 	init(data) {
@@ -31,12 +34,25 @@ export default class MainScene extends Phaser.Scene {
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		this.ws = data.ws;
-		this.playerName = data.playerName;
+		this.userName = data.userName;
 		
 		this.ws.onmessage = this.onmessage.bind(this);
 		this.ws.onclose = this.onclose.bind(this);
 		this.ws.onerror = this.onerror.bind(this);
 		this.ws.onopen = this.onopen.bind(this);
+
+		//mapping of actions to keyboard key codes. Export this to external file and load in on game startup.
+		this.playerInputKeyboardMap = {
+			left: 37,
+			right: 39,
+			up: 38,
+			down: 40,
+			jump: 90,
+			attackWeak: 88,
+			attackStrong: 67,
+			start: 13,
+			select: 32
+		};
 	}
 
 	preload() {
@@ -63,6 +79,44 @@ export default class MainScene extends Phaser.Scene {
 		this.yAxisGraphic.moveTo(0, 0);
 		this.yAxisGraphic.lineTo(0, 10);
 		this.yAxisGraphic.strokePath();
+
+		this.playerController = new PlayerController(this);
+		this.playerController.init(this.playerInputKeyboardMap);
+
+		//quick controls
+		// for(var key in this.playerInputKeyboardMap)
+		// {
+		// 	var virtualButton = {
+		// 			keyCode: 0,
+		// 			phaserKeyCode: "",
+		// 			state: false,
+		// 			prevState: false,
+		// 			phaserKeyObj: {}
+		// 	};
+
+		// 	//find the phaserKeyCode (its innefficent I know. I don't care)
+		// 	for(var phaserKeyCode in Phaser.Input.Keyboard.KeyCodes)
+		// 	{
+		// 		if(Phaser.Input.Keyboard.KeyCodes[phaserKeyCode] == this.playerInputKeyboardMap[key])
+		// 		{
+		// 			virtualButton.phaserKeyCode = phaserKeyCode;
+		// 			break;
+		// 		}
+		// 	}
+
+		// 	virtualButton.keyCode = this.playerInputKeyboardMap[key];
+		// 	virtualButton.phaserKeyObj = this.input.keyboard.addKey(this.playerInputKeyboardMap[key]);
+
+		// 	this.playerController[key] = virtualButton;
+		// }
+
+		// //for each virtual button, create a listener to change the virutal button's state
+		// for(var key in this.playerController)
+		// {
+		// 	this.input.keyboard.on("keydown-"+this.playerController[key].phaserKeyCode, this.tempDown, this.playerController[key]);
+		// 	this.input.keyboard.on("keyup-"+this.playerController[key].phaserKeyCode, this.tempUp, this.playerController[key]);
+		// }
+
 	}
 
 	shutdown() {
@@ -100,6 +154,11 @@ export default class MainScene extends Phaser.Scene {
 		this.sendJsonEvent(this.ws, "restart-event", "");
 		console.log('restartEvent DONE');
 	}
+
+	jumpEvent() {
+		console.log('jumpEvent started');
+		this.sendJsonEvent(this.ws, "jump-event", "");
+	}
 	  
 	update(timeElapsed, dt) {
 		if(!this.messageSent && this.ws.readyState === WebSocket.OPEN)
@@ -108,6 +167,32 @@ export default class MainScene extends Phaser.Scene {
 			this.sendJsonEvent(this.ws, "get-world", "");
 			this.messageSent = true;
 		}
+
+		if(this.playerController.isDirty)
+		{
+			var inputs = {};
+			for(var key in this.playerController.inputKeyboardMap)
+			{				
+				var val = this.playerController[key].state;
+				inputs[key] = val == true ? 1 : 0;
+			}
+
+			this.sendJsonEvent(this.ws, "player-input", inputs)
+		}
+
+		this.playerController.update();
+
+
+
+	}
+
+	tempDown(e) {
+		console.log('down now')
+		this.state = true;
+	}
+
+	tempUp(e) {
+		this.state = false;
 	}
 
 	onclose(e) {
@@ -121,8 +206,6 @@ export default class MainScene extends Phaser.Scene {
 	onerror(e) {
 		console.log('Websocket error: ' + e);
 	}
-
-
 
 	onmessage(e) {
 		var jsonMsg = this.getJsonEvent(e.data);
@@ -140,7 +223,7 @@ export default class MainScene extends Phaser.Scene {
 				this.createWorld();
 				break;
 			case "world-deltas":
-				console.log('got world deltas');
+				//console.log('got world deltas');
 				var deltas = JSON.parse(jsonMsg.msg);
 				this.processDeltas(deltas);
 				break;
@@ -148,10 +231,9 @@ export default class MainScene extends Phaser.Scene {
 				var msg = JSON.parse(jsonMsg.msg);
 				console.log('Recieved packet. sn: %s', msg.sn)
 				break;
-		}
-		if(jsonMsg.event == "get-world-response")
-		{
-			
+			case "player-update":
+
+				break;
 		}
 	}
 
@@ -232,21 +314,16 @@ export default class MainScene extends Phaser.Scene {
 			var myDelta = deltas.find((x) => {return x.id == obj.id});
 			if(myDelta)
 			{
-				if(obj.id == 4)
+				//console.log('myDelta x, y: %s, %s', myDelta.x, myDelta.y);
+				var newx = myDelta.x * this.planckUnitsToPhaserUnitsRatio;
+				var newy = myDelta.y * this.planckUnitsToPhaserUnitsRatio * -1;
+				var newa = myDelta.a * -this.radiansToDegreesRatio;
+
+				for(var j = 0; j < obj.planckGraphics.length; j++)
 				{
-					console.log('myDelta x, y: %s, %s', myDelta.x, myDelta.y);
-					var newx = myDelta.x * this.planckUnitsToPhaserUnitsRatio;
-					var newy = myDelta.y * this.planckUnitsToPhaserUnitsRatio * -1;
-					var newa = myDelta.a * -this.radiansToDegreesRatio;
-
-					console.log(obj);
-
-					for(var j = 0; j < obj.planckGraphics.length; j++)
-					{
-						obj.planckGraphics[j].setX(newx);
-						obj.planckGraphics[j].setY(newy);
-						obj.planckGraphics[j].setAngle(newa);
-					}
+					obj.planckGraphics[j].setX(newx);
+					obj.planckGraphics[j].setY(newy);
+					obj.planckGraphics[j].setAngle(newa);
 				}
 			}
 		}

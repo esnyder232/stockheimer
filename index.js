@@ -1,7 +1,12 @@
 const express = require('express');
 const path = require('path');
 const websocket = require('ws');
+const cookieParser = require('cookie-parser');
 const {GameServer} = require("./server/game-server.js");
+const serverConfig = require('./server/server-config.json');
+const {GlobalFuncs}= require('./server/global-funcs');
+
+const globalfuncs = new GlobalFuncs();
 const app = express();
 
 const port = 7000;
@@ -21,6 +26,12 @@ const expressServer = app.listen(port, () => {console.log('Webserver listening o
 //make the game server
 var gs = new GameServer();
 gs.init();
+gs.startGame();
+
+//add middleware to pipeline
+app.use(express.json()); //for parsing application/json
+app.use(express.urlencoded({extended: false})); //for parsing application/x-www-form-urlencoded
+app.use(cookieParser(serverConfig.session_cookie_secret)); //for sessions
 
 //adding basic http endpoints
 app.get('/', (req, res) => {res.sendFile(path.join(__dirname, "index.html"));});
@@ -32,12 +43,21 @@ app.use('/client-dist', express.static(path.join(__dirname, "client-dist")));
 app.use('/css', express.static(path.join(__dirname, "css")));
 
 //other apis
+app.get('/api/get-user-session', gs.getUserSession.bind(gs));
 app.get('/api/get-server-details', gs.getServerDetails.bind(gs));
-app.get('/api/try-connect', gs.tryConnect.bind(gs));
+app.post('/api/join-request', gs.joinRequest.bind(gs));
+
 
 //create http upgrade endpoint to do websocket handshake
 expressServer.on('upgrade', (req, socket, head) => {
+	//get the session cookie that was set from the join-request api
+	var reqCookies = globalfuncs.parseCookies(req);
+	var reqCookieSession = cookieParser.signedCookie(reqCookies["user-session"], serverConfig.session_cookie_secret + "asdf");
+
 	//let the game server handle the websocket callbacks
-	return wss.handleUpgrade(req, socket, head, gs.onopen.bind(gs));
+	return wss.handleUpgrade(req, socket, head, gs.onopen.bind(gs, reqCookieSession));
 })
+
+
+
 

@@ -11,9 +11,15 @@ export default class ServerConnectionScene extends Phaser.Scene {
 	constructor(config) {
 		super(config);
 		this.globalfuncs = new GlobalFuncs();
-		this.main = {};
+		this.serverDetails = {};
+		this.userSession = {};
 		this.ws = null;
-		this.playerName = "";
+		this.username = "";
+
+		this.currentlyConnecting = false;
+
+		this.enablePlayButton = true;
+		this.enableUsername = true;
 	}
 
 	init() {
@@ -40,22 +46,39 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 		//enable ui
 		$("#server-connection-scene-root").removeClass("hide");
-		$("#player-name").attr("disabled", false);
-		$("#player-submit").attr("disabled", false);
+		this.enableUsername = true;
+		this.enablePlayButton = true;
 
 		var data = {};
 		//get server details, like ip, how many people are currently playing, etc
 		$.ajax({url: "./api/get-server-details", method: "GET", data: data})
-		.done((responseData, textStatus, xhr) => {
-			
-			this.main = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
+		.done((responseData, textStatus, xhr) => {			
+			this.serverDetails = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
 			var playersDiv = $("#game-server-details-players")[0];
-
-			playersDiv.textContent = "Players: " + this.main.currentPlayers + "/" + this.main.maxPlayers;
+			playersDiv.textContent = "Players: " + this.serverDetails.currentPlayers + "/" + this.serverDetails.maxPlayers;
 		})
 		.fail((xhr) => {
 			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
 			this.globalfuncs.appendToLog('Failed to get server details: ' + responseData.userMessage);
+		})
+
+
+		//get user session if it exists
+		$.ajax({url: "./api/get-user-session", method: "GET", data: data})
+		.done((responseData, textStatus, xhr) => {
+			this.userSession = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
+			if(this.userSession.sessionExists) {
+				var usernameInput = $("#user-name");
+				usernameInput.val(this.userSession.username);
+				this.enableUsername = !this.userSession.sessionExists;
+			}
+		})
+		.fail((xhr) => {
+			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
+			this.globalfuncs.appendToLog('Failed to get user session: ' + responseData.userMessage);
+		})
+		.always(() => {
+			this.updateUI();
 		})
 	}
 
@@ -68,31 +91,36 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 	destroy() {
 		console.log('destroy on ' + this.scene.key);
-
 	}
 
+
+	updateUI() {
+		var usernameInput = $("#user-name");
+		var playerSubmitButton = $("#player-submit");
+
+		usernameInput.attr("disabled", !this.enableUsername);
+		playerSubmitButton.attr("disabled", !this.enablePlayButton);
+	}
+
+
 	playerSubmitClick() {
-		console.log('player submit click');
-		
 		//connect with the server and establish the websocket
 		if(!this.currentlyConnecting)
 		{
-			//this.currentlyConnecting = true;
+			this.currentlyConnecting = true;
+			this.enablePlayButton = false;
+			this.enableUsername = false;
 
-			var playerNameInput = $("#player-name");
-			var playerSubmitButton = $("#player-submit");
+			this.updateUI();
 
-			playerNameInput[0].disabled = true;
-			playerSubmitButton[0].disabled = true;
-
-			this.playerName = playerNameInput[0].value;
+			var usernameInput = $("#user-name");
+			this.username = usernameInput[0].value;
 			
-			var data = {playerName: this.playerName};
-			
+			var data = {username: this.username};
 			this.globalfuncs.appendToLog("Connecting...");
 
 			//try to connect to server
-			$.ajax({url: "./api/try-connect", method: "GET", data: data})
+			$.ajax({url: "./api/join-request", method: "POST", data: data})
 			.done((responseData, textStatus, xhr) => {
 				//at this point, it is safe to create the websocket connection
 				this.createWebSocket();
@@ -100,6 +128,11 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			.fail((xhr) => {
 				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
 				this.globalfuncs.appendToLog('Failed to connect to server: ' + responseData.userMessage);
+				this.currentlyConnecting = false;
+
+				this.enablePlayButton = true;
+				this.enableUsername = !this.userSession.sessionExists;
+				this.updateUI();
 			})
 		}
 	}

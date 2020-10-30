@@ -24,8 +24,6 @@ export default class GlobalFuncs {
 	registerPhaserEvents(eventMapping) {
 		for(var i = 0; i < eventMapping.length; i++)
 		{
-			console.log('i: ' + i);
-			console.log(eventMapping[i].target);
 			eventMapping[i].target.on(eventMapping[i].event, eventMapping[i].func)
 		}
 	}

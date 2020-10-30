@@ -1,18 +1,24 @@
 const planck = require('planck-js');
+const crypto = require('crypto');
 const {GlobalFuncs} = require('./global-funcs.js');
+const {ValidFuncs} = require('./valid-funcs.js');
 const serverConfig = require('./server-config.json');
 const {performance} = require('perf_hooks');
+const {PlayerManager} = require('./managers/player-manager.js');
+const {UserManager} = require('./managers/user-manager.js');
+const {WebsocketManager} = require('./managers/websocket-manager.js');
+const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 
 class GameServer {
 	constructor() {
 		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = 1; //fps
-		this.isRunning = false;
+		this.frameRate = 30; //fps
 		this.frameNum = 0;
-		this.socketArr = [];
-		this.wsIDCounter = 1;
 		this.maxPlayers = 30;
+		this.runGameLoop = false;
+		this.gameState = null;
+		this.nextGameState = null;
 		
 		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
@@ -20,15 +26,32 @@ class GameServer {
 		this.positionIterations = 2;
 
 		this.previousTick = 0;
+		
+		this.world = null;
+		this.pl = null;
+
+		this.pm = null;
+		this.wsm = null;
+		this.um = null;
 	}
 
 	init() {
 		console.log('initializing game server');
-		const pl = planck;
-		const Vec2 = pl.Vec2;
+		this.pl = planck;
+		this.pm = new PlayerManager();
+		this.wsm = new WebsocketManager();
+		this.um = new UserManager();
+		
+		this.pm.init(this);
+		this.wsm.init(this);
+		this.um.init(this);
+
+		this.gameState = new GameServerStopped(this);
+		
+		const Vec2 = this.pl.Vec2;
 		
 		if(!this.world) {
-			this.world = pl.World({
+			this.world = this.pl.World({
 				gravity: Vec2(0, -10)
 			});
 		
@@ -37,14 +60,14 @@ class GameServer {
 				position: Vec2(0, 0),
 				userData: {id: 1}
 			});
-			var xAxisShape = pl.Edge(Vec2(0, 0), Vec2(1, 0));
+			var xAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(1, 0));
 			xAxisBody.createFixture(xAxisShape);
 		
 			var yAxisBody = this.world.createBody({
 				position: Vec2(0, 0),
 				userData: {id: 2}
 			});
-			var yAxisShape = pl.Edge(Vec2(0, 0), Vec2(0, 1));
+			var yAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(0, 1));
 			yAxisBody.createFixture(yAxisShape);
 		
 			//ground
@@ -52,24 +75,24 @@ class GameServer {
 				position: Vec2(0, -10),
 				userData: {id: 3}
 			});	
-			var groundShape = pl.Box(20, 5, Vec2(0,0));
+			var groundShape = this.pl.Box(20, 5, Vec2(0,0));
 			ground.createFixture(groundShape, 0);
 		
 			
 			//box
 			this.boxBody = this.world.createBody({
 				position: Vec2(1.5, 3.1),
-				type: pl.Body.DYNAMIC,
+				type: this.pl.Body.DYNAMIC,
 				userData: {id: 4}
 			});
-			var boxShape = pl.Box(1, 1);
+			var boxShape = this.pl.Box(1, 1);
 			this.boxBody.createFixture({
 				shape: boxShape,
 				density: 1.0,
 				friction: 0.3
 			});
 		
-			var boxShape2 = pl.Box(1, 1, Vec2(-1, -1));
+			var boxShape2 = this.pl.Box(1, 1, Vec2(-1, -1));
 			this.boxBody.createFixture({
 				shape: boxShape2,
 				density: 1.0,
@@ -79,40 +102,57 @@ class GameServer {
 			this.world.on("begin-contact", this.beginContact.bind(this));
 			this.world.on("end-contact", this.endContact.bind(this));
 		}
-
+		
 		console.log('creating gameworld done');
 	}
 
 	beginContact(a, b, c) {
 		console.log('beginContact!');
-		var stophere = true;
 	}
 
 	endContact(a, b, c) {
 		console.log('endContact!');
 	}
 
-	onopen(socket) {
-		console.log('Websocket connected!');
+	onopen(reqCookieSession, ws, b, c) {
+		console.log('onopen called');
 
-		socket.id = this.wsIDCounter;
-		socket.sn = 1;
-		this.wsIDCounter++;
-		this.socketArr.push(socket);
+		//create websocket entry 
+		this.wsm.createWebsocket(ws);
 
-		socket.on("close", this.onclose.bind(this, socket));
-		socket.on("error", this.onerror.bind(this, socket));
-		socket.on("message", this.onmessage.bind(this, socket));
-		socket.on("pong", this.onpong.bind(this, socket));
-		socket.ping("this is a ping");
+		//create player
+		var p = this.pm.createPlayer();
+
+		//setup websocket
+		ws.on("close", this.onclose.bind(this, ws));
+		ws.on("error", this.onerror.bind(this, ws));
+		ws.on("message", this.onmessage.bind(this, ws));
+		ws.on("pong", this.onpong.bind(this, ws));
+		ws.playerId = p.id;
+
+		//setup player
+		p.init(this);
+
+		const Vec2 = this.pl.Vec2;
+		var boxShape = this.pl.Box(1, 1, Vec2(0, 0));
+		var playerBody = this.world.createBody({
+			position: Vec2(-10, -1),
+			type: this.pl.Body.DYNAMIC,
+			userData: {playerId: p.id}
+		});
+		playerBody.createFixture({
+			shape: boxShape,
+			density: 1.0,
+			friction: 0.3
+		});	
+
+		p.playerBody = playerBody;
 	}
 
 	onclose(socket, m) {	
-		console.log('socket onclose: ' + m);
-		console.log("looking for socket");
-		var index = this.socketArr.findIndex((x) => {return x.id === socket.id;});
-		this.socketArr.splice(index, 1);
-		console.log("index is: %s. socketArr.length: %s", index, this.socketArr.length);
+		console.log('socket onclose: ' + socket.id + '. playerId: ' + socket.playerId);
+		this.wsm.destroyWebsocket(socket);
+		console.log("wsm.websocketArray.length: %s", this.wsm.websocketArray.length);
 	}
 
 	onerror(socket, m) {
@@ -135,13 +175,13 @@ class GameServer {
 				console.log('getting world done')
 				break;
 			case "start-event":
-				this.startEvent(socket, jsonMsg);
+				this.startGame(socket, jsonMsg);
 				break;
 			case "stop-event":
-				this.stopEvent(socket, jsonMsg);
+				this.stopGame(socket, jsonMsg);
 				break;
-			case "restart-event":
-				this.restartEvent(socket, jsonMsg);
+			case "player-input":
+				this.playerInputEvent(socket, jsonMsg);
 				break;
 			default:
 				//just echo something back
@@ -225,37 +265,29 @@ class GameServer {
 		return arrBodies;
 	}
 
-	startEvent(socket, jsonMsg) {
-		console.log('starting simulation');
-		this.startGameLoop();
-	}
-	
-	stopEvent(socket, jsonMsg) {
-		console.log('stopping simulation');
-		this.stopGameLoop();
-	}
-	
-	restartEvent(socket, jsonMsg) {
-		console.log('restarting simulation');
-		
-	}
 
-	//starts the gameworld game loop
-	startGameLoop() {
-		if(!this.isRunning)
+	playerInputEvent(socket, jsonMsg) {
+		console.log('input event')
+		var msg = jsonMsg.msg;
+		var player = this.pm.getPlayerByID(socket.playerId);
+		if(player)
 		{
-			this.isRunning = true;
-			console.log("Starting game loop");
-			this.gameLoop();
+			const Vec2 = this.pl.Vec2;
+
+			var p = player.playerBody.getWorldPoint(new Vec2(0, 0));
+			var f = new Vec2(0, 10);
+			player.playerBody.applyLinearImpulse(f, p, true);
 		}
 	}
 
-	stopGameLoop() {
-		if(this.isRunning)
-		{
-			this.isRunning = false;
-			console.log("Stopping game loop");
-		}
+	startGame() {
+		console.log("Starting game");
+		this.gameState.startGameRequest();
+	}
+
+	stopGame() {
+		console.log("Stopping game");
+		this.gameState.stopGameRequest();
 	}
 
 	//the gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
@@ -269,14 +301,29 @@ class GameServer {
 		if(this.previousTick + (this.frameTimeStep) < performance.now())
 		{
 			this.previousTick = performance.now();
-			this.update();
+			if(this.gameState)
+			{
+				this.gameState.update();
+			}
+
+			if(this.nextGameState)
+			{
+				this.gameState.exit();
+				this.nextGameState.enter();
+
+				this.gameState = this.nextGameState;
+				this.nextGameState = null;
+			}
 		}
 
 		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
 		if(performance.now() - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
 		{
 			//call the sloppy timer
-			setTimeout(this.gameLoop.bind(this), 1);
+			if(this.runGameLoop)
+			{
+				setTimeout(this.gameLoop.bind(this), 1);
+			}
 		}
 		else
 		{
@@ -286,40 +333,16 @@ class GameServer {
 	}
 
 
-	update() {
-
-		//send out just a packet with a sequence number
-		for(var i = 0; i < this.socketArr.length; i++)
-		{
-			var m = {sn: this.socketArr[i].sn};
-			this.globalfuncs.sendJsonEvent(this.socketArr[i], "sn-test", JSON.stringify(m));
-			console.log('Sent packet for client: %s, sn: %s', this.socketArr[i].id, this.socketArr[i].sn);
-			this.socketArr[i].sn++;
-		}
-
-
-
-		//process input here
-
-		//physics update
-		//this.world.step(this.timeStep, this.velocityIterations, this.positionIterations);
-		
-		//if its time, send 
-		//this.sendWorldDeltas();
-
-		
-		this.frameNum++;
-	}
-
 	sendWorldDeltas() {
 		//just send everything for now
 		var arrBodies = this.getWorld();
 		
-		for(var i = 0; i < this.socketArr.length; i++)
+		for(var i = 0; i < this.wsm.websocketArray.length; i++)
 		{
-			this.globalfuncs.sendJsonEvent(this.socketArr[i], "world-deltas", JSON.stringify(arrBodies));
+			this.globalfuncs.sendJsonEvent(this.wsm.websocketArray[i], "world-deltas", JSON.stringify(arrBodies));
 		}
 	}
+
 
 
 	/* apis */
@@ -331,7 +354,7 @@ class GameServer {
 
 		try {
 			var gameData = {
-				currentPlayers: this.socketArr.length,
+				currentPlayers: this.wsm.websocketArray.length,
 				maxPlayers: this.maxPlayers
 			}
 			main.push(gameData);
@@ -352,21 +375,129 @@ class GameServer {
 		res.status(statusResponse).json({userMessage: userMessage, data: data});
 	}
 
-	//used to see if the connection is allowed. 
-	//This is where we can do checks for if the players are at maximum capicity, or player name filtering, etc.
-	tryConnect(req, res) {
-		console.log("try connect called")
+	getUserSession(req, res) {
 		var bError = false;
 		var data = {};
 		var main = [];
 		var userMessage = "";
+		var sessionCookie = "";
+		var expireDays = 365*10;
+		var bSessionExists = false;
+	
+		try
+		{
+			 sessionCookie = req.signedCookies["user-session"];
+	
+			 //if a session exists, verify it from the session-manager.
+			if(sessionCookie) {
+				var session = this.um.getUserByToken(sessionCookie);
+				if(session)
+				{
+					bSessionExists = true;
+					userMessage = "Existing user session found for '" + session.username + "'.";
+					
+					main.push({
+						username: session.username,
+						sessionExists: true
+					});
+				}
+			}
+			//if they don't have a session, create one for the game and set a cookie
+			if(!bSessionExists) {
+				main.push({
+					username: "",
+					sessionExists: false
+				});
+			}
+		}
+		catch(ex) {
+			bError = true;
+			console.log(req.path, "Exception caught in getGameSession: " + ex, ex.stack);
+			userMessage = "Internal server error.";
+		}
+	
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		data.main = main;
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
+	//This is called when the player initially tries to connect to the game.
+	//This is where we can do checks for if the players are at maximum capicity, or player name filtering, etc.
+	//If the player is allowed to connect and they don't have a user setup yet, this also creates the user for them in UserManager and sets the user-session cookie on the client.
+	joinRequest(req, res) {
+		console.log("join request called")
+		var bError = false;
+		var data = {};
+		var main = [];
+		var userMessage = "";
+		var reqSessionCookie = "";
+		var expireDays = 365*10;
+		var bUserExists = false;
+		var username = "";
 
 		try {
+			username = req.body.username;
+
+			//check if the game is in a "joinable" state
+			if(!bError)
+			{
+				userMessage = this.gameState.joinRequest();
+				bError = userMessage != "success";
+			}
+
+			//validate inputs
+			if(!bError)
+			{
+				userMessage = ValidFuncs.validateUsername(username);
+				bError = userMessage != "success";
+				if(!bError)
+				{
+					username = username;
+				}
+			}
+
 			//check for max players
-			if(this.socketArr.length >= this.maxPlayers)
+			if(!bError && this.wsm.websocketArray.length >= this.maxPlayers)
 			{
 				bError = true;
 				userMessage = "Server is full.";
+			}
+
+			//At this point, the user can join.
+			//create the user and set the cookie if they don't exist
+			if(!bError)
+			{
+				reqSessionCookie = req.signedCookies["user-session"];
+	
+				//if a session exists, verify it from the session-manager.
+				if(reqSessionCookie) {
+					var user = this.um.getUserByToken(reqSessionCookie);
+
+					if(!user)
+					{
+						bUserExists = true;
+					}
+				}
+
+				//if they don't have a user, create one and set a cookie
+				if(!bUserExists)
+				{
+					var user = this.um.createUser();
+
+					var cookieOptions = {
+						signed: true,
+						maxAge: 60000 * 60 * 24 * expireDays,
+						httpOnly: true,
+						sameSite: "strict",
+						secure: serverConfig.https_enabled
+					};
+					
+					res.cookie("user-session", user.token, cookieOptions);
+				}
 			}
 		}
 		catch(ex) {
@@ -383,7 +514,6 @@ class GameServer {
 
 		data.main = main;
 		res.status(statusResponse).json({userMessage: userMessage, data: data});
-
 	}
 
 }
