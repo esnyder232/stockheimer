@@ -18,7 +18,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 		this.currentlyConnecting = false;
 
-		this.enablePlayButton = true;
+		this.enablePlayButton = false;
 		this.enableUsername = true;
 		this.enableNewButton = false;
 	}
@@ -32,11 +32,41 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		this.windowsEventMapping = [
 			{event: 'player-submit-click', func: this.playerSubmitClick.bind(this)},
 			{event: 'player-new-click', func: this.playerNewClick.bind(this)},
+			{event: 'player-username-change', func: this.playerUsernameChange.bind(this)}
 			
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
+
+		//a custom register function for "keyup"s. I have to do it this way because I can't figure out how to pass the "key" event through a custom windows event.
+		$("#user-name").on("keyup", this.playerUsernameKeyup.bind(this));
+		$(document).on("keyup", this.playerUsernameKeyup.bind(this));
+	}
+
+	playerUsernameKeyup(e) {
+		//If the user clicks enter, click the play button if its enabled.
+		//apparently "keyCode" is obsolete. Whatever.
+		if(this.enablePlayButton && (e.code == "NumpadEnter" || e.code == "Enter")) {
+			this.playerSubmitClick();
+		}
+	}
+
+	playerUsernameChange() {
+		this.checkUsernameEnablePlayButton();
+		this.updateUI();
+	}
+
+	//whatever!
+	checkUsernameEnablePlayButton() {
+		var usernameInput = $("#user-name");
+		if(usernameInput.val() === "") {
+			this.enablePlayButton = false;
+		}
+		else {
+			this.enablePlayButton = true;
+		}
+
 	}
 
 	preload() {
@@ -50,7 +80,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		//enable ui
 		$("#server-connection-scene-root").removeClass("hide");
 		this.enableUsername = true;
-		this.enablePlayButton = true;
+		this.enablePlayButton = false;
 		this.enableNewButton = false;
 
 		var data = {};
@@ -83,6 +113,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			this.globalfuncs.appendToLog('Failed to get user session: ' + responseData.userMessage);
 		})
 		.always(() => {
+			this.checkUsernameEnablePlayButton();
 			this.updateUI();
 		})
 	}
@@ -91,6 +122,10 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		console.log('shutdown on ' + this.scene.key);
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
+
+		//a custom register function for "keydown" for player name. I have to do it this way because I can't figure out how to pass the "key" event through a custom windows event.
+		$("#user-name").off("keyup");
+		$(document).off("keyup");
 		$("#server-connection-scene-root").addClass("hide");
 	}
 
@@ -107,7 +142,6 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		usernameInput.attr("disabled", !this.enableUsername);
 		playerSubmitButton.attr("disabled", !this.enablePlayButton);
 		playerNewButton.attr("disabled", !this.enableNewButton);
-		
 	}
 
 
@@ -139,7 +173,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 				this.globalfuncs.appendToLog('Failed to connect to server: ' + responseData.userMessage);
 				
 				this.currentlyConnecting = false;
-				this.enablePlayButton = true;
+				this.checkUsernameEnablePlayButton();
 				this.enableUsername = !this.userSession.sessionExists;
 				this.enableNewButton = this.userSession.sessionExists;
 				this.updateUI();
@@ -171,6 +205,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 					this.globalfuncs.appendToLog('Failed to clear user session: ' + responseData.userMessage);
 				})
 				.always(() => {
+					this.checkUsernameEnablePlayButton();
 					this.updateUI();
 				})
 			}
@@ -189,7 +224,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			this.globalfuncs.appendToLog(ex);
 
 			this.currentlyConnecting = false;
-			this.enablePlayButton = true;
+			this.checkUsernameEnablePlayButton();
 			this.enableUsername = !this.userSession.sessionExists;
 			this.updateUI();
 		}
@@ -201,7 +236,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		console.log(e);
 
 		this.currentlyConnecting = false;
-		this.enablePlayButton = true;
+		this.checkUsernameEnablePlayButton();
 		this.enableUsername = !this.userSession.sessionExists;
 		this.updateUI();
 	}
@@ -211,7 +246,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		console.log(e);
 
 		this.currentlyConnecting = false;
-		this.enablePlayButton = true;
+		this.checkUsernameEnablePlayButton();
 		this.enableUsername = !this.userSession.sessionExists;
 		this.updateUI();
 	}

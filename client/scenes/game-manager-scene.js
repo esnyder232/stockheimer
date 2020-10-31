@@ -28,34 +28,6 @@ export default class GameManagerScene extends Phaser.Scene {
 		console.log('adding scenes...');
 		this.scene.add('server-connection-scene', ServerConnectionScene);
 		this.scene.start('server-connection-scene');
-
-
-		//some things to press and log stuff when i need to
-		window.addEventListener("keyup", (e) => {
-			switch(e.code.toLowerCase()) {				
-				case "digit1": 
-					console.log('1 clicked.');
-					this.scene.manager.getIndex("server-connection-scene");
-					this.scene.manager.stop("server-connection-scene");
-					this.scene.manager.remove("server-connection-scene");
-					break;
-				case "digit2":
-					console.log('2 clicked.');
-					this.scene.add('server-connection-scene', ServerConnectionScene);
-					this.scene.start('server-connection-scene');
-					break;
-				case "digit3":
-					console.log('3 clicked.');
-					break;
-				case "digit4":
-					console.log('4 clicked.');
-					break;
-				case "keyq":
-					console.log('q clicked.');
-					console.log(this);
-					break;
-			}
-		})
 	}
 
 	connectedToServer() {
