@@ -1,13 +1,13 @@
 const planck = require('planck-js');
 const crypto = require('crypto');
+const {performance} = require('perf_hooks');
+const cookieParser = require('cookie-parser');
 const {GlobalFuncs} = require('./global-funcs.js');
 const {ValidFuncs} = require('./valid-funcs.js');
-const serverConfig = require('./server-config.json');
-const {performance} = require('perf_hooks');
-const {PlayerManager} = require('./managers/player-manager.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
+const serverConfig = require('./server-config.json');
 
 class GameServer {
 	constructor() {
@@ -30,7 +30,6 @@ class GameServer {
 		this.world = null;
 		this.pl = null;
 
-		this.pm = null;
 		this.wsm = null;
 		this.um = null;
 	}
@@ -38,11 +37,9 @@ class GameServer {
 	init() {
 		console.log('initializing game server');
 		this.pl = planck;
-		this.pm = new PlayerManager();
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
 		
-		this.pm.init(this);
 		this.wsm.init(this);
 		this.um.init(this);
 
@@ -114,39 +111,112 @@ class GameServer {
 		console.log('endContact!');
 	}
 
-	onopen(reqCookieSession, ws, b, c) {
+	
+
+	wsAuthenticate(req, socket, head) {
+		var authResult = {
+			bError: false,
+			errorMessage: "",
+			user: null,
+			userMessage: ""
+		};
+
+		//get the session cookie that was set from the join-request api
+		var reqCookies = null;
+		var cookieSession = null;
+		var cookieSessionParsed = false;
+
+		try {
+			reqCookies = this.globalfuncs.parseCookies(req);
+			cookieSession = reqCookies["user-session"];
+
+			//check if cookie is in request
+			if(!cookieSession)
+			{
+				authResult.bError = true;
+				authResult.errorMessage = "Cookie session not found in request.";
+			}
+	
+			//check cookie signature
+			if(!authResult.bError)
+			{
+				cookieSessionParsed = cookieParser.signedCookie(cookieSession, serverConfig.session_cookie_secret);
+				if(cookieSessionParsed === false)
+				{
+					authResult.bError = true;
+					authResult.errorMessage = "Invalid cookie signature for cookie session. Cookie: " + cookieSession;
+				}
+			}
+
+			//get the user from the user manager. They SHOULD exist at this point
+			if(!authResult.bError)
+			{
+				authResult.user = this.um.getUserByToken(cookieSessionParsed);
+				if(!authResult.user)
+				{
+					authResult.bError = true;
+					authResult.errorMessage = "User was not found. User session parsed: " + cookieSessionParsed;
+				}
+				else
+				{
+					//at this point, the user has been verified. Tell the UserManager so the user becomes permanent.
+					this.um.userVerified(authResult.user);
+				}
+			}
+		}
+		catch(ex) {
+			authResult.bError = true;
+			authResult.errorMessage = "Internal server error when authenticating: " + ex;
+			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
+			console.log(ex);
+		}
+
+		authResult.userMessage = "success";
+		if(authResult.bError)
+			authResult.userMessage = "Could not authenticate user."
+
+		return authResult;
+	}
+
+	onopen(user, ws) {
 		console.log('onopen called');
+		
+		try {
+			//create websocket entry 
+			this.wsm.createWebsocket(ws);
 
-		//create websocket entry 
-		this.wsm.createWebsocket(ws);
+			//setup websocket
+			ws.on("close", this.onclose.bind(this, ws));
+			ws.on("error", this.onerror.bind(this, ws));
+			ws.on("message", this.onmessage.bind(this, ws));
+			ws.on("pong", this.onpong.bind(this, ws));
 
-		//create player
-		var p = this.pm.createPlayer();
+			ws.userId = user.id;
 
-		//setup websocket
-		ws.on("close", this.onclose.bind(this, ws));
-		ws.on("error", this.onerror.bind(this, ws));
-		ws.on("message", this.onmessage.bind(this, ws));
-		ws.on("pong", this.onpong.bind(this, ws));
-		ws.playerId = p.id;
+			//At this point, the user was only created, not initialized. So setup user now.
+			user.init(this);
 
-		//setup player
-		p.init(this);
+			const Vec2 = this.pl.Vec2;
+			var boxShape = this.pl.Box(1, 1, Vec2(0, 0));
+			var playerBody = this.world.createBody({
+				position: Vec2(-10, -1),
+				type: this.pl.Body.DYNAMIC,
+				userData: {userId: user.id}
+			});
+			playerBody.createFixture({
+				shape: boxShape,
+				density: 1.0,
+				friction: 0.3
+			});	
 
-		const Vec2 = this.pl.Vec2;
-		var boxShape = this.pl.Box(1, 1, Vec2(0, 0));
-		var playerBody = this.world.createBody({
-			position: Vec2(-10, -1),
-			type: this.pl.Body.DYNAMIC,
-			userData: {playerId: p.id}
-		});
-		playerBody.createFixture({
-			shape: boxShape,
-			density: 1.0,
-			friction: 0.3
-		});	
-
-		p.playerBody = playerBody;
+			user.playerBody = playerBody;
+		}
+		catch(ex) {
+			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
+			console.log(ex);
+		}
+		
+	
 	}
 
 	onclose(socket, m) {	
@@ -189,6 +259,8 @@ class GameServer {
 				break;
 		}
 	}
+
+	
 
 	getWorld() {
 
@@ -363,7 +435,7 @@ class GameServer {
 			userMessage = "Internal server error.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
 			console.log(ex);
-			var bError = true;
+			bError = true;
 		}
 
 		//send the response
@@ -402,7 +474,7 @@ class GameServer {
 					});
 				}
 			}
-			//if they don't have a session, create one for the game and set a cookie
+
 			if(!bSessionExists) {
 				main.push({
 					username: "",
@@ -423,6 +495,43 @@ class GameServer {
 
 		data.main = main;
 		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
+	clearUserSession(req, res) {
+		var bError = false;
+		var data = {};
+		var main = [];
+		var userMessage = "";
+		var sessionCookie = "";
+	
+		try
+		{
+			 sessionCookie = req.signedCookies["user-session"];
+	
+			 //if a session exists, verify it from the session-manager.
+			if(sessionCookie) {
+				var user = this.um.getUserByToken(sessionCookie);
+				if(user)
+				{
+					this.um.destroyUser(user);
+					userMessage = "Player '" + user.username + "' was deleted.";
+				}
+			}
+		}
+		catch(ex) {
+			bError = true;
+			console.log(req.path, "Exception caught in clearUserSession: " + ex, ex.stack);
+			userMessage = "Internal server error.";
+		}
+	
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		data.main = main;
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+
 	}
 
 	//This is called when the player initially tries to connect to the game.
@@ -454,10 +563,6 @@ class GameServer {
 			{
 				userMessage = ValidFuncs.validateUsername(username);
 				bError = userMessage != "success";
-				if(!bError)
-				{
-					username = username;
-				}
 			}
 
 			//check for max players
@@ -477,7 +582,7 @@ class GameServer {
 				if(reqSessionCookie) {
 					var user = this.um.getUserByToken(reqSessionCookie);
 
-					if(!user)
+					if(user)
 					{
 						bUserExists = true;
 					}
@@ -486,7 +591,8 @@ class GameServer {
 				//if they don't have a user, create one and set a cookie
 				if(!bUserExists)
 				{
-					var user = this.um.createUser();
+					var user = this.um.createUser(true);
+					user.username = username;
 
 					var cookieOptions = {
 						signed: true,
@@ -504,7 +610,7 @@ class GameServer {
 			userMessage = "Internal server error.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
 			console.log(ex);
-			var bError = true;
+			bError = true;
 		}
 
 		//send the response

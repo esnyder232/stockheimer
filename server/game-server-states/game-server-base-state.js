@@ -6,9 +6,9 @@ class GameServerBaseState {
 		this.globalfuncs = new GlobalFuncs();
 	}
 
-	enter(timeElapsed, dt) {}
-	update(timeElapsed, dt) {}
-	exit(timeElapsed, dt) {}
+	enter(dt) {}
+	update(dt) {}
+	exit(dt) {}
 
 	startGameRequest() {}
 	stopGameRequest() {}

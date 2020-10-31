@@ -1,4 +1,3 @@
-const {GlobalFuncs} = require('../global-funcs.js');
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStarting} = require('./game-server-starting.js');
 
@@ -7,20 +6,20 @@ class GameServerStopped extends GameServerBaseState {
 		super(gs);
 	}
 
-	enter(timeElapsed, dt) {
+	enter(dt) {
 		console.log('stopped server enter');
 		this.gs.runGameLoop = false;
-		super.enter(timeElapsed, dt);
+		super.enter(dt);
 	}
 
-	update(timeElapsed, dt) {
+	update(dt) {
 		console.log('stopped server update');
-		super.update(timeElapsed, dt);
+		super.update(dt);
 	}
 
-	exit(timeElapsed, dt) {
+	exit(dt) {
 		console.log('stopped server exit');
-		super.exit(timeElapsed, dt);
+		super.exit(dt);
 	}
 	
 	startGameRequest() {

@@ -1,6 +1,4 @@
-const {GlobalFuncs} = require('../global-funcs.js');
 const {GameServerBaseState} = require('./game-server-base-state.js');
-// const anything = require('./game-server-stopped.js');
 const GameServerStopped = require('./game-server-stopped.js'); //Wierd, If I do the {} on this, GameServerStopped becomes undefined. It has some confliction with game-server.js's require of game-server-stopped.js.
 
 
@@ -10,24 +8,24 @@ class GameServerStopping extends GameServerBaseState {
 		super(gs);
 	}
 
-	enter(timeElapsed, dt) {
+	enter(dt) {
 		console.log('stopping server enter');
-		super.enter(timeElapsed, dt);
+		super.enter(dt);
 	}
 
-	update(timeElapsed, dt) {
+	update(dt) {
 		console.log('stopping server update');
 
 		//do nothing for now
 
 		this.gs.nextGameState = new GameServerStopped.GameServerStopped(this.gs);
 
-		super.update(timeElapsed, dt);
+		super.update(dt);
 	}
 
-	exit(timeElapsed, dt) {
+	exit(dt) {
 		console.log('stopping server exit');
-		super.exit(timeElapsed, dt);
+		super.exit(dt);
 	}
 	
 	joinRequest() {

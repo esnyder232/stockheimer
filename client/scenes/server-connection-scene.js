@@ -20,6 +20,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 
 		this.enablePlayButton = true;
 		this.enableUsername = true;
+		this.enableNewButton = false;
 	}
 
 	init() {
@@ -29,7 +30,9 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
 		];
 		this.windowsEventMapping = [
-			{event: 'player-submit-click', func: this.playerSubmitClick.bind(this)}
+			{event: 'player-submit-click', func: this.playerSubmitClick.bind(this)},
+			{event: 'player-new-click', func: this.playerNewClick.bind(this)},
+			
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -48,6 +51,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		$("#server-connection-scene-root").removeClass("hide");
 		this.enableUsername = true;
 		this.enablePlayButton = true;
+		this.enableNewButton = false;
 
 		var data = {};
 		//get server details, like ip, how many people are currently playing, etc
@@ -71,6 +75,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 				var usernameInput = $("#user-name");
 				usernameInput.val(this.userSession.username);
 				this.enableUsername = !this.userSession.sessionExists;
+				this.enableNewButton = this.userSession.sessionExists;
 			}
 		})
 		.fail((xhr) => {
@@ -97,9 +102,12 @@ export default class ServerConnectionScene extends Phaser.Scene {
 	updateUI() {
 		var usernameInput = $("#user-name");
 		var playerSubmitButton = $("#player-submit");
+		var playerNewButton = $("#player-new");
 
 		usernameInput.attr("disabled", !this.enableUsername);
 		playerSubmitButton.attr("disabled", !this.enablePlayButton);
+		playerNewButton.attr("disabled", !this.enableNewButton);
+		
 	}
 
 
@@ -110,6 +118,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			this.currentlyConnecting = true;
 			this.enablePlayButton = false;
 			this.enableUsername = false;
+			this.enableNewButton = false;
 
 			this.updateUI();
 
@@ -128,12 +137,43 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			.fail((xhr) => {
 				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
 				this.globalfuncs.appendToLog('Failed to connect to server: ' + responseData.userMessage);
+				
 				this.currentlyConnecting = false;
-
 				this.enablePlayButton = true;
 				this.enableUsername = !this.userSession.sessionExists;
+				this.enableNewButton = this.userSession.sessionExists;
 				this.updateUI();
 			})
+		}
+	}
+
+	playerNewClick() {
+		if(!this.currentlyConnecting)
+		{
+			//warn the player
+			var heyhey = confirm("This will permanently delete your current player and let you create a new one. Continue?");
+			if(heyhey)
+			{
+				//delete the player from the database
+				var data = {};
+				$.ajax({url: "./api/clear-user-session", method: "POST", data: data})
+				.done((responseData, textStatus, xhr) => {
+					this.globalfuncs.appendToLog(responseData.userMessage);
+
+					var usernameInput = $("#user-name");
+					usernameInput.val("");
+					this.userSession.sessionExists = false;
+					this.enableUsername = !this.userSession.sessionExists;
+					this.enableNewButton = this.userSession.sessionExists;
+				})
+				.fail((xhr) => {
+					var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
+					this.globalfuncs.appendToLog('Failed to clear user session: ' + responseData.userMessage);
+				})
+				.always(() => {
+					this.updateUI();
+				})
+			}
 		}
 	}
 
@@ -147,16 +187,33 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		}
 		catch(ex) {
 			this.globalfuncs.appendToLog(ex);
+
+			this.currentlyConnecting = false;
+			this.enablePlayButton = true;
+			this.enableUsername = !this.userSession.sessionExists;
+			this.updateUI();
 		}
 		
 	}
 
 	oncloseTemp(e) {
-		this.globalfuncs.appendToLog("Socket was closed unexpectedly when connecting. Connection failed. " + e)
+		this.globalfuncs.appendToLog("Socket was closed unexpectedly when connecting.");
+		console.log(e);
+
+		this.currentlyConnecting = false;
+		this.enablePlayButton = true;
+		this.enableUsername = !this.userSession.sessionExists;
+		this.updateUI();
 	}
 
 	onerrorTemp(e) {
-		this.globalfuncs.appendToLog("Socket error when connecting: " + e);
+		this.globalfuncs.appendToLog("Socket errored when connecting.");
+		console.log(e);
+
+		this.currentlyConnecting = false;
+		this.enablePlayButton = true;
+		this.enableUsername = !this.userSession.sessionExists;
+		this.updateUI();
 	}
 
 	onopenTemp(e) {

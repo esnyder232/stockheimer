@@ -38,7 +38,7 @@ class WebsocketManager {
 		{
 			if(this.websocketArray[i])
 			{
-				this.idIndex[this.websocketArray[i].id] = i;
+				this.idIndex[this.websocketArray[i].id] = this.websocketArray[i];
 			}
 		}
 	}
@@ -63,9 +63,9 @@ class WebsocketManager {
 	}
 
 	getWebsocketByID(id) {
-		if(this.idIndex[id] !== undefined)
+		if(this.idIndex[id])
 		{
-			return this.websocketArray[this.idIndex[id]];
+			return this.idIndex[id];
 		}
 		else
 		{

@@ -46,16 +46,29 @@ app.use('/css', express.static(path.join(__dirname, "css")));
 app.get('/api/get-user-session', gs.getUserSession.bind(gs));
 app.get('/api/get-server-details', gs.getServerDetails.bind(gs));
 app.post('/api/join-request', gs.joinRequest.bind(gs));
+app.post('/api/clear-user-session', gs.clearUserSession.bind(gs));
+
 
 
 //create http upgrade endpoint to do websocket handshake
 expressServer.on('upgrade', (req, socket, head) => {
-	//get the session cookie that was set from the join-request api
-	var reqCookies = globalfuncs.parseCookies(req);
-	var reqCookieSession = cookieParser.signedCookie(reqCookies["user-session"], serverConfig.session_cookie_secret + "asdf");
+	var authResult = gs.wsAuthenticate(req, socket, head);
 
-	//let the game server handle the websocket callbacks
-	return wss.handleUpgrade(req, socket, head, gs.onopen.bind(gs, reqCookieSession));
+	//something bad happened in authentication process. Destroy socket and cancel the connection process.
+	if(authResult.bError)
+	{
+		console.log("Error when authenticating: " + authResult.errorMessage);
+		console.log('destorying socket now');
+		socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n"); //I don't know how to send "result.userMessage" back. So I'll just send unauthorized for now.
+		return;
+	}
+	//user is authenticated and is in result
+	else
+	{
+		//let the game server handle the websocket callbacks
+		console.log('handling updgrade');
+		return wss.handleUpgrade(req, socket, head, gs.onopen.bind(gs, authResult.user));
+	}
 })
 
 
