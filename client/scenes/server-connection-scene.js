@@ -31,8 +31,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		];
 		this.windowsEventMapping = [
 			{event: 'player-submit-click', func: this.playerSubmitClick.bind(this)},
-			{event: 'player-new-click', func: this.playerNewClick.bind(this)},
-			{event: 'player-username-change', func: this.playerUsernameChange.bind(this)}
+			{event: 'player-new-click', func: this.playerNewClick.bind(this)}
 			
 		];
 
@@ -50,11 +49,10 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		if(this.enablePlayButton && (e.code == "NumpadEnter" || e.code == "Enter")) {
 			this.playerSubmitClick();
 		}
-	}
-
-	playerUsernameChange() {
-		this.checkUsernameEnablePlayButton();
-		this.updateUI();
+		else {
+			this.checkUsernameEnablePlayButton();
+			this.updateUI();
+		}
 	}
 
 	//whatever!
@@ -123,7 +121,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
 
-		//a custom register function for "keydown" for player name. I have to do it this way because I can't figure out how to pass the "key" event through a custom windows event.
+		//a custom register function for "keyup" for player name. I have to do it this way because I can't figure out how to pass the "key" event through a custom windows event.
 		$("#user-name").off("keyup");
 		$(document).off("keyup");
 		$("#server-connection-scene-root").addClass("hide");

@@ -60,8 +60,6 @@ class UserManager {
 		console.log('user marked for deletion. Id: ' + user.id);
 	}
 
-	
-
 	updateIndex() {
 		//just rebuild the index for now
 		this.idIndex = {};

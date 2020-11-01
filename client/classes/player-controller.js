@@ -1,5 +1,9 @@
 import GlobalFuncs from "../global-funcs.js"
 
+//BUG:
+// When the scene using this gets destroyed, for some reason I can't use the keys anymore outside of the scene.
+// IE: if there is a virtual button "jump" mapped to "z", when I exit the scene, I can no longer use the 'z' key for any input box in the browser.
+
 //the player class
 export default class PlayerController {
 	constructor(scene) {

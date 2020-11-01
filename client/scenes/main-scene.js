@@ -80,8 +80,12 @@ export default class MainScene extends Phaser.Scene {
 		this.yAxisGraphic.lineTo(0, 10);
 		this.yAxisGraphic.strokePath();
 
+		
 		this.playerController = new PlayerController(this);
-		this.playerController.init(this.playerInputKeyboardMap);
+
+		//BUG: this breaks the input when the scene ends.
+		// this.playerController.init(this.playerInputKeyboardMap); 
+		
 
 		//quick controls
 		// for(var key in this.playerInputKeyboardMap)
@@ -123,6 +127,7 @@ export default class MainScene extends Phaser.Scene {
 		console.log('shutdown on ' + this.scene.key);
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
+		
 		$("#main-scene-root").addClass("hide");
 	}
 
