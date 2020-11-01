@@ -1,10 +1,10 @@
 const {UserBaseState} = require('./user-base-state.js');
-const {UserInitializingState} = require('./user-initializing-state.js');
+const {UserPlayingState} = require('./user-playing-state.js');
 
-class UserDisconnectedState extends UserBaseState {
+class UserInitializingState extends UserBaseState {
 	constructor(user) {
 		super(user);
-		this.stateName = "user-disconnected-state";
+		this.stateName = "user-initializing-state";
 	}
 
 	enter(dt) {
@@ -14,6 +14,9 @@ class UserDisconnectedState extends UserBaseState {
 	}
 
 	update(dt) {
+		//for now, just go to the next state immediately
+		this.user.nextState = new UserPlayingState(this.user);
+
 		super.update(dt);
 	}
 
@@ -25,4 +28,4 @@ class UserDisconnectedState extends UserBaseState {
 
 
 
-exports.UserDisconnectedState = UserDisconnectedState;
+exports.UserInitializingState = UserInitializingState;

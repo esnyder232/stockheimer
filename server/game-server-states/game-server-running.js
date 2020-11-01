@@ -14,6 +14,15 @@ class GameServerRunning extends GameServerBaseState {
 	update(dt) {
 		//process input here
 
+		
+		//update users
+		var activeUsers = this.gs.um.getUsersByNotState("user-disconnected-state");
+
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			activeUsers[i].update(dt);
+		}
+
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 		

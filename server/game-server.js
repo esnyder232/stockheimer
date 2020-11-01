@@ -7,6 +7,8 @@ const {ValidFuncs} = require('./valid-funcs.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
+const {UserInitializingState} = require('./user/user-initializing-state.js');
+const {UserDisconnectingState} = require('./user/user-disconnecting-state.js');
 const serverConfig = require('./server-config.json');
 
 class GameServer {
@@ -195,6 +197,13 @@ class GameServer {
 
 			//At this point, the user was only created, not initialized. So setup user now.
 			user.init(this);
+			user.nextState = new UserInitializingState(user);
+
+			//manually run a state change from disconnected to initializing so it can be picked up by the game-server's update loop
+			user.state.exit(0);
+			user.nextState.enter(0);
+			user.state = user.nextState;
+			user.nextState = null;
 
 			const Vec2 = this.pl.Vec2;
 			var boxShape = this.pl.Box(1, 1, Vec2(0, 0));
@@ -221,8 +230,18 @@ class GameServer {
 
 	onclose(socket, m) {	
 		console.log('socket onclose: ' + socket.id + '. playerId: ' + socket.playerId);
+		var user = this.um.getUserByID(socket.userId);
+
+		//put user in disconnecting state
+		//not sure why they would not have a user at this point, but better safe than sorry.
+		if(user)
+		{
+			user.nextState = new UserDisconnectingState(user);
+		}
+
+		//destroy socket
 		this.wsm.destroyWebsocket(socket);
-		console.log("wsm.websocketArray.length: %s", this.wsm.websocketArray.length);
+		//console.log("wsm.websocketArray.length: %s", this.wsm.websocketArray.length);
 	}
 
 	onerror(socket, m) {

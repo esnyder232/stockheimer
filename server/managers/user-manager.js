@@ -141,11 +141,19 @@ class UserManager {
 		}
 	}
 
-	//Just filter for now. I have a backup if this becomes the bottleneck.
+	//Just filter for now. I have a way to index this stuff if these become bottlenecks.
 	getUsersByState(userState) {
-		return this.userArray.filter((x) => {return x.state == userState;});
+		return this.userArray.filter((x) => {return x.stateName == userState;});
 	}
 	
+	getUsersByStates(userStatesArr) {
+		return this.userArray.filter((x) => {return userStatesArr.includes(x.stateName);});
+	}
+
+	//STOPPED HERE - for some reason this isn't working...
+	getUsersByNotState(notUserState) {
+		return this.userArray.filter((x) => {return x.stateName != notUserState;});
+	}
 }
 
 exports.UserManager = UserManager;
