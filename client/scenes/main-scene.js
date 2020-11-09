@@ -213,33 +213,76 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	onmessage(e) {
-		var jsonMsg = this.getJsonEvent(e.data);
-		//console.log('message recieved from server. Event: ' + jsonMsg.event);
-		switch(jsonMsg.event.toLowerCase())
+		//console.log(e);
+
+		if(e.data instanceof ArrayBuffer)
 		{
-			case "get-world-response":
-				console.log('got world reponse!');
-				this.world = JSON.parse(jsonMsg.msg);
+			console.log('array buffer recieved');
+			console.log(e.data);
 
-				//convert phaser units to phaser units
-				this.convertPlankToPhaserUnits();
+			var myView = new Int8Array(e.data);
+			var myLength = myView[0]*2;
+			console.log('mylength: ' + myLength);
 
-				console.log(this.world);
-				this.createWorld();
-				break;
-			case "world-deltas":
-				//console.log('got world deltas');
-				var deltas = JSON.parse(jsonMsg.msg);
-				this.processDeltas(deltas);
-				break;
-			case "sn-test":
-				var msg = JSON.parse(jsonMsg.msg);
-				console.log('Recieved packet. sn: %s', msg.sn)
-				break;
-			case "player-update":
+			for(var n = 1; n < myLength; n += 2)
+			{
+				var byte1 = myView[n];
+				var byte2 = myView[n+1];
+				var myChar = "";
+				console.log('mychar at n: ' + n);
+				console.log(myChar);
 
-				break;
+				byte2 = byte2 << 8;
+				var finalChar = byte2 + byte1;
+
+				console.log('finalchar: ' + finalChar);
+				console.log(String.fromCharCode(finalChar));
+			}
+			
 		}
+
+		else if(e.data.indexOf("==custom==") == 0)
+		{
+			console.log('custom message:');
+			var customMsg = e.data.replace("==custom==", "");
+			console.log(customMsg);
+			console.log(customMsg.length);
+		}
+		else
+		{
+			
+
+
+
+			var jsonMsg = this.getJsonEvent(e.data);
+			//console.log('message recieved from server. Event: ' + jsonMsg.event);
+			switch(jsonMsg.event.toLowerCase())
+			{
+				case "get-world-response":
+					console.log('got world reponse!');
+					this.world = JSON.parse(jsonMsg.msg);
+
+					//convert phaser units to phaser units
+					this.convertPlankToPhaserUnits();
+
+					console.log(this.world);
+					this.createWorld();
+					break;
+				case "world-deltas":
+					//console.log('got world deltas');
+					var deltas = JSON.parse(jsonMsg.msg);
+					this.processDeltas(deltas);
+					break;
+				case "sn-test":
+					var msg = JSON.parse(jsonMsg.msg);
+					console.log('Recieved packet. sn: %s', msg.sn)
+					break;
+				case "player-update":
+
+					break;
+			}
+		}
+		
 	}
 
 	sendJsonEvent(socket, event, msg) {

@@ -213,6 +213,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 	createWebSocket() {
 		try {
 			this.ws = new WebSocket(config.ws_address);
+			this.ws.binaryType = "arraybuffer";
 
 			this.ws.onclose = this.oncloseTemp.bind(this);
 			this.ws.onerror = this.onerrorTemp.bind(this);

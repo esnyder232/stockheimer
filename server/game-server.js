@@ -219,6 +219,85 @@ class GameServer {
 			});	
 
 			user.playerBody = playerBody;
+
+			// setTimeout(() => {
+			// 	this.stringTest(ws, "hello");
+			// }, 500)
+
+			// //testing strings
+			// setTimeout(() => {
+			// 	var complexMsg = "hello〆"
+			// 	var msgLength = complexMsg.length;
+
+			// 	//I want this: (msgLength)(complexMsg) as small as I can.
+			// 	//Which means I want this: (00001010)(0010.......10010)
+			// 	//And I need to translate it on the other side.
+			// 	var buffer = new ArrayBuffer(1 + (msgLength*2));
+			// 	var myView = new Int8Array(buffer);
+
+			// 	myView[0] = msgLength;
+
+			// 	var n = 1; //byte counter for buffer
+			// 	for(var i = 0; i < complexMsg.length; i++)
+			// 	{
+			// 		var cc = complexMsg.charCodeAt(i);
+			// 		var byte1 = cc & 0xff;
+			// 		var byte2 = (cc >> 8) & 0xff;
+
+			// 		myView[n+1] = byte2;
+			// 		myView[n] = byte1;
+			// 		console.log('byte1: ' + byte1);
+			// 		console.log('byte2: ' + byte2);
+			// 		console.log('cc: ' + cc);
+			// 		n += 2;
+			// 	}
+
+			// 	var test = complexMsg.charCodeAt(5);
+			// 	var testArr = [];
+			// 	var myByte = test & 0xff;
+			// 	var myLeftover = test & 0xff00;
+			// 	var stopHere = true;
+
+			// 	ws.send(buffer);
+
+			// 	//this.stringTest(ws, );
+			// }, 1000)
+
+			// //testing ints
+			// setTimeout(() => {
+			// 	var int1Min = -128;
+			// 	var int1Max = 128;
+			// 	var int2Min = -32768;
+			// 	var int2ax = 32768;
+			// 	var int3Min = -8388608;
+			// 	var int3Max = 8388608;
+			// 	var int4Min = -2147483648;
+			// 	var int4Max = 2147483648;
+
+
+
+			// 	var msgLength = complexMsg.length;
+
+			// 	//I want this: (msgLength)(complexMsg) as small as I can.
+			// 	//Which means I want this: (00001010)(0010.......10010)
+			// 	//And I need to translate it on the other side.
+			// 	var buffer = new ArrayBuffer(1 + (msgLength*2));
+			// 	var myView = new Int8Array(buffer);
+
+			// 	myView[0] = msgLength;
+
+			// 	var n = 1; //byte counter for buffer
+			// 	var test = complexMsg.charCodeAt(5);
+			// 	var testArr = [];
+			// 	var myByte = test & 0xff;
+			// 	var myLeftover = test & 0xff00;
+			// 	var stopHere = true;
+
+			// 	ws.send(buffer);
+
+			// 	//this.stringTest(ws, );
+			// }, 1000)
+
 		}
 		catch(ex) {
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
@@ -228,9 +307,9 @@ class GameServer {
 	
 	}
 
-	onclose(socket, m) {	
-		console.log('socket onclose: ' + socket.id + '. playerId: ' + socket.playerId);
-		var user = this.um.getUserByID(socket.userId);
+	onclose(ws, m) {	
+		console.log('websocket onclose: ' + ws.id + '. playerId: ' + ws.playerId);
+		var user = this.um.getUserByID(ws.userId);
 
 		//put user in disconnecting state
 		//not sure why they would not have a user at this point, but better safe than sorry.
@@ -240,45 +319,60 @@ class GameServer {
 		}
 
 		//destroy socket
-		this.wsm.destroyWebsocket(socket);
+		this.wsm.destroyWebsocket(ws);
 		//console.log("wsm.websocketArray.length: %s", this.wsm.websocketArray.length);
 	}
 
-	onerror(socket, m) {
+	onerror(ws, m) {
 		console.log('socket onerror: ' + m);
 	}
 
-	onpong(socket, m) {
+	onpong(ws, m) {
 		console.log('socket onpong: ' + m);
 	}
 
-	onmessage(socket, m) {
-		var jsonMsg = this.globalfuncs.getJsonEvent(m);
-	
-		switch(jsonMsg.event.toLowerCase())
+	onmessage(ws, m) {
+
+		if(m.indexOf("==custom==") == 0)
 		{
-			case "get-world":
-				console.log('now getting world');
-				var arrBodies = this.getWorld();
-				this.globalfuncs.sendJsonEvent(socket, "get-world-response", JSON.stringify(arrBodies))
-				console.log('getting world done')
-				break;
-			case "start-event":
-				this.startGame(socket, jsonMsg);
-				break;
-			case "stop-event":
-				this.stopGame(socket, jsonMsg);
-				break;
-			case "player-input":
-				this.playerInputEvent(socket, jsonMsg);
-				break;
-			default:
-				//just echo something back
-				this.globalfuncs.sendJsonEvent(socket, "unknown-event", "Unknown Event");
-				break;
+			console.log('custom message:');
+			console.log(m.data);
+		}
+		else
+		{
+			var jsonMsg = this.globalfuncs.getJsonEvent(m);
+	
+			switch(jsonMsg.event.toLowerCase())
+			{
+				case "get-world":
+					console.log('now getting world');
+					var arrBodies = this.getWorld();
+					this.globalfuncs.sendJsonEvent(ws, "get-world-response", JSON.stringify(arrBodies))
+					console.log('getting world done')
+					break;
+				case "start-event":
+					this.startGame(ws, jsonMsg);
+					break;
+				case "stop-event":
+					this.stopGame(ws, jsonMsg);
+					break;
+				case "player-input":
+					this.playerInputEvent(ws, jsonMsg);
+					break;
+				default:
+					//just echo something back
+					this.globalfuncs.sendJsonEvent(ws, "unknown-event", "Unknown Event");
+					break;
+			}
 		}
 	}
 
+
+	stringTest(ws, msg)
+	{
+		var fullMsg = "==custom==" + msg;
+		ws.send(fullMsg)
+	}
 	
 
 	getWorld() {
@@ -357,10 +451,10 @@ class GameServer {
 	}
 
 
-	playerInputEvent(socket, jsonMsg) {
+	playerInputEvent(ws, jsonMsg) {
 		console.log('input event')
 		var msg = jsonMsg.msg;
-		var player = this.pm.getPlayerByID(socket.playerId);
+		var player = this.pm.getPlayerByID(ws.playerId);
 		if(player)
 		{
 			const Vec2 = this.pl.Vec2;
@@ -612,6 +706,9 @@ class GameServer {
 				{
 					var user = this.um.createUser(true);
 					user.username = username;
+
+					//temporarily set a state for the new user. This is kinda hacky...its just a way so the user doesn't get picked up by the update loop immediately until the user has officially joined and created a websocket.
+					user.stateName = "user-disconnected-state";
 
 					var cookieOptions = {
 						signed: true,

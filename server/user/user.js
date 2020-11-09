@@ -7,9 +7,10 @@ class User {
 		this.gs = null;
 		this.username = "";
 		this.stateName = "";
-
 		this.state = null;
 		this.nextState = null;
+
+		this.packetArray = [];
 	}
 
 	init(gameServer) {
@@ -20,6 +21,11 @@ class User {
 	}
 
 	update(dt) {
+		if(this.state === null)
+		{
+			console.log('STATE IS NULL!!!');
+			var stopHere = true;
+		}
 		this.state.update();
 
 		if(this.nextState)
