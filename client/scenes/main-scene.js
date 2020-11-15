@@ -9,13 +9,16 @@ export default class MainScene extends Phaser.Scene {
 		this.globalfuncs = new GlobalFuncs();
 		this.messageSent = false;
 		this.tempLineGraphicsArr = [];
-		this.planckUnitsToPhaserUnitsRatio = 4;
+		this.planckUnitsToPhaserUnitsRatio = 32;
 		this.radiansToDegreesRatio = 180/3.14
 		this.ws = null;
 		this.userName = "";
 		this.players = [];
 		this.playerInputKeyboardMap = {};
 		this.playerController = {};
+
+		this.testTimeAccumulator = 0;
+		this.testPacketId = 0;
 	}
 
 	init(data) {
@@ -64,7 +67,7 @@ export default class MainScene extends Phaser.Scene {
 		console.log('create on ' + this.scene.key + ' start');
 		$("#main-scene-root").removeClass("hide");
 
-		this.cameras.main.setZoom(2);
+		this.cameras.main.setZoom(0.5);
 		this.cameras.main.scrollX = -400;
 		this.cameras.main.scrollY = -320;
 
@@ -173,21 +176,32 @@ export default class MainScene extends Phaser.Scene {
 			this.messageSent = true;
 		}
 
-		if(this.playerController.isDirty)
-		{
-			var inputs = {};
-			for(var key in this.playerController.inputKeyboardMap)
-			{				
-				var val = this.playerController[key].state;
-				inputs[key] = val == true ? 1 : 0;
-			}
+		// if(this.playerController.isDirty)
+		// {
+		// 	var inputs = {};
+		// 	for(var key in this.playerController.inputKeyboardMap)
+		// 	{				
+		// 		var val = this.playerController[key].state;
+		// 		inputs[key] = val == true ? 1 : 0;
+		// 	}
 
-			this.sendJsonEvent(this.ws, "player-input", inputs)
-		}
+		// 	this.sendJsonEvent(this.ws, "player-input", inputs)
+		// }
 
 		this.playerController.update();
 
+		if(this.testTimeAccumulator >= 1000)
+		{
+			console.log('sending player input now for ' + this.testPacketId);
+			this.testTimeAccumulator = 0;
 
+			this.sendJsonEvent(this.ws, "test", {t: this.testPacketId})
+
+			this.testPacketId++;
+		}
+
+		
+		this.testTimeAccumulator += dt;
 
 	}
 
@@ -220,24 +234,48 @@ export default class MainScene extends Phaser.Scene {
 			console.log('array buffer recieved');
 			console.log(e.data);
 
-			var myView = new Int8Array(e.data);
-			var myLength = myView[0]*2;
-			console.log('mylength: ' + myLength);
+			var myView4 = new DataView(e.data);
 
-			for(var n = 1; n < myLength; n += 2)
-			{
-				var byte1 = myView[n];
-				var byte2 = myView[n+1];
-				var myChar = "";
-				console.log('mychar at n: ' + n);
-				console.log(myChar);
+			var int1MinReturned = myView4.getInt8(0);
+			var int1MaxReturned = myView4.getInt8(4);
+			var uint1MaxReturned = myView4.getUint8(8);
+			var int2MinReturned = myView4.getInt16(12);
+			var int2MaxReturned = myView4.getInt16(16);
+			var uint2MaxReturned = myView4.getUint16(20);
+			var int3MinReturned = myView4.getInt32(24);
+			var int3MaxReturned = myView4.getInt32(28);
+			var uint3MaxReturned = myView4.getUint32(32);
 
-				byte2 = byte2 << 8;
-				var finalChar = byte2 + byte1;
 
-				console.log('finalchar: ' + finalChar);
-				console.log(String.fromCharCode(finalChar));
-			}
+			console.log('===========================');
+			console.log(int1MinReturned);
+			console.log(int1MaxReturned);
+			console.log(uint1MaxReturned);
+			console.log(int2MinReturned);
+			console.log(int2MaxReturned);
+			console.log(uint2MaxReturned);
+			console.log(int3MinReturned);
+			console.log(int3MaxReturned);
+			console.log(uint3MaxReturned);
+
+			// var myView = new Int8Array(e.data);
+			// var myLength = myView[0]*2;
+			// console.log('mylength: ' + myLength);
+
+			// for(var n = 1; n < myLength; n += 2)
+			// {
+			// 	var byte1 = myView[n];
+			// 	var byte2 = myView[n+1];
+			// 	var myChar = "";
+			// 	console.log('mychar at n: ' + n);
+			// 	console.log(myChar);
+
+			// 	byte2 = byte2 << 8;
+			// 	var finalChar = byte2 + byte1;
+
+			// 	console.log('finalchar: ' + finalChar);
+			// 	console.log(String.fromCharCode(finalChar));
+			// }
 			
 		}
 
@@ -279,6 +317,12 @@ export default class MainScene extends Phaser.Scene {
 					break;
 				case "player-update":
 
+					break;
+				case "test-ack":
+					console.log('from server test-ack: ' + jsonMsg.msg.t);
+					break;
+				case "unknown-event":
+					console.log('from server: unknown-event');
 					break;
 			}
 		}

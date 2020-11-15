@@ -15,7 +15,7 @@ class GameServer {
 	constructor() {
 		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = 30; //fps
+		this.frameRate = 10; //fps
 		this.frameNum = 0;
 		this.maxPlayers = 30;
 		this.runGameLoop = false;
@@ -206,7 +206,7 @@ class GameServer {
 			user.nextState = null;
 
 			const Vec2 = this.pl.Vec2;
-			var boxShape = this.pl.Box(1, 1, Vec2(0, 0));
+			var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
 			var playerBody = this.world.createBody({
 				position: Vec2(-10, -1),
 				type: this.pl.Body.DYNAMIC,
@@ -263,40 +263,176 @@ class GameServer {
 			// 	//this.stringTest(ws, );
 			// }, 1000)
 
-			// //testing ints
-			// setTimeout(() => {
-			// 	var int1Min = -128;
-			// 	var int1Max = 128;
-			// 	var int2Min = -32768;
-			// 	var int2ax = 32768;
-			// 	var int3Min = -8388608;
-			// 	var int3Max = 8388608;
-			// 	var int4Min = -2147483648;
-			// 	var int4Max = 2147483648;
+			//testing ints
+			setTimeout(() => {
+				var int1Min = -128;
+				var int1Max = 128;
+				var int2Min = -32768;
+				var int2ax = 32768;
+				var int3Min = -8388608;
+				var int3Max = 8388608;
+				var int4Min = -2147483648;
+				var int4Max = 2147483648;
+
+			}, 1000)
+
+			//testing floats
+			setTimeout(() => {
+
+				//testing floats
+				var f1 = 10000.53;
+				var f2 = -10000.53;
+				
+				var buffer = new ArrayBuffer(20);
+				var myView = new DataView(buffer);
+
+				myView.setFloat32(0, f1);
+				myView.setFloat32(4, f2);
+				
+				var f1Again = myView.getFloat32(0);
+				var f2Again = myView.getFloat32(4);
 
 
 
-			// 	var msgLength = complexMsg.length;
 
-			// 	//I want this: (msgLength)(complexMsg) as small as I can.
-			// 	//Which means I want this: (00001010)(0010.......10010)
-			// 	//And I need to translate it on the other side.
-			// 	var buffer = new ArrayBuffer(1 + (msgLength*2));
-			// 	var myView = new Int8Array(buffer);
 
-			// 	myView[0] = msgLength;
 
-			// 	var n = 1; //byte counter for buffer
-			// 	var test = complexMsg.charCodeAt(5);
-			// 	var testArr = [];
-			// 	var myByte = test & 0xff;
-			// 	var myLeftover = test & 0xff00;
-			// 	var stopHere = true;
 
-			// 	ws.send(buffer);
 
-			// 	//this.stringTest(ws, );
-			// }, 1000)
+
+
+
+				//testing ints
+				var i1 = 123;
+				var i2 = 12356;
+				var i3 = -118;
+				var i4 = -11765;
+
+
+				var buffer3 = new ArrayBuffer(40);
+				var myView3 = new DataView(buffer3);
+				myView3.setInt8(0, i1);
+				myView3.setUint8(4, i1);
+				myView3.setInt16(8, i2);
+				myView3.setUint16(12, i2);
+				myView3.setInt8(16, i3);
+				myView3.setInt16(20, i4);
+
+				var i1Returned = myView3.getInt8(0);
+				var i1ReturnedU = myView3.getUint8(4);
+				var i2Returned = myView3.getInt16(8);
+				var i2ReturnedU = myView3.getUint16(12);
+				var i3Returned = myView3.getInt8(16);
+				var i4Returned = myView3.getInt16(20);
+
+
+				var buffer4 = new ArrayBuffer(20);
+				var myIntView4 = new Int16Array(buffer4);
+
+				myIntView4[0] = i2;
+				myIntView4[1] = i4;
+
+				var i1ReturnedFromView = myIntView4[0];
+				var i2ReturnedFromView = myIntView4[1];
+
+
+
+
+				//testing limits of int
+				var int1Min = -128;
+				var int1Max = 127;
+				var uint1Max = 255;
+				var int2Min = -32768;
+				var int2Max = 32767;
+				var uint2Max = 65535;
+				var int4Min = -2147483648;
+				var int4Max = 2147483647;
+				var uint4Max = 4294967295;
+
+				var buffer4 = new ArrayBuffer(100);
+				var myView4 = new DataView(buffer4);
+				myView4.setInt8(0, int1Min);
+				myView4.setInt8(4, int1Max);
+				myView4.setUint8(8, uint1Max);
+
+				myView4.setInt16(12, int2Min);
+				myView4.setInt16(16, int2Max);
+				myView4.setUint16(20, uint2Max);
+
+				myView4.setInt32(24, int4Min);
+				myView4.setInt32(28, int4Max);
+				myView4.setUint32(32, uint4Max);
+
+				var int1MinReturned = myView4.getInt8(0);
+				var int1MaxReturned = myView4.getInt8(4);
+				var uint1MaxReturned = myView4.getUint8(8);
+				var int2MinReturned = myView4.getInt16(12);
+				var int2MaxReturned = myView4.getInt16(16);
+				var uint2MaxReturned = myView4.getUint16(20);
+				var int3MinReturned = myView4.getInt32(24);
+				var int3MaxReturned = myView4.getInt32(28);
+				var uint3MaxReturned = myView4.getUint32(32);
+
+				//ws.send(buffer4);
+
+
+
+
+
+
+
+				//bools
+				var b1 = true;
+				var b2 = false;
+				var b3 = false;
+				var b4 = true;
+				var b5 = false;
+
+				var buffer5 = new ArrayBuffer(1);
+				var boolView = new DataView(buffer5);
+
+				var boolByte = b1 ? 1 : 0;
+				boolByte = (boolByte << 1) + (b2 ? 1 : 0);
+				boolByte = (boolByte << 1) + (b3 ? 1 : 0);
+				boolByte = (boolByte << 1) + (b4 ? 1 : 0);
+				boolByte = (boolByte << 1) + (b5 ? 1 : 0);
+
+				boolView.setUint8(0, boolByte);
+
+
+
+
+				var boolByteReturned = boolView.getUint8(0);
+				var b1Returned = false;
+				var b2Returned = false;
+				var b3Returned = false;
+				var b4Returned = false;
+				var b5Returned = false;
+
+				b5Returned = (boolByteReturned & 1) === 1 ? true : false;
+				boolByteReturned = boolByteReturned >> 1;
+
+				b4Returned = (boolByteReturned & 1) === 1 ? true : false;
+				boolByteReturned = boolByteReturned >> 1;
+
+				b3Returned = (boolByteReturned & 1) === 1 ? true : false;
+				boolByteReturned = boolByteReturned >> 1;
+
+				b2Returned = (boolByteReturned & 1) === 1 ? true : false;
+				boolByteReturned = boolByteReturned >> 1;
+
+				b1Returned = (boolByteReturned & 1) === 1 ? true : false;
+				boolByteReturned = boolByteReturned >> 1;
+				
+								
+				var stopHere = true;
+
+
+
+
+			}, 1000)
+
+
 
 		}
 		catch(ex) {
@@ -359,9 +495,13 @@ class GameServer {
 				case "player-input":
 					this.playerInputEvent(ws, jsonMsg);
 					break;
+				case "test":
+					console.log(jsonMsg);
+					this.globalfuncs.sendJsonEvent(ws, "test-ack", {t: jsonMsg.msg.t});
+					break;
 				default:
 					//just echo something back
-					this.globalfuncs.sendJsonEvent(ws, "unknown-event", "Unknown Event");
+					this.globalfuncs.sendJsonEvent(ws, "unknown-event", JSON.stringify({}));
 					break;
 			}
 		}
