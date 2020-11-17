@@ -16,6 +16,7 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 	
 	enter(dt) {
 		super.enter(dt);
+		this.globalfuncs.appendToLog("Connecting...");
 		this.gc.phaserGame.scene.add("user-connecting-scene", UserConnectingScene, true, {
 			gc: this.gc
 		});
@@ -34,10 +35,13 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		switch(this.connectionState)
 		{
 			case 0:
-				console.log('opening websocket...');
 				break;
 			case 1:
-				console.log('recieving world state...');
+				this.globalfuncs.appendToLog("Connected.");
+				this.globalfuncs.appendToLog("Getting world state...");
+				
+				//for now, just go straight to user playing
+				this.recievingGameStateSuccess()
 				break;
 			case 2:
 				console.log('User connection complete. Letting the user play now.');
@@ -54,10 +58,6 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		this.gc.phaserGame.scene.remove("user-connecting-scene");
 	}
 
-	exitGameClick() {
-		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-	}
-
 	websocketOpened() {
 		this.connectionState = 1;
 	}
@@ -67,6 +67,10 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 	}
 
 	websocketClosed() {
+		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+	}
+
+	exitGameClick() {
 		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
 	}
 

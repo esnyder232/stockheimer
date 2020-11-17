@@ -159,13 +159,13 @@ export default class LobbyScene extends Phaser.Scene {
 			this.username = usernameInput[0].value;
 			
 			var data = {username: this.username};
-			this.globalfuncs.appendToLog("Connecting...");
 
 			//try to connect to server
 			$.ajax({url: "./api/join-request", method: "POST", data: data})
 			.done((responseData, textStatus, xhr) => {
 				//at this point, it is safe to create the websocket connection
 				//this.createWebSocket();
+				this.gc.username = this.username;
 				this.gc.gameState.connectUserToServer();
 			})
 			.fail((xhr) => {

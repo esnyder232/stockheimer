@@ -26,8 +26,14 @@ class GameServerRunning extends GameServerBaseState {
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 		
-		//if its time, send 
-		this.gs.sendWorldDeltas();
+
+
+		//send an empty packet to all users
+		// for(var i = 0; i < activeUsers.length; i++)
+		// {
+		// 	this.wsm.getWebsocketByID(activeUsers[i].wsId).send("");
+		// }
+
 
 		//update managers
 		this.gs.wsm.update();

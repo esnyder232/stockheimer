@@ -9,6 +9,7 @@ export default class GameClientLobby extends GameClientBaseState {
 	}
 	
 	enter(dt) {
+		console.log('initializing LOBBY scene');
 		super.enter(dt);
 
 		this.lobbyScene = this.gc.phaserGame.scene.add("lobby-scene", LobbyScene, true, {

@@ -14,11 +14,10 @@ for(var i = 0; i < EventSchema.events.length; i++)
 
 class PacketSystem {
 	constructor() {
-		this.user = null;
 	}
 
-	init(user) {
-		this.user = user;
+	init(gs) {
+		this.gs = gs;
 
 		//load in the event schema
 		// for(var i = 0; EventSchema.)

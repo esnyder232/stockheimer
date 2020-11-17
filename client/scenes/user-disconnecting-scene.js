@@ -1,12 +1,11 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
-import config from '../client-config.json';
+
 
 export default class UserDisconnectingScene extends Phaser.Scene {
 	constructor() {
-		super(config);
+		super();
 		this.globalfuncs = new GlobalFuncs();
-		this.disconnectComplete = false;
 	}
 
 	init(data) {
@@ -31,19 +30,6 @@ export default class UserDisconnectingScene extends Phaser.Scene {
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
 		$("#user-disconnecting-scene-root").removeClass("hide");
-
-		try{
-			if(this.game.ws)
-			{
-				this.gc.ws.close();
-			}
-		} catch(ex) {
-			this.globalfuncs.appendToLog("Exception caught when closing websocket: " + ex);
-		}
-
-		window.setTimeout(() => {
-			this.disconnectComplete = true;
-		}, 500)
 	}
 
 	shutdown() {
@@ -55,11 +41,7 @@ export default class UserDisconnectingScene extends Phaser.Scene {
 	}
 	  
 	update(timeElapsed, dt) {
-		if(this.disconnectComplete)
-		{
-			console.log('Disconnect complete.');
-			this.gc.changeState("server-connection");
-		}
+		
 	}
 }
 

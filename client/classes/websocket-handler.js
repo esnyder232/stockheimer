@@ -30,14 +30,23 @@ export default class WebsocketHandler {
 		return bFail;
 	}
 
+	disconnectFromServer() {
+		console.log('hello from disconectFromServer');
+		console.log(this.ws.readyState);
+
+		//if its OPEN or CONNECTING
+		if(this.ws.readyState === 0 || this.ws.readyState === 1)
+		{
+			this.ws.close();
+		}
+	}
+
 
 	onclose(e) {
-		console.log('Websocket is now closed.');
 		this.gc.gameState.websocketClosed();
 	}
 
 	onopen(e) {
-		console.log('Websocket is now opened.');
 		this.gc.gameState.websocketOpened();
 	}
 
@@ -148,15 +157,7 @@ export default class WebsocketHandler {
 
 
 	update(timeElapsed, dt) {
-		//update the prevState on the virtual controller for the player
-		if(this.isDirty)
-		{
-			for(var key in this.inputKeyboardMap)
-			{
-				this[key].prevState = this[key].state;
-			}
-			this.isDirty = false;
-		}
+		
 	}
 }
 

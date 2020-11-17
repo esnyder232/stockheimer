@@ -199,6 +199,8 @@ class GameServer {
 			user.init(this);
 			user.nextState = new UserInitializingState(user);
 
+			user.wsId = ws.id;
+
 			//manually run a state change from disconnected to initializing so it can be picked up by the game-server's update loop
 			user.state.exit(0);
 			user.nextState.enter(0);

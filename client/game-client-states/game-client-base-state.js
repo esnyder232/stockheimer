@@ -9,4 +9,9 @@ export default class GameClientBaseState {
 	enter(dt) {}
 	update(dt) {}
 	exit(dt) {}
+
+	//websocket event callbacks
+	websocketClosed(){};
+	websocketOpened(){};
+	websocketErrored(){};
 }
