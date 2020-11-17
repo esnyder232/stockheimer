@@ -17,6 +17,8 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 	update(dt) {
 		super.update(dt);
+
+		this.gc.wsh.createPacketForUser();
 	}
 
 	exit(dt) {

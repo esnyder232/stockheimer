@@ -8,14 +8,14 @@ const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserInitializingState} = require('./user/user-initializing-state.js');
-const {UserDisconnectingState} = require('./user/user-disconnecting-state.js');
+const {PacketSystem} = require ('./systems/packet-system.js');
 const serverConfig = require('./server-config.json');
 
 class GameServer {
 	constructor() {
 		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = 10; //fps
+		this.frameRate = 30; //fps
 		this.frameNum = 0;
 		this.maxPlayers = 30;
 		this.runGameLoop = false;
@@ -32,6 +32,7 @@ class GameServer {
 		this.world = null;
 		this.pl = null;
 
+		this.ps = null;
 		this.wsm = null;
 		this.um = null;
 	}
@@ -41,9 +42,11 @@ class GameServer {
 		this.pl = planck;
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
+		this.ps = new PacketSystem();
 		
 		this.wsm.init(this);
 		this.um.init(this);
+		this.ps.init(this);
 
 		this.gameState = new GameServerStopped(this);
 		
@@ -181,25 +184,15 @@ class GameServer {
 	}
 
 	onopen(user, ws) {
-		console.log('onopen called');
-		
 		try {
-			//create websocket entry 
-			this.wsm.createWebsocket(ws);
-
-			//setup websocket
-			ws.on("close", this.onclose.bind(this, ws));
-			ws.on("error", this.onerror.bind(this, ws));
-			ws.on("message", this.onmessage.bind(this, ws));
-			ws.on("pong", this.onpong.bind(this, ws));
-
-			ws.userId = user.id;
-
+			//create a websocket handler
+			var wsh = this.wsm.createWebsocket(ws);
+			wsh.init(this, user.id, ws);
+			
 			//At this point, the user was only created, not initialized. So setup user now.
 			user.init(this);
 			user.nextState = new UserInitializingState(user);
-
-			user.wsId = ws.id;
+			user.wsId = wsh.id;
 
 			//manually run a state change from disconnected to initializing so it can be picked up by the game-server's update loop
 			user.state.exit(0);
@@ -223,7 +216,7 @@ class GameServer {
 			user.playerBody = playerBody;
 
 			// setTimeout(() => {
-			// 	this.stringTest(ws, "hello");
+			// 	ws.send("hello")
 			// }, 500)
 
 			// //testing strings
@@ -261,8 +254,6 @@ class GameServer {
 			// 	var stopHere = true;
 
 			// 	ws.send(buffer);
-
-			// 	//this.stringTest(ws, );
 			// }, 1000)
 
 			//testing ints
@@ -441,84 +432,10 @@ class GameServer {
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
 			console.log(ex);
 		}
-		
-	
 	}
 
-	onclose(ws, m) {	
-		console.log('websocket onclose: ' + ws.id + '. playerId: ' + ws.playerId);
-		var user = this.um.getUserByID(ws.userId);
-
-		//put user in disconnecting state
-		//not sure why they would not have a user at this point, but better safe than sorry.
-		if(user)
-		{
-			user.nextState = new UserDisconnectingState(user);
-		}
-
-		//destroy socket
-		this.wsm.destroyWebsocket(ws);
-		//console.log("wsm.websocketArray.length: %s", this.wsm.websocketArray.length);
-	}
-
-	onerror(ws, m) {
-		console.log('socket onerror: ' + m);
-	}
-
-	onpong(ws, m) {
-		console.log('socket onpong: ' + m);
-	}
-
-	onmessage(ws, m) {
-
-		if(m.indexOf("==custom==") == 0)
-		{
-			console.log('custom message:');
-			console.log(m.data);
-		}
-		else
-		{
-			var jsonMsg = this.globalfuncs.getJsonEvent(m);
-	
-			switch(jsonMsg.event.toLowerCase())
-			{
-				case "get-world":
-					console.log('now getting world');
-					var arrBodies = this.getWorld();
-					this.globalfuncs.sendJsonEvent(ws, "get-world-response", JSON.stringify(arrBodies))
-					console.log('getting world done')
-					break;
-				case "start-event":
-					this.startGame(ws, jsonMsg);
-					break;
-				case "stop-event":
-					this.stopGame(ws, jsonMsg);
-					break;
-				case "player-input":
-					this.playerInputEvent(ws, jsonMsg);
-					break;
-				case "test":
-					console.log(jsonMsg);
-					this.globalfuncs.sendJsonEvent(ws, "test-ack", {t: jsonMsg.msg.t});
-					break;
-				default:
-					//just echo something back
-					this.globalfuncs.sendJsonEvent(ws, "unknown-event", JSON.stringify({}));
-					break;
-			}
-		}
-	}
-
-
-	stringTest(ws, msg)
-	{
-		var fullMsg = "==custom==" + msg;
-		ws.send(fullMsg)
-	}
-	
 
 	getWorld() {
-
 		var currentBody = this.world.getBodyList();
 		var arrBodies = [];
 		var fixtureIDCounter = 1;

@@ -14,19 +14,44 @@ for(var i = 0; i < EventSchema.events.length; i++)
 
 class PacketSystem {
 	constructor() {
+		this.maxPacketSize = 130; //bytes
 	}
 
 	init(gs) {
 		this.gs = gs;
-
-		//load in the event schema
-		// for(var i = 0; EventSchema.)
-
-		//test
-		var userJoinedEvent = EventNameIndex["userJoined"];
-		
-		var stopHere = true;
 	}
+
+	createPacketForUser(user)
+	{
+		var wsh = this.gs.wsm.getWebsocketByID(user.wsId);
+
+		if(wsh)
+		{
+			//console.log('creating packet for user: ' + user.username + '    localSequenceNumber: ' + wsh.localSequence);
+
+			var buffer = new ArrayBuffer(this.maxPacketSize);
+			var view = new DataView(buffer);
+	
+			view.setUint16(0, wsh.localSequence); //sequence Number
+			view.setUint16(2, wsh.remoteSequence); //ack (most recent remote sequence number)
+	
+			wsh.localSequence++;
+	
+			wsh.ws.send(buffer);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
 
 	writeEventToDataView(dataView, n, eventName, parametersJson)
 	{

@@ -14,6 +14,8 @@ class GameServerBaseState {
 	stopGameRequest() {}
 	joinRequest() {}
 
+	websocketClosed(wsh) {}
+	websocketErrored(wsh) {}
 }
 
 

@@ -1,4 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const {WebsocketHandler} = require('../classes/websocket-handler.js');
 
 class WebsocketManager {
 	constructor() {
@@ -13,22 +14,26 @@ class WebsocketManager {
 		this.gs = gameServer;
 	}
 
-	//this doesn't actually CREATE the websocket, it just puts it in the websocketArray so it can be searched for/managed
+	//this doesn't actually CREATE the websocket, it creates a websocketHandler class and passes the actual websocket to it.
 	createWebsocket(ws) {
-		ws.id = this.idCounter;
+		var wsh = new WebsocketHandler();
+
+		wsh.id = this.idCounter;
 		this.idCounter++;
-		this.websocketArray.push(ws);
+		this.websocketArray.push(wsh);
 		this.isDirty = true;
 
-		console.log('websocket created. Id: ' + ws.id);
-		return ws;
+		this.updateIndex();
+		
+		console.log('websocket created. Id: ' + wsh.id);
+		return wsh;
 	}
 
 	//this just marks the player for deletion
-	destroyWebsocket(ws) {
-		ws.deleteMe = true;
+	destroyWebsocket(wsh) {
+		wsh.deleteMe = true;
 		this.isDirty = true;
-		console.log('websocket marked for deletion. Id: ' + ws.id);
+		console.log('websocket marked for deletion. Id: ' + wsh.id);
 	}
 
 	updateIndex() {

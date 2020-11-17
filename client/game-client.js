@@ -7,12 +7,13 @@ export default class GameClient {
 	constructor() {
 		this.myMessages = [];
 		this.globalfuncs = null;
-		this.ws = null;
 		this.phaserGame = null;
 		this.phaserConfig = null;
 
 		this.gameState = null;
 		this.nextGameState = null;
+
+		this.wsh = null;
 
 		this.frameRate = 30; //fps
 		this.previousTick = 0;
@@ -23,7 +24,9 @@ export default class GameClient {
 	init() {
 		console.log('init on game client');
 		this.globalfuncs = new GlobalFuncs();
-		this.wsh = new WebsocketHandler(this);
+		this.wsh = new WebsocketHandler();
+
+		this.wsh.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -88,14 +91,6 @@ export default class GameClient {
 			setTimeout(this.gameLoop.bind(this), this.frameTimeStep+1);
 		}
 	}
-
-	// connectedToServer() {
-	// 	//take the websocket from server connection scene, and load up main scene
-	// 	this.ws = this.scene.manager.getScene("lobby-scene").ws;
-	// 	this.userName = this.scene.manager.getScene("lobby-scene").userName;
-
-	// 	this.changeState("user-connecting");
-	// }
 }
 
 //feels like a hacky way to start...oh well. Its simple atleast.

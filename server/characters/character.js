@@ -1,6 +1,5 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
-//const {UserDisconnectedState} = require("./user-disconnected-state.js");
 
 class Character {
 	constructor() {
@@ -15,9 +14,6 @@ class Character {
 
 	init(gameServer) {
 		this.gs = gameServer;
-		
-		// this.state = new UserDisconnectedState(this);
-		// this.state.enter();
 	}
 
 	update(dt) {
