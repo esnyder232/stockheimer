@@ -1,13 +1,12 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
-import config from '../client-config.json';
 
 /*
 This scene is the first scene they can interact with.
 The player enters a name here, and clicks play to enter the main game.
 NOTE: There is almost no point to this being a "scene". Might as well just be a webpage. Oh well.
 */
-export default class ServerConnectionScene extends Phaser.Scene {
+export default class LobbyScene extends Phaser.Scene {
 	constructor(config) {
 		super(config);
 		this.globalfuncs = new GlobalFuncs();
@@ -23,8 +22,10 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		this.enableNewButton = false;
 	}
 
-	init() {
+	init(data) {
 		console.log('init on ' + this.scene.key + ' start');
+
+		this.gc = data.gc;
 		
 		this.phaserEventMapping = [
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
@@ -76,7 +77,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		console.log('create on ' + this.scene.key + ' start');
 
 		//enable ui
-		$("#server-connection-scene-root").removeClass("hide");
+		$("#lobby-scene-root").removeClass("hide");
 		this.enableUsername = true;
 		this.enablePlayButton = false;
 		this.enableNewButton = false;
@@ -124,7 +125,7 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		//a custom register function for "keyup" for player name. I have to do it this way because I can't figure out how to pass the "key" event through a custom windows event.
 		$("#user-name").off("keyup");
 		$(document).off("keyup");
-		$("#server-connection-scene-root").addClass("hide");
+		$("#lobby-scene-root").addClass("hide");
 	}
 
 	destroy() {
@@ -164,7 +165,8 @@ export default class ServerConnectionScene extends Phaser.Scene {
 			$.ajax({url: "./api/join-request", method: "POST", data: data})
 			.done((responseData, textStatus, xhr) => {
 				//at this point, it is safe to create the websocket connection
-				this.createWebSocket();
+				//this.createWebSocket();
+				this.gc.gameState.connectUserToServer();
 			})
 			.fail((xhr) => {
 				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
@@ -210,55 +212,37 @@ export default class ServerConnectionScene extends Phaser.Scene {
 		}
 	}
 
-	createWebSocket() {
-		try {
-			this.ws = new WebSocket(config.ws_address);
-			this.ws.binaryType = "arraybuffer";
 
-			this.ws.onclose = this.oncloseTemp.bind(this);
-			this.ws.onerror = this.onerrorTemp.bind(this);
-			this.ws.onopen = this.onopenTemp.bind(this);
-		}
-		catch(ex) {
-			this.globalfuncs.appendToLog(ex);
+	// oncloseTemp(e) {
+	// 	this.globalfuncs.appendToLog("Socket was closed unexpectedly when connecting.");
+	// 	console.log(e);
 
-			this.currentlyConnecting = false;
-			this.checkUsernameEnablePlayButton();
-			this.enableUsername = !this.userSession.sessionExists;
-			this.updateUI();
-		}
+	// 	this.currentlyConnecting = false;
+	// 	this.checkUsernameEnablePlayButton();
+	// 	this.enableUsername = !this.userSession.sessionExists;
+	// 	this.updateUI();
+	// }
+
+	// onerrorTemp(e) {
+	// 	this.globalfuncs.appendToLog("Socket errored when connecting.");
+	// 	console.log(e);
+
+	// 	this.currentlyConnecting = false;
+	// 	this.checkUsernameEnablePlayButton();
+	// 	this.enableUsername = !this.userSession.sessionExists;
+	// 	this.updateUI();
+	// }
+
+	// onopenTemp(e) {
+	// 	this.globalfuncs.appendToLog("Connected.");
 		
-	}
-
-	oncloseTemp(e) {
-		this.globalfuncs.appendToLog("Socket was closed unexpectedly when connecting.");
-		console.log(e);
-
-		this.currentlyConnecting = false;
-		this.checkUsernameEnablePlayButton();
-		this.enableUsername = !this.userSession.sessionExists;
-		this.updateUI();
-	}
-
-	onerrorTemp(e) {
-		this.globalfuncs.appendToLog("Socket errored when connecting.");
-		console.log(e);
-
-		this.currentlyConnecting = false;
-		this.checkUsernameEnablePlayButton();
-		this.enableUsername = !this.userSession.sessionExists;
-		this.updateUI();
-	}
-
-	onopenTemp(e) {
-		this.globalfuncs.appendToLog("Connected.");
-		
-		//dispatch event so game manager can switch scenes.
-		this.scene.manager.getScene("game-manager-scene").connectedToServer();
-	}
+	// 	//dispatch event so game manager can switch scenes.
+	// 	this.gc.changeState();
+	// }
 
 	update(timeElapsed, dt) {
 	
 	}
+
 }
 

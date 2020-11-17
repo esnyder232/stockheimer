@@ -7,7 +7,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
 	mode: 'production',
 	entry: {
-		app: './client/client.js'
+		app: './client/game-client.js'
 	},
 	output: {
 		path: path.resolve(__dirname, 'client-dist'),

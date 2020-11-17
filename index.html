@@ -9,7 +9,7 @@
 		<div id="game-container">
 			<div id="game-div"></div>
 			<div id="ui-div">
-				<div class="scene-root hide" id="server-connection-scene-root">
+				<div class="scene-root hide" id="lobby-scene-root">
 					<div id="user-name-container">
 						<div class="form-text" id="player-text">Player Name:</div>
 						<input type="text" class="form-input" id="user-name" />
@@ -19,6 +19,13 @@
 					<div id="game-server-details">
 						<div id="game-server-details-players">Players:</div>
 					</div>
+				</div>
+				<div class="scene-root hide" id="user-connecting-scene-root">
+					<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+					<h1>Initializing...</h1>
+				</div>
+				<div class="scene-root hide" id="user-disconnecting-scene-root">
+					<h1>Disconnecting...</h1>
 				</div>
 				<div class="scene-root hide" id="main-scene-root">
 					<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
