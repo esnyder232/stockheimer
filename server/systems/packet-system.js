@@ -33,47 +33,263 @@ class PacketSystem {
 			var view = new DataView(buffer);
 			var n = 0; //current byte within the packet
 			var m = 0; //number of events
+			var bytesWritten = 0;
 	
 			view.setUint16(0, wsh.localSequence); //sequence Number
 			view.setUint16(2, wsh.remoteSequence); //ack (most recent remote sequence number)
 			n += 4;
+			bytesWritten += 4;
 
 			n += 1; //skipping 1 byte for the event count
+			bytesWritten++;
 
 			wsh.localSequence++;
 
+			var bcontinue = true;
+
 			for(var i = user.serverToClientEvents.length - 1; i >= 0; i--)
 			{
-				//event ID: 1
-				// {
-				// 	"event": "userConnected",
-				// 	"userId": this.user.id,
-				// 	"username": this.user.username
-				// }
-
-
-				switch(user.serverToClientEvents[i].event)
+				if(!bcontinue)
 				{
-					case "userConnected":
-						var e = user.serverToClientEvents[i];
-						view.setUint8(n, 1); //eventId
-						n++;
-						view.setUint8(n, e.userId); //user.id
-						n++;
-						view.setUint8(n, e.username.length); //username length
-						n++;
-
-						//username
-						for(var j = 0; j < e.username.length; j++)
-						{
-							view.setUint16(n, e.username.charCodeAt(j)); 
-							n += 2;
-						}
-						break;
-					default:
-						//intentionally blank
-						break;
+					break;
 				}
+
+				var e = user.serverToClientEvents[i];
+				var schema = EventNameIndex[e.eventName];
+
+				if(schema)
+				{
+					var bytesRequired = 0;
+
+					bytesRequired++; //eventId
+
+					//check the length of event to make sure it fits
+					//there is a variable sized parameter (most likely a string)
+					if(schema.b_size_varies)
+					{
+						//find the variable length parameters, and determine the bytes required
+						for(var p = 0; p < schema.parameters.length; p++)
+						{
+							if(schema.parameters[p].b_size_varies)
+							{
+								switch(schema.parameters[p].txt_actual_data_type)
+								{
+									case "str8": 
+										var s = e[schema.parameters[p].txt_param_name];
+										if(s)
+										{
+											bytesRequired += 1 + s.length;
+										}
+										break;
+									case "str16": 
+										var s = e[schema.parameters[p].txt_param_name];
+										if(s)
+										{
+											bytesRequired += 2 + s.length;
+										}
+										break;
+									case "str32": 
+										var s = e[schema.parameters[p].txt_param_name];
+										if(s)
+										{
+											bytesRequired += 4 + s.length;
+										}
+										break;
+									default:
+										//intentionally blank
+										break;
+								}
+							}
+							else
+							{
+								bytesRequired += schema.parameters[p].min_bytes;
+							}
+						}
+					}
+					else
+					{
+						bytesRequired = schema.sum_min_bytes;
+					}
+
+					if(bytesRequired <= this.maxPacketSize - bytesWritten)
+					{
+						view.setUint8(n, schema.event_id);
+						n++;
+						bytesWritten++;
+
+						//go through the parameters and encode each one
+						for(var p = 0; p < schema.parameters.length; p++)
+						{
+							var value = e[schema.parameters[p].txt_param_name];
+							switch(schema.parameters[p].txt_actual_data_type)
+							{
+								//standard encoding
+								case "int8":
+									view.setInt8(n, value);
+									n++;
+									bytesWritten++;
+									break;
+								case "int16":
+									view.setInt16(n, value);
+									n += 2;
+									bytesWritten += 2;
+									break;
+								case "int32":
+									view.setInt32(n, value);
+									n += 4;
+									bytesWritten += 4;
+									break;
+								case "uint8":
+									view.setUint8(n, value);
+									n++;
+									bytesWritten++;
+									break;
+								case "uint16":
+									view.setUint16(n, value);
+									n += 2;
+									bytesWritten += 2;
+									break;
+								case "uint32":
+									view.setUint32(n, value);
+									n += 4;
+									bytesWritten += 4;
+									break;
+								case "str8":
+									//string length
+									view.setUint8(n, value.length);
+									n++;
+									bytesWritten++;
+
+									//string value
+									for(var j = 0; j < value.length; j++)
+									{
+										view.setUint16(n, value.charCodeAt(j)); 
+										n += 2;
+										bytesWritten += 2;
+									}
+									break;
+								case "str16":
+									//string length
+									view.setUint16(n, value.length);
+									n += 2;
+									bytesWritten += 2;
+
+									//string value
+									for(var j = 0; j < value.length; j++)
+									{
+										view.setUint16(n, value.charCodeAt(j)); 
+										n += 2;
+										bytesWritten += 2;
+									}
+									break;
+								case "str32":
+									//string length
+									view.setUint32(n, value.length);
+									n += 4;
+									bytesWritten += 4;
+
+									//string value
+									for(var j = 0; j < value.length; j++)
+									{
+										view.setUint16(n, value.charCodeAt(j)); 
+										n += 2;
+										bytesWritten += 2;
+									}
+									break;
+								case "float32":
+									view.setFloat32(n, value);
+									n += 4;
+									bytesWritten += 4;
+									break;
+
+								//Custom encodings
+								case "float16p0":
+									view.setInt16(n, Math.round(value/1));
+									n += 2;
+									bytesWritten += 2;
+									break;
+								case "float16p1":
+									view.setInt16(n, Math.round(value/0.1));
+									n += 2;
+									bytesWritten += 2;
+									break;
+								case "float16p2":
+									view.setInt16(n, Math.round(value/0.01));
+									n += 2;
+									bytesWritten += 2;
+									break;
+								case "float16p3":
+									view.setInt16(n, Math.round(value/0.001));
+									n += 2;
+									bytesWritten += 2;
+									break;
+
+
+
+								case "float8p0":
+									view.setInt8(n, value);
+									n++;
+									bytesWritten++;
+									break;
+								case "float8p1":
+									view.setInt8(n, value);
+									n++;
+									bytesWritten++;
+									break;
+								case "float8p2":
+									view.setInt8(n, value);
+									n++;
+									bytesWritten++;
+									break;
+								case "float8p3":
+									view.setInt8(n, value);
+									n++;
+									bytesWritten++;
+									break;
+
+
+								case "bool":
+									view.setUint8(n, value ? 1 : 0);
+									n++;
+									bytesWritten++;
+									break;
+								default:
+									//intentionally blank
+									break;
+							}
+						}
+					}
+					//the packet is full
+					else
+					{
+						bcontinue = false;
+					}
+				}
+
+
+
+				// switch(user.serverToClientEvents[i].event)
+				// {
+				// 	case "userConnected":
+				// 		var e = user.serverToClientEvents[i];
+				// 		view.setUint8(n, 1); //eventId
+				// 		n++;
+				// 		view.setUint8(n, e.userId); //user.id
+				// 		n++;
+				// 		view.setUint8(n, e.username.length); //username length
+				// 		n++;
+
+				// 		//username
+				// 		for(var j = 0; j < e.username.length; j++)
+				// 		{
+				// 			view.setUint16(n, e.username.charCodeAt(j)); 
+				// 			n += 2;
+				// 		}
+				// 		break;
+				// 	default:
+				// 		//intentionally blank
+				// 		break;
+				// }
 
 				//delete event for now
 				user.serverToClientEvents.splice(i, 1);

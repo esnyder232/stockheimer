@@ -16,7 +16,7 @@ class UserConnectingState extends UserBaseState {
 		for(var i = 0; i < activeUsers.length; i++)
 		{
 			activeUsers[i].serverToClientEvents.push({
-				"event": "userConnected",
+				"eventName": "userConnected",
 				"userId": this.user.id,
 				"username": this.user.username
 			});
