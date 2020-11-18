@@ -5,7 +5,6 @@ import WebsocketHandler from "./classes/websocket-handler.js"
 
 export default class GameClient {
 	constructor() {
-		this.myMessages = [];
 		this.globalfuncs = null;
 		this.phaserGame = null;
 		this.phaserConfig = null;
@@ -14,6 +13,8 @@ export default class GameClient {
 		this.nextGameState = null;
 
 		this.wsh = null;
+
+		this.users = []; //temp living location for users
 
 		this.frameRate = 30; //fps
 		this.previousTick = 0;

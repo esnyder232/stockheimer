@@ -1,5 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const EventSchema = require('./event-schema.json');
+const EventSchema = require('../../shared_files/event-schema.json');
 
 //load in the event schema and build indexes. Do it outside the class so it only does this step once.
 var EventNameIndex = {};
@@ -227,22 +227,22 @@ class PacketSystem {
 
 
 								case "float8p0":
-									view.setInt8(n, value);
+									view.setInt8(n, Math.round(value/1));
 									n++;
 									bytesWritten++;
 									break;
 								case "float8p1":
-									view.setInt8(n, value);
+									view.setInt8(n, Math.round(value/0.1));
 									n++;
 									bytesWritten++;
 									break;
 								case "float8p2":
-									view.setInt8(n, value);
+									view.setInt8(n, Math.round(value/0.01));
 									n++;
 									bytesWritten++;
 									break;
 								case "float8p3":
-									view.setInt8(n, value);
+									view.setInt8(n, Math.round(value/0.001));
 									n++;
 									bytesWritten++;
 									break;

@@ -82,6 +82,21 @@ export default class MainScene extends Phaser.Scene {
 	exitGameClick() {
 		this.gc.gameState.exitGameClick();
 	}
+
+	userConnected(e) {
+		console.log('user connected in main scene');
+		console.log(e);
+
+		var userList = $("#user-list");
+		var userListItemTemplate = $("#user-list-item-template");
+		
+		var newUser = userListItemTemplate.clone();
+		newUser.removeClass("hide");
+		newUser.text(e.username);
+
+		userList.append(newUser);
+	}
+
 	  
 	update(timeElapsed, dt) {
 		this.playerController.update();

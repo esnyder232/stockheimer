@@ -41,6 +41,8 @@ app.get('/index.html', (req, res) => {res.sendFile(path.join(__dirname, "index.h
 app.use('/assets', express.static(path.join(__dirname, "assets")));
 app.use('/client-dist', express.static(path.join(__dirname, "client-dist")));
 app.use('/css', express.static(path.join(__dirname, "css")));
+app.use('/shared_files', express.static(path.join(__dirname, "shared_files")));
+
 
 //other apis
 app.get('/api/get-user-session', gs.getUserSession.bind(gs));

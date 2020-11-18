@@ -5,18 +5,23 @@ import MainScene from "../scenes/main-scene.js"
 export default class GameClientUserPlaying extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
+
+		this.ms = null;
 	}
 	
 	enter(dt) {
 		super.enter(dt);
 		this.globalfuncs.appendToLog("Now playing.");
-		this.gc.phaserGame.scene.add("main-scene", MainScene, true, {
+		this.ms = this.gc.phaserGame.scene.add("main-scene", MainScene, true, {
 			gc: this.gc
 		});
 	}
 
 	update(dt) {
 		super.update(dt);
+
+		this.processServerEvents();
+
 		this.gc.wsh.createPacketForUser();
 	}
 
@@ -38,5 +43,28 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 	exitGameClick() {
 		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+	}
+
+	processServerEvents() {
+		for(var i = this.gc.wsh.serverToClientEvents.length - 1; i >= 0; i--)
+		{
+			var e = this.gc.wsh.serverToClientEvents[i];
+			switch(e.eventName)
+			{
+				case "userConnected":
+					this.gc.users.push({
+						userId: e.userId,
+						username: e.username
+					});
+
+					this.ms.userConnected(e);
+					break;
+				default:
+					//intentionally blank
+					break;
+			}
+
+			this.gc.wsh.serverToClientEvents.splice(i, 1);
+		}
 	}
 }

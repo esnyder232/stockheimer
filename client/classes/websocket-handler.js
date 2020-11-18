@@ -1,3 +1,4 @@
+import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 import ClientConfig from '../client-config.json';
 
@@ -12,11 +13,37 @@ export default class WebsocketHandler {
 		this.ack = 0;				//most current ack returned by the server
 
 		this.maxPacketSize = 130; 	//bytes
+
+		this.eventSchema = {};
+		this.eventIdIndex = {};
+
+		this.serverToClientEvents = []; //event queue to be processed by the main loop
 	}
 	
 	init(gc) {
 		this.gc = gc;
+
+		//fetch the event schema
+		$.ajax({url: "./shared_files/event-schema.json", method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.eventSchema = responseData;
+			this.buildSchemaIndex();
+		})
+		.fail((xhr) => {
+			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
+			this.globalfuncs.appendToLog('VERY BAD ERROR: Failed to get event-schema.');
+		})
 	}
+
+	buildSchemaIndex() {
+		for(var i = 0; i < this.eventSchema.events.length; i++)
+		{
+			this.eventIdIndex[this.eventSchema.events[i].event_id] = this.eventSchema.events[i];
+		}
+		console.log(this.eventIdIndex);
+	}
+
+
 
 	createWebSocket() {
 		var bFail = false;
@@ -63,51 +90,241 @@ export default class WebsocketHandler {
 		var view = new DataView(e.data);
 		var n = 0; //number of bytes in
 		var m = 0; //event count
+		var bytesRead = 0;
 
 		//parse the packet header
 		this.remoteSequence = view.getUint16(n);
 		n += 2;
+		bytesRead += 2;
+
 		this.ack = view.getUint16(n);
 		n += 2;
+		bytesRead += 2;
+		
+		m = view.getUint8(n); //event count
+		n++;
+		bytesRead += 1;
 
 		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
 
 		//start going through the events
-		m = view.getUint8(n); //event count
-		n++;
-
-		var eventArr = [];
 		for(var i = 0; i < m; i++)
 		{
 			var eventId = view.getUint8(n);
 			n++;
-			switch(eventId)
+			bytesRead += 1;
+
+			var schema = this.eventIdIndex[eventId];
+
+			if(schema) 
 			{
-				case 1: //userconnected
-					var userId = view.getUint8(n);
-					n++;
-					var usernameLength = view.getUint8(n);
-					n++;
-					
-					//username
-					var username = "";
-					for(var j = 0; j < usernameLength; j++)
+				var eventData = {};
+				eventData.eventName = schema.txt_event_name;
+
+				//go through each parameter for the event
+				for(var p = 0; p < schema.parameters.length; p++)
+				{
+					var value = 0;
+
+					switch(schema.parameters[p].txt_actual_data_type)
 					{
-						username += String.fromCharCode(view.getUint16(n));
-						n += 2;
-						// return String.fromCharCode.apply(null, new Uint16Array(buf));
+						//standard decodings
+						case "int8":
+							value = view.getInt8(n);
+							n++;
+							bytesRead++;
+							break;
+						case "int16":
+							value = view.getInt16(n);
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "int32":
+							value = view.getInt32(n);
+							n += 4;
+							bytesRead += 4;
+							break;
+						case "uint8":
+							value = view.getUint8(n);
+							n++;
+							bytesRead++;
+							break;
+						case "uint16":
+							value = view.getUint16(n);
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "uint32":
+							value = view.getUint32(n);
+							n += 4;
+							bytesRead += 4;
+							break;
+						case "str8":
+							value = "";
+
+							//string length
+							var l = view.getUint8(n);
+							n++;
+							bytesRead++;
+
+							//string value
+							for(var j = 0; j < l; j++)
+							{
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+								bytesRead += 2;
+							}
+							break;
+						case "str16":
+							value = "";
+
+							//string length
+							var l = view.getUint16(n);
+							n++;
+							bytesRead++;
+
+							//string value
+							for(var j = 0; j < l; j++)
+							{
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+								bytesRead += 2;
+							}
+							break;
+						case "str32":
+							value = "";
+
+							//string length
+							var l = view.getUint32(n);
+							n++;
+							bytesRead++;
+
+							//string value
+							for(var j = 0; j < l; j++)
+							{
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+								bytesRead += 2;
+							}
+							break;
+						case "float32":
+							value = view.getFloat32(n);
+							n += 4;
+							bytesRead += 4;
+							break;
+
+						//Custom decodings
+						case "float16p0":
+							value = view.getInt16(n)*1;
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "float16p1":
+							value = view.getInt16(n)*0.1;
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "float16p2":
+							value = view.getInt16(n)*0.01;
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "float16p3":
+							value = view.getInt16(n)*0.001;
+							n += 2;
+							bytesRead += 2;
+							break;
+
+
+
+						case "float8p0":
+							value = view.getInt8(n)*1;
+							n++;
+							bytesRead++;
+							break;
+						case "float8p1":
+							value = view.getInt8(n)*0.1;
+							n++;
+							bytesRead++;
+							break;
+						case "float8p2":
+							value = view.getInt8(n)*0.01;
+							n++;
+							bytesRead++;
+							break;
+						case "float8p3":
+							value = view.getInt8(n)*0.001;
+							n++;
+							bytesRead++;
+							break;
+
+
+						case "bool":
+							value = view.getUint8(n) == 1 ? true : false;
+							n++;
+							bytesRead++;
+							break;
+						default:
+							//intentionally blank
+							break;
+
 					}
 
-					console.log('userConnected Event results:');
-					console.log(userId);
-					console.log(usernameLength);
-					console.log(username);
+					//create the key value pair on eventData
+					eventData[schema.parameters[p].txt_param_name] = value;
+				}
 
-					break;
-				default:
-					//intentionally blank
-					break;
+				this.serverToClientEvents.push(eventData);
 			}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			// switch(eventId)
+			// {
+			// 	case 1: //userconnected
+			// 		var userId = view.getUint8(n);
+			// 		n++;
+			// 		var usernameLength = view.getUint8(n);
+			// 		n++;
+					
+			// 		//username
+			// 		var username = "";
+			// 		for(var j = 0; j < usernameLength; j++)
+			// 		{
+			// 			username += String.fromCharCode(view.getUint16(n));
+			// 			n += 2;
+			// 			// return String.fromCharCode.apply(null, new Uint16Array(buf));
+			// 		}
+
+			// 		console.log('userConnected Event results:');
+			// 		console.log(userId);
+			// 		console.log(usernameLength);
+			// 		console.log(username);
+
+			// 		break;
+			// 	default:
+			// 		//intentionally blank
+			// 		break;
+			// }
 		}
 
 
