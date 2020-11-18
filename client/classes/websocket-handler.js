@@ -61,12 +61,56 @@ export default class WebsocketHandler {
 
 	onmessage(e) {
 		var view = new DataView(e.data);
+		var n = 0; //number of bytes in
+		var m = 0; //event count
 
 		//parse the packet header
-		this.remoteSequence = view.getUint16(0);
-		this.ack = view.getUint16(2);
+		this.remoteSequence = view.getUint16(n);
+		n += 2;
+		this.ack = view.getUint16(n);
+		n += 2;
 
-		console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
+		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
+
+		//start going through the events
+		m = view.getUint8(n); //event count
+		n++;
+
+		var eventArr = [];
+		for(var i = 0; i < m; i++)
+		{
+			var eventId = view.getUint8(n);
+			n++;
+			switch(eventId)
+			{
+				case 1: //userconnected
+					var userId = view.getUint8(n);
+					n++;
+					var usernameLength = view.getUint8(n);
+					n++;
+					
+					//username
+					var username = "";
+					for(var j = 0; j < usernameLength; j++)
+					{
+						username += String.fromCharCode(view.getUint16(n));
+						n += 2;
+						// return String.fromCharCode.apply(null, new Uint16Array(buf));
+					}
+
+					console.log('userConnected Event results:');
+					console.log(userId);
+					console.log(usernameLength);
+					console.log(username);
+
+					break;
+				default:
+					//intentionally blank
+					break;
+			}
+		}
+
+
 
 		// if(e.data instanceof ArrayBuffer)
 		// {
@@ -168,7 +212,7 @@ export default class WebsocketHandler {
 	
 	createPacketForUser()
 	{
-		console.log('creating packet for user: ' + this.gc.username + '    localSequenceNumber: ' + this.localSequence);
+		//console.log('creating packet for user: ' + this.gc.username + '    localSequenceNumber: ' + this.localSequence);
 
 		var buffer = new ArrayBuffer(this.maxPacketSize);
 		var view = new DataView(buffer);

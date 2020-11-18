@@ -1,5 +1,4 @@
 const {UserBaseState} = require('./user-base-state.js');
-const {UserInitializingState} = require('./user-initializing-state.js');
 
 class UserDisconnectedState extends UserBaseState {
 	constructor(user) {

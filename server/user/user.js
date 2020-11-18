@@ -13,8 +13,8 @@ class User {
 		this.state = null;
 		this.nextState = null;
 
-		this.primaryCharacters = []; //characters to be sent to the client every frame
-		this.secondaryCharacters = []; //characters to be sent to the client every other frame (or more as necessary)
+		this.serverToClientEvents = []; //event queue to be processed by the packet system
+
 	}
 
 	init(gameServer) {

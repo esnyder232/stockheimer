@@ -7,7 +7,7 @@ const {ValidFuncs} = require('./valid-funcs.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
-const {UserInitializingState} = require('./user/user-initializing-state.js');
+const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {PacketSystem} = require ('./systems/packet-system.js');
 const serverConfig = require('./server-config.json');
 
@@ -191,10 +191,10 @@ class GameServer {
 			
 			//At this point, the user was only created, not initialized. So setup user now.
 			user.init(this);
-			user.nextState = new UserInitializingState(user);
+			user.nextState = new UserConnectingState(user);
 			user.wsId = wsh.id;
 
-			//manually run a state change from disconnected to initializing so it can be picked up by the game-server's update loop
+			//manually run a state change from disconnected to connecting so it can be picked up by the game-server's update loop
 			user.state.exit(0);
 			user.nextState.enter(0);
 			user.state = user.nextState;

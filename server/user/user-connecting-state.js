@@ -1,15 +1,27 @@
 const {UserBaseState} = require('./user-base-state.js');
 const {UserPlayingState} = require('./user-playing-state.js');
 
-class UserInitializingState extends UserBaseState {
+class UserConnectingState extends UserBaseState {
 	constructor(user) {
 		super(user);
-		this.stateName = "user-initializing-state";
+		this.stateName = "user-connecting-state";
 	}
 
 	enter(dt) {
 		console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
+
+		//tell existing users about the user that joined
+		var activeUsers = this.user.gs.um.getUsersByNotState("user-disconnected-state");
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			activeUsers[i].serverToClientEvents.push({
+				"event": "userConnected",
+				"userId": this.user.id,
+				"username": this.user.username
+			});
+		}
+
 		super.enter(dt);
 	}
 
@@ -28,4 +40,4 @@ class UserInitializingState extends UserBaseState {
 
 
 
-exports.UserInitializingState = UserInitializingState;
+exports.UserConnectingState = UserConnectingState;
