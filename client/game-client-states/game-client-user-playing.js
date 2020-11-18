@@ -59,6 +59,29 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 					this.ms.userConnected(e);
 					break;
+				case "userDisconnected":
+					this.ms.userDisconnected(e);
+
+					var userIndex = this.gc.users.findIndex((x) => {
+						return x.userId == e.userId;
+					})
+
+					if(userIndex >= 0)
+					{
+						this.gc.users.splice(userIndex, 1);
+					}
+
+					break;
+
+				case "existingUser":
+					this.gc.users.push({
+						userId: e.userId,
+						username: e.username
+					});
+
+					this.ms.existingUser(e);
+					break;
+				
 				default:
 					//intentionally blank
 					break;

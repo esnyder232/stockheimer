@@ -15,7 +15,8 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		});
 
 		this.gc.wsh.disconnectFromServer();
-		
+
+		this.gc.users.length = 0;
 	}
 
 	update(dt) {

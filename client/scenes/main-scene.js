@@ -10,6 +10,8 @@ export default class MainScene extends Phaser.Scene {
 		this.planckUnitsToPhaserUnitsRatio = 32;
 		this.radiansToDegreesRatio = 180/3.14
 		
+		this.userDomElements = [];	//list of json objects that contain user spcific dom elements
+
 		this.playerInputKeyboardMap = {};
 		this.playerController = {};
 	}
@@ -76,6 +78,12 @@ export default class MainScene extends Phaser.Scene {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
 		
+		//clear out all userDomElements
+		for(var i = this.userDomElements.length - 1; i >= 0; i--)
+		{
+			this.removeUser(this.userDomElements[i].userId);
+		}
+
 		$("#main-scene-root").addClass("hide");
 	}
 
@@ -84,19 +92,47 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	userConnected(e) {
-		console.log('user connected in main scene');
-		console.log(e);
+		this.addUser(e.userId, e.username);
+	}
 
+	
+	userDisconnected(e) {
+		this.removeUser(e.userId);
+	}
+
+	existingUser(e) {
+		this.addUser(e.userId, e.username);
+	}
+
+	addUser(userId, username)
+	{
 		var userList = $("#user-list");
 		var userListItemTemplate = $("#user-list-item-template");
 		
 		var newUser = userListItemTemplate.clone();
 		newUser.removeClass("hide");
-		newUser.text(e.username);
+		newUser.text(username);
 
 		userList.append(newUser);
+
+		this.userDomElements.push({
+			userId: userId,
+			userListItem: newUser
+		});
 	}
 
+	removeUser(userId) {
+		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
+				
+		if(udeIndex >= 0)
+		{
+			//remove dom elements
+			this.userDomElements[udeIndex].userListItem.remove();
+
+			//remove the user itself from the list
+			this.userDomElements.splice(udeIndex, 1);
+		}
+	}
 	  
 	update(timeElapsed, dt) {
 		this.playerController.update();
