@@ -14,7 +14,7 @@ class User {
 		this.nextState = null;
 
 		this.serverToClientEvents = []; //event queue to be processed by the packet system
-
+		this.clientToServerEvents = []; //event queue to be processed by the main loop for events coming from the client
 	}
 
 	init(gameServer) {

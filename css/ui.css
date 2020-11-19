@@ -95,6 +95,76 @@ body {
 	width:100%;
 }
 
+.input-controls-div {
+	width: 100%;
+	float: left;	
+}
+
+
+.user-list {
+	width:49%;
+	float:left;
+	border: 1px solid blue;
+}
+
+.user-list-item {
+	width: 100%;
+	float: left;
+}
+
+.chat-div {
+	width: 50%;
+	float: right;
+}
+
+.chat-history {
+	float: left;
+	width: 100%;
+	height: 300px;
+	border: 1px solid red;
+	overflow-y: scroll;
+}
+
+.chat-history-item {
+	width: 100%;
+	float: left;
+}
+
+.chat-history-ts {
+	float: left;
+	font-size: 10px;
+	margin-top: 4px;
+	font-style: italic;
+}
+
+.chat-history-name {
+	float: left;
+	font-size: 14px;
+	font-weight: bold;
+	margin-left: 4px;
+}
+
+.chat-history-msg {
+	float: left;
+	font-size: 14px;
+	margin-left: 4px;
+	word-break: break-word;
+}
+
+.chat-input-container {
+	float: left;
+	width: 100%;
+	border: 1px solid yellow;
+}
+
+.tb-chat-input {
+	float:left;
+	width:86%;
+}
+
+.tb-chat-submit {
+	float: left;
+}
 
 .form-input {
 	/* intentionally blank for now */

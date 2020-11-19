@@ -1,4 +1,16 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const EventSchema = require('../../shared_files/event-schema.json');
+
+//load in the event schema and build indexes. Do it outside the class so it only does this step once.
+var EventIdIndex = {};
+
+for(var i = 0; i < EventSchema.events.length; i++)
+{
+	if(EventSchema.events[i] != null && EventSchema.events[i].txt_event_name)
+	{
+		EventIdIndex[EventSchema.events[i].event_id] = EventSchema.events[i];
+	}
+}
 
 class WebsocketHandler {
 	constructor() {
@@ -26,69 +38,211 @@ class WebsocketHandler {
 		ws.binaryType = 'arraybuffer';
 	}
 
-	onclose(m) {
+	onclose() {
 		console.log('websocket onclose: ' + this.id + '. userId: ' + this.userId);
 		this.gs.gameState.websocketClosed(this);
 	}
 
-	onerror(m) {
-		console.log("Websocket Errored for id: " + this.id + ". Error:" + m);
+	onerror(e) {
+		console.log("Websocket Errored for id: " + this.id + ". Error:" + e);
 		this.gs.gameState.websocketErrored(this);
 	}
 
-	onpong(m) {
-		console.log('socket onpong: ' + m);
+	onpong(e) {
+		console.log('socket onpong: ' + e);
 	}
 
-	onmessage(m) {
-		//parse packet header
-		var view = new DataView(m);
-		this.remoteSequence = view.getUint16(0);
-		this.ack = view.getUint16(2);
+	onmessage(e) {
+		var user = this.gs.um.getUserByID(this.userId);
+		var view = new DataView(e);
+		var n = 0; //number of bytes in
+		var m = 0; //event count
+		var bytesRead = 0;
 
-		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
+		//parse the packet header
+		this.remoteSequence = view.getUint16(n);
+		n += 2;
+		bytesRead += 2;
+
+		this.ack = view.getUint16(n);
+		n += 2;
+		bytesRead += 2;
+		
+		m = view.getUint8(n); //event count
+		n++;
+		bytesRead += 1;
+
+		//start going through the events
+		for(var i = 0; i < m; i++)
+		{
+			var eventId = view.getUint8(n);
+			n++;
+			bytesRead += 1;
+
+			var schema = EventIdIndex[eventId];
+
+			if(schema) 
+			{
+				var eventData = {};
+				eventData.eventName = schema.txt_event_name;
+
+				//go through each parameter for the event
+				for(var p = 0; p < schema.parameters.length; p++)
+				{
+					var value = 0;
+
+					switch(schema.parameters[p].txt_actual_data_type)
+					{
+						//standard decodings
+						case "int8":
+							value = view.getInt8(n);
+							n++;
+							bytesRead++;
+							break;
+						case "int16":
+							value = view.getInt16(n);
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "int32":
+							value = view.getInt32(n);
+							n += 4;
+							bytesRead += 4;
+							break;
+						case "uint8":
+							value = view.getUint8(n);
+							n++;
+							bytesRead++;
+							break;
+						case "uint16":
+							value = view.getUint16(n);
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "uint32":
+							value = view.getUint32(n);
+							n += 4;
+							bytesRead += 4;
+							break;
+						case "str8":
+							value = "";
+
+							//string length
+							var l = view.getUint8(n);
+							n++;
+							bytesRead++;
+
+							//string value
+							for(var j = 0; j < l; j++)
+							{
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+								bytesRead += 2;
+							}
+							break;
+						case "str16":
+							value = "";
+
+							//string length
+							var l = view.getUint16(n);
+							n++;
+							bytesRead++;
+
+							//string value
+							for(var j = 0; j < l; j++)
+							{
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+								bytesRead += 2;
+							}
+							break;
+						case "str32":
+							value = "";
+
+							//string length
+							var l = view.getUint32(n);
+							n++;
+							bytesRead++;
+
+							//string value
+							for(var j = 0; j < l; j++)
+							{
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+								bytesRead += 2;
+							}
+							break;
+						case "float32":
+							value = view.getFloat32(n);
+							n += 4;
+							bytesRead += 4;
+							break;
+
+						//Custom decodings
+						case "float16p0":
+							value = view.getInt16(n)*1;
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "float16p1":
+							value = view.getInt16(n)*0.1;
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "float16p2":
+							value = view.getInt16(n)*0.01;
+							n += 2;
+							bytesRead += 2;
+							break;
+						case "float16p3":
+							value = view.getInt16(n)*0.001;
+							n += 2;
+							bytesRead += 2;
+							break;
 
 
 
+						case "float8p0":
+							value = view.getInt8(n)*1;
+							n++;
+							bytesRead++;
+							break;
+						case "float8p1":
+							value = view.getInt8(n)*0.1;
+							n++;
+							bytesRead++;
+							break;
+						case "float8p2":
+							value = view.getInt8(n)*0.01;
+							n++;
+							bytesRead++;
+							break;
+						case "float8p3":
+							value = view.getInt8(n)*0.001;
+							n++;
+							bytesRead++;
+							break;
 
-		// if(m.indexOf("==custom==") == 0)
-		// {
-		// 	console.log('custom message:');
-		// 	console.log(m.data);
-		// }
-		// else
-		// {
-		// 	var jsonMsg = this.globalfuncs.getJsonEvent(m);
-	
-		// 	switch(jsonMsg.event.toLowerCase())
-		// 	{
-		// 		case "get-world":
-		// 			console.log('now getting world');
-		// 			var arrBodies = this.getWorld();
-		// 			this.globalfuncs.sendJsonEvent(ws, "get-world-response", JSON.stringify(arrBodies))
-		// 			console.log('getting world done')
-		// 			break;
-		// 		case "start-event":
-		// 			this.startGame(ws, jsonMsg);
-		// 			break;
-		// 		case "stop-event":
-		// 			this.stopGame(ws, jsonMsg);
-		// 			break;
-		// 		case "player-input":
-		// 			this.playerInputEvent(ws, jsonMsg);
-		// 			break;
-		// 		case "test":
-		// 			console.log(jsonMsg);
-		// 			this.globalfuncs.sendJsonEvent(ws, "test-ack", {t: jsonMsg.msg.t});
-		// 			break;
-		// 		default:
-		// 			//just echo something back
-		// 			this.globalfuncs.sendJsonEvent(ws, "unknown-event", JSON.stringify({}));
-		// 			break;
-		// 	}
-		// }
+
+						case "bool":
+							value = view.getUint8(n) == 1 ? true : false;
+							n++;
+							bytesRead++;
+							break;
+						default:
+							//intentionally blank
+							break;
+
+					}
+
+					//create the key value pair on eventData
+					eventData[schema.parameters[p].txt_param_name] = value;
+				}
+
+				user.clientToServerEvents.push(eventData);
+			}
+		}
 	}
-
 }
 
 exports.WebsocketHandler = WebsocketHandler;

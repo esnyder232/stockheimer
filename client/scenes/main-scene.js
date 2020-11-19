@@ -25,7 +25,8 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
 		];
 		this.windowsEventMapping = [
-			{event: 'exit-game-click', func: this.exitGameClick.bind(this)}
+			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
+			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -43,6 +44,9 @@ export default class MainScene extends Phaser.Scene {
 			start: 13,
 			select: 32
 		};
+
+		//custom register on keyup
+		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
 	}
 
 	preload() {
@@ -83,6 +87,8 @@ export default class MainScene extends Phaser.Scene {
 		{
 			this.removeUser(this.userDomElements[i].userId);
 		}
+
+		$("#tb-chat-input").off("keyup");
 
 		$("#main-scene-root").addClass("hide");
 	}
@@ -137,6 +143,83 @@ export default class MainScene extends Phaser.Scene {
 	update(timeElapsed, dt) {
 		this.playerController.update();
 	}
+
+
+	tbChatInputKeyup(e) {
+		//If the user clicks enter, click the play button if its enabled.
+		if((e.code == "NumpadEnter" || e.code == "Enter")) {
+			this.tbChatSubmitClick();
+		}
+
+		return true;
+	}
+
+
+
+	tbChatSubmitClick() {
+		var chatMsg = "";
+		var tbChatInput = $("#tb-chat-input");
+
+		chatMsg = tbChatInput.val();
+
+		if(chatMsg !== "")
+		{
+			tbChatInput.val("");
+
+			this.gc.wsh.clientToServerEvents.push({
+				"eventName": "fromClientChatMessage",
+				"chatMsg": chatMsg
+			});
+		}
+	}
+
+
+	fromServerChatMessage(e) {
+		var chatHistory = $("#chat-history");
+		var chatHistoryItemTemplate = $("#chat-history-item-template");
+		var newChat = chatHistoryItemTemplate.clone();
+		
+		var newChatTs = newChat.find("div[name='chat-history-ts']");
+		var newChatName = newChat.find("div[name='chat-history-name']");
+		var newChatMsg = newChat.find("div[name='chat-history-msg']");
+
+
+		var u = this.gc.users.find((x) => {return x.userId == e.userId;});
+		var username = "???";
+		if(u)
+		{
+			username = u.username;
+		}
+
+		var tsOptions = {
+			hour: 'numeric',
+			minute:'numeric',
+			second:'numeric',
+			hour12: false
+		}
+		var ts = new Intl.DateTimeFormat('en-US', tsOptions).format(Date.now())
+
+		newChat.removeClass("hide");
+		newChatTs.text(ts);
+		newChatName.text(username + ": ");
+		newChatMsg.text(e.chatMsg);
+
+		chatHistory.append(newChat);
+
+		//determine if you should scroll
+		var chatMsgHeight = newChat.height();
+		var scrollTop = chatHistory[0].scrollTop;
+		var scrollHeight = chatHistory[0].scrollHeight;
+		var chatHistoryHeight = chatHistory.height();
+		
+		//scroll if your close enough to the bottom of the chat, auto scroll
+		if(scrollTop >= ((scrollHeight - chatHistoryHeight) - (chatMsgHeight * 3)))
+		{
+			chatHistory[0].scrollTop = chatHistory[0].scrollHeight;
+		}
+	}
+
+
 
 	// createWorld() {
 	// 	console.log('creating world now');

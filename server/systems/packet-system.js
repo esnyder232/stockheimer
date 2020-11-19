@@ -266,31 +266,6 @@ class PacketSystem {
 					}
 				}
 
-
-
-				// switch(user.serverToClientEvents[i].event)
-				// {
-				// 	case "userConnected":
-				// 		var e = user.serverToClientEvents[i];
-				// 		view.setUint8(n, 1); //eventId
-				// 		n++;
-				// 		view.setUint8(n, e.userId); //user.id
-				// 		n++;
-				// 		view.setUint8(n, e.username.length); //username length
-				// 		n++;
-
-				// 		//username
-				// 		for(var j = 0; j < e.username.length; j++)
-				// 		{
-				// 			view.setUint16(n, e.username.charCodeAt(j)); 
-				// 			n += 2;
-				// 		}
-				// 		break;
-				// 	default:
-				// 		//intentionally blank
-				// 		break;
-				// }
-
 				//delete event for now
 				user.serverToClientEvents.splice(i, 1);
 				m++;
@@ -300,46 +275,6 @@ class PacketSystem {
 			wsh.ws.send(buffer);
 		}
 	}
-	
-
-
-
-	writeEventToDataView(dataView, n, eventName, parametersJson)
-	{
-		var result = {
-			bError: false,
-			bBufferFull: false,
-			iNumBytes: 0,
-			iNewN: n
-		}
-
-		var e = EventNameIndex[eventName];
-		var bytesToWrite = 0;
-
-		//first calculate the size in bytes that will be added to the dataView.
-		if(e.b_size_varies_num)
-		{
-			
-			var codePointLength = 0;
-			for(var i = 0; i < e.parameters; i++)
-			{
-				if(e.b_size_varies)
-				{
-					//
-
-				}
-			}
-		}
-		else
-		{
-			bytesToWrite = e.sum_min_bytes;
-		}
-		
-	}
-
-	
-	
-	
 }
 
 exports.PacketSystem = PacketSystem;

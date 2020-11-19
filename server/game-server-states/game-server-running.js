@@ -13,12 +13,15 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	update(dt) {
-		//process input here
-
-		
-		//update users
 		var activeUsers = this.gs.um.getUsersByNotState("user-disconnected-state");
 
+		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			this.processClientEvents(activeUsers[i], activeUsers);
+		}
+
+		//update users
 		for(var i = 0; i < activeUsers.length; i++)
 		{
 			activeUsers[i].update(dt);
@@ -84,6 +87,32 @@ class GameServerRunning extends GameServerBaseState {
 
 		//destroy socket
 		this.gs.wsm.destroyWebsocket(wsh);
+	}
+
+	processClientEvents(user, activeUsers) {
+		for(var i = user.clientToServerEvents.length - 1; i >= 0; i--)
+		{
+			var e = user.clientToServerEvents[i];
+			switch(e.eventName)
+			{
+				case "fromClientChatMessage":
+					for(var j = 0; j < activeUsers.length; j++)
+					{
+						activeUsers[j].serverToClientEvents.push({
+							"eventName": "fromServerChatMessage",
+							"userId": user.id,
+							"chatMsg": e.chatMsg
+						})
+					}
+					
+					break;
+				default:
+					//intentionally blank
+					break;
+			}
+
+			user.clientToServerEvents.splice(i, 1);
+		}
 	}
 
 }

@@ -81,6 +81,10 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 					this.ms.existingUser(e);
 					break;
+
+				case "fromServerChatMessage":
+					this.ms.fromServerChatMessage(e);
+					break;
 				
 				default:
 					//intentionally blank

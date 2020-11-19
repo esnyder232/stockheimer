@@ -28,10 +28,23 @@
 					<h1>Disconnecting...</h1>
 				</div>
 				<div class="scene-root hide" id="main-scene-root">
-					<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+					<div class="input-controls-div">
+						<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+					</div>
 					<div class="user-list" id="user-list">
-						<div class="user-list-item hide" id="user-list-item-template">
-
+						<div class="user-list-item hide" id="user-list-item-template"></div>
+					</div>
+					<div class="chat-div">
+						<div class="chat-history" id="chat-history">
+							<div class="chat-history-item hide" id="chat-history-item-template">
+								<div class="chat-history-ts" name="chat-history-ts"></div>
+								<div class="chat-history-name" name="chat-history-name"></div>
+								<div class="chat-history-msg" name="chat-history-msg"></div>
+							</div>
+						</div>
+						<div class="chat-input-container">
+							<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="chat message" />
+							<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
 						</div>
 					</div>
 				</div>

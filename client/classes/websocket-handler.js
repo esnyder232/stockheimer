@@ -16,8 +16,10 @@ export default class WebsocketHandler {
 
 		this.eventSchema = {};
 		this.eventIdIndex = {};
+		this.eventNameIndex = {};
 
 		this.serverToClientEvents = []; //event queue to be processed by the main loop
+		this.clientToServerEvents = []; //event queue to be processed by the main loop for events going from client to server
 	}
 	
 	init(gc) {
@@ -39,8 +41,9 @@ export default class WebsocketHandler {
 		for(var i = 0; i < this.eventSchema.events.length; i++)
 		{
 			this.eventIdIndex[this.eventSchema.events[i].event_id] = this.eventSchema.events[i];
+			this.eventNameIndex[this.eventSchema.events[i].txt_event_name] = this.eventSchema.events[i];
 		}
-		console.log(this.eventIdIndex);
+		console.log(this.eventNameIndex);
 	}
 
 
@@ -276,169 +279,256 @@ export default class WebsocketHandler {
 
 				this.serverToClientEvents.push(eventData);
 			}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			// switch(eventId)
-			// {
-			// 	case 1: //userconnected
-			// 		var userId = view.getUint8(n);
-			// 		n++;
-			// 		var usernameLength = view.getUint8(n);
-			// 		n++;
-					
-			// 		//username
-			// 		var username = "";
-			// 		for(var j = 0; j < usernameLength; j++)
-			// 		{
-			// 			username += String.fromCharCode(view.getUint16(n));
-			// 			n += 2;
-			// 			// return String.fromCharCode.apply(null, new Uint16Array(buf));
-			// 		}
-
-			// 		console.log('userConnected Event results:');
-			// 		console.log(userId);
-			// 		console.log(usernameLength);
-			// 		console.log(username);
-
-			// 		break;
-			// 	default:
-			// 		//intentionally blank
-			// 		break;
-			// }
 		}
-
-
-
-		// if(e.data instanceof ArrayBuffer)
-		// {
-		// 	console.log('array buffer recieved');
-		// 	console.log(e.data);
-
-		// 	var myView4 = new DataView(e.data);
-
-		// 	var int1MinReturned = myView4.getInt8(0);
-		// 	var int1MaxReturned = myView4.getInt8(4);
-		// 	var uint1MaxReturned = myView4.getUint8(8);
-		// 	var int2MinReturned = myView4.getInt16(12);
-		// 	var int2MaxReturned = myView4.getInt16(16);
-		// 	var uint2MaxReturned = myView4.getUint16(20);
-		// 	var int3MinReturned = myView4.getInt32(24);
-		// 	var int3MaxReturned = myView4.getInt32(28);
-		// 	var uint3MaxReturned = myView4.getUint32(32);
-
-
-		// 	console.log('===========================');
-		// 	console.log(int1MinReturned);
-		// 	console.log(int1MaxReturned);
-		// 	console.log(uint1MaxReturned);
-		// 	console.log(int2MinReturned);
-		// 	console.log(int2MaxReturned);
-		// 	console.log(uint2MaxReturned);
-		// 	console.log(int3MinReturned);
-		// 	console.log(int3MaxReturned);
-		// 	console.log(uint3MaxReturned);
-
-		// 	// var myView = new Int8Array(e.data);
-		// 	// var myLength = myView[0]*2;
-		// 	// console.log('mylength: ' + myLength);
-
-		// 	// for(var n = 1; n < myLength; n += 2)
-		// 	// {
-		// 	// 	var byte1 = myView[n];
-		// 	// 	var byte2 = myView[n+1];
-		// 	// 	var myChar = "";
-		// 	// 	console.log('mychar at n: ' + n);
-		// 	// 	console.log(myChar);
-
-		// 	// 	byte2 = byte2 << 8;
-		// 	// 	var finalChar = byte2 + byte1;
-
-		// 	// 	console.log('finalchar: ' + finalChar);
-		// 	// 	console.log(String.fromCharCode(finalChar));
-		// 	// }
-			
-		// }
-
-		// else if(e.data.indexOf("==custom==") == 0)
-		// {
-		// 	console.log('custom message:');
-		// 	var customMsg = e.data.replace("==custom==", "");
-		// 	console.log(customMsg);
-		// 	console.log(customMsg.length);
-		// }
-		// else
-		// {
-		// 	var jsonMsg = this.getJsonEvent(e.data);
-		// 	//console.log('message recieved from server. Event: ' + jsonMsg.event);
-		// 	switch(jsonMsg.event.toLowerCase())
-		// 	{
-		// 		case "get-world-response":
-		// 			console.log('got world reponse!');
-		// 			this.world = JSON.parse(jsonMsg.msg);
-
-		// 			//convert phaser units to phaser units
-		// 			this.convertPlankToPhaserUnits();
-
-		// 			console.log(this.world);
-		// 			this.createWorld();
-		// 			break;
-		// 		case "world-deltas":
-		// 			//console.log('got world deltas');
-		// 			var deltas = JSON.parse(jsonMsg.msg);
-		// 			this.processDeltas(deltas);
-		// 			break;
-		// 		case "sn-test":
-		// 			var msg = JSON.parse(jsonMsg.msg);
-		// 			console.log('Recieved packet. sn: %s', msg.sn)
-		// 			break;
-		// 		case "player-update":
-
-		// 			break;
-		// 		case "test-ack":
-		// 			console.log('from server test-ack: ' + jsonMsg.msg.t);
-		// 			break;
-		// 		case "unknown-event":
-		// 			console.log('from server: unknown-event');
-		// 			break;
-		// 	}
-		// }
-		
 	}
 
 
 	
 	createPacketForUser()
 	{
-		//console.log('creating packet for user: ' + this.gc.username + '    localSequenceNumber: ' + this.localSequence);
-
 		var buffer = new ArrayBuffer(this.maxPacketSize);
 		var view = new DataView(buffer);
+		var n = 0; //current byte within the packet
+		var m = 0; //number of events
+		var bytesWritten = 0;
 
 		view.setUint16(0, this.localSequence); //sequence Number
 		view.setUint16(2, this.remoteSequence); //ack (most recent remote sequence number)
+		n += 4;
+		bytesWritten += 4;
+
+		n += 1; //skipping 1 byte for the event count
+		bytesWritten++;
 
 		this.localSequence++;
 
+		var bcontinue = true;
+
+		for(var i = this.clientToServerEvents.length - 1; i >= 0; i--)
+		{
+			if(!bcontinue)
+			{
+				break;
+			}
+
+			var e = this.clientToServerEvents[i];
+			var schema = this.eventNameIndex[e.eventName];
+
+			if(schema)
+			{
+				var bytesRequired = 0;
+
+				bytesRequired++; //eventId
+
+				//check the length of event to make sure it fits
+				//there is a variable sized parameter (most likely a string)
+				if(schema.b_size_varies)
+				{
+					//find the variable length parameters, and determine the bytes required
+					for(var p = 0; p < schema.parameters.length; p++)
+					{
+						if(schema.parameters[p].b_size_varies)
+						{
+							switch(schema.parameters[p].txt_actual_data_type)
+							{
+								case "str8": 
+									var s = e[schema.parameters[p].txt_param_name];
+									if(s)
+									{
+										bytesRequired += 1 + s.length*2;
+									}
+									break;
+								case "str16": 
+									var s = e[schema.parameters[p].txt_param_name];
+									if(s)
+									{
+										bytesRequired += 2 + s.length*2;
+									}
+									break;
+								case "str32": 
+									var s = e[schema.parameters[p].txt_param_name];
+									if(s)
+									{
+										bytesRequired += 4 + s.length*2;
+									}
+									break;
+								default:
+									//intentionally blank
+									break;
+							}
+						}
+						else
+						{
+							bytesRequired += schema.parameters[p].min_bytes;
+						}
+					}
+				}
+				else
+				{
+					bytesRequired = schema.sum_min_bytes;
+				}
+
+				if(bytesRequired <= this.maxPacketSize - bytesWritten)
+				{
+					view.setUint8(n, schema.event_id);
+					n++;
+					bytesWritten++;
+
+					//go through the parameters and encode each one
+					for(var p = 0; p < schema.parameters.length; p++)
+					{
+						var value = e[schema.parameters[p].txt_param_name];
+						switch(schema.parameters[p].txt_actual_data_type)
+						{
+							//standard encoding
+							case "int8":
+								view.setInt8(n, value);
+								n++;
+								bytesWritten++;
+								break;
+							case "int16":
+								view.setInt16(n, value);
+								n += 2;
+								bytesWritten += 2;
+								break;
+							case "int32":
+								view.setInt32(n, value);
+								n += 4;
+								bytesWritten += 4;
+								break;
+							case "uint8":
+								view.setUint8(n, value);
+								n++;
+								bytesWritten++;
+								break;
+							case "uint16":
+								view.setUint16(n, value);
+								n += 2;
+								bytesWritten += 2;
+								break;
+							case "uint32":
+								view.setUint32(n, value);
+								n += 4;
+								bytesWritten += 4;
+								break;
+							case "str8":
+								//string length
+								view.setUint8(n, value.length);
+								n++;
+								bytesWritten++;
+
+								//string value
+								for(var j = 0; j < value.length; j++)
+								{
+									view.setUint16(n, value.charCodeAt(j)); 
+									n += 2;
+									bytesWritten += 2;
+								}
+								break;
+							case "str16":
+								//string length
+								view.setUint16(n, value.length);
+								n += 2;
+								bytesWritten += 2;
+
+								//string value
+								for(var j = 0; j < value.length; j++)
+								{
+									view.setUint16(n, value.charCodeAt(j)); 
+									n += 2;
+									bytesWritten += 2;
+								}
+								break;
+							case "str32":
+								//string length
+								view.setUint32(n, value.length);
+								n += 4;
+								bytesWritten += 4;
+
+								//string value
+								for(var j = 0; j < value.length; j++)
+								{
+									view.setUint16(n, value.charCodeAt(j)); 
+									n += 2;
+									bytesWritten += 2;
+								}
+								break;
+							case "float32":
+								view.setFloat32(n, value);
+								n += 4;
+								bytesWritten += 4;
+								break;
+
+							//Custom encodings
+							case "float16p0":
+								view.setInt16(n, Math.round(value/1));
+								n += 2;
+								bytesWritten += 2;
+								break;
+							case "float16p1":
+								view.setInt16(n, Math.round(value/0.1));
+								n += 2;
+								bytesWritten += 2;
+								break;
+							case "float16p2":
+								view.setInt16(n, Math.round(value/0.01));
+								n += 2;
+								bytesWritten += 2;
+								break;
+							case "float16p3":
+								view.setInt16(n, Math.round(value/0.001));
+								n += 2;
+								bytesWritten += 2;
+								break;
+
+
+
+							case "float8p0":
+								view.setInt8(n, Math.round(value/1));
+								n++;
+								bytesWritten++;
+								break;
+							case "float8p1":
+								view.setInt8(n, Math.round(value/0.1));
+								n++;
+								bytesWritten++;
+								break;
+							case "float8p2":
+								view.setInt8(n, Math.round(value/0.01));
+								n++;
+								bytesWritten++;
+								break;
+							case "float8p3":
+								view.setInt8(n, Math.round(value/0.001));
+								n++;
+								bytesWritten++;
+								break;
+
+
+							case "bool":
+								view.setUint8(n, value ? 1 : 0);
+								n++;
+								bytesWritten++;
+								break;
+							default:
+								//intentionally blank
+								break;
+						}
+					}
+				}
+				//the packet is full
+				else
+				{
+					bcontinue = false;
+				}
+			}
+
+			//delete event for now
+			this.clientToServerEvents.splice(i, 1);
+			m++;
+		}
+
+		view.setUint8(4, m); //payload event count
 		this.ws.send(buffer);
 	}
 
