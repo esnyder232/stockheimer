@@ -6,7 +6,7 @@ class User {
 	constructor() {
 		this.gs = null;
 		this.username = "";
-		this.id = 0;
+		this.id = null; //needs to be null whe not active
 		this.wsId = 0;
 
 		this.stateName = "";
@@ -22,6 +22,11 @@ class User {
 
 		this.state = new UserDisconnectedState(this);
 		this.state.enter();
+	}
+
+	reset() {
+		this.serverToClientEvents = [];
+		this.clientToServerEvents = [];
 	}
 
 	update(dt) {

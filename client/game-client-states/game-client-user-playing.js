@@ -23,6 +23,8 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		this.processServerEvents();
 
 		this.gc.wsh.createPacketForUser();
+
+		this.gc.wsh.update(dt);
 	}
 
 	exit(dt) {

@@ -4,27 +4,45 @@ const {Character} = require('../characters/character.js');
 class CharacterManager {
 	constructor() {
 		this.gs = null;
-		this.idCounter = 1;
+		this.nextAvailableId = 0;
 		this.characterArray = [];
+		this.characterIdArray = [];
+		
+		this.maxAllowed = 256;
+
 		this.idIndex = {};
 		this.isDirty = false;
 	}
 
 	init(gameServer) {
 		this.gs = gameServer;
+		this.globalfuncs = new GlobalFuncs();
+
+		for(var i = 0; i < this.maxAllowed; i++)
+		{
+			this.characterIdArray.push(false);
+		}
 	}
 
 	createCharacter() {
-		var c = new Character();
+		var result = null;
 
-		c.id = this.idCounter;
+		if(this.nextAvailableId >= 0)
+		{
+			result = new Character();
 
-		this.idCounter++;
-		this.characterArray.push(c);
-		this.isDirty = true;
+			result.id = this.nextAvailableId;
 
-		console.log('Character created. Id: ' + c.id);
-		return c;
+			this.characterIdArray[this.nextAvailableId] = true;
+			this.characterArray.push(result);
+
+			this.globalfuncs.findNextAvailableId(this.nextAvailableId+1);
+
+			this.isDirty = true;
+			console.log('Character created. Id: ' + result.id);
+		}
+
+		return result;
 	}
 
 	destroyCharacter(c) {
@@ -54,6 +72,12 @@ class CharacterManager {
 				if(this.characterArray[i].deleteMe)
 				{
 					var temp = this.characterArray.splice(i, 1);
+					this.characterIdArray[temp[0].id] = false;
+					if(this.nextAvailableId < 0)
+					{
+						this.nextAvailableId = temp[0].id;
+					}
+
 					console.log('Character destroyed. Id: ' + temp[0].id);
 				}
 			}

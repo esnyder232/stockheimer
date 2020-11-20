@@ -6,6 +6,7 @@ const {GlobalFuncs} = require('./global-funcs.js');
 const {ValidFuncs} = require('./valid-funcs.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
+const {CharacterManager} = require('./managers/character-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {PacketSystem} = require ('./systems/packet-system.js');
@@ -17,7 +18,10 @@ class GameServer {
 		this.globalfuncs = new GlobalFuncs();
 		this.frameRate = 30; //fps
 		this.frameNum = 0;
-		this.maxPlayers = 30;
+		this.maxPlayers = 32;
+		this.inactivePeriod = 10000; //ms - the amount of ms worth of ack loss (packet loss) before a player is considered "inactive" by the server
+		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
+
 		this.runGameLoop = false;
 		this.gameState = null;
 		this.nextGameState = null;
@@ -35,6 +39,7 @@ class GameServer {
 		this.ps = null;
 		this.wsm = null;
 		this.um = null;
+		this.cm = null;
 	}
 
 	init() {
@@ -43,10 +48,12 @@ class GameServer {
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
 		this.ps = new PacketSystem();
+		this.cm = new CharacterManager();
 		
 		this.wsm.init(this);
 		this.um.init(this);
 		this.ps.init(this);
+		this.cm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 		
@@ -135,11 +142,32 @@ class GameServer {
 			reqCookies = this.globalfuncs.parseCookies(req);
 			cookieSession = reqCookies["user-session"];
 
+			//check if the game is in a "joinable" state
+			if(!authResult.bError)
+			{
+				authResult.errorMessage = this.gameState.joinRequest();
+				authResult.bError = authResult.errorMessage != "success";
+				if(authResult.bError)
+				{
+					authResult.userMessage = authResult.errorMessage;
+				}
+			}
+
+			//check for max players
+			if(!authResult.bError && this.um.userArray.length >= this.um.maxAllowed)
+			{
+				authResult.bError = true;
+				authResult.errorMessage = "Server is full.";
+				authResult.userMessage = "Server is full.";
+			}
+
+
 			//check if cookie is in request
 			if(!cookieSession)
 			{
 				authResult.bError = true;
 				authResult.errorMessage = "Cookie session not found in request.";
+				authResult.userMessage = "Cookie session not found in request.";
 			}
 	
 			//check cookie signature
@@ -150,35 +178,43 @@ class GameServer {
 				{
 					authResult.bError = true;
 					authResult.errorMessage = "Invalid cookie signature for cookie session. Cookie: " + cookieSession;
+					authResult.userMessage = "Invalid cookie signature.";
 				}
 			}
 
 			//get the user from the user manager. They SHOULD exist at this point
 			if(!authResult.bError)
 			{
-				authResult.user = this.um.getUserByToken(cookieSessionParsed);
+				authResult.user = this.um.getInactiveUserByToken(cookieSessionParsed);
 				if(!authResult.user)
 				{
 					authResult.bError = true;
 					authResult.errorMessage = "User was not found. User session parsed: " + cookieSessionParsed;
+					authResult.userMessage = "User was not found.";
 				}
-				else
+			}
+
+			//at this point, if there is no error, the user has been verified. Tell the usermanager to switch the user from "inactive" to "active" users
+			if(!authResult.bError)
+			{
+				authResult.bError = this.um.activateUser(authResult.user);
+				if(authResult.bError)
 				{
-					//at this point, the user has been verified. Tell the UserManager so the user becomes permanent.
-					this.um.userVerified(authResult.user);
+					authResult.errorMessage = "Unknown error when activating user.";
+					authResult.userMessage = "Unknown error when activating user.";
 				}
 			}
 		}
 		catch(ex) {
 			authResult.bError = true;
 			authResult.errorMessage = "Internal server error when authenticating: " + ex;
+			authResult.userMessage = "Internal server error when authentication.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
 			console.log(ex);
 		}
 
-		authResult.userMessage = "success";
-		if(authResult.bError)
-			authResult.userMessage = "Could not authenticate user."
+		if(!authResult.bError)
+			authResult.userMessage = "success";
 
 		return authResult;
 	}
@@ -385,7 +421,7 @@ class GameServer {
 
 		try {
 			var gameData = {
-				currentPlayers: this.wsm.websocketArray.length,
+				currentPlayers: this.um.userArray.length,
 				maxPlayers: this.maxPlayers
 			}
 			main.push(gameData);
@@ -421,7 +457,7 @@ class GameServer {
 	
 			 //if a session exists, verify it from the session-manager.
 			if(sessionCookie) {
-				var session = this.um.getUserByToken(sessionCookie);
+				var session = this.um.getInactiveUserByToken(sessionCookie);
 				if(session)
 				{
 					bSessionExists = true;
@@ -469,11 +505,32 @@ class GameServer {
 	
 			 //if a session exists, verify it from the session-manager.
 			if(sessionCookie) {
-				var user = this.um.getUserByToken(sessionCookie);
-				if(user)
+				var inactiveUser = this.um.getInactiveUserByToken(sessionCookie);
+				var activeUser = this.um.getUserByToken(sessionCookie);
+
+				//the user is currently playing. This scenario occurs when:
+				// 1) If they open up 2 browser windows, play in one, then try to clear their session in the other
+				// 2) If the player has really bad connection issues (or they pull the ethernet cable accidentally), and THEN refresh the page when they have the bad connection.
+				//	  This will cause the browser to never send the "close" frame of the websocket, and the server will think the player is still "connected" and the packets are just getting lost.
+				//    The way around the 2nd problem is to have the game server detect a loss of acknowledgments for a number of seconds. If the server doesn't get acks for like, 10 seconds or so,
+				//	  the server should just consider the user disconnected and inactivate them.
+				//In any case, don't allow the user to destroy active users. Things will most likely break.
+				if(activeUser)
 				{
-					this.um.destroyUser(user);
-					userMessage = "Player '" + user.username + "' was deleted.";
+					var periodText = Math.round(this.inactivePeriod/1000);
+					userMessage = "Player '" + user.username + "' is currently active and playing. Please check if you have this game currently running in another window. If this player is you and you confirmed you have no other games running, your user will become inactive after " + periodText + " seconds";
+				}
+				//the user exists, and is inactive. Go ahead and destroy it.
+				else if(inactiveUser)
+				{
+					this.um.destroyInactiveUser(inactiveUser);
+					userMessage = "Player '" + inactiveUser.username + "' was deleted.";
+					res.clearCookie("user-session");
+				}
+				//the user was not found at all
+				else
+				{
+					userMessage = "That player is already deleted.";
 				}
 			}
 		}
@@ -525,7 +582,7 @@ class GameServer {
 			}
 
 			//check for max players
-			if(!bError && this.wsm.websocketArray.length >= this.maxPlayers)
+			if(!bError && this.um.userArray.length >= this.um.maxAllowed)
 			{
 				bError = true;
 				userMessage = "Server is full.";
@@ -539,34 +596,50 @@ class GameServer {
 	
 				//if a session exists, verify it from the session-manager.
 				if(reqSessionCookie) {
-					var user = this.um.getUserByToken(reqSessionCookie);
+					var userActive = this.um.getUserByToken(reqSessionCookie);
+					var userInactive = this.um.getInactiveUserByToken(reqSessionCookie);
 
-					if(user)
+					//if the user is already active, deny connection to the new user (this scenario occurs when the user has 2 windows of the same browser connecting to the game at once. IE: 2 chrome tabs connecting to the same game)
+					if(userActive)
+					{
+						bError = true;
+						userMessage = "This user is already playing.";
+					}
+					//if the user is found and is inactive, just move on to the next step in the handshake (this scenario occurs when the user refreshes the browser after they have already connected to the game atleast once)
+					else if(userInactive)
 					{
 						bUserExists = true;
 					}
-				}
-
-				//if they don't have a user, create one and set a cookie
-				if(!bUserExists)
-				{
-					var user = this.um.createUser(true);
-					user.username = username;
-
-					//temporarily set a state for the new user. This is kinda hacky...its just a way so the user doesn't get picked up by the update loop immediately until the user has officially joined and created a websocket.
-					user.stateName = "user-disconnected-state";
-
-					var cookieOptions = {
-						signed: true,
-						maxAge: 60000 * 60 * 24 * expireDays,
-						httpOnly: true,
-						sameSite: "strict",
-						secure: serverConfig.https_enabled
-					};
-					
-					res.cookie("user-session", user.token, cookieOptions);
+					//the only other scenario is if userInactive doesn't exist (This scenario means the user has never connected to this site before, or they erased their user session from the lobby with "start new play" button)
+					else
+					{
+						bUserExists = false;
+					}
 				}
 			}
+
+			if(!bError && !bUserExists)
+			{
+				//if they don't have a user, create one and set a cookie
+				var user = this.um.createUser();
+			
+				user.username = username;
+
+				//temporarily set a state for the new user. This is kinda hacky...its just a way so the user doesn't get picked up by the update loop immediately until the user has officially joined and created a websocket.
+				user.stateName = "user-disconnected-state";
+
+				var cookieOptions = {
+					signed: true,
+					maxAge: 60000 * 60 * 24 * expireDays,
+					httpOnly: true,
+					sameSite: "strict",
+					secure: serverConfig.https_enabled
+				};
+				
+				res.cookie("user-session", user.token, cookieOptions);
+			}
+
+			//if there is no error at this point. They can move on to the next step (making the websocket connection);
 		}
 		catch(ex) {
 			userMessage = "Internal server error.";

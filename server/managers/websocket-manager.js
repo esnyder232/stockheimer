@@ -48,7 +48,7 @@ class WebsocketManager {
 		}
 	}
 
-	update() {
+	update(dt) {
 		if(this.isDirty)
 		{
 			//delete any players that were marked for deletion
@@ -64,6 +64,12 @@ class WebsocketManager {
 			this.updateIndex();
 			this.isDirty = false;
 			console.log('websocket current length: ' + this.websocketArray.length);
+		}
+
+		//update the websocket handler
+		for(var i = 0; i < this.websocketArray.length; i++)
+		{
+			this.websocketArray[i].update(dt);
 		}
 	}
 

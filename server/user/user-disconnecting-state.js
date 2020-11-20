@@ -32,6 +32,10 @@ class UserDisconnectingState extends UserBaseState {
 
 	exit(dt) {
 		console.log(this.stateName + ' exit');
+
+		this.user.gs.um.inactivateUser(this.user);
+		this.user.reset();
+
 		super.exit(dt);
 	}
 }

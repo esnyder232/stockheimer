@@ -40,8 +40,8 @@ class GameServerRunning extends GameServerBaseState {
 
 
 		//update managers
-		this.gs.wsm.update();
-		this.gs.um.update();
+		this.gs.wsm.update(dt);
+		this.gs.um.update(dt);
 
 		this.gs.frameNum++;
 
@@ -71,7 +71,6 @@ class GameServerRunning extends GameServerBaseState {
 			user.nextState = new UserDisconnectingState(user);
 		}
 
-		//destroy socket
 		this.gs.wsm.destroyWebsocket(wsh);
 	}
 
@@ -85,7 +84,6 @@ class GameServerRunning extends GameServerBaseState {
 			user.nextState = new UserDisconnectingState(user);
 		}
 
-		//destroy socket
 		this.gs.wsm.destroyWebsocket(wsh);
 	}
 
@@ -114,7 +112,6 @@ class GameServerRunning extends GameServerBaseState {
 			user.clientToServerEvents.splice(i, 1);
 		}
 	}
-
 }
 
 

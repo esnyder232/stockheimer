@@ -83,38 +83,42 @@ export default class LobbyScene extends Phaser.Scene {
 		this.enableNewButton = false;
 
 		var data = {};
-		//get server details, like ip, how many people are currently playing, etc
-		$.ajax({url: "./api/get-server-details", method: "GET", data: data})
-		.done((responseData, textStatus, xhr) => {			
-			this.serverDetails = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
-			var playersDiv = $("#game-server-details-players")[0];
-			playersDiv.textContent = "Players: " + this.serverDetails.currentPlayers + "/" + this.serverDetails.maxPlayers;
-		})
-		.fail((xhr) => {
-			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-			this.globalfuncs.appendToLog('Failed to get server details: ' + responseData.userMessage);
-		})
+
+		//there is a timeout on the api because the server needs time to update itself (1/30 of a second)
+		window.setTimeout(() => {
+			//get server details, like ip, how many people are currently playing, etc
+			$.ajax({url: "./api/get-server-details", method: "GET", data: data})
+			.done((responseData, textStatus, xhr) => {			
+				this.serverDetails = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
+				var playersDiv = $("#game-server-details-players")[0];
+				playersDiv.textContent = "Players: " + this.serverDetails.currentPlayers + "/" + this.serverDetails.maxPlayers;
+			})
+			.fail((xhr) => {
+				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
+				this.globalfuncs.appendToLog('Failed to get server details: ' + responseData.userMessage);
+			})
 
 
-		//get user session if it exists
-		$.ajax({url: "./api/get-user-session", method: "GET", data: data})
-		.done((responseData, textStatus, xhr) => {
-			this.userSession = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
-			if(this.userSession.sessionExists) {
-				var usernameInput = $("#user-name");
-				usernameInput.val(this.userSession.username);
-				this.enableUsername = !this.userSession.sessionExists;
-				this.enableNewButton = this.userSession.sessionExists;
-			}
-		})
-		.fail((xhr) => {
-			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-			this.globalfuncs.appendToLog('Failed to get user session: ' + responseData.userMessage);
-		})
-		.always(() => {
-			this.checkUsernameEnablePlayButton();
-			this.updateUI();
-		})
+			//get user session if it exists
+			$.ajax({url: "./api/get-user-session", method: "GET", data: data})
+			.done((responseData, textStatus, xhr) => {
+				this.userSession = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
+				if(this.userSession.sessionExists) {
+					var usernameInput = $("#user-name");
+					usernameInput.val(this.userSession.username);
+					this.enableUsername = !this.userSession.sessionExists;
+					this.enableNewButton = this.userSession.sessionExists;
+				}
+			})
+			.fail((xhr) => {
+				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
+				this.globalfuncs.appendToLog('Failed to get user session: ' + responseData.userMessage);
+			})
+			.always(() => {
+				this.checkUsernameEnablePlayButton();
+				this.updateUI();
+			})
+		}, 100);
 	}
 
 	shutdown() {

@@ -23,6 +23,8 @@ class WebsocketHandler {
 		this.localSequence = 0; 	//current local sequence number
 		this.remoteSequence = 0;	//most recent remote sequence number
 		this.ack = 0;				//most current ack returned by the client
+
+		this.localSequenceMaxValue = 65535;
 	}
 
 	init(gameServer, userId, ws) {
@@ -38,8 +40,12 @@ class WebsocketHandler {
 		ws.binaryType = 'arraybuffer';
 	}
 
-	onclose() {
-		console.log('websocket onclose: ' + this.id + '. userId: ' + this.userId);
+	onclose(code, reason) {
+		console.log('Websocket-handler. websocket is now closed. Id: ' + this.id + '. userId: ' + this.userId);
+		if(code || reason)
+		{
+			console.log("Code: " + code + ". Reason: " + reason);
+		}
 		this.gs.gameState.websocketClosed(this);
 	}
 
@@ -241,6 +247,33 @@ class WebsocketHandler {
 
 				user.clientToServerEvents.push(eventData);
 			}
+		}
+	}
+
+	disconnectClient(code, reason) {
+		//if its OPEN or CONNECTING
+		if(this.ws.readyState === 0 || this.ws.readyState === 1)
+		{
+			this.ws.close(code, reason);
+		}
+	}
+
+	update(dt) {
+		
+		if(this.localSequence >= this.ack && (this.localSequence - this.ack) >= this.gs.inactiveAckThreashold)
+		{
+			//user timed out. Inactivate them.
+			var u = this.gs.um.getUserByID(this.userId);
+			console.log('A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
+			this.disconnectClient(1000, "User timed out server side.");
+		}
+		//sequence wrap around case
+		else if(this.localSequence < this.ack && (this.localSequence - (this.ack - this.localSequenceMaxValue)) >= this.gs.inactiveAckThreashold)
+		{
+			//user timed out. Inactivate them.
+			var u = this.gs.um.getUserByID(1006, this.userId);
+			console.log('A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
+			this.disconnectClient(1000, "User timed out server side.");
 		}
 	}
 }

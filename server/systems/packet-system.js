@@ -44,6 +44,7 @@ class PacketSystem {
 			bytesWritten++;
 
 			wsh.localSequence++;
+			wsh.localSequence = wsh.localSequence % wsh.localSequenceMaxValue;
 
 			var bcontinue = true;
 

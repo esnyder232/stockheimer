@@ -13,6 +13,7 @@ export default class WebsocketHandler {
 		this.ack = 0;				//most current ack returned by the server
 
 		this.maxPacketSize = 130; 	//bytes
+		this.localSequenceMaxValue = 65535;
 
 		this.eventSchema = {};
 		this.eventIdIndex = {};
@@ -20,6 +21,8 @@ export default class WebsocketHandler {
 
 		this.serverToClientEvents = []; //event queue to be processed by the main loop
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events going from client to server
+
+		
 	}
 	
 	init(gc) {
@@ -35,6 +38,14 @@ export default class WebsocketHandler {
 			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
 			this.globalfuncs.appendToLog('VERY BAD ERROR: Failed to get event-schema.');
 		})
+	}
+
+	reset() {
+		this.localSequence = 0;
+		this.remoteSequence = 0;
+		this.ack = 0;
+		this.serverToClientEvents = [];
+		this.clientToServerEvents = [];
 	}
 
 	buildSchemaIndex() {
@@ -67,16 +78,21 @@ export default class WebsocketHandler {
 		return bFail;
 	}
 
-	disconnectFromServer() {
+	disconnectClient(code, reason) {
 		//if its OPEN or CONNECTING
 		if(this.ws.readyState === 0 || this.ws.readyState === 1)
 		{
-			this.ws.close();
+			this.ws.close(code, reason);
 		}
 	}
 
-	onclose() {
+	onclose(e) {
 		this.globalfuncs.appendToLog("WebsocketHandler: Websocket is now closed.");
+		
+		if(e.reason)
+		{
+			this.globalfuncs.appendToLog("Reason: " + e.reason);
+		}
 		this.gc.gameState.websocketClosed();
 	}
 
@@ -301,6 +317,7 @@ export default class WebsocketHandler {
 		bytesWritten++;
 
 		this.localSequence++;
+		this.localSequence = this.localSequence % this.localSequenceMaxValue
 
 		var bcontinue = true;
 
@@ -532,11 +549,18 @@ export default class WebsocketHandler {
 		this.ws.send(buffer);
 	}
 
-
-
-
-	update(timeElapsed, dt) {
-		
+	update(dt) {
+		if(this.localSequence >= this.ack && (this.localSequence - this.ack) >= this.gc.inactiveAckThreashold)
+		{
+			//user timed out. Inactivate them.
+			this.disconnectClient(1000, "User timed out client side.");
+		}
+		//sequence wrap around case
+		else if(this.localSequence < this.ack && (this.localSequence - (this.ack - this.localSequenceMaxValue)) >= this.gc.inactiveAckThreashold)
+		{
+			//user timed out. Inactivate them.
+			this.disconnectClient(1000, "User timed out client side.");
+		}
 	}
 }
 

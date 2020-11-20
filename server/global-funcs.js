@@ -44,6 +44,33 @@ class GlobalFuncs {
 	
 		return list;
 	}
+
+
+	findNextAvailableId(idArr, startingIndex, maxAllowed) {
+		if(startingIndex < 0)
+			startingIndex = 0;
+		else if(startingIndex >= maxAllowed)
+			startingIndex = maxAllowed - 1;
+
+		var i = startingIndex;
+		var result = -1;
+
+		//finally...an applicable do while situation
+		do
+		{
+			if(idArr[i] === false)
+			{
+				result = i;
+				break;
+			}
+
+			i++;
+			i = i % maxAllowed;
+		}
+		while(i != startingIndex)
+
+		return result;
+	}
 	
 }
 

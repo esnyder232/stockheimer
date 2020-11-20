@@ -21,6 +21,10 @@ class UserPlayingState extends UserBaseState {
 		console.log(this.stateName + ' exit');
 		super.exit(dt);
 	}
+
+	userTimedOut() {
+		this.user.nextState = new UserDisconnectingState(this.user);
+	}
 }
 
 
