@@ -4,8 +4,11 @@ const {GlobalFuncs} = require('../global-funcs.js');
 class Character {
 	constructor() {
 		this.gs = null;
-		this.id = 0;
-		this.userId = 0;
+		this.id = null;
+		this.staticId = null;
+		this.isActive = false;
+
+		this.userId = null;
 
 		this.stateName = "";
 		this.state = null;

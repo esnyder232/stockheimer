@@ -448,7 +448,6 @@ class GameServer {
 		var main = [];
 		var userMessage = "";
 		var sessionCookie = "";
-		var expireDays = 365*10;
 		var bSessionExists = false;
 	
 		try
@@ -458,6 +457,8 @@ class GameServer {
 			 //if a session exists, verify it from the session-manager.
 			if(sessionCookie) {
 				var session = this.um.getInactiveUserByToken(sessionCookie);
+				var activeSession = this.um.getUserByToken(sessionCookie);
+
 				if(session)
 				{
 					bSessionExists = true;
@@ -465,6 +466,16 @@ class GameServer {
 					
 					main.push({
 						username: session.username,
+						sessionExists: true
+					});
+				}
+				else if (activeSession)
+				{
+					bSessionExists = true;
+					userMessage = "Existing user session found for '" + activeSession.username + "'.";
+					
+					main.push({
+						username: activeSession.username,
 						sessionExists: true
 					});
 				}
@@ -517,8 +528,9 @@ class GameServer {
 				//In any case, don't allow the user to destroy active users. Things will most likely break.
 				if(activeUser)
 				{
+					bError = true;
 					var periodText = Math.round(this.inactivePeriod/1000);
-					userMessage = "Player '" + user.username + "' is currently active and playing. Please check if you have this game currently running in another window. If this player is you and you confirmed you have no other games running, your user will become inactive after " + periodText + " seconds";
+					userMessage = "Player '" + activeUser.username + "' is currently active and playing. Please check if you have this game currently running in another window. If this player is you and you confirmed you have no other games running, your user will become inactive after " + periodText + " seconds";
 				}
 				//the user exists, and is inactive. Go ahead and destroy it.
 				else if(inactiveUser)
@@ -530,6 +542,7 @@ class GameServer {
 				//the user was not found at all
 				else
 				{
+					bError = true;
 					userMessage = "That player is already deleted.";
 				}
 			}

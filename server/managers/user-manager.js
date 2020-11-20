@@ -18,19 +18,14 @@ class UserManager {
 		this.isDirty = false;
 
 		this.inactiveUserArray = []; //users who haven't connected in a while and are "inactive". They are moved from the userArray to the inactiveUserArray so their IDs can be freed up
-		this.inactivePeriod = 30000; //ms, period of time when a user is considered "inactive"
-		this.inactiveCheck = 10000; //ms, time to pass until the userManager checks for inactive users
-
 		this.inactiveUserTokenIndex = {}; //index for the inactiveUserArray based on token
 
-		this.tsPreviousInactiveCheck = 0;
 	}
 
 
 	init(gameServer) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
-		this.tsPreviousInactiveCheck = Date.now() + this.inactiveCheck;
 
 		for(var i = 0; i < this.maxAllowed; i++)
 		{
@@ -50,26 +45,7 @@ class UserManager {
 		this.inactiveUserArray.push(u);
 
 		this.inactiveUserTokenIndex[u.token] = u;
-		//this.userIdArray[this.nextAvailableId] = true;
-		//this.findNextAvailableId(this.nextAvailableId+1);
-
 		this.isDirty = true;
-
-		//adding user directly to the index. This should probably be handled only by the update function so its tied to the game loop, but this is just so the user can establish a connection without depending on the gameloop.
-		// this.idIndex[u.id] = u;
-		// this.tokenIndex[u.token] = u;
-
-		//add the user to the temp list. And mark user and a temp so we don't have to worry about storing them in the inactiveUserArray
-		// if(bTemp)
-		// {
-		// 	u.bTempUser = true;
-
-		// 	this.tempUsers.push({
-		// 		user: u,
-		// 		tsCreated: Date.now(),
-		// 		msLifetime: 2000
-		// 	})
-		// }
 
 		console.log('inactive user created. token: ' + u.token);
 
@@ -111,20 +87,6 @@ class UserManager {
 	}
 
 	update() {
-		// if(this.tempUsers.length > 0)
-		// {
-		// 	//update tempUsers and see if any of them need to be deleted
-		// 	var now = Date.now();
-		// 	for(var i = this.tempUsers.length-1; i >= 0; i--)
-		// 	{
-		// 		if(now - this.tempUsers[i].tsCreated >= this.tempUsers[i].msLifetime)
-		// 		{
-		// 			this.destroyUser(this.tempUsers[i].user);
-		// 			this.tempUsers.splice(i, 1);
-		// 		}
-		// 	}
-		// }
-
 		if(this.isDirty)
 		{
 			//delete any inactive players that were marked for deletion
@@ -134,19 +96,6 @@ class UserManager {
 				{
 					var temp = this.inactiveUserArray.splice(i, 1);
 					
-					//free the user's id
-					// this.userIdArray[temp[0].id] = false;
-					// if(this.nextAvailableId < 0)
-					// {
-					// 	this.nextAvailableId = temp[0].id;
-					// }
-
-					//if the user wasn't a temp. store their data in the ianctiveUserArray
-					// if(!temp[0].bTempUser)
-					// {
-					// 	this.inactiveUserArray.push(temp[0]);
-					// }
-
 					console.log('inactive user deleted. username: ' + temp[0].username + ".    token: " + temp[0].token);
 				}
 			}
@@ -157,20 +106,6 @@ class UserManager {
 			console.log('user inactive current length: ' + this.inactiveUserArray.length);
 		}
 	}
-
-	// userVerified(user) {
-	// 	var tempUserIndex = this.tempUsers.findIndex((x) => {return x.user === user;});
-	// 	if(tempUserIndex >= 0)
-	// 	{
-	// 		var msToVerify = Date.now() - this.tempUsers[tempUserIndex].tsCreated;
-	// 		var temp = this.tempUsers.splice(this.tempUserIndex, 1);
-
-	// 		//unmark the user as a temp
-	// 		temp[0].user.bTempUser = false;
-
-	// 		console.log('UserManager: user id ' + user.id + ' verified (' + msToVerify + 'ms). Removed from temp user list.');
-	// 	}
-	// }
 
 	activateUser(user) {
 		var bError = false;
