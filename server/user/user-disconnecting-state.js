@@ -17,7 +17,7 @@ class UserDisconnectingState extends UserBaseState {
 		{
 			activeUsers[i].serverToClientEvents.push({
 				"eventName": "userDisconnected",
-				"activeUserId": this.user.activeId
+				"userId": this.user.id
 			});
 		}
 

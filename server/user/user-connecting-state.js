@@ -17,6 +17,7 @@ class UserConnectingState extends UserBaseState {
 			//tell existing users about the user that joined
 			activeUsers[i].serverToClientEvents.push({
 				"eventName": "userConnected",
+				"userId": this.user.id,
 				"activeUserId": this.user.activeId,
 				"username": this.user.username
 			});
@@ -26,6 +27,7 @@ class UserConnectingState extends UserBaseState {
 			{
 				this.user.serverToClientEvents.push({
 					"eventName": "existingUser",
+					"userId": activeUsers[i].userId,
 					"activeUserId": activeUsers[i].activeId,
 					"username": activeUsers[i].username
 				})

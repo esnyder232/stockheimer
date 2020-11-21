@@ -106,7 +106,8 @@ class GameServerRunning extends GameServerBaseState {
 
 				case "fromClientSelectedCharacterType":
 					var c = this.gs.cm.createCharacter();
-					//need the user's static id
+					c.userId = user.id;
+					
 					
 					break;
 				default:
