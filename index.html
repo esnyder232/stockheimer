@@ -30,6 +30,8 @@
 				<div class="scene-root hide" id="main-scene-root">
 					<div class="input-controls-div">
 						<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+						<input type="button" id="create-character" value="Create Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
+						<input type="button" id="kill-character" value="Kill Character" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
 					</div>
 					<div class="user-list" id="user-list">
 						<div class="user-list-item hide" id="user-list-item-template"></div>

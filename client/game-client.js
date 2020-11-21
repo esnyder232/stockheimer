@@ -15,6 +15,13 @@ export default class GameClient {
 		this.wsh = null;
 
 		this.users = []; //temp living location for users
+		this.characters = [];
+		
+		this.myUserId = null;
+		this.myUser = null;
+		this.myCharacter = null;
+		this.foundMyUser = false;
+		this.foundMyCharacter = false;
 
 		this.frameRate = 30; //fps
 		this.previousTick = 0;
@@ -67,6 +74,16 @@ export default class GameClient {
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
 		this.gameLoop();
+	}
+
+	reset() {
+		this.users.length = 0;
+		this.characters.length = 0;
+		this.myUserId = null;
+		this.myCharacter = null;
+		this.myUser = null;
+		this.foundMyUser = false;
+		this.foundMyCharacter = false;
 	}
 
 	gameLoop() {

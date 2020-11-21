@@ -236,6 +236,12 @@ class GameServer {
 			user.state = user.nextState;
 			user.nextState = null;
 
+			//tell the client about his/her own user id so they can identify themselves from other users
+			user.serverToClientEvents.push({
+				"eventName": "yourUser",
+				"userId": user.id
+			})
+
 			const Vec2 = this.pl.Vec2;
 			var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
 			var playerBody = this.world.createBody({

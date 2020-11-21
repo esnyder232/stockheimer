@@ -47,7 +47,7 @@ class CharacterManager {
 
 	
 	//this just marks the inactive character for deletion
-	destroyInactiveCharacter(character) {
+	destroyCharacter(character) {
 		character.deleteMe = true;
 		this.isDirty = true;
 		console.log('character marked for deletion. id: ' + character.id);

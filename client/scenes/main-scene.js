@@ -26,7 +26,9 @@ export default class MainScene extends Phaser.Scene {
 		];
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
-			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)}
+			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
+			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
+			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -219,6 +221,25 @@ export default class MainScene extends Phaser.Scene {
 			chatHistory[0].scrollTop = chatHistory[0].scrollHeight;
 		}
 	}
+
+	createCharacterClick() {
+		if(this.gc.myCharacter === null)
+		{
+			this.gc.wsh.clientToServerEvents.push({
+				"eventName": "fromClientSpawnCharacter"
+			});
+		}
+	}
+
+	killCharacterClick() {
+		if(this.gc.myCharacter !== null)
+		{
+			this.gc.wsh.clientToServerEvents.push({
+				"eventName": "fromClientKillCharacter"
+			});
+		}
+	}
+
 
 
 

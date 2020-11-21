@@ -18,7 +18,7 @@ class GameServerRunning extends GameServerBaseState {
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++)
 		{
-			this.processClientEvents(activeUsers[i], activeUsers);
+			this.processClientEvents(activeUsers[i]);
 		}
 
 		//update users
@@ -42,6 +42,7 @@ class GameServerRunning extends GameServerBaseState {
 		//update managers
 		this.gs.wsm.update(dt);
 		this.gs.um.update(dt);
+		this.gs.cm.update(dt);
 
 		this.gs.frameNum++;
 
@@ -87,7 +88,8 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.wsm.destroyWebsocket(wsh);
 	}
 
-	processClientEvents(user, activeUsers) {
+	processClientEvents(user) {
+		var activeUsers = this.gs.um.getActiveUsers();
 		for(var i = user.clientToServerEvents.length - 1; i >= 0; i--)
 		{
 			var e = user.clientToServerEvents[i];
@@ -104,12 +106,66 @@ class GameServerRunning extends GameServerBaseState {
 					}
 					break;
 
-				case "fromClientSelectedCharacterType":
-					var c = this.gs.cm.createCharacter();
-					c.userId = user.id;
-					
-					
+				case "fromClientSpawnCharacter":
+					//as long as they don't already have a character controlled, create one for the user.
+					if(user.characterId === null)
+					{
+						var c = this.gs.cm.createCharacter();
+						c.init(this.gs);
+						c.userId = user.id;
+						user.characterId = c.id;
+
+						var bError = this.gs.cm.activateCharacterId(c.id);
+						if(!bError)
+						{
+							//now tell all active clients about the new active character
+							for(var j = 0; j < activeUsers.length; j++)
+							{
+								activeUsers[j].serverToClientEvents.push( {
+									"eventName": "addActiveCharacter",
+									"userId": user.id,
+									"characterId": c.id,
+									"activeCharacterId": c.activeId,
+									"characterPosX": 5,
+									"characterPosY": 5,
+									"characterState": "",
+									"characterType": ""
+								})
+							}
+						}
+						else
+						{
+							console.log('Error when spawning character.');
+						}
+					}
 					break;
+
+				case "fromClientKillCharacter":
+					//as long as they have an existing character, kill it.
+					if(user.characterId !== null)
+					{
+						var c = this.gs.cm.getCharacterByID(user.characterId);
+
+						if(c && c.userId === user.id)
+						{
+							this.gs.cm.deactivateCharacterId(c.id);
+							user.characterId = null;
+							c.userId = null;
+	
+							this.gs.cm.destroyCharacter(c);
+							
+							//now tell all active clients about removing the active character
+							for(var j = 0; j < activeUsers.length; j++)
+							{
+								activeUsers[j].serverToClientEvents.push( {
+									"eventName": "removeActiveCharacter",
+									"characterId": c.id
+								});
+							}
+						}
+					}
+					break;
+
 				default:
 					//intentionally blank
 					break;

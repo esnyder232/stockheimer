@@ -10,7 +10,7 @@ class User {
 		this.isActive = false;
 
 		this.username = "";
-		this.wsId = 0;
+		this.wsId = null;
 
 		this.stateName = "";
 		this.state = null;
@@ -18,6 +18,8 @@ class User {
 
 		this.serverToClientEvents = []; //event queue to be processed by the packet system
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events coming from the client
+
+		this.characterId = null; //temp character id to establish a relationship between a user and character
 	}
 
 	init(gameServer) {
@@ -30,6 +32,7 @@ class User {
 	reset() {
 		this.serverToClientEvents = [];
 		this.clientToServerEvents = [];
+		this.characterId = null;
 	}
 
 	update(dt) {

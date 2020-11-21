@@ -53,12 +53,39 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 			var e = this.gc.wsh.serverToClientEvents[i];
 			switch(e.eventName)
 			{
+				case "yourUser":
+					this.gc.myUserId = e.userId;
+					console.log('MY USERID IS: ' + this.gc.myUserId);
+					
+					//try to find your own user if you can
+					var me = this.gc.users.find((x) => {return x.userId == this.gc.myUserId;});
+					if(!this.gc.foundMyUser && me)
+					{
+						this.gc.foundMyUser = true;
+						this.gc.myUser = me;
+						console.log('found my user from YourUser')
+						console.log(this.gc.myUser);
+					}
+					break;
+
 				case "userConnected":
 					this.gc.users.push({
 						userId: e.userId,
 						activeUserId: e.activeUserId,
 						username: e.username
 					});
+
+					//try to find your own user if you can
+					if(!this.gc.foundMyUser && this.gc.myUserId !== null)
+					{
+						var me = this.gc.users.find((x) => {return x.userId == this.gc.myUserId;});
+						if(me)
+						{
+							this.gc.foundMyUser = true;
+							this.gc.myUser = me;
+							console.log('found my user from UserConnected')
+						}
+					}
 
 					this.ms.userConnected(e);
 					break;
@@ -90,6 +117,64 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					this.ms.fromServerChatMessage(e);
 					break;
 				
+				case "addActiveCharacter":
+					var c = {
+						id: e.characterId,
+						userId: e.userId,
+						activeId: e.activeCharacterId,
+						x: e.characterPosX,
+						y: e.characterPosY,
+						state: e.characterState,
+						type: e.characterType
+					};
+
+					this.gc.characters.push(c)
+
+					//check if this is your character
+					if(this.gc.foundMyUser && !this.gc.foundMyCharacter)
+					{
+						console.log('checking if its my character');
+						console.log(this.gc.myUser);
+						if(c.userId === this.gc.myUser.userId)
+						{
+							this.gc.foundMyCharacter = true;
+							this.gc.myCharacter = c;
+						}
+					}
+
+					console.log('active character added');
+					console.log(this.gc.characters);
+					console.log(this.gc.myCharacter);
+					break;
+
+
+				case "removeActiveCharacter":
+					console.log('removeActiveCharacter event');
+					console.log(e);
+					var ci = this.gc.characters.findIndex((x) => {return x.id == e.characterId});
+
+					//if the character was found, splice it off the array
+					if(ci >= 0)
+					{
+						var temp = this.gc.characters.splice(ci, 1)[0];
+
+						//check if this is your character
+						if(this.gc.foundMyUser && this.gc.foundMyCharacter)
+						{
+							if(temp.userId == this.gc.myUser.userId)
+							{
+								this.gc.foundMyCharacter = false;
+								this.gc.myCharacter = null;
+							}
+						}
+
+						console.log('active character removed');
+						console.log(this.gc.characters);
+						console.log(this.gc.myCharacter);
+					}
+					
+					break;
+
 				default:
 					//intentionally blank
 					break;
