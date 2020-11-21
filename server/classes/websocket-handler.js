@@ -17,8 +17,8 @@ class WebsocketHandler {
 		this.gs = null;
 		this.ws = null;
 
-		this.id = 0;
-		this.userId = 0;
+		this.id = null;
+		this.userId = null;
 
 		this.localSequence = 0; 	//current local sequence number
 		this.remoteSequence = 0;	//most recent remote sequence number
@@ -271,7 +271,7 @@ class WebsocketHandler {
 		else if(this.localSequence < this.ack && (this.localSequence - (this.ack - this.localSequenceMaxValue)) >= this.gs.inactiveAckThreashold)
 		{
 			//user timed out. Inactivate them.
-			var u = this.gs.um.getUserByID(1006, this.userId);
+			var u = this.gs.um.getUserByID(this.userId);
 			console.log('A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
 			this.disconnectClient(1000, "User timed out server side.");
 		}

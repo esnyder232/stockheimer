@@ -154,7 +154,7 @@ class GameServer {
 			}
 
 			//check for max players
-			if(!authResult.bError && this.um.userArray.length >= this.um.maxAllowed)
+			if(!authResult.bError && this.um.activeUserArray.length >= this.um.maxAllowed)
 			{
 				authResult.bError = true;
 				authResult.errorMessage = "Server is full.";
@@ -185,7 +185,7 @@ class GameServer {
 			//get the user from the user manager. They SHOULD exist at this point
 			if(!authResult.bError)
 			{
-				authResult.user = this.um.getInactiveUserByToken(cookieSessionParsed);
+				authResult.user = this.um.getUserByToken(cookieSessionParsed);
 				if(!authResult.user)
 				{
 					authResult.bError = true;
@@ -197,7 +197,7 @@ class GameServer {
 			//at this point, if there is no error, the user has been verified. Tell the usermanager to switch the user from "inactive" to "active" users
 			if(!authResult.bError)
 			{
-				authResult.bError = this.um.activateUser(authResult.user);
+				authResult.bError = this.um.activateUserId(authResult.user.id);
 				if(authResult.bError)
 				{
 					authResult.errorMessage = "Unknown error when activating user.";
@@ -421,8 +421,8 @@ class GameServer {
 
 		try {
 			var gameData = {
-				currentPlayers: this.um.userArray.length,
-				maxPlayers: this.maxPlayers
+				currentPlayers: this.um.activeUserArray.length,
+				maxPlayers: this.um.maxActiveAllowed
 			}
 			main.push(gameData);
 		}
@@ -456,26 +456,15 @@ class GameServer {
 	
 			 //if a session exists, verify it from the session-manager.
 			if(sessionCookie) {
-				var session = this.um.getInactiveUserByToken(sessionCookie);
-				var activeSession = this.um.getUserByToken(sessionCookie);
+				var user = this.um.getUserByToken(sessionCookie);
 
-				if(session)
+				if(user)
 				{
 					bSessionExists = true;
-					userMessage = "Existing user session found for '" + session.username + "'.";
+					userMessage = "Existing user session found for '" + user.username + "'.";
 					
 					main.push({
-						username: session.username,
-						sessionExists: true
-					});
-				}
-				else if (activeSession)
-				{
-					bSessionExists = true;
-					userMessage = "Existing user session found for '" + activeSession.username + "'.";
-					
-					main.push({
-						username: activeSession.username,
+						username: user.username,
 						sessionExists: true
 					});
 				}
@@ -516,9 +505,15 @@ class GameServer {
 	
 			 //if a session exists, verify it from the session-manager.
 			if(sessionCookie) {
-				var inactiveUser = this.um.getInactiveUserByToken(sessionCookie);
-				var activeUser = this.um.getUserByToken(sessionCookie);
+				var user = this.um.getUserByToken(sessionCookie);
 
+
+				//the user was not found at all
+				if(!user)
+				{
+					bError = true;
+					userMessage = "That player is already deleted.";
+				}
 				//the user is currently playing. This scenario occurs when:
 				// 1) If they open up 2 browser windows, play in one, then try to clear their session in the other
 				// 2) If the player has really bad connection issues (or they pull the ethernet cable accidentally), and THEN refresh the page when they have the bad connection.
@@ -526,24 +521,18 @@ class GameServer {
 				//    The way around the 2nd problem is to have the game server detect a loss of acknowledgments for a number of seconds. If the server doesn't get acks for like, 10 seconds or so,
 				//	  the server should just consider the user disconnected and inactivate them.
 				//In any case, don't allow the user to destroy active users. Things will most likely break.
-				if(activeUser)
+				else if(user.isActive)
 				{
 					bError = true;
 					var periodText = Math.round(this.inactivePeriod/1000);
-					userMessage = "Player '" + activeUser.username + "' is currently active and playing. Please check if you have this game currently running in another window. If this player is you and you confirmed you have no other games running, your user will become inactive after " + periodText + " seconds";
+					userMessage = "Player '" + user.username + "' is currently active and playing. Please check if you have this game currently running in another window. If this player is you and you confirmed you have no other games running, your user will become inactive after " + periodText + " seconds";
 				}
 				//the user exists, and is inactive. Go ahead and destroy it.
-				else if(inactiveUser)
+				else if(!user.isActive)
 				{
-					this.um.destroyInactiveUser(inactiveUser);
-					userMessage = "Player '" + inactiveUser.username + "' was deleted.";
+					this.um.destroyUser(user);
+					userMessage = "Player '" + user.username + "' was deleted.";
 					res.clearCookie("user-session");
-				}
-				//the user was not found at all
-				else
-				{
-					bError = true;
-					userMessage = "That player is already deleted.";
 				}
 			}
 		}
@@ -595,7 +584,7 @@ class GameServer {
 			}
 
 			//check for max players
-			if(!bError && this.um.userArray.length >= this.um.maxAllowed)
+			if(!bError && this.um.activeUserArray.length >= this.um.maxActiveAllowed)
 			{
 				bError = true;
 				userMessage = "Server is full.";
@@ -609,24 +598,23 @@ class GameServer {
 	
 				//if a session exists, verify it from the session-manager.
 				if(reqSessionCookie) {
-					var userActive = this.um.getUserByToken(reqSessionCookie);
-					var userInactive = this.um.getInactiveUserByToken(reqSessionCookie);
+					var user = this.um.getUserByToken(reqSessionCookie);
 
+					//the only other scenario is if userInactive doesn't exist (This scenario means the user has never connected to this site before, or they erased their user session from the lobby with "start new play" button)
+					if(!user)
+					{
+						bUserExists = false;
+					}
 					//if the user is already active, deny connection to the new user (this scenario occurs when the user has 2 windows of the same browser connecting to the game at once. IE: 2 chrome tabs connecting to the same game)
-					if(userActive)
+					else if(user.isActive)
 					{
 						bError = true;
 						userMessage = "This user is already playing.";
 					}
 					//if the user is found and is inactive, just move on to the next step in the handshake (this scenario occurs when the user refreshes the browser after they have already connected to the game atleast once)
-					else if(userInactive)
+					else if(!user.isActive)
 					{
 						bUserExists = true;
-					}
-					//the only other scenario is if userInactive doesn't exist (This scenario means the user has never connected to this site before, or they erased their user session from the lobby with "start new play" button)
-					else
-					{
-						bUserExists = false;
 					}
 				}
 			}

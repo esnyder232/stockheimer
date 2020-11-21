@@ -13,7 +13,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	update(dt) {
-		var activeUsers = this.gs.um.getUsersByNotState("user-disconnected-state");
+		var activeUsers = this.gs.um.getActiveUsers();
 
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++)
@@ -98,10 +98,15 @@ class GameServerRunning extends GameServerBaseState {
 					{
 						activeUsers[j].serverToClientEvents.push({
 							"eventName": "fromServerChatMessage",
-							"userId": user.id,
+							"activeUserId": user.activeId,
 							"chatMsg": e.chatMsg
 						})
 					}
+					break;
+
+				case "fromClientSelectedCharacterType":
+					var c = this.gs.cm.createCharacter();
+					//need the user's static id
 					
 					break;
 				default:

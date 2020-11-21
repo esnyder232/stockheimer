@@ -11,13 +11,13 @@ class UserConnectingState extends UserBaseState {
 		console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 
-		var activeUsers = this.user.gs.um.getUsersByNotState("user-disconnected-state");
+		var activeUsers = this.user.gs.um.getActiveUsers();
 		for(var i = 0; i < activeUsers.length; i++)
 		{
 			//tell existing users about the user that joined
 			activeUsers[i].serverToClientEvents.push({
 				"eventName": "userConnected",
-				"userId": this.user.id,
+				"activeUserId": this.user.activeId,
 				"username": this.user.username
 			});
 
@@ -26,7 +26,7 @@ class UserConnectingState extends UserBaseState {
 			{
 				this.user.serverToClientEvents.push({
 					"eventName": "existingUser",
-					"userId": activeUsers[i].id,
+					"activeUserId": activeUsers[i].activeId,
 					"username": activeUsers[i].username
 				})
 			}

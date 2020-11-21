@@ -12,12 +12,12 @@ class UserDisconnectingState extends UserBaseState {
 		this.user.stateName = this.stateName;
 		
 		//tell existing users about the user that disconnected
-		var activeUsers = this.user.gs.um.getUsersByNotState("user-disconnected-state");
+		var activeUsers = this.user.gs.um.getActiveUsers();
 		for(var i = 0; i < activeUsers.length; i++)
 		{
 			activeUsers[i].serverToClientEvents.push({
 				"eventName": "userDisconnected",
-				"userId": this.user.id
+				"activeUserId": this.user.activeId
 			});
 		}
 
@@ -33,7 +33,7 @@ class UserDisconnectingState extends UserBaseState {
 	exit(dt) {
 		console.log(this.stateName + ' exit');
 
-		this.user.gs.um.inactivateUser(this.user);
+		this.user.gs.um.deactivateUserId(this.user.id);
 		this.user.reset();
 
 		super.exit(dt);

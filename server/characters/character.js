@@ -5,7 +5,7 @@ class Character {
 	constructor() {
 		this.gs = null;
 		this.id = null;
-		this.staticId = null;
+		this.activeId = null;
 		this.isActive = false;
 
 		this.userId = null;

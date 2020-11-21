@@ -55,7 +55,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 			{
 				case "userConnected":
 					this.gc.users.push({
-						userId: e.userId,
+						activeUserId: e.activeUserId,
 						username: e.username
 					});
 
@@ -65,7 +65,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					this.ms.userDisconnected(e);
 
 					var userIndex = this.gc.users.findIndex((x) => {
-						return x.userId == e.userId;
+						return x.activeUserId == e.activeUserId;
 					})
 
 					if(userIndex >= 0)
@@ -77,7 +77,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 				case "existingUser":
 					this.gc.users.push({
-						userId: e.userId,
+						activeUserId: e.activeUserId,
 						username: e.username
 					});
 

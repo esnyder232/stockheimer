@@ -5,8 +5,11 @@ const {UserDisconnectedState} = require("./user-disconnected-state.js");
 class User {
 	constructor() {
 		this.gs = null;
+		this.id = null;
+		this.activeId = null;
+		this.isActive = false;
+
 		this.username = "";
-		this.id = null; //needs to be null whe not active
 		this.wsId = 0;
 
 		this.stateName = "";

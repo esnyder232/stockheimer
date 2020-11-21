@@ -85,7 +85,7 @@ export default class MainScene extends Phaser.Scene {
 		//clear out all userDomElements
 		for(var i = this.userDomElements.length - 1; i >= 0; i--)
 		{
-			this.removeUser(this.userDomElements[i].userId);
+			this.removeUser(this.userDomElements[i].activeUserId);
 		}
 
 		$("#tb-chat-input").off("keyup");
@@ -98,19 +98,19 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	userConnected(e) {
-		this.addUser(e.userId, e.username);
+		this.addUser(e.activeUserId, e.username);
 	}
 
 	
 	userDisconnected(e) {
-		this.removeUser(e.userId);
+		this.removeUser(e.activeUserId);
 	}
 
 	existingUser(e) {
-		this.addUser(e.userId, e.username);
+		this.addUser(e.activeUserId, e.username);
 	}
 
-	addUser(userId, username)
+	addUser(activeUserId, username)
 	{
 		var userList = $("#user-list");
 		var userListItemTemplate = $("#user-list-item-template");
@@ -122,13 +122,13 @@ export default class MainScene extends Phaser.Scene {
 		userList.append(newUser);
 
 		this.userDomElements.push({
-			userId: userId,
+			activeUserId: activeUserId,
 			userListItem: newUser
 		});
 	}
 
-	removeUser(userId) {
-		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
+	removeUser(activeUserId) {
+		var udeIndex = this.userDomElements.findIndex((x) => {return x.activeUserId == activeUserId;});
 				
 		if(udeIndex >= 0)
 		{
@@ -184,7 +184,7 @@ export default class MainScene extends Phaser.Scene {
 		var newChatMsg = newChat.find("div[name='chat-history-msg']");
 
 
-		var u = this.gc.users.find((x) => {return x.userId == e.userId;});
+		var u = this.gc.users.find((x) => {return x.activeUserId == e.activeUserId;});
 		var username = "???";
 		if(u)
 		{

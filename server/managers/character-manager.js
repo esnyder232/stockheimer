@@ -4,15 +4,16 @@ const {Character} = require('../characters/character.js');
 class CharacterManager {
 	constructor() {
 		this.gs = null;
+		
+		this.idCounter = 0;
+		this.characterArray = [];		
+		this.idIndex = {};
+
 		this.nextAvailableActiveId = 0;
-		this.characterArray = [];
 		this.activeCharacterArray = [];
 		this.activeCharacterIdArray = [];
-
-		this.staticIdCounter = 0;
 		this.maxActiveAllowed = 256;
-
-		this.staticIdIndex = {};
+		
 		this.isDirty = false;
 	}
 
@@ -30,16 +31,16 @@ class CharacterManager {
 	createCharacter() {
 		var c = new Character();
 
-		c.staticId = this.staticIdCounter;
+		c.id = this.idCounter;
 		c.isActive = false;
-		this.staticIdCounter++;
+		this.idCounter++;
 
 		this.characterArray.push(c);
 		
-		this.staticIdIndex[c.staticId] = c;
+		this.idIndex[c.id] = c;
 		this.isDirty = true;
 
-		console.log('inactive character created. staticId: ' + c.staticId);
+		console.log('inactive character created. id: ' + c.id);
 
 		return c;
 	}
@@ -49,18 +50,18 @@ class CharacterManager {
 	destroyInactiveCharacter(character) {
 		character.deleteMe = true;
 		this.isDirty = true;
-		console.log('character marked for deletion. staticId: ' + character.staticId);
+		console.log('character marked for deletion. id: ' + character.id);
 	}
 
 	updateIndex() {
 		//just rebuild the index for now
-		this.staticIdIndex = {};
+		this.idIndex = {};
 
 		for(var i = 0; i < this.characterArray.length; i++)
 		{
 			if(this.characterArray[i])
 			{
-				this.staticIdIndex[this.characterArray[i].staticId] = this.characterArray[i];
+				this.idIndex[this.characterArray[i].id] = this.characterArray[i];
 			}
 		}
 	}
@@ -75,7 +76,7 @@ class CharacterManager {
 				{
 					var temp = this.characterArray.splice(i, 1);
 					
-					console.log("inactive character deleted. staticId: " + temp[0].staticId);
+					console.log("inactive character deleted. id: " + temp[0].id);
 				}
 			}
 
@@ -86,22 +87,22 @@ class CharacterManager {
 		}
 	}
 
-	activateCharacterStaticId(staticId) {
+	activateCharacterId(id) {
 		var bError = false;
-		var c = this.getCharacterByStaticID(staticId)
+		var c = this.getCharacterByID(id)
 
 		if(c && !c.isActive && this.nextAvailableActiveId >= 0)
 		{
 			this.activeCharacterArray.push(c);
 
-			c.id = this.nextAvailableActiveId;
+			c.activeId = this.nextAvailableActiveId;
 			c.isActive = true;
-			this.activeCharacterIdArray[this.nextAvailableActiveId] = true;
+			this.activeCharacterIdArray[this.activeId] = true;
 			this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeCharacterIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
 			
 			this.isDirty = true;
 
-			console.log('Character has been activated. staticId: ' + c.staticId + "    id: " + c.id);
+			console.log('Character has been activated. id: ' + c.id + "    activeId: " + c.activeId);
 			console.log('active character current length: ' + this.activeCharacterArray.length);
 		}
 		else
@@ -112,29 +113,29 @@ class CharacterManager {
 		return bError;
 	}
 
-	deactivateCharacterStaticId(staticId) {
+	deactivateCharacterId(id) {
 		var bError = false;
-		var c = this.getCharacterByStaticID(staticId)
-		var ci = this.activeCharacterArray.findIndex((x) => {return x.staticId == staticId;})
+		var c = this.getCharacterByID(id);
+		var ci = this.activeCharacterArray.findIndex((x) => {return x.id == id;});
 
 		if(c && c.isActive && ci >= 0)
 		{
 			var temp = this.activeCharacterArray.splice(ci, 1)[0];
-			temp.isActive = false;
-
-			this.activeCharacterIdArray[temp.id] = false;
+			
+			this.activeCharacterIdArray[temp.activeId] = false;
 			if(this.nextAvailableActiveId < 0)
 			{
-				this.nextAvailableActiveId = temp.id;
+				this.nextAvailableActiveId = temp.activeId;
 			}
 
 			this.isDirty = true;
 
-			console.log('Character has been deactivated. staticId: ' + temp.staticId + "    id: " + temp.id);
+			console.log('Character has been deactivated. id: ' + temp.id + "    activeId: " + temp.activeId);
 			console.log('active character current length: ' + this.activeCharacterArray.length);
 
 			//invalidate the id
-			temp.id = null;
+			temp.activeId = null;
+			temp.isActive = false;
 		}
 		else
 		{
@@ -145,10 +146,10 @@ class CharacterManager {
 	}
 
 
-	getCharacterByStaticID(staticId) {
-		if(this.staticIdIndex[staticId])
+	getCharacterByID(id) {
+		if(this.idIndex[id])
 		{
-			return this.staticIdIndex[staticId];
+			return this.idIndex[id];
 		}
 		else
 		{
