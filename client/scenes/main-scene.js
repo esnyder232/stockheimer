@@ -11,6 +11,7 @@ export default class MainScene extends Phaser.Scene {
 		this.radiansToDegreesRatio = 180/3.14
 		
 		this.userDomElements = [];	//list of json objects that contain user spcific dom elements
+		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
 
 		this.playerInputKeyboardMap = {};
 		this.playerController = {};
@@ -123,12 +124,59 @@ export default class MainScene extends Phaser.Scene {
 
 		userList.append(newUser);
 
+		
+
 		this.userDomElements.push({
 			userId: userId,
 			activeUserId: activeUserId,
 			userListItem: newUser
 		});
 	}
+
+	addActiveCharacter(e, c) {
+		console.log('adding box graphics');
+		var boxGraphics = this.add.graphics();
+		boxGraphics.lineStyle(1, 0x00ff00, 1);
+		boxGraphics.moveTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top left
+		boxGraphics.lineTo(0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top right
+		boxGraphics.lineTo(0.5 * this.planckUnitsToPhaserUnitsRatio, 0.5 * this.planckUnitsToPhaserUnitsRatio); //bottom right
+		boxGraphics.lineTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, 0.5 * this.planckUnitsToPhaserUnitsRatio); //bottom left
+		boxGraphics.lineTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top left
+
+		boxGraphics.closePath();
+		boxGraphics.strokePath();
+
+		boxGraphics.setX(0);
+		boxGraphics.setY(0);
+	
+		this.userPhaserElements.push({
+			characterId: c.id,
+			activeCharacterId: c.activeId,
+			boxGraphics: boxGraphics
+		});
+	}
+
+	removeActiveCharacter(e, c) {
+		var upeIndex = this.userPhaserElements.findIndex((x) => {return x.characterId === c.id;});
+		if(upeIndex >= 0)
+		{
+			this.userPhaserElements[upeIndex].boxGraphics.destroy();
+			this.userPhaserElements.splice(upeIndex, 1);
+		}
+	}
+
+
+	activeCharacterUpdate(e) {
+		var upe = this.userPhaserElements.find((x) => {return x.activeCharacterId === e.activeCharacterId;});
+		if(upe)
+		{
+			upe.boxGraphics.setX(e.characterPosX * this.planckUnitsToPhaserUnitsRatio);
+			upe.boxGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
+		}
+	}
+
+
+			
 
 	removeUser(userId) {
 		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
@@ -137,6 +185,7 @@ export default class MainScene extends Phaser.Scene {
 		{
 			//remove dom elements
 			this.userDomElements[udeIndex].userListItem.remove();
+
 
 			//remove the user itself from the list
 			this.userDomElements.splice(udeIndex, 1);

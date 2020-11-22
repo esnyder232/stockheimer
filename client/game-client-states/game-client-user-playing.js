@@ -142,20 +142,20 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 						}
 					}
 
-					console.log('active character added');
-					console.log(this.gc.characters);
-					console.log(this.gc.myCharacter);
+					this.ms.addActiveCharacter(e, c);
 					break;
 
 
 				case "removeActiveCharacter":
 					console.log('removeActiveCharacter event');
 					console.log(e);
+					
 					var ci = this.gc.characters.findIndex((x) => {return x.id == e.characterId});
 
 					//if the character was found, splice it off the array
 					if(ci >= 0)
 					{
+						
 						var temp = this.gc.characters.splice(ci, 1)[0];
 
 						//check if this is your character
@@ -168,17 +168,14 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 							}
 						}
 
-						console.log('active character removed');
-						console.log(this.gc.characters);
-						console.log(this.gc.myCharacter);
+						this.ms.removeActiveCharacter(e, temp);
 					}
 					
 					break;
 
 
 					case "activeCharacterUpdate":
-						console.log('activeCharacterUpdate event');
-						console.log(e);
+						this.ms.activeCharacterUpdate(e);
 						break;
 
 				default:
