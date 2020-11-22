@@ -46,6 +46,7 @@ class WebsocketHandler {
 		{
 			console.log("Code: " + code + ". Reason: " + reason);
 		}
+		
 		this.gs.gameState.websocketClosed(this);
 	}
 

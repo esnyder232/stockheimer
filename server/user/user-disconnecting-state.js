@@ -10,16 +10,6 @@ class UserDisconnectingState extends UserBaseState {
 	enter(dt) {
 		console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
-		
-		//tell existing users about the user that disconnected
-		var activeUsers = this.user.gs.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
-		{
-			activeUsers[i].serverToClientEvents.push({
-				"eventName": "userDisconnected",
-				"userId": this.user.id
-			});
-		}
 
 		super.enter(dt);
 	}
@@ -33,8 +23,21 @@ class UserDisconnectingState extends UserBaseState {
 	exit(dt) {
 		console.log(this.stateName + ' exit');
 
-		this.user.gs.um.deactivateUserId(this.user.id);
+		//clean up any relationships the user may have had
+		//this.gs.gameState.deactivateSLOs(this.user.characterId);
+		//this.gs.gameState.deactivateCharacterId(this.user.characterId);
+		this.user.gs.gameState.deactivateUserId(this.user.id);
+
+
+		//delete SLOs
+		//this.gs.slom.deleteSLO(sloID);
+		
+		//delete the character
+		//this.user.gs.cm.deleteCharacterId(this.user.characterId);
+		
+		//reset the user
 		this.user.reset();
+
 
 		super.exit(dt);
 	}

@@ -17,6 +17,7 @@ class UserManager {
 		this.maxActiveAllowed = 32;
 		
 		this.isDirty = false;
+		this.transactionQueue = [];
 	}
 
 	init(gameServer) {
@@ -52,14 +53,24 @@ class UserManager {
 		return u;
 	}
 
-
-
 	//this just marks the inactive player for deletion
 	//only destruction of INACTIVE users are allowed. Destroying an active user will most likely break the game.
-	destroyUser(user) {
-		user.deleteMe = true;
+	destroyUserId(id, cbSuccess, cbFail) {
+		this.transactionQueue.push({
+			"transaction": "delete",
+			"id": id,
+			"cbSuccess": cbSuccess,
+			"cbFail": cbFail
+		})
+
 		this.isDirty = true;
-		console.log('user marked for deletion. username: ' + user.username + ".    token: " + user.token);
+
+		//just for logging
+		var user = this.getUserByID(id)
+		if(user)
+		{
+			console.log('user marked for deletion. username: ' + user.username + ".    token: " + user.token);
+		}
 	}
 
 	updateIndex() {
@@ -80,15 +91,128 @@ class UserManager {
 	update() {
 		if(this.isDirty)
 		{
-			//delete any inactive players that were marked for deletion
-			for(var i = this.userArray.length-1; i >= 0; i--)
+
+			//process any transactions that occured this frame
+			if(this.transactionQueue.length > 0)
 			{
-				if(this.userArray[i].deleteMe && !this.userArray[i].isActive)
+				for(var i = 0; i < this.transactionQueue.length; i++)
 				{
-					var temp = this.userArray.splice(i, 1);
+					var bError = false;
+					var errorMessage = "";
+
+					var u = this.getUserByID(this.transactionQueue[i].id);
+					if(u)
+					{
+						switch(this.transactionQueue[i].transaction)
+						{
+							//delete the inactive user
+							case "delete":
+								if(!u.isActive)
+								{
+									var ui = this.userArray.findIndex((x) => {return x.id == u.id;});
+									if(ui >= 0)
+									{
+										var temp = this.userArray.splice(ui, 1);
+										console.log('inactive user deleted. username: ' + temp[0].username + ".    token: " + temp[0].token);
+									}
+								}
+								else
+								{
+									bError = true;
+									errorMessage = "User is still active.";
+								}
+								break;
+	
+							//deactivate the active user
+							case "deactivate":
+								if(u.isActive)
+								{
+									var ui = this.activeUserArray.findIndex((x) => {return x.id == u.id;})
+
+									if(ui >= 0)
+									{
+										var temp = this.activeUserArray.splice(ui, 1)[0];
+										this.activeUserIdArray[temp.activeId] = false;
+
+										if(this.nextAvailableActiveId < 0)
+										{
+											this.nextAvailableActiveId = temp.activeId;
+										}
+
+										console.log('User has been inactivated. username: ' + temp.username + '.   id: ' + temp.id);
+
+										//invalidate the id
+										temp.activeId = null;
+										temp.isActive = false;
+									}
+								}
+								else 
+								{
+									bError = true;
+									errorMessage = "User is already deactivated.";
+								}
+								break;
+	
+							//activate the inactive user
+							case "activate":
+								if(u.isActive)
+								{
+									bError = true;
+									errorMessage = "User is already activated.";
+								}
+
+								if(!bError && this.nextAvailableActiveId < 0)
+								{
+									bError = true;
+									errorMessage = "Max allowed activated users reached.";
+								}
+
+								if(!bError)
+								{
+									this.activeUserArray.push(u);
+
+									u.activeId = this.nextAvailableActiveId;
+									u.isActive = true;
+									this.activeUserIdArray[u.activeId] = true;
+									this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
+
+									console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+								}
+								break;
+							default:
+								//intentionally blank
+								break;
+						}
+					}
+					else
+					{
+						bError = false;
+						errorMessage = "User does not exist.";
+					}
+
 					
-					console.log('inactive user deleted. username: ' + temp[0].username + ".    token: " + temp[0].token);
+					if(bError)
+					{
+						console.log('UserManager transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+
+						//call the callback if it exists
+						if(this.transactionQueue[i].cbFail)
+						{
+							this.transactionQueue[i].cbFail(this.transactionQueue[i].id, errorMessage);
+						}
+					}
+					else
+					{
+						//call the callback if it exists
+						if(this.transactionQueue[i].cbSuccess)
+						{
+							this.transactionQueue[i].cbSuccess(this.transactionQueue[i].id);
+						}
+					}
 				}
+
+				//delete all transactions when done with processing them
+				this.transactionQueue.length = 0;
 			}
 
 			this.updateIndex();
@@ -98,60 +222,91 @@ class UserManager {
 		}
 	}
 
-	activateUserId(id) {
-		var bError = false;
-		var u = this.getUserByID(id);
+	//make a transaction object for the user
+	activateUserId(id, cbSuccess, cbFail) {
+		this.transactionQueue.push({
+			"transaction": "activate",
+			"id": id,
+			"cbSuccess": cbSuccess,
+			"cbFail": cbFail
+		});
+		this.isDirty = true;
+
+		//just for logging
+		var user = this.getUserByID(id)
+		if(user)
+		{
+			console.log('user marked for activation. username: ' + user.username + ".    token: " + user.token);
+		}
 		
-		if(u && !u.isActive && this.nextAvailableActiveId >= 0)
-		{
-			this.activeUserArray.push(u);
 
-			u.activeId = this.nextAvailableActiveId;
-			u.isActive = true;
-			this.activeUserIdArray[u.activeId] = true;
-			this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
+		// var bError = false;
+		// var u = this.getUserByID(id);
+		
+		// if(u && !u.isActive && this.nextAvailableActiveId >= 0)
+		// {
+		// 	this.activeUserArray.push(u);
 
-			this.isDirty = true;
+		// 	u.activeId = this.nextAvailableActiveId;
+		// 	u.isActive = true;
+		// 	this.activeUserIdArray[u.activeId] = true;
+		// 	this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
 
-			console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
-		}
-		else
-		{
-			bError = true; //not sure how it could get here
-		}
+		// 	this.isDirty = true;
 
-		return bError;
+		// 	console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+		// }
+		// else
+		// {
+		// 	bError = true; //not sure how it could get here
+		// }
+
+		// return bError;
 	}
 
-	deactivateUserId(id) {
-		var bError = false;
-		var u = this.getUserByID(id)
-		var ui = this.activeUserArray.findIndex((x) => {return x.id == id;})
+	deactivateUserId(id, cbSuccess, cbFail) {
+		this.transactionQueue.push({
+			"transaction": "deactivate",
+			"id": id,
+			"cbSuccess": cbSuccess,
+			"cbFail": cbFail
+		});
+		this.isDirty = true;
 
-		if(u && u.isActive && ui >= 0)
+		//just for logging
+		var user = this.getUserByID(id)
+		if(user)
 		{
-			var temp = this.activeUserArray.splice(ui, 1)[0];
-			this.activeUserIdArray[temp.activeId] = false;
-
-			if(this.nextAvailableActiveId < 0)
-			{
-				this.nextAvailableActiveId = temp.activeId;
-			}
-
-			this.isDirty = true;
-
-			console.log('User has been inactivated. username: ' + temp.username + '.   id: ' + temp.id);
-
-			//invalidate the id
-			temp.activeId = null;
-			temp.isActive = false;
+			console.log('user marked for deactifvation. username: ' + user.username + ".    token: " + user.token);
 		}
-		else
-		{
-			bError = true; //not sure how it could get here
-		}
+		// var bError = false;
+		// var u = this.getUserByID(id)
+		// var ui = this.activeUserArray.findIndex((x) => {return x.id == id;})
 
-		return bError;
+		// if(u && u.isActive && ui >= 0)
+		// {
+		// 	var temp = this.activeUserArray.splice(ui, 1)[0];
+		// 	this.activeUserIdArray[temp.activeId] = false;
+
+		// 	if(this.nextAvailableActiveId < 0)
+		// 	{
+		// 		this.nextAvailableActiveId = temp.activeId;
+		// 	}
+
+		// 	this.isDirty = true;
+
+		// 	console.log('User has been inactivated. username: ' + temp.username + '.   id: ' + temp.id);
+
+		// 	//invalidate the id
+		// 	temp.activeId = null;
+		// 	temp.isActive = false;
+		// }
+		// else
+		// {
+		// 	bError = true; //not sure how it could get here
+		// }
+
+		// return bError;
 	}
 
 

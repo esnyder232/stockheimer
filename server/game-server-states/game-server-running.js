@@ -65,14 +65,13 @@ class GameServerRunning extends GameServerBaseState {
 	websocketClosed(wsh) {
 		var user = this.gs.um.getUserByID(wsh.userId);
 
-		//put user in disconnecting state
-		//not sure why they would not have a user at this point, but better safe than sorry.
-		if(user)
+		//put user in disconnecting state if it was active
+		//Its important to check if its active, because it may not have been activated yet from the handshake since we are doing transactions now in the userManager
+		if(user && user.isActive)
 		{
 			user.nextState = new UserDisconnectingState(user);
+			this.gs.wsm.destroyWebsocket(wsh);
 		}
-
-		this.gs.wsm.destroyWebsocket(wsh);
 	}
 
 	websocketErrored(wsh) {
@@ -172,6 +171,26 @@ class GameServerRunning extends GameServerBaseState {
 			}
 
 			user.clientToServerEvents.splice(i, 1);
+		}
+	}
+
+	//deactivates the user and sends events out to the clients
+	deactivateUserId(userId) {
+		var u = this.gs.um.getUserByID(userId);
+		if(u && u.isActive)
+		{
+			//tell existing users about the user that disconnected
+			var activeUsers = this.gs.um.getActiveUsers();
+			for(var i = 0; i < activeUsers.length; i++)
+			{
+				activeUsers[i].serverToClientEvents.push({
+					"eventName": "userDisconnected",
+					"userId": u.id
+				});
+			}
+
+			//deactivate the user in the server manager
+			this.gs.um.deactivateUserId(u.id);
 		}
 	}
 }

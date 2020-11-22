@@ -195,15 +195,6 @@ class GameServer {
 			}
 
 			//at this point, if there is no error, the user has been verified. Tell the usermanager to switch the user from "inactive" to "active" users
-			if(!authResult.bError)
-			{
-				authResult.bError = this.um.activateUserId(authResult.user.id);
-				if(authResult.bError)
-				{
-					authResult.errorMessage = "Unknown error when activating user.";
-					authResult.userMessage = "Unknown error when activating user.";
-				}
-			}
 		}
 		catch(ex) {
 			authResult.bError = true;
@@ -227,20 +218,17 @@ class GameServer {
 			
 			//At this point, the user was only created, not initialized. So setup user now.
 			user.init(this);
-			user.nextState = new UserConnectingState(user);
 			user.wsId = wsh.id;
 
-			//manually run a state change from disconnected to connecting so it can be picked up by the game-server's update loop
-			user.state.exit(0);
-			user.nextState.enter(0);
-			user.state = user.nextState;
-			user.nextState = null;
+			//activate the user
+			this.um.activateUserId(user.id, this.cbUserActivateSuccess.bind(this), this.cbUserActivateFail.bind(this));
 
-			//tell the client about his/her own user id so they can identify themselves from other users
-			user.serverToClientEvents.push({
-				"eventName": "yourUser",
-				"userId": user.id
-			})
+			//setup the user's nextState
+			user.nextState = new UserConnectingState(user);
+			// user.state.exit(0);
+			// user.nextState.enter(0);
+			// user.state = user.nextState;
+			// user.nextState = null;
 
 			const Vec2 = this.pl.Vec2;
 			var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
@@ -262,6 +250,39 @@ class GameServer {
 			console.log(ex);
 		}
 	}
+
+
+	cbUserActivateSuccess(id) {
+		console.log('user activation success CB called');
+	}
+
+
+
+	//if user fails to be activated, do the opposite of everything you did in gameserver.onopen
+	cbUserActivateFail(id, failedReason) {
+		console.log('user activation failed CB called');
+
+		var user = this.um.getUserByID(id);
+		var wsh = this.wsm.getWebsocketByID(user.wsId);
+
+		//close the websocket
+		wsh.ws.close(1006, failedReason);
+
+		//unsetup the users state
+		user.nextState = null;
+
+		//deactivate the user (should already be deactivated...but do it anyway)
+		this.um.deactivateUserId(user.id);
+
+		//unsetup the user
+		user.reset();
+		user.wsId = null;
+
+		//destroy the websocket handler
+		this.wsm.destroyWebsocket(wsh);
+	}
+
+
 
 
 	getWorld() {
@@ -536,7 +557,7 @@ class GameServer {
 				//the user exists, and is inactive. Go ahead and destroy it.
 				else if(!user.isActive)
 				{
-					this.um.destroyUser(user);
+					this.um.destroyUserId(user.id);
 					userMessage = "Player '" + user.username + "' was deleted.";
 					res.clearCookie("user-session");
 				}

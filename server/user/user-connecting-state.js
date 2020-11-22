@@ -11,6 +11,13 @@ class UserConnectingState extends UserBaseState {
 		console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 
+		
+		//tell the client about his/her own user id so they can identify themselves from other users
+		this.user.serverToClientEvents.push({
+			"eventName": "yourUser",
+			"userId": this.user.id
+		})
+
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		for(var i = 0; i < activeUsers.length; i++)
 		{
