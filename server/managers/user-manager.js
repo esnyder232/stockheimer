@@ -28,6 +28,8 @@ class UserManager {
 		{
 			this.activeUserIdArray.push(false);
 		}
+
+		this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
 	}
 
 	//this creates an "inactive" user until the user officially opens the websocket connection
@@ -238,30 +240,6 @@ class UserManager {
 		{
 			console.log('user marked for activation. username: ' + user.username + ".    token: " + user.token);
 		}
-		
-
-		// var bError = false;
-		// var u = this.getUserByID(id);
-		
-		// if(u && !u.isActive && this.nextAvailableActiveId >= 0)
-		// {
-		// 	this.activeUserArray.push(u);
-
-		// 	u.activeId = this.nextAvailableActiveId;
-		// 	u.isActive = true;
-		// 	this.activeUserIdArray[u.activeId] = true;
-		// 	this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
-
-		// 	this.isDirty = true;
-
-		// 	console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
-		// }
-		// else
-		// {
-		// 	bError = true; //not sure how it could get here
-		// }
-
-		// return bError;
 	}
 
 	deactivateUserId(id, cbSuccess, cbFail) {
@@ -279,34 +257,6 @@ class UserManager {
 		{
 			console.log('user marked for deactifvation. username: ' + user.username + ".    token: " + user.token);
 		}
-		// var bError = false;
-		// var u = this.getUserByID(id)
-		// var ui = this.activeUserArray.findIndex((x) => {return x.id == id;})
-
-		// if(u && u.isActive && ui >= 0)
-		// {
-		// 	var temp = this.activeUserArray.splice(ui, 1)[0];
-		// 	this.activeUserIdArray[temp.activeId] = false;
-
-		// 	if(this.nextAvailableActiveId < 0)
-		// 	{
-		// 		this.nextAvailableActiveId = temp.activeId;
-		// 	}
-
-		// 	this.isDirty = true;
-
-		// 	console.log('User has been inactivated. username: ' + temp.username + '.   id: ' + temp.id);
-
-		// 	//invalidate the id
-		// 	temp.activeId = null;
-		// 	temp.isActive = false;
-		// }
-		// else
-		// {
-		// 	bError = true; //not sure how it could get here
-		// }
-
-		// return bError;
 	}
 
 
@@ -330,15 +280,6 @@ class UserManager {
 		{
 			return null;
 		}
-	}
-
-	//Just filter for now. I have a way to index this stuff if these become bottlenecks.
-	getUsersByState(userState) {
-		return this.activeUserArray.filter((x) => {return x.stateName == userState;});
-	}
-	
-	getUsersByStates(userStatesArr) {
-		return this.activeUserArray.filter((x) => {return userStatesArr.includes(x.stateName);});
 	}
 
 	getActiveUsers() {

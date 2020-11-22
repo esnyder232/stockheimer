@@ -225,10 +225,6 @@ class GameServer {
 
 			//setup the user's nextState
 			user.nextState = new UserConnectingState(user);
-			// user.state.exit(0);
-			// user.nextState.enter(0);
-			// user.state = user.nextState;
-			// user.nextState = null;
 
 			const Vec2 = this.pl.Vec2;
 			var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
@@ -266,7 +262,7 @@ class GameServer {
 		var wsh = this.wsm.getWebsocketByID(user.wsId);
 
 		//close the websocket
-		wsh.ws.close(1006, failedReason);
+		wsh.disconnectClient(1000, failedReason);
 
 		//unsetup the users state
 		user.nextState = null;

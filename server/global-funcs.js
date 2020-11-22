@@ -55,20 +55,22 @@ class GlobalFuncs {
 		var i = startingIndex;
 		var result = -1;
 
-		//finally...an applicable do while situation
-		do
+		if(i >= 0)
 		{
-			if(idArr[i] === false)
+			do
 			{
-				result = i;
-				break;
+				if(idArr[i] === false)
+				{
+					result = i;
+					break;
+				}
+	
+				i++;
+				i = i % maxAllowed;
 			}
-
-			i++;
-			i = i % maxAllowed;
+			while(i != startingIndex)
 		}
-		while(i != startingIndex)
-
+		
 		return result;
 	}
 	
