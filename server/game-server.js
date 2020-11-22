@@ -226,20 +226,20 @@ class GameServer {
 			//setup the user's nextState
 			user.nextState = new UserConnectingState(user);
 
-			const Vec2 = this.pl.Vec2;
-			var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
-			var playerBody = this.world.createBody({
-				position: Vec2(-10, -1),
-				type: this.pl.Body.DYNAMIC,
-				userData: {userId: user.id}
-			});
-			playerBody.createFixture({
-				shape: boxShape,
-				density: 1.0,
-				friction: 0.3
-			});	
+			// const Vec2 = this.pl.Vec2;
+			// var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
+			// var playerBody = this.world.createBody({
+			// 	position: Vec2(-10, -1),
+			// 	type: this.pl.Body.DYNAMIC,
+			// 	userData: {userId: user.id}
+			// });
+			// playerBody.createFixture({
+			// 	shape: boxShape,
+			// 	density: 1.0,
+			// 	friction: 0.3
+			// });	
 
-			user.playerBody = playerBody;
+			// user.playerBody = playerBody;
 		}
 		catch(ex) {
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);

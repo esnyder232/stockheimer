@@ -14,7 +14,8 @@ class GameServerRunning extends GameServerBaseState {
 
 	update(dt) {
 		var activeUsers = this.gs.um.getActiveUsers();
-
+		var activeCharacters = this.gs.cm.getActiveCharacters();
+		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++)
 		{
@@ -25,6 +26,27 @@ class GameServerRunning extends GameServerBaseState {
 		for(var i = 0; i < activeUsers.length; i++)
 		{
 			activeUsers[i].update(dt);
+		}
+
+		//update characters
+		for(var i = 0; i < activeCharacters.length; i++)
+		{
+			activeCharacters[i].update(dt);
+
+			//check if the character is awake. If so, send a positional update to active players
+			if(activeCharacters[i].plBody.isAwake())
+			{
+				for(var j = 0; j < activeUsers.length; j++)
+				{
+					var bodyPos = activeCharacters[i].plBody.getPosition();
+					activeUsers[j].serverToClientEvents.push({
+						"eventName": "activeCharacterUpdate",
+						"activeCharacterId": activeCharacters[i].activeId,
+						"characterPosX": bodyPos.x,
+						"characterPosY": bodyPos.y
+					})
+				}
+			}
 		}
 
 		//physics update
@@ -208,7 +230,7 @@ class GameServerRunning extends GameServerBaseState {
 					});
 				}
 
-				this.gs.cm.deactivateCharacterId(c.id);
+				this.gs.cm.deactivateCharacterId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
 				this.gs.cm.destroyCharacterId(c.id);
 
 				user.characterId = null;
@@ -216,6 +238,16 @@ class GameServerRunning extends GameServerBaseState {
 			}
 		}
 	}
+
+	cbDeactivateCharacterSuccess(characterId)
+	{
+		var c = this.gs.cm.getCharacterByID(characterId);
+		if(c)
+		{
+			c.reset();
+		}
+	}
+
 
 	//deactivates the user and sends events out to the clients
 	deactivateUserId(userId) {

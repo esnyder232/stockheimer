@@ -175,6 +175,12 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					
 					break;
 
+
+					case "activeCharacterUpdate":
+						console.log('activeCharacterUpdate event');
+						console.log(e);
+						break;
+
 				default:
 					//intentionally blank
 					break;
