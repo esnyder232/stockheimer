@@ -30,13 +30,34 @@ class UserConnectingState extends UserBaseState {
 			});
 
 			//if the current active user is not the one who just joined, send them an "existingUser" event
-			if(activeUsers[i].id != this.user.id)
+			if(activeUsers[i].id !== this.user.id)
 			{
 				this.user.serverToClientEvents.push({
 					"eventName": "existingUser",
-					"userId": activeUsers[i].userId,
+					"userId": activeUsers[i].id,
 					"activeUserId": activeUsers[i].activeId,
 					"username": activeUsers[i].username
+				});
+			}
+		}
+
+		//tell the client about the existing active characters
+		var activeCharacters = this.user.gs.cm.getActiveCharacters();
+		for(var i = 0; i < activeCharacters.length; i++)
+		{
+			//just to be safe
+			if(activeCharacters[i] && activeCharacters[i].isActive)
+			{
+				//now tell all active clients about the new active character
+				this.user.serverToClientEvents.push( {
+					"eventName": "addActiveCharacter",
+					"userId": activeCharacters[i].userId,
+					"characterId": activeCharacters[i].id,
+					"activeCharacterId": activeCharacters[i].activeId,
+					"characterPosX": 5,
+					"characterPosY": 5,
+					"characterState": "",
+					"characterType": ""
 				})
 			}
 		}

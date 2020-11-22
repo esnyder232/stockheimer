@@ -11,7 +11,7 @@ class UserManager {
 		this.idIndex = {};
 		this.tokenIndex = {};
 
-		this.nextAvailableActiveId = 0;
+		this.nextAvailableActiveId = -1;
 		this.activeUserArray = [];
 		this.activeUserIdArray = [];
 		this.maxActiveAllowed = 32;
@@ -93,7 +93,6 @@ class UserManager {
 	update() {
 		if(this.isDirty)
 		{
-
 			//process any transactions that occured this frame
 			if(this.transactionQueue.length > 0)
 			{

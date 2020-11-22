@@ -25,7 +25,7 @@ class UserDisconnectingState extends UserBaseState {
 
 		//clean up any relationships the user may have had
 		//this.gs.gameState.deactivateSLOs(this.user.characterId);
-		//this.gs.gameState.deactivateCharacterId(this.user.characterId);
+		this.user.gs.gameState.destroyUsersCharacter(this.user);
 		this.user.gs.gameState.deactivateUserId(this.user.id);
 
 

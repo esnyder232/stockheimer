@@ -19,6 +19,10 @@ class Character {
 		this.gs = gameServer;
 	}
 
+	reset() {
+		//intentionally blank for now
+	}
+
 	update(dt) {
 		//this.state.update();
 

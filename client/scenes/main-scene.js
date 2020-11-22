@@ -132,7 +132,7 @@ export default class MainScene extends Phaser.Scene {
 
 	removeUser(userId) {
 		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
-				
+		
 		if(udeIndex >= 0)
 		{
 			//remove dom elements
