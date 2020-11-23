@@ -1,9 +1,5 @@
 import GlobalFuncs from "../global-funcs.js"
 
-//BUG:
-// When the scene using this gets destroyed, for some reason I can't use the keys anymore outside of the scene.
-// IE: if there is a virtual button "jump" mapped to "z", when I exit the scene, I can no longer use the 'z' key for any input box in the browser.
-
 //the player class
 export default class PlayerController {
 	constructor(scene) {
@@ -37,6 +33,13 @@ export default class PlayerController {
 			}
 
 			virtualButton.keyCode = this.inputKeyboardMap[key];
+
+			//janky...
+			//TODO - currently, I have this:
+			// this.scene.input.keyboard.on(..) -> allows me to add an actual "on"/"off" event on a key
+			// this.scene.input.keyboard.addKey(...) -> turns off repeat keys
+			//
+			// I need to find a way to use ONE method, not both. Using both is wierd...
 			virtualButton.phaserKeyObj = this.scene.input.keyboard.addKey(this.inputKeyboardMap[key]);
 
 			this[key] = virtualButton;
@@ -49,7 +52,19 @@ export default class PlayerController {
 		{
 			this.scene.input.keyboard.on("keydown-"+this[key].phaserKeyCode, this.downFunc.bind(this));
 			this.scene.input.keyboard.on("keyup-"+this[key].phaserKeyCode, this.upFunc.bind(this));
+			this.scene.input.keyboard.addCapture(this[key].phaserKeyCode);
 		}
+	}
+
+	//should be called when the scene shutsdown	
+	shutdown() {
+		for(var key in this.inputKeyboardMap)
+		{
+			this.scene.input.keyboard.off("keydown-"+this[key].phaserKeyCode);
+			this.scene.input.keyboard.off("keyup-"+this[key].phaserKeyCode);
+			this.scene.input.keyboard.removeCapture(this[key].phaserKeyCode);
+		}
+
 	}
 
 	//create keyCode index for fast lookups. This needs to be recreated everytime a new mapping occurs

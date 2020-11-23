@@ -1,3 +1,4 @@
+import $ from "jquery"
 import Phaser from 'phaser';
 import GlobalFuncs from "./global-funcs.js"
 import GameClientLobby from "./game-client-states/game-client-lobby.js"
@@ -71,10 +72,27 @@ export default class GameClient {
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
+		//add events to allow users to type in the text boxes
+		var textboxes = $("input[type='text']");
+		textboxes.on("focus", () => {
+			this.phaserGame.input.keyboard.preventDefault = false;
+			this.phaserGame.input.keyboard.enabled = false;
+		});
+
+		textboxes.on("blur", () => {
+			this.phaserGame.input.keyboard.preventDefault = true;
+			this.phaserGame.input.keyboard.enabled = true;
+		})
+
+
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
 		this.gameLoop();
 	}
+
+
+
+
 
 	reset() {
 		this.users.length = 0;

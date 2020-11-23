@@ -167,8 +167,6 @@ export default class LobbyScene extends Phaser.Scene {
 			//try to connect to server
 			$.ajax({url: "./api/join-request", method: "POST", data: data})
 			.done((responseData, textStatus, xhr) => {
-				//at this point, it is safe to create the websocket connection
-				//this.createWebSocket();
 				this.gc.username = this.username;
 				this.gc.gameState.connectUserToServer();
 			})
@@ -215,34 +213,6 @@ export default class LobbyScene extends Phaser.Scene {
 			}
 		}
 	}
-
-
-	// oncloseTemp(e) {
-	// 	this.globalfuncs.appendToLog("Socket was closed unexpectedly when connecting.");
-	// 	console.log(e);
-
-	// 	this.currentlyConnecting = false;
-	// 	this.checkUsernameEnablePlayButton();
-	// 	this.enableUsername = !this.userSession.sessionExists;
-	// 	this.updateUI();
-	// }
-
-	// onerrorTemp(e) {
-	// 	this.globalfuncs.appendToLog("Socket errored when connecting.");
-	// 	console.log(e);
-
-	// 	this.currentlyConnecting = false;
-	// 	this.checkUsernameEnablePlayButton();
-	// 	this.enableUsername = !this.userSession.sessionExists;
-	// 	this.updateUI();
-	// }
-
-	// onopenTemp(e) {
-	// 	this.globalfuncs.appendToLog("Connected.");
-		
-	// 	//dispatch event so game manager can switch scenes.
-	// 	this.gc.changeState();
-	// }
 
 	update(timeElapsed, dt) {
 	

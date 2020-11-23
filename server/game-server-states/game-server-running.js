@@ -32,7 +32,15 @@ class GameServerRunning extends GameServerBaseState {
 		for(var i = 0; i < activeCharacters.length; i++)
 		{
 			activeCharacters[i].update(dt);
+		}
 
+		//physics update
+		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
+		
+
+		//notify clients for character changes
+		for(var i = 0; i < activeCharacters.length; i++)
+		{
 			//check if the character is awake. If so, send a positional update to active players
 			if(activeCharacters[i].plBody.isAwake())
 			{
@@ -49,9 +57,6 @@ class GameServerRunning extends GameServerBaseState {
 			}
 		}
 
-		//physics update
-		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
-		
 
 
 		//send an empty packet to all users
@@ -146,7 +151,11 @@ class GameServerRunning extends GameServerBaseState {
 					case "fromClientKillCharacter":
 						this.destroyUsersCharacter(user);
 						break;
-	
+
+					case "fromClientInputs":
+						user.inputQueue.push(e);
+						break;
+
 					default:
 						//intentionally blank
 						break;

@@ -61,7 +61,7 @@ class GameServer {
 		
 		if(!this.world) {
 			this.world = this.pl.World({
-				gravity: Vec2(0, -10)
+				gravity: Vec2(0, 0)
 			});
 		
 			//origin lines

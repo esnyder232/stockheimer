@@ -15,10 +15,21 @@ class Character {
 		this.nextState = null;
 
 		this.plBody = null;
+
+		this.inputController = {};
+		this.isInputDirty = false;
+
+		this.speedMag = 4;
 	}
 
 	init(gameServer) {
 		this.gs = gameServer;
+
+		//make simple little input controller
+		this.inputController.up = {state: false, prevState: false};
+		this.inputController.down = {state: false, prevState: false};
+		this.inputController.left = {state: false, prevState: false};
+		this.inputController.right = {state: false, prevState: false};
 
 		const pl = this.gs.pl;
 		const Vec2 = pl.Vec2;
@@ -30,6 +41,7 @@ class Character {
 		this.plBody = world.createBody({
 			position: Vec2(2.5, 3.0),
 			type: pl.Body.DYNAMIC,
+			fixedRotation: true,
 			userData: {characterId: this.id}
 		});
 		
@@ -46,7 +58,47 @@ class Character {
 	}
 
 	update(dt) {
+		const Vec2 = this.gs.pl.Vec2;
+
+		//update state
+		if(this.isInputDirty)
+		{
+			console.log('character input diry');
+
+			// b2Vec2 vel = body->GetLinearVelocity();
+			// float desiredVel = 0;
+			// switch ( moveState )
+			// {
+			//   case MS_LEFT:  desiredVel = -5; break;
+			//   case MS_STOP:  desiredVel =  0; break;
+			//   case MS_RIGHT: desiredVel =  5; break;
+			// }
+			// float velChange = desiredVel - vel.x;
+			// float impulse = body->GetMass() * velChange; //disregard time factor
+			// body->ApplyLinearImpulse( b2Vec2(impulse,0), body->GetWorldCenter() );
+
+
+			var currentVelocity = this.plBody.getLinearVelocity();
+			var desiredVelocityX = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.speedMag;
+			var desiredVelocityY = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.speedMag;
+
+			var f = this.plBody.getWorldVector(Vec2((desiredVelocityX - currentVelocity.x), (desiredVelocityY - currentVelocity.y)));
+			var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
+			this.plBody.applyLinearImpulse(f, p, true);
+		}
 		
+
+		//update input
+		if(this.isInputDirty)
+		{
+			for(var key in this.inputController)
+			{
+				this.inputController[key].prevState = this.inputController[key].state;
+			}
+			this.isInputDirty = false;
+		}
+
+		//change state
 		if(this.nextState)
 		{
 			this.state.exit();

@@ -20,6 +20,8 @@ class User {
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events coming from the client
 
 		this.characterId = null; //temp character id to establish a relationship between a user and character
+
+		this.inputQueue = [];
 	}
 
 	init(gameServer) {
@@ -36,10 +38,6 @@ class User {
 	}
 
 	update(dt) {
-		if(this.state === null)
-		{
-			console.log('STATE IS NULL for user ' + + this.usiderId + '!!!');
-		}
 		this.state.update();
 
 		if(this.nextState)

@@ -14,7 +14,7 @@ export default class MainScene extends Phaser.Scene {
 		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
 
 		this.playerInputKeyboardMap = {};
-		this.playerController = {};
+		this.playerController = null;
 	}
 
 	init(data) {
@@ -37,20 +37,16 @@ export default class MainScene extends Phaser.Scene {
 		
 		//mapping of actions to keyboard key codes. Export this to external file and load in on game startup.
 		this.playerInputKeyboardMap = {
-			left: 37,
-			right: 39,
-			up: 38,
-			down: 40,
-			jump: 90,
-			attackWeak: 88,
-			attackStrong: 67,
-			start: 13,
-			select: 32
+			left: 65,
+			right: 68,
+			up: 87,
+			down: 83
 		};
 
 		//custom register on keyup
 		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
 	}
+
 
 	preload() {
 		console.log('preload on ' + this.scene.key + ' start');
@@ -76,8 +72,8 @@ export default class MainScene extends Phaser.Scene {
 		this.yAxisGraphic.lineTo(0, 10);
 		this.yAxisGraphic.strokePath();
 
-		
 		this.playerController = new PlayerController(this);
+		this.playerController.init(this.playerInputKeyboardMap);
 	}
 
 	shutdown() {
@@ -92,8 +88,12 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		$("#tb-chat-input").off("keyup");
-
 		$("#main-scene-root").addClass("hide");
+
+		if(this.playerController !== null)
+		{
+			this.playerController.shutdown();
+		}
 	}
 
 	exitGameClick() {
@@ -193,7 +193,24 @@ export default class MainScene extends Phaser.Scene {
 	}
 	  
 	update(timeElapsed, dt) {
-		this.playerController.update();
+
+		// console.log('main-scene update');
+		if(this.playerController)
+		{
+			if(this.playerController.isDirty)
+			{
+				console.log('sending events');
+				this.gc.wsh.clientToServerEvents.push({
+					"eventName": "fromClientInputs",
+					"up": this.playerController.up.state,
+					"down": this.playerController.down.state,
+					"left": this.playerController.left.state,
+					"right": this.playerController.right.state
+				});
+			}
+	
+			this.playerController.update();
+		}
 	}
 
 
