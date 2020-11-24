@@ -20,6 +20,7 @@ class User {
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events coming from the client
 
 		this.characterId = null; //temp character id to establish a relationship between a user and character
+		this.bReadyToPlay = false; //flag that gets flipped when the user sends the "readyToPlay" event
 
 		this.inputQueue = [];
 	}
@@ -35,6 +36,7 @@ class User {
 		this.serverToClientEvents = [];
 		this.clientToServerEvents = [];
 		this.characterId = null;
+		this.bReadyToPlay = false;
 	}
 
 	update(dt) {

@@ -63,21 +63,6 @@ class Character {
 		//update state
 		if(this.isInputDirty)
 		{
-			console.log('character input diry');
-
-			// b2Vec2 vel = body->GetLinearVelocity();
-			// float desiredVel = 0;
-			// switch ( moveState )
-			// {
-			//   case MS_LEFT:  desiredVel = -5; break;
-			//   case MS_STOP:  desiredVel =  0; break;
-			//   case MS_RIGHT: desiredVel =  5; break;
-			// }
-			// float velChange = desiredVel - vel.x;
-			// float impulse = body->GetMass() * velChange; //disregard time factor
-			// body->ApplyLinearImpulse( b2Vec2(impulse,0), body->GetWorldCenter() );
-
-
 			var currentVelocity = this.plBody.getLinearVelocity();
 			var desiredVelocityX = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.speedMag;
 			var desiredVelocityY = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.speedMag;

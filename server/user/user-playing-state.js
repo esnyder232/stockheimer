@@ -10,6 +10,8 @@ class UserPlayingState extends UserBaseState {
 	enter(dt) {
 		console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
+
+		this.user.gs.um.userStartPlayingId(this.user.id);
 		super.enter(dt);
 	}
 
@@ -21,13 +23,12 @@ class UserPlayingState extends UserBaseState {
 			var c = this.user.gs.cm.getCharacterByID(this.user.characterId);
 			if(c !== null)
 			{
-				console.log('hello from user playing tstae');
 				//consolidate movement inputs
 				//for now, just take the last known input
 				var lastKnownInput = this.user.inputQueue[this.user.inputQueue.length - 1];
 
 				//consolidate fire inputs
-				//take first fireing input
+				//take first fireing input...when i actually have something to fire (bullets)
 
 				c.inputController.up.state = lastKnownInput.up;
 				c.inputController.down.state = lastKnownInput.down;
@@ -43,6 +44,7 @@ class UserPlayingState extends UserBaseState {
 
 	exit(dt) {
 		console.log(this.stateName + ' exit');
+		this.user.gs.um.userStopPlayingId(this.user.id);
 		super.exit(dt);
 	}
 }

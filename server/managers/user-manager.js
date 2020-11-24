@@ -15,6 +15,8 @@ class UserManager {
 		this.activeUserArray = [];
 		this.activeUserIdArray = [];
 		this.maxActiveAllowed = 32;
+
+		this.playingUserArray = [];
 		
 		this.isDirty = false;
 		this.transactionQueue = [];
@@ -116,6 +118,15 @@ class UserManager {
 										var temp = this.userArray.splice(ui, 1);
 										console.log('inactive user deleted. username: ' + temp[0].username + ".    token: " + temp[0].token);
 									}
+
+									//check if they were playing as well (they absolutely shouldn't be, but check anyway)
+									var playingIndex = this.playingUserArray.findIndex((x) => {return x.id === this.transactionQueue[i].id});
+
+									if(playingIndex >= 0)
+									{
+										this.playingUserArray.splice(playingIndex, 1);
+										console.log('WARNING: player has been deleted, but they were in the playingUserArray in UserManager. They have been removed from the playerUserArray.');
+									}
 								}
 								else
 								{
@@ -146,6 +157,16 @@ class UserManager {
 										temp.activeId = null;
 										temp.isActive = false;
 									}
+
+									//check if they were playing as well (they shouldn't be, but check anyway)
+									var playingIndex = this.playingUserArray.findIndex((x) => {return x.id === this.transactionQueue[i].id});
+
+									if(playingIndex >= 0)
+									{
+										this.playingUserArray.splice(playingIndex, 1);
+										console.log('WARNING: player has been deleted, but they were in the playingUserArray in UserManager. They have been removed from the playerUserArray.');
+									}
+
 								}
 								else 
 								{
@@ -180,6 +201,43 @@ class UserManager {
 									console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
 								}
 								break;
+
+							case "startPlaying":
+								//check to see if he's already added
+								var playingIndex = this.playingUserArray.findIndex((x) => {return x.id === this.transactionQueue[i].id});
+
+								if(playingIndex >= 0)
+								{
+									bError = true;
+									errorMessage = "User is already playing.";
+								}
+
+								if(!bError)
+								{
+									this.playingUserArray.push(u);
+
+									console.log('User has started playing. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+								}
+								break;
+							case "stopPlaying":
+								//check to see if he's already added
+								var playingIndex = this.playingUserArray.findIndex((x) => {return x.id === this.transactionQueue[i].id});
+
+								if(playingIndex < 0)
+								{
+									bError = true;
+									errorMessage = "User was not playing.";
+								}
+
+								if(!bError)
+								{
+									this.playingUserArray.splice(playingIndex, 1);
+
+									console.log('User has stopped playing. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+								}
+								break;
+
+
 							default:
 								//intentionally blank
 								break;
@@ -258,6 +316,45 @@ class UserManager {
 		}
 	}
 
+	//marks the user as starting to play
+	userStartPlayingId(id, cbSuccess, cbFail)
+	{
+		this.transactionQueue.push({
+			"transaction": "startPlaying",
+			"id": id,
+			"cbSuccess": cbSuccess,
+			"cbFail": cbFail
+		});
+		this.isDirty = true;
+
+		//just for logging
+		var user = this.getUserByID(id)
+		if(user)
+		{
+			console.log('user marked for start playing. username: ' + user.username + ".    token: " + user.token);
+		}
+	}
+
+	//marks the user as stopping to play
+	userStopPlayingId(id, cbSuccess, cbFail)
+	{
+		this.transactionQueue.push({
+			"transaction": "stopPlaying",
+			"id": id,
+			"cbSuccess": cbSuccess,
+			"cbFail": cbFail
+		});
+		this.isDirty = true;
+
+		//just for logging
+		var user = this.getUserByID(id)
+		if(user)
+		{
+			console.log('user marked for stop playing. username: ' + user.username + ".    token: " + user.token);
+		}
+	}
+
+
 
 	getUserByID(id) {
 		if(this.idIndex[id])
@@ -283,6 +380,10 @@ class UserManager {
 
 	getActiveUsers() {
 		return this.activeUserArray;
+	}
+
+	getPlayingUsers() {
+		return this.playingUserArray;
 	}
 }
 

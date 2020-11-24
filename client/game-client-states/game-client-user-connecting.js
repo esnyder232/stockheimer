@@ -37,14 +37,18 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			case 0:
 				break;
 			case 1:
-				this.globalfuncs.appendToLog("Connected.");
-				this.globalfuncs.appendToLog("Getting world state...");
-				
-				//for now, just go straight to user playing
-				this.recievingGameStateSuccess()
+				this.gc.ep.processServerEvents(null, this.cbPostEvent.bind(this));
+
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+
 				break;
 			case 2:
 				console.log('User connection complete. Letting the user play now.');
+
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+
 				this.gc.nextGameState = new GameClientUserPlaying(this.gc);
 				break;
 		}
@@ -59,6 +63,8 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 	}
 
 	websocketOpened() {
+		this.globalfuncs.appendToLog("Connected.");
+		this.globalfuncs.appendToLog("Getting world state...");
 		this.connectionState = 1;
 	}
 
@@ -74,8 +80,12 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
 	}
 
-	recievingGameStateSuccess() {
-		this.connectionState = 2;
-	}
 
+	//call back for EventProcessor's processServerEvents
+	cbPostEvent(e) {
+		if(e.eventName == "worldStateDone")
+		{
+			this.connectionState = 2;
+		}
+	}
 }

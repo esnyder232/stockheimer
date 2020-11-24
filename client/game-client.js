@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import GlobalFuncs from "./global-funcs.js"
 import GameClientLobby from "./game-client-states/game-client-lobby.js"
 import WebsocketHandler from "./classes/websocket-handler.js"
+import EventProcessor from "./classes/event-processor.js"
 
 export default class GameClient {
 	constructor() {
@@ -14,6 +15,7 @@ export default class GameClient {
 		this.nextGameState = null;
 
 		this.wsh = null;
+		this.ep = null;
 
 		this.users = []; //temp living location for users
 		this.characters = [];
@@ -37,8 +39,10 @@ export default class GameClient {
 		console.log('init on game client');
 		this.globalfuncs = new GlobalFuncs();
 		this.wsh = new WebsocketHandler();
+		this.ep = new EventProcessor();
 
 		this.wsh.init(this);
+		this.ep.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,

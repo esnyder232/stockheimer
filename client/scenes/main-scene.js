@@ -45,6 +45,18 @@ export default class MainScene extends Phaser.Scene {
 
 		//custom register on keyup
 		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
+
+		//initialize userlist
+		for(var i = 0; i < this.gc.users.length; i++)
+		{
+			this.addUser(this.gc.users[i]. userId);
+		}
+
+		//initialize active characters on screen
+		for(var i = 0; i < this.gc.characters.length; i++)
+		{
+			this.addActiveCharacter(this.gc.characters[i].id);
+		}
 	}
 
 
@@ -100,68 +112,94 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.gameState.exitGameClick();
 	}
 
-	userConnected(e) {
-		this.addUser(e.userId, e.activeUserId, e.username);
+	userConnected(userId) {
+		this.addUser(userId);
 	}
 
 	
-	userDisconnected(e) {
-		this.removeUser(e.userId);
+	userDisconnected(userId) {
+		this.removeUser(userId);
 	}
 
-	existingUser(e) {
-		this.addUser(e.userId, e.activeUserId, e.username);
+	existingUser(userId) {
+		this.addUser(userId);
 	}
 
-	addUser(userId, activeUserId, username)
+	addUser(userId)
 	{
-		var userList = $("#user-list");
-		var userListItemTemplate = $("#user-list-item-template");
-		
-		var newUser = userListItemTemplate.clone();
-		newUser.removeClass("hide");
-		newUser.text(username);
+		console.log('inside addUser');
+		console.log(userId)
+		var u = this.gc.users.find((x) => {return x.userId == userId;});
+		console.log(u);
 
-		userList.append(newUser);
-
-		
-
-		this.userDomElements.push({
-			userId: userId,
-			activeUserId: activeUserId,
-			userListItem: newUser
-		});
-	}
-
-	addActiveCharacter(e, c) {
-		console.log('adding box graphics');
-		var boxGraphics = this.add.graphics();
-		boxGraphics.lineStyle(1, 0x00ff00, 1);
-		boxGraphics.moveTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top left
-		boxGraphics.lineTo(0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top right
-		boxGraphics.lineTo(0.5 * this.planckUnitsToPhaserUnitsRatio, 0.5 * this.planckUnitsToPhaserUnitsRatio); //bottom right
-		boxGraphics.lineTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, 0.5 * this.planckUnitsToPhaserUnitsRatio); //bottom left
-		boxGraphics.lineTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top left
-
-		boxGraphics.closePath();
-		boxGraphics.strokePath();
-
-		boxGraphics.setX(0);
-		boxGraphics.setY(0);
-	
-		this.userPhaserElements.push({
-			characterId: c.id,
-			activeCharacterId: c.activeId,
-			boxGraphics: boxGraphics
-		});
-	}
-
-	removeActiveCharacter(e, c) {
-		var upeIndex = this.userPhaserElements.findIndex((x) => {return x.characterId === c.id;});
-		if(upeIndex >= 0)
+		if(u) 
 		{
-			this.userPhaserElements[upeIndex].boxGraphics.destroy();
-			this.userPhaserElements.splice(upeIndex, 1);
+			var userList = $("#user-list");
+			var userListItemTemplate = $("#user-list-item-template");
+			
+			var newUser = userListItemTemplate.clone();
+			newUser.removeClass("hide");
+			newUser.text(u.username);
+	
+			userList.append(newUser);
+	
+			
+	
+			this.userDomElements.push({
+				userId: u.userId,
+				activeUserId: u.activeUserId,
+				userListItem: newUser
+			});
+		}
+	}
+
+	addActiveCharacter(characterId) {
+		console.log('adding box graphics');
+		var c = this.gc.characters.find((x) => {return x.id === characterId;});
+		// var c = {
+			// 	id: e.characterId,
+			// 	userId: e.userId,
+			// 	activeId: e.activeCharacterId,
+			// 	x: e.characterPosX,
+			// 	y: e.characterPosY,
+			// 	state: e.characterState,
+			// 	type: e.characterType
+			// };
+		if(c)
+		{
+			var boxGraphics = this.add.graphics();
+			boxGraphics.lineStyle(1, 0x00ff00, 1);
+			boxGraphics.moveTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top left
+			boxGraphics.lineTo(0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top right
+			boxGraphics.lineTo(0.5 * this.planckUnitsToPhaserUnitsRatio, 0.5 * this.planckUnitsToPhaserUnitsRatio); //bottom right
+			boxGraphics.lineTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, 0.5 * this.planckUnitsToPhaserUnitsRatio); //bottom left
+			boxGraphics.lineTo(-0.5 * this.planckUnitsToPhaserUnitsRatio, -0.5 * this.planckUnitsToPhaserUnitsRatio); //top left
+
+			boxGraphics.closePath();
+			boxGraphics.strokePath();
+
+			boxGraphics.setX(0);
+			boxGraphics.setY(0);
+		
+			this.userPhaserElements.push({
+				characterId: c.id,
+				activeCharacterId: c.activeId,
+				boxGraphics: boxGraphics
+			});
+		}
+	}
+
+	removeActiveCharacter(characterId) {
+		var c = this.gc.characters.find((x) => {return x.id === characterId});
+
+		if(c)
+		{
+			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.characterId === c.id;});
+			if(upeIndex >= 0)
+			{
+				this.userPhaserElements[upeIndex].boxGraphics.destroy();
+				this.userPhaserElements.splice(upeIndex, 1);
+			}
 		}
 	}
 
@@ -199,7 +237,6 @@ export default class MainScene extends Phaser.Scene {
 		{
 			if(this.playerController.isDirty)
 			{
-				console.log('sending events');
 				this.gc.wsh.clientToServerEvents.push({
 					"eventName": "fromClientInputs",
 					"up": this.playerController.up.state,

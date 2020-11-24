@@ -14,6 +14,7 @@ class GameServerRunning extends GameServerBaseState {
 
 	update(dt) {
 		var activeUsers = this.gs.um.getActiveUsers();
+		var playingUsers = this.gs.um.getPlayingUsers();
 		var activeCharacters = this.gs.cm.getActiveCharacters();
 		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
@@ -38,16 +39,16 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 		
 
-		//notify clients for character changes
+		//notify playing users for character changes
 		for(var i = 0; i < activeCharacters.length; i++)
 		{
 			//check if the character is awake. If so, send a positional update to active players
 			if(activeCharacters[i].plBody.isAwake())
 			{
-				for(var j = 0; j < activeUsers.length; j++)
+				var bodyPos = activeCharacters[i].plBody.getPosition();
+				for(var j = 0; j < playingUsers.length; j++)
 				{
-					var bodyPos = activeCharacters[i].plBody.getPosition();
-					activeUsers[j].serverToClientEvents.push({
+					playingUsers[j].serverToClientEvents.push({
 						"eventName": "activeCharacterUpdate",
 						"activeCharacterId": activeCharacters[i].activeId,
 						"characterPosX": bodyPos.x,
@@ -154,6 +155,10 @@ class GameServerRunning extends GameServerBaseState {
 
 					case "fromClientInputs":
 						user.inputQueue.push(e);
+						break;
+
+					case "fromClientReadyToPlay":
+						user.bReadyToPlay = true;
 						break;
 
 					default:

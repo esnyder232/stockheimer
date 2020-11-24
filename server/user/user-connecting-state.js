@@ -10,26 +10,36 @@ class UserConnectingState extends UserBaseState {
 	enter(dt) {
 		console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
-
+		var activeUsers = this.user.gs.um.getActiveUsers();
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
 		this.user.serverToClientEvents.push({
 			"eventName": "yourUser",
 			"userId": this.user.id
 		})
-
-		var activeUsers = this.user.gs.um.getActiveUsers();
+		
+		//tell existing users about the user that joined
 		for(var i = 0; i < activeUsers.length; i++)
 		{
-			//tell existing users about the user that joined
 			activeUsers[i].serverToClientEvents.push({
 				"eventName": "userConnected",
 				"userId": this.user.id,
 				"activeUserId": this.user.activeId,
 				"username": this.user.username
 			});
+		}
 
-			//if the current active user is not the one who just joined, send them an "existingUser" event
+
+
+
+
+		/////////////////////////////////////
+		// SENDING WORLD STATE TO NEW USER //
+		/////////////////////////////////////
+
+		//if the current active user is not the one who just joined, send them an "existingUser" event
+		for(var i = 0; i < activeUsers.length; i++)
+		{
 			if(activeUsers[i].id !== this.user.id)
 			{
 				this.user.serverToClientEvents.push({
@@ -40,6 +50,7 @@ class UserConnectingState extends UserBaseState {
 				});
 			}
 		}
+
 
 		//tell the client about the existing active characters
 		var activeCharacters = this.user.gs.cm.getActiveCharacters();
@@ -62,12 +73,20 @@ class UserConnectingState extends UserBaseState {
 			}
 		}
 
+		//send a worldDone signal at the end
+		this.user.serverToClientEvents.push({
+			"eventName": "worldStateDone"
+		});
+
 		super.enter(dt);
 	}
 
 	update(dt) {
-		//for now, just go to the next state immediately
-		this.user.nextState = new UserPlayingState(this.user);
+		//wait for the "readyToPlay" signal from the client
+		if(this.user.bReadyToPlay)
+		{
+			this.user.nextState = new UserPlayingState(this.user);
+		}
 
 		super.update(dt);
 	}
