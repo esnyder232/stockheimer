@@ -48,7 +48,7 @@ class PacketSystem {
 
 			var bcontinue = true;
 
-			for(var i = user.serverToClientEvents.length - 1; i >= 0; i--)
+			for(var i = 0; i < user.serverToClientEvents.length; i++)
 			{
 				if(!bcontinue)
 				{
@@ -259,6 +259,9 @@ class PacketSystem {
 									break;
 							}
 						}
+
+						//increase event count
+						m++;
 					}
 					//the packet is full
 					else
@@ -266,11 +269,10 @@ class PacketSystem {
 						bcontinue = false;
 					}
 				}
-
-				//delete event for now
-				user.serverToClientEvents.splice(i, 1);
-				m++;
 			}
+
+			//delete events that were processed
+			user.serverToClientEvents.splice(0, m);
 	
 			view.setUint8(4, m); //payload event count
 			wsh.ws.send(buffer);

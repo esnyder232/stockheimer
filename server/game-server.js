@@ -7,6 +7,7 @@ const {ValidFuncs} = require('./valid-funcs.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {CharacterManager} = require('./managers/character-manager.js');
+const {ProjectileManager} = require('./managers/projectile-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {PacketSystem} = require ('./systems/packet-system.js');
@@ -49,11 +50,13 @@ class GameServer {
 		this.um = new UserManager();
 		this.ps = new PacketSystem();
 		this.cm = new CharacterManager();
+		this.pm = new ProjectileManager();
 		
 		this.wsm.init(this);
 		this.um.init(this);
 		this.ps.init(this);
 		this.cm.init(this);
+		this.pm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 		
@@ -393,7 +396,7 @@ class GameServer {
 			this.previousTick = performance.now();
 			if(this.gameState)
 			{
-				this.gameState.update();
+				this.gameState.update(this.frameTimeStep);
 			}
 
 			if(this.nextGameState)

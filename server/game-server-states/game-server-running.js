@@ -16,6 +16,7 @@ class GameServerRunning extends GameServerBaseState {
 		var activeUsers = this.gs.um.getActiveUsers();
 		var playingUsers = this.gs.um.getPlayingUsers();
 		var activeCharacters = this.gs.cm.getActiveCharacters();
+		var projectiles = this.gs.pm.projectileArray;
 		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++)
@@ -33,6 +34,12 @@ class GameServerRunning extends GameServerBaseState {
 		for(var i = 0; i < activeCharacters.length; i++)
 		{
 			activeCharacters[i].update(dt);
+		}
+
+		//update projectiles
+		for(var i = 0; i < projectiles.length; i++)
+		{
+			projectiles[i].update(dt);
 		}
 
 		//physics update
@@ -71,6 +78,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.wsm.update(dt);
 		this.gs.um.update(dt);
 		this.gs.cm.update(dt);
+		this.gs.pm.update(dt);
 
 		this.gs.frameNum++;
 

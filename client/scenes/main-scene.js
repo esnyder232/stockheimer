@@ -15,6 +15,14 @@ export default class MainScene extends Phaser.Scene {
 
 		this.playerInputKeyboardMap = {};
 		this.playerController = null;
+		var text1 = null;
+
+		//0 = "browser" mode
+		//1 = "phaser" mode
+		//When mode is "browser", the mouse is allowed to click on buttons, textboxes, scroll through stuff. The mouse events don't affect the gameplay.
+		//When mode is "phaser", the mouse events get processed by the game, and mouse events become ignored by all ui elements in the browser.
+		//For now, to switch modes, click "enter".
+		this.currentPointerMode = 0;
 	}
 
 	init(data) {
@@ -43,8 +51,13 @@ export default class MainScene extends Phaser.Scene {
 			down: 83
 		};
 
-		//custom register on keyup
+		//custom registers
 		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
+
+		//custom register on enter and stuff for pointer mode
+		$("#tb-chat-input").on("click", this.chatInputClick.bind(this));
+		$("#ui-div").on("click", this.uiDivClick.bind(this));
+		$(document).on("keyup", this.documentEnterClicked.bind(this));
 
 		//initialize userlist
 		for(var i = 0; i < this.gc.users.length; i++)
@@ -59,6 +72,16 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+	chatInputClick(e) {
+		return false; //make sure to return false here or the ui div will return the pointer mode to "phaser" 
+	}
+
+	uiDivClick(e) {
+		if(this.gc.myCharacter !== null)
+		{
+			this.switchPointerMode(1); //switch to phaser mode
+		}
+	}
 
 	preload() {
 		console.log('preload on ' + this.scene.key + ' start');
@@ -86,6 +109,9 @@ export default class MainScene extends Phaser.Scene {
 
 		this.playerController = new PlayerController(this);
 		this.playerController.init(this.playerInputKeyboardMap);
+
+
+		this.text1 = this.add.text(-400, -400, '', { fill: '#00ff00', fontSize: "44px"});
 	}
 
 	shutdown() {
@@ -100,6 +126,10 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		$("#tb-chat-input").off("keyup");
+		$("#tb-chat-input").off("click");
+		$("#ui-div").off("click");
+		$(document).off("keyup");
+
 		$("#main-scene-root").addClass("hide");
 
 		if(this.playerController !== null)
@@ -109,6 +139,7 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	exitGameClick() {
+		this.switchPointerMode(0); //switch to browser mode
 		this.gc.gameState.exitGameClick();
 	}
 
@@ -127,10 +158,7 @@ export default class MainScene extends Phaser.Scene {
 
 	addUser(userId)
 	{
-		console.log('inside addUser');
-		console.log(userId)
 		var u = this.gc.users.find((x) => {return x.userId == userId;});
-		console.log(u);
 
 		if(u) 
 		{
@@ -156,15 +184,6 @@ export default class MainScene extends Phaser.Scene {
 	addActiveCharacter(characterId) {
 		console.log('adding box graphics');
 		var c = this.gc.characters.find((x) => {return x.id === characterId;});
-		// var c = {
-			// 	id: e.characterId,
-			// 	userId: e.userId,
-			// 	activeId: e.activeCharacterId,
-			// 	x: e.characterPosX,
-			// 	y: e.characterPosY,
-			// 	state: e.characterState,
-			// 	type: e.characterType
-			// };
 		if(c)
 		{
 			var boxGraphics = this.add.graphics();
@@ -186,8 +205,31 @@ export default class MainScene extends Phaser.Scene {
 				activeCharacterId: c.activeId,
 				boxGraphics: boxGraphics
 			});
+
+			//check if this is your character your controlling. If it is, then switch pointer modes
+			if(this.gc.c !== null && c.id === this.gc.myCharacter.id)
+			{
+				this.switchPointerMode(1); //switch to phaser mode
+			}
 		}
 	}
+
+	switchPointerMode(mode)
+	{
+		if(mode === 1) //1 - phaser mode
+		{
+			this.currentPointerMode = 1;
+			$("#tb-chat-input").attr('placeholder','Hit enter to chat');
+			$("#ui-div").addClass("ignore-pointer-events");
+		}
+		else //0 - browser mode
+		{
+			this.currentPointerMode = 0;
+			$("#tb-chat-input").attr('placeholder','Chat message');
+			$("#ui-div").removeClass("ignore-pointer-events");
+		}
+	}
+
 
 	removeActiveCharacter(characterId) {
 		var c = this.gc.characters.find((x) => {return x.id === characterId});
@@ -199,10 +241,15 @@ export default class MainScene extends Phaser.Scene {
 			{
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
 				this.userPhaserElements.splice(upeIndex, 1);
+
+				//check if this is your character your controlling. If it is, then switch pointer modes
+				if(this.gc.c !== null && c.id === this.gc.myCharacter.id)
+				{
+					this.switchPointerMode(0); //switch to browser mode
+				}
 			}
 		}
 	}
-
 
 	activeCharacterUpdate(e) {
 		var upe = this.userPhaserElements.find((x) => {return x.activeCharacterId === e.activeCharacterId;});
@@ -213,9 +260,6 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
-
-			
-
 	removeUser(userId) {
 		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
 		
@@ -224,7 +268,6 @@ export default class MainScene extends Phaser.Scene {
 			//remove dom elements
 			this.userDomElements[udeIndex].userListItem.remove();
 
-
 			//remove the user itself from the list
 			this.userDomElements.splice(udeIndex, 1);
 		}
@@ -232,29 +275,61 @@ export default class MainScene extends Phaser.Scene {
 	  
 	update(timeElapsed, dt) {
 
-		// console.log('main-scene update');
-		if(this.playerController)
+		//if pointer mode is "phaser", capture the mouse position and update turret drawing
+		if(this.currentPointerMode === 1) //phaser mode
 		{
-			if(this.playerController.isDirty)
-			{
-				this.gc.wsh.clientToServerEvents.push({
-					"eventName": "fromClientInputs",
-					"up": this.playerController.up.state,
-					"down": this.playerController.down.state,
-					"left": this.playerController.left.state,
-					"right": this.playerController.right.state
-				});
-			}
-	
-			this.playerController.update();
+			var pointer = this.input.activePointer;
+
+			this.text1.setText([
+				'x: ' + pointer.worldX,
+				'y: ' + pointer.worldY,
+				'isDown: ' + pointer.isDown
+			]);
+
+			//STOPPED HERE - we have the pointer data now. We need to draw a turret, and send input data to the server when we click to spawn a projectile.
 		}
+	
+		//check if inputs were changed. If so, send and event to the server
+		if(this.playerController.isDirty)
+		{
+			//debugging
+			// var inputText = "";
+			// for(var key in this.playerInputKeyboardMap)
+			// {
+			// 	inputText += this.playerController[key].state ? '1' : '0';
+			// }
+			// console.log(inputText);
+
+			this.gc.wsh.clientToServerEvents.push({
+				"eventName": "fromClientInputs",
+				"up": this.playerController.up.state,
+				"down": this.playerController.down.state,
+				"left": this.playerController.left.state,
+				"right": this.playerController.right.state
+			});
+		}
+
+		this.playerController.update();
+		
 	}
 
+
+	//use this to enter "browser" pointer mode and focus on the chat input box
+	documentEnterClicked(e) {
+		//If the user clicks enter, focus on the chat input box, and turn the pointer mode into phaser mode
+		if(this.currentPointerMode === 1 && (e.code == "NumpadEnter" || e.code == "Enter")) {
+			$("#tb-chat-input").focus();
+			this.switchPointerMode(0); //switch to browser mode
+		}
+
+		return true;
+	}
 
 	tbChatInputKeyup(e) {
 		//If the user clicks enter, click the play button if its enabled.
 		if((e.code == "NumpadEnter" || e.code == "Enter")) {
 			this.tbChatSubmitClick();
+			return false; //don't allow it to propogate. Otherwise the pointer mode will turn back into phaser mode
 		}
 
 		return true;
@@ -276,6 +351,15 @@ export default class MainScene extends Phaser.Scene {
 				"eventName": "fromClientChatMessage",
 				"chatMsg": chatMsg
 			});
+		}
+		//if chat was blank, and they hit enter, AND they have a character to control, then switch pointer mode back to "phaser"
+		else
+		{
+			if(this.gc.myCharacter !== null)
+			{
+				this.switchPointerMode(1); //switch to phaser mode
+				tbChatInput[0].blur();
+			}
 		}
 	}
 
@@ -332,6 +416,7 @@ export default class MainScene extends Phaser.Scene {
 				"eventName": "fromClientSpawnCharacter"
 			});
 		}
+		$("#create-character")[0].blur();
 	}
 
 	killCharacterClick() {
@@ -341,6 +426,7 @@ export default class MainScene extends Phaser.Scene {
 				"eventName": "fromClientKillCharacter"
 			});
 		}
+		$("#kill-character")[0].blur();
 	}
 
 

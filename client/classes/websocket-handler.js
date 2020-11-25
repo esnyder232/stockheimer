@@ -321,7 +321,7 @@ export default class WebsocketHandler {
 
 		var bcontinue = true;
 
-		for(var i = this.clientToServerEvents.length - 1; i >= 0; i--)
+		for(var i = 0; i < this.clientToServerEvents.length; i++)
 		{
 			if(!bcontinue)
 			{
@@ -532,6 +532,9 @@ export default class WebsocketHandler {
 								break;
 						}
 					}
+					
+					//increase event count
+					m++;
 				}
 				//the packet is full
 				else
@@ -539,11 +542,10 @@ export default class WebsocketHandler {
 					bcontinue = false;
 				}
 			}
-
-			//delete event for now
-			this.clientToServerEvents.splice(i, 1);
-			m++;
 		}
+
+		//delete event for now
+		this.clientToServerEvents.splice(0, m);
 
 		view.setUint8(4, m); //payload event count
 		this.ws.send(buffer);

@@ -86,8 +86,7 @@ export default class GameClient {
 		textboxes.on("blur", () => {
 			this.phaserGame.input.keyboard.preventDefault = true;
 			this.phaserGame.input.keyboard.enabled = true;
-		})
-
+		});
 
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
