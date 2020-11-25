@@ -18,6 +18,8 @@ class UserPlayingState extends UserBaseState {
 	update(dt) {
 		super.update(dt);
 
+		var firingInputFound = false;
+
 		if(this.user.inputQueue.length > 0)
 		{
 			var c = this.user.gs.cm.getCharacterByID(this.user.characterId);
@@ -29,7 +31,16 @@ class UserPlayingState extends UserBaseState {
 
 				//consolidate fire inputs
 				//take first fireing input...when i actually have something to fire (bullets)
+				for(var i = 0; i < this.user.inputQueue.length; i++)
+				{
+					if(!firingInputFound)
+					{
+						firingInputFound = true;
+						
+					}
+				}
 
+				//assign states for the controller this frame
 				c.inputController.up.state = lastKnownInput.up;
 				c.inputController.down.state = lastKnownInput.down;
 				c.inputController.left.state = lastKnownInput.left;

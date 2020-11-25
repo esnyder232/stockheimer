@@ -23,6 +23,17 @@ export default class MainScene extends Phaser.Scene {
 		//When mode is "phaser", the mouse events get processed by the game, and mouse events become ignored by all ui elements in the browser.
 		//For now, to switch modes, click "enter".
 		this.currentPointerMode = 0;
+
+		this.targetX = 0;
+		this.targetY = 0;
+		this.targetLine = null;
+		this.targetLineGraphic = null;
+
+		this.isFiring = false;
+		this.prevIsFiring = false;
+		this.angle = 0;
+		this.prevAngle = 0;
+		this.angleSmallestDelta = 0.001;
 	}
 
 	init(data) {
@@ -110,6 +121,17 @@ export default class MainScene extends Phaser.Scene {
 		this.playerController = new PlayerController(this);
 		this.playerController.init(this.playerInputKeyboardMap);
 
+		this.targetLineGraphic = this.add.graphics({
+			lineStyle: {
+				width: 1.5,
+				color: 0xff0000
+			},
+			fillStyle: {
+				color: 0xff0000
+			}
+		});
+
+		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
 
 		this.text1 = this.add.text(-400, -400, '', { fill: '#00ff00', fontSize: "44px"});
 	}
@@ -207,7 +229,7 @@ export default class MainScene extends Phaser.Scene {
 			});
 
 			//check if this is your character your controlling. If it is, then switch pointer modes
-			if(this.gc.c !== null && c.id === this.gc.myCharacter.id)
+			if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
 			{
 				this.switchPointerMode(1); //switch to phaser mode
 			}
@@ -243,9 +265,12 @@ export default class MainScene extends Phaser.Scene {
 				this.userPhaserElements.splice(upeIndex, 1);
 
 				//check if this is your character your controlling. If it is, then switch pointer modes
-				if(this.gc.c !== null && c.id === this.gc.myCharacter.id)
+				if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
 				{
 					this.switchPointerMode(0); //switch to browser mode
+
+					//also destroy the target line
+					this.targetLineGraphic.clear();
 				}
 			}
 		}
@@ -274,43 +299,95 @@ export default class MainScene extends Phaser.Scene {
 	}
 	  
 	update(timeElapsed, dt) {
+		var sendInputEvent = false;
 
 		//if pointer mode is "phaser", capture the mouse position and update turret drawing
 		if(this.currentPointerMode === 1) //phaser mode
 		{
 			var pointer = this.input.activePointer;
 
+			this.targetLineGraphic.clear();
+
+			//redraw the target line
+			var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
+			var y1 = this.gc.myCharacter.y * this.planckUnitsToPhaserUnitsRatio * -1;
+			var x2 = pointer.worldX;
+			var y2 = pointer.worldY;
+
+			this.targetLine.x1 = x1;
+			this.targetLine.y1 = y1;
+
+			this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
+			this.angle = (Math.round((this.angle*1000))/1000)
+			
+			Phaser.Geom.Line.SetToAngle(this.targetLine, x1, y1, this.angle, 100);
+
+			this.targetLineGraphic.strokeLineShape(this.targetLine);
+
+			//debugging text
 			this.text1.setText([
 				'x: ' + pointer.worldX,
 				'y: ' + pointer.worldY,
-				'isDown: ' + pointer.isDown
+				'isDown: ' + pointer.isDown,
+				'angle: ' + this.angle
 			]);
 
-			//STOPPED HERE - we have the pointer data now. We need to draw a turret, and send input data to the server when we click to spawn a projectile.
+			//check to see if the user wants to fire a bullet
+			if(pointer.leftButtonDown())
+			{
+				this.isFiring = true;
+			}
+			else
+			{
+				this.isFiring = false;
+			}
 		}
 	
-		//check if inputs were changed. If so, send and event to the server
+		//if input changes, send the input event
 		if(this.playerController.isDirty)
 		{
 			//debugging
-			// var inputText = "";
-			// for(var key in this.playerInputKeyboardMap)
-			// {
-			// 	inputText += this.playerController[key].state ? '1' : '0';
-			// }
-			// console.log(inputText);
+			var inputText = "";
+			for(var key in this.playerInputKeyboardMap)
+			{
+				inputText += this.playerController[key].state ? '1' : '0';
+			}
+			console.log(inputText);
 
+			sendInputEvent = true;
+		}
+
+		//if the user fires/stops firing. send the input event
+		if(this.prevIsFiring != this.isFiring)
+		{
+			sendInputEvent = true;
+		}
+
+		//if the user is currently firing, and the angle changes, send the input event
+		if(this.isFiring && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
+		{
+			sendInputEvent = true;
+		}
+
+		//send the input event this frame if needed
+		if(sendInputEvent)
+		{
 			this.gc.wsh.clientToServerEvents.push({
 				"eventName": "fromClientInputs",
 				"up": this.playerController.up.state,
 				"down": this.playerController.down.state,
 				"left": this.playerController.left.state,
-				"right": this.playerController.right.state
+				"right": this.playerController.right.state,
+				"isFiring": this.isFiring,
+				"characterDirection": this.angle
 			});
 		}
 
+		console.log('isfiring: ' + this.isFiring);
+		//update inputs
 		this.playerController.update();
-		
+		this.prevAngle = this.angle;
+		this.prevIsFiring = this.isFiring;
 	}
 
 

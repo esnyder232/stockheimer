@@ -130,7 +130,7 @@ export default class GameClient {
 		if(performance.now() - this.previousTick < this.frameTimeStep)
 		{
 			//the +1 is because apparently this was getting called BEFORE the 'frameTimeStep'...whatever
-			setTimeout(this.gameLoop.bind(this), this.frameTimeStep+1);
+			window.setTimeout(this.gameLoop.bind(this), this.frameTimeStep+1);
 		}
 	}
 }
@@ -138,3 +138,6 @@ export default class GameClient {
 //feels like a hacky way to start...oh well. Its simple atleast.
 var gc = new GameClient();
 gc.init();
+
+//adding game client to phaser global library is for debugging purposes;
+Phaser.myGameClient = gc;
