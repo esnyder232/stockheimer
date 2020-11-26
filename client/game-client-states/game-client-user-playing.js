@@ -63,6 +63,10 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					this.ms.removeActiveCharacter(e.characterId);
 					break;
 
+				case "removeProjectile":
+					this.ms.removeProjectile(e);
+					break;
+
 				default:
 					//intentionally blank
 					break;
@@ -94,6 +98,13 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					this.ms.activeCharacterUpdate(e);
 					break;
 
+				case "addProjectile":
+					this.ms.addProjectile(e);
+					break;
+
+				case "projectileUpdate":
+					this.ms.projectileUpdate(e);
+					break;
 				default:
 					//intentionally blank
 					break;

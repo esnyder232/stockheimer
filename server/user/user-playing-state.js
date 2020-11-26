@@ -23,32 +23,17 @@ class UserPlayingState extends UserBaseState {
 		if(this.user.inputQueue.length > 0)
 		{
 			var c = this.user.gs.cm.getCharacterByID(this.user.characterId);
+
+			//if you are currently controlling a character, just pass the input events to the character itself
 			if(c !== null)
 			{
-				//consolidate movement inputs
-				//for now, just take the last known input
-				var lastKnownInput = this.user.inputQueue[this.user.inputQueue.length - 1];
-
-				//consolidate fire inputs
-				//take first fireing input...when i actually have something to fire (bullets)
 				for(var i = 0; i < this.user.inputQueue.length; i++)
 				{
-					if(!firingInputFound)
-					{
-						firingInputFound = true;
-						
-					}
+					c.inputQueue.push(this.user.inputQueue[i]);
 				}
-
-				//assign states for the controller this frame
-				c.inputController.up.state = lastKnownInput.up;
-				c.inputController.down.state = lastKnownInput.down;
-				c.inputController.left.state = lastKnownInput.left;
-				c.inputController.right.state = lastKnownInput.right;
-
-				c.isInputDirty = true;	//kinda wierd the diry flag set is HERE and not in the charcter...but whatever
 			}
 			
+			//clear out input queue at end of frame
 			this.user.inputQueue.length = 0;
 		}
 	}

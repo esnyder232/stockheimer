@@ -19,6 +19,7 @@ export default class GameClient {
 
 		this.users = []; //temp living location for users
 		this.characters = [];
+		this.projectiles = [];
 		
 		this.myUserId = null;
 		this.myUser = null;
@@ -100,6 +101,7 @@ export default class GameClient {
 	reset() {
 		this.users.length = 0;
 		this.characters.length = 0;
+		this.projectiles.length = 0;
 		this.myUserId = null;
 		this.myCharacter = null;
 		this.myUser = null;

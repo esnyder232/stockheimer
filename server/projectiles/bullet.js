@@ -8,62 +8,94 @@ class Bullet {
 		this.characterId = null;
 
 		this.plBody = null;
-		this.speedMag = 8;
-		this.lifespan = 3000; //ms
-	}
-
-	init(gameServer) {
-		this.gs = gameServer;
-	}
-
-	reset() {
-		//this.gs.world.destroyBody(this.plBody);
-		this.plBody = null;
+		this.speedMag = 0.8;
+		this.lifespan = 1000; //ms
+		this.xStarting = 0;
+		this.yStarting = 0;
+		this.angle = 0;
 	}
 
 	//angle is in radians
-	createPlankObject(xc, yc, angle) {
-		// const pl = this.gs.pl;
-		// const Vec2 = pl.Vec2;
-		// const world = this.gs.world;
+	//whateveR!!!
+	init(gameServer, xc, yc, angle, size, speed, lifespan, density) {
+		this.gs = gameServer;
+		this.xStarting = xc + ((0.5+(size))*Math.cos(angle));
+		this.yStarting = yc + ((0.5+(size))*Math.sin(angle)*-1);
+		this.angle = angle;
+		this.lifespan = lifespan;
 
-		// //create a plank box
-		// var boxShape = pl.Box(0.5, 0.5, Vec2(0, 0));
+		const pl = this.gs.pl;
+		const Vec2 = pl.Vec2;
+		const world = this.gs.world;
 
-		// this.plBody = world.createBody({
-		// 	position: Vec2(2.5, 3.0),
-		// 	type: pl.Body.DYNAMIC,
-		// 	fixedRotation: true,
-		// 	userData: {characterId: this.id}
-		// });
+		//create a plank object
+		var boxShape = pl.Box(size, size, Vec2(0, 0));
+
+		this.plBody = world.createBody({
+			position: Vec2(this.xStarting, this.yStarting),
+			type: pl.Body.DYNAMIC,
+			fixedRotation: true,
+			userData: {characterId: this.id}
+		});
 		
-		// this.plBody.createFixture({
-		// 	shape: boxShape,
-		// 	density: 1.0,
-		// 	friction: 0.3
-		// });	
+		this.plBody.createFixture({
+			shape: boxShape,
+			density: density,
+			friction: 0.0
+		});	
 
+		var vy = speed * Math.sin(angle) * -1;
+		var vx = speed * Math.cos(angle);
 
-
-		// //update state
-		// var currentVelocity = this.plBody.getLinearVelocity();
-		// var desiredVelocityX = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.speedMag;
-		// var desiredVelocityY = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.speedMag;
-
-		// var f = this.plBody.getWorldVector(Vec2((desiredVelocityX - currentVelocity.x), (desiredVelocityY - currentVelocity.y)));
-		// var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
-		// this.plBody.applyLinearImpulse(f, p, true);
-
-
+		//set the velocity
+		var f = this.plBody.getWorldVector(Vec2(vx*density, vy*density));
+		var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
+		this.plBody.applyLinearImpulse(f, p, true);
 	}
 
+	reset() {
+		if(this.plBody)
+		{
+			this.gs.world.destroyBody(this.plBody);
+			this.plBody = null;
+		}		
+	}
 
 	update(dt) {
 		this.lifespan -= dt;
 
-		if(this.lifespan <= 0)
+		if(this.plBody)
 		{
-			this.gs.pm.destroyProjectileId(this.id);
+			var pos = this.plBody.getPosition();
+
+			//tell the clients about the projectile's new position. This is gonna break the server :)
+			var playingUsers = this.gs.um.getPlayingUsers();
+			for(var i = 0; i < playingUsers.length; i++)
+			{
+				playingUsers[i].serverToClientEvents.push({
+					"eventName": "projectileUpdate",
+					"id": this.id,
+					"x": pos.x,
+					"y": pos.y,
+					"angle": this.angle
+				});
+			}
+	
+	
+			if(this.lifespan <= 0)
+			{
+				this.gs.pm.destroyProjectileId(this.id);
+				this.reset();
+
+				//tell the clients about the destroyed projectile
+				for(var i = 0; i < playingUsers.length; i++)
+				{
+					playingUsers[i].serverToClientEvents.push({
+						"eventName": "removeProjectile",
+						"id": this.id
+					});
+				}
+			}
 		}
 	}
 }

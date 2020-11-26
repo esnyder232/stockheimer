@@ -138,6 +138,35 @@ export default class EventProcessor {
 						}
 						break;
 
+					case "addProjectile":
+						this.gc.projectiles.push({
+							id: e.id,
+							x: e.x,
+							y: e.y,
+							angle: e.angle,
+							size: e.size
+						});
+						break;
+
+					case "removeProjectile":
+						var pIndex = this.gc.projectiles.findIndex((x) => {return x.id == e.id});
+
+						if(pIndex >= 0)
+						{
+							this.gc.projectiles.splice(pIndex, 1)[0];
+						}
+						break;
+
+					case "projectileUpdate":
+						var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
+						if(p)
+						{
+							p.x = e.x;
+							p.y = e.y;
+							p.angle = e.angle;
+						}
+						break;
+
 				default:
 					//intentionally blank
 					break;

@@ -12,6 +12,7 @@ export default class MainScene extends Phaser.Scene {
 		
 		this.userDomElements = [];	//list of json objects that contain user spcific dom elements
 		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
+		this.projectilePhaserElements = []; 
 
 		this.playerInputKeyboardMap = {};
 		this.playerController = null;
@@ -30,7 +31,9 @@ export default class MainScene extends Phaser.Scene {
 		this.targetLineGraphic = null;
 
 		this.isFiring = false;
+		this.isFiringAlt = false;
 		this.prevIsFiring = false;
+		this.prevIsFiringAlt = false;
 		this.angle = 0;
 		this.prevAngle = 0;
 		this.angleSmallestDelta = 0.001;
@@ -243,13 +246,22 @@ export default class MainScene extends Phaser.Scene {
 			this.currentPointerMode = 1;
 			$("#tb-chat-input").attr('placeholder','Hit enter to chat');
 			$("#ui-div").addClass("ignore-pointer-events");
+
+			document.body.addEventListener('contextmenu', this.contextMenuStopper.bind(this));
 		}
 		else //0 - browser mode
 		{
 			this.currentPointerMode = 0;
 			$("#tb-chat-input").attr('placeholder','Chat message');
 			$("#ui-div").removeClass("ignore-pointer-events");
+
+			document.body.removeEventListener('contextmenu', this.contextMenuStopper.bind(this));
 		}
+	}
+
+	contextMenuStopper(e) {
+		e.preventDefault();
+		return false;
 	}
 
 
@@ -341,18 +353,29 @@ export default class MainScene extends Phaser.Scene {
 			{
 				this.isFiring = false;
 			}
+
+			//firing alt
+			if(pointer.rightButtonDown())
+			{
+				this.isFiringAlt = true;
+			}
+			else
+			{
+				this.isFiringAlt = false;
+			}
+
 		}
 	
 		//if input changes, send the input event
 		if(this.playerController.isDirty)
 		{
 			//debugging
-			var inputText = "";
-			for(var key in this.playerInputKeyboardMap)
-			{
-				inputText += this.playerController[key].state ? '1' : '0';
-			}
-			console.log(inputText);
+			// var inputText = "";
+			// for(var key in this.playerInputKeyboardMap)
+			// {
+			// 	inputText += this.playerController[key].state ? '1' : '0';
+			// }
+			// console.log(inputText);
 
 			sendInputEvent = true;
 		}
@@ -363,8 +386,13 @@ export default class MainScene extends Phaser.Scene {
 			sendInputEvent = true;
 		}
 
+		if(this.prevIsFiringAlt != this.isFiringAlt)
+		{
+			sendInputEvent = true;
+		}
+
 		//if the user is currently firing, and the angle changes, send the input event
-		if(this.isFiring && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
+		if((this.isFiring || this.isFiringAlt) && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
 		{
 			sendInputEvent = true;
 		}
@@ -379,15 +407,16 @@ export default class MainScene extends Phaser.Scene {
 				"left": this.playerController.left.state,
 				"right": this.playerController.right.state,
 				"isFiring": this.isFiring,
+				"isFiringAlt": this.isFiringAlt,
 				"characterDirection": this.angle
 			});
 		}
 
-		console.log('isfiring: ' + this.isFiring);
 		//update inputs
 		this.playerController.update();
 		this.prevAngle = this.angle;
 		this.prevIsFiring = this.isFiring;
+		this.prevIsFiringAlt = this.isFiringAlt;
 	}
 
 
@@ -506,6 +535,61 @@ export default class MainScene extends Phaser.Scene {
 		$("#kill-character")[0].blur();
 	}
 
+
+	addProjectile(e) {
+		var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
+		if(p)
+		{
+			var boxGraphics = this.add.graphics();
+
+			boxGraphics.lineStyle(1, 0x00ffff, 1);
+			boxGraphics.moveTo(-p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top left
+			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top right
+			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, p.size * this.planckUnitsToPhaserUnitsRatio); //bottom right
+			boxGraphics.lineTo(-p.size * this.planckUnitsToPhaserUnitsRatio, p.size * this.planckUnitsToPhaserUnitsRatio); //bottom left
+			boxGraphics.lineTo(-p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top left
+
+			boxGraphics.closePath();
+			boxGraphics.strokePath();
+
+			boxGraphics.setX(p.x * this.planckUnitsToPhaserUnitsRatio);
+			boxGraphics.setY(p.y * this.planckUnitsToPhaserUnitsRatio * -1);
+		
+			this.projectilePhaserElements.push({
+				id: p.id,
+				x: p.x,
+				y: p.y,
+				angle: p.angle,
+				boxGraphics: boxGraphics
+			});
+		}
+	}
+
+	removeProjectile(e) {
+		var p = this.gc.projectiles.find((x) => {return x.id === e.id});
+
+		if(p)
+		{
+			var ppeIndex = this.projectilePhaserElements.findIndex((x) => {return x.id === p.id;});
+			if(ppeIndex >= 0)
+			{
+				this.projectilePhaserElements[ppeIndex].boxGraphics.destroy();
+				this.projectilePhaserElements.splice(ppeIndex, 1);
+			}
+		}
+	}
+
+	projectileUpdate(e) {
+		var ppu = this.projectilePhaserElements.find((x) => {return x.id === e.id});
+
+		if(ppu)
+		{
+			ppu.x = e.x;
+			ppu.y = e.y;
+			ppu.boxGraphics.setX(ppu.x * this.planckUnitsToPhaserUnitsRatio);
+			ppu.boxGraphics.setY(ppu.y * this.planckUnitsToPhaserUnitsRatio * -1);
+		}
+	}
 
 
 

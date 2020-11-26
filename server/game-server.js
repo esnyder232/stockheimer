@@ -67,49 +67,49 @@ class GameServer {
 				gravity: Vec2(0, 0)
 			});
 		
-			//origin lines
-			var xAxisBody = this.world.createBody({
-				position: Vec2(0, 0),
-				userData: {id: 1}
-			});
-			var xAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(1, 0));
-			xAxisBody.createFixture(xAxisShape);
+			// //origin lines
+			// var xAxisBody = this.world.createBody({
+			// 	position: Vec2(0, 0),
+			// 	userData: {id: 1}
+			// });
+			// var xAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(1, 0));
+			// xAxisBody.createFixture(xAxisShape);
 		
-			var yAxisBody = this.world.createBody({
-				position: Vec2(0, 0),
-				userData: {id: 2}
-			});
-			var yAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(0, 1));
-			yAxisBody.createFixture(yAxisShape);
+			// var yAxisBody = this.world.createBody({
+			// 	position: Vec2(0, 0),
+			// 	userData: {id: 2}
+			// });
+			// var yAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(0, 1));
+			// yAxisBody.createFixture(yAxisShape);
 		
-			//ground
-			var ground = this.world.createBody({
-				position: Vec2(0, -10),
-				userData: {id: 3}
-			});	
-			var groundShape = this.pl.Box(20, 5, Vec2(0,0));
-			ground.createFixture(groundShape, 0);
+			// //ground
+			// var ground = this.world.createBody({
+			// 	position: Vec2(0, -10),
+			// 	userData: {id: 3}
+			// });	
+			// var groundShape = this.pl.Box(20, 5, Vec2(0,0));
+			// ground.createFixture(groundShape, 0);
 		
 			
-			//box
-			this.boxBody = this.world.createBody({
-				position: Vec2(1.5, 3.1),
-				type: this.pl.Body.DYNAMIC,
-				userData: {id: 4}
-			});
-			var boxShape = this.pl.Box(1, 1);
-			this.boxBody.createFixture({
-				shape: boxShape,
-				density: 1.0,
-				friction: 0.3
-			});
+			// //box
+			// this.boxBody = this.world.createBody({
+			// 	position: Vec2(1.5, 3.1),
+			// 	type: this.pl.Body.DYNAMIC,
+			// 	userData: {id: 4}
+			// });
+			// var boxShape = this.pl.Box(1, 1);
+			// this.boxBody.createFixture({
+			// 	shape: boxShape,
+			// 	density: 1.0,
+			// 	friction: 0.3
+			// });
 		
-			var boxShape2 = this.pl.Box(1, 1, Vec2(-1, -1));
-			this.boxBody.createFixture({
-				shape: boxShape2,
-				density: 1.0,
-				friction: 0.3
-			});	
+			// var boxShape2 = this.pl.Box(1, 1, Vec2(-1, -1));
+			// this.boxBody.createFixture({
+			// 	shape: boxShape2,
+			// 	density: 1.0,
+			// 	friction: 0.3
+			// });	
 
 			this.world.on("begin-contact", this.beginContact.bind(this));
 			this.world.on("end-contact", this.endContact.bind(this));
