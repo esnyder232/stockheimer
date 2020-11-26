@@ -110,26 +110,32 @@ export default class GameClient {
 	}
 
 	gameLoop() {
+		var nowTime = performance.now();
 
 		//if its the designated time has passed, run the update function
-		if(this.previousTick + (this.frameTimeStep) < performance.now())
+		if(this.previousTick + (this.frameTimeStep) <= nowTime)
 		{
-			var dt = performance.now() - this.previousTick;
-			this.previousTick = performance.now();
-			this.gameState.update(dt);
+			var dt = nowTime - this.previousTick;
+			this.previousTick = nowTime;
+			try {
+				this.gameState.update(dt);
 
-			if(this.nextGameState)
-			{
-				this.gameState.exit();
-				this.nextGameState.enter();
-
-				this.gameState = this.nextGameState;
-				this.nextGameState = null;
+				if(this.nextGameState)
+				{
+					this.gameState.exit();
+					this.nextGameState.enter();
+	
+					this.gameState = this.nextGameState;
+					this.nextGameState = null;
+				}
+			}
+			catch(ex) {
+				console.log("Exception caught in main loop: " + ex);
 			}
 		}
 
 		//recall the gameloop
-		if(performance.now() - this.previousTick < this.frameTimeStep)
+		if(nowTime - this.previousTick < this.frameTimeStep)
 		{
 			//the +1 is because apparently this was getting called BEFORE the 'frameTimeStep'...whatever
 			window.setTimeout(this.gameLoop.bind(this), this.frameTimeStep+1);
