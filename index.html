@@ -12,7 +12,7 @@
 				<div class="scene-root hide" id="lobby-scene-root">
 					<div id="user-name-container">
 						<div class="form-text" id="player-text">Player Name:</div>
-						<input type="text" class="form-input" id="user-name" />
+						<input type="text" class="form-input" id="user-name" maxlength="32" />
 						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
 						<input type="button" class="form-button" id="player-new" value="Start New Player" onclick="window.dispatchEvent(new CustomEvent('player-new-click'));"/>
 					</div>

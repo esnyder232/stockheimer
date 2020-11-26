@@ -1,3 +1,4 @@
+import $ from "jquery"
 import GameClientBaseState from './game-client-base-state.js';
 import GameClientUserConnecting from './game-client-user-connecting.js';
 import LobbyScene from "../scenes/lobby-scene.js"
@@ -16,6 +17,7 @@ export default class GameClientLobby extends GameClientBaseState {
 		});
 
 		this.gc.turnOnContextMenu();
+		$("#ui-div").removeClass("ignore-pointer-events");
 	}
 
 	update(dt) {
