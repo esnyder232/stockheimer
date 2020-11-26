@@ -16,7 +16,7 @@ export default class MainScene extends Phaser.Scene {
 
 		this.playerInputKeyboardMap = {};
 		this.playerController = null;
-		var text1 = null;
+		this.text1 = null;
 
 		//0 = "browser" mode
 		//1 = "phaser" mode
@@ -43,6 +43,8 @@ export default class MainScene extends Phaser.Scene {
 		console.log('init on ' + this.scene.key + ' start');
 		
 		this.gc = data.gc;
+
+		this.switchPointerMode(0); //switch to browser mode if it wasn't already
 		
 		this.phaserEventMapping = [
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
@@ -164,6 +166,7 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	exitGameClick() {
+		this.gc.turnOnContextMenu();
 		this.switchPointerMode(0); //switch to browser mode
 		this.gc.gameState.exitGameClick();
 	}
@@ -222,13 +225,22 @@ export default class MainScene extends Phaser.Scene {
 			boxGraphics.closePath();
 			boxGraphics.strokePath();
 
-			boxGraphics.setX(0);
-			boxGraphics.setY(0);
-		
+			boxGraphics.setX(c.x);
+			boxGraphics.setY(c.y);
+
+			var u = this.gc.users.find((x) => {return x.userId === c.userId;});
+			var usernameText = "???";
+			if(u)
+			{
+				usernameText = u.username;
+			}
+			var textGraphics = this.add.text(c.x, c.y + 18, usernameText, { fill: '#00ff00', fontSize: "38px"});
+
 			this.userPhaserElements.push({
 				characterId: c.id,
 				activeCharacterId: c.activeId,
-				boxGraphics: boxGraphics
+				boxGraphics: boxGraphics,
+				textGraphics: textGraphics
 			});
 
 			//check if this is your character your controlling. If it is, then switch pointer modes
@@ -247,7 +259,7 @@ export default class MainScene extends Phaser.Scene {
 			$("#tb-chat-input").attr('placeholder','Hit enter to chat');
 			$("#ui-div").addClass("ignore-pointer-events");
 
-			document.body.addEventListener('contextmenu', this.contextMenuStopper.bind(this));
+			this.gc.turnOffContextMenu();
 		}
 		else //0 - browser mode
 		{
@@ -255,14 +267,11 @@ export default class MainScene extends Phaser.Scene {
 			$("#tb-chat-input").attr('placeholder','Chat message');
 			$("#ui-div").removeClass("ignore-pointer-events");
 
-			document.body.removeEventListener('contextmenu', this.contextMenuStopper.bind(this));
+			this.gc.turnOnContextMenu();
 		}
 	}
 
-	contextMenuStopper(e) {
-		e.preventDefault();
-		return false;
-	}
+
 
 
 	removeActiveCharacter(characterId) {
@@ -274,6 +283,7 @@ export default class MainScene extends Phaser.Scene {
 			if(upeIndex >= 0)
 			{
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
+				this.userPhaserElements[upeIndex].textGraphics.destroy();
 				this.userPhaserElements.splice(upeIndex, 1);
 
 				//check if this is your character your controlling. If it is, then switch pointer modes
@@ -294,6 +304,8 @@ export default class MainScene extends Phaser.Scene {
 		{
 			upe.boxGraphics.setX(e.characterPosX * this.planckUnitsToPhaserUnitsRatio);
 			upe.boxGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
+			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
+			upe.textGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
 		}
 	}
 

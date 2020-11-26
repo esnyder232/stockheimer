@@ -1,10 +1,36 @@
 body {
 	font-family: Arial, Helvetica, sans-serif;
+	color: #cccccc;
+	background-color: #181a1b;
 }
 
 input[type='button'] {
 	pointer-events: all;
+	background-color: #181a1b;
+	border-color: #736b5e;
+    color: #e8e6e3;
 }
+
+input[type="text"] {
+	background-color: #181a1b;
+	color: rgb(216, 212, 207);
+	border-color: rgb(106, 98, 87);
+}
+
+input[type='button']:disabled {
+	background-color: #47494b;
+	border-color: #47494b;
+    color: #e8e6e3;
+}
+
+input[type="text"]:disabled {
+	background-color: #47494b;
+	color: rgb(216, 212, 207);
+	border-color: #47494b;
+}
+
+
+
 
 #game-container {
 	position: relative;
@@ -95,6 +121,22 @@ input[type='button'] {
 	color: #cccccc;
 }
 
+#temp-log::-webkit-scrollbar {
+    background-color: #202324;
+    color: #aba499;
+}
+
+#temp-log::-webkit-scrollbar-thumb {
+    background-color: #454a4d;
+}
+
+
+#temp-log::-webkit-scrollbar-corner {
+    background-color: #181a1b;
+}
+
+
+
 .log-message {
 	width:100%;
 }
@@ -127,6 +169,20 @@ input[type='button'] {
 	height: 300px;
 	border: 1px solid red;
 	overflow-y: scroll;
+}
+
+.chat-history::-webkit-scrollbar {
+    background-color: #202324;
+    color: #aba499;
+}
+
+.chat-history::-webkit-scrollbar-thumb {
+    background-color: #454a4d;
+}
+
+
+.chat-history::-webkit-scrollbar-corner {
+    background-color: #181a1b;
 }
 
 .chat-history-item {

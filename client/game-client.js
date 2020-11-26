@@ -34,6 +34,8 @@ export default class GameClient {
 
 		this.inactivePeriod = 10000; //ms - the amount of ms worth of ack loss (packet loss) before a player is considered "inactive" by the server
 		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
+
+		this.isContextMenuOn = true;
 	}
 
 	init() {
@@ -92,9 +94,29 @@ export default class GameClient {
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
 		this.gameLoop();
+
+		$(document).on("contextmenu", this.contextMenuListener.bind(this));
 	}
 
+	turnOffContextMenu() {
+		this.isContextMenuOn = false;
+	}
 
+	turnOnContextMenu() {
+		this.isContextMenuOn = true;
+	}
+
+	contextMenuListener(e) {
+		if(this.isContextMenuOn)
+		{
+			return true;
+		}
+		else
+		{
+			e.preventDefault();
+			return false;
+		}
+	}
 
 
 
@@ -130,7 +152,8 @@ export default class GameClient {
 				}
 			}
 			catch(ex) {
-				console.log("Exception caught in main loop: " + ex);
+				this.globalfuncs.appendToLog("Exception caught in game loop: " + ex)
+				console.log(ex);
 			}
 		}
 

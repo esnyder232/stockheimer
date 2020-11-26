@@ -14,6 +14,8 @@ export default class GameClientLobby extends GameClientBaseState {
 		this.lobbyScene = this.gc.phaserGame.scene.add("lobby-scene", LobbyScene, true, {
 			gc: this.gc
 		});
+
+		this.gc.turnOnContextMenu();
 	}
 
 	update(dt) {
