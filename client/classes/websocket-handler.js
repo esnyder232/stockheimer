@@ -352,21 +352,21 @@ export default class WebsocketHandler {
 									var s = e[schema.parameters[p].txt_param_name];
 									if(s)
 									{
-										bytesRequired += 1 + s.length*2;
+										bytesRequired += 1 + (s.length*2);
 									}
 									break;
 								case "str16": 
 									var s = e[schema.parameters[p].txt_param_name];
 									if(s)
 									{
-										bytesRequired += 2 + s.length*2;
+										bytesRequired += 2 + (s.length*2);
 									}
 									break;
 								case "str32": 
 									var s = e[schema.parameters[p].txt_param_name];
 									if(s)
 									{
-										bytesRequired += 4 + s.length*2;
+										bytesRequired += 4 + (s.length*2);
 									}
 									break;
 								default:
@@ -382,7 +382,7 @@ export default class WebsocketHandler {
 				}
 				else
 				{
-					bytesRequired = schema.sum_min_bytes;
+					bytesRequired += schema.sum_min_bytes;
 				}
 
 				if(bytesRequired <= this.maxPacketSize - bytesWritten)
