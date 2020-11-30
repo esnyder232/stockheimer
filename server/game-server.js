@@ -11,11 +11,14 @@ const {ProjectileManager} = require('./managers/projectile-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {PacketSystem} = require ('./systems/packet-system.js');
+const {PrioritySystem} = require ('./systems/priority-system.js');
+const {CollisionSystem} = require ('./systems/collision-system.js');
+
+
 const serverConfig = require('./server-config.json');
 
 class GameServer {
 	constructor() {
-		this.world = null;		
 		this.globalfuncs = new GlobalFuncs();
 		this.frameRate = 30; //fps
 		this.frameNum = 0;
@@ -51,23 +54,16 @@ class GameServer {
 		this.ps = new PacketSystem();
 		this.cm = new CharacterManager();
 		this.pm = new ProjectileManager();
-		
-		this.wsm.init(this);
-		this.um.init(this);
-		this.ps.init(this);
-		this.cm.init(this);
-		this.pm.init(this);
-
-		this.gameState = new GameServerStopped(this);
+		this.prioritySystem = new PrioritySystem();
+		this.cs = new CollisionSystem();
 		
 		const Vec2 = this.pl.Vec2;
-		
 		if(!this.world) {
 			this.world = this.pl.World({
 				gravity: Vec2(0, 0)
 			});
 		
-			// //origin lines
+			//origin lines
 			// var xAxisBody = this.world.createBody({
 			// 	position: Vec2(0, 0),
 			// 	userData: {id: 1}
@@ -82,13 +78,13 @@ class GameServer {
 			// var yAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(0, 1));
 			// yAxisBody.createFixture(yAxisShape);
 		
-			// //ground
-			// var ground = this.world.createBody({
-			// 	position: Vec2(0, -10),
-			// 	userData: {id: 3}
-			// });	
-			// var groundShape = this.pl.Box(20, 5, Vec2(0,0));
-			// ground.createFixture(groundShape, 0);
+			//ground
+			var ground = this.world.createBody({
+				position: Vec2(0, -10),
+				userData: {type:"wall", id: 3}
+			});	
+			var groundShape = this.pl.Box(20, 5, Vec2(0,0));
+			ground.createFixture(groundShape, 0);
 		
 			
 			// //box
@@ -110,23 +106,21 @@ class GameServer {
 			// 	density: 1.0,
 			// 	friction: 0.3
 			// });	
-
-			this.world.on("begin-contact", this.beginContact.bind(this));
-			this.world.on("end-contact", this.endContact.bind(this));
 		}
 		
 		console.log('creating gameworld done');
-	}
 
-	beginContact(a, b, c) {
-		console.log('beginContact!');
-	}
+		this.wsm.init(this);
+		this.um.init(this);
+		this.ps.init(this);
+		this.cm.init(this);
+		this.pm.init(this);
+		this.prioritySystem.init(this);
+		this.cs.init(this);
 
-	endContact(a, b, c) {
-		console.log('endContact!');
+		this.gameState = new GameServerStopped(this);
+		
 	}
-
-	
 
 	wsAuthenticate(req, socket, head) {
 		var authResult = {
@@ -228,21 +222,6 @@ class GameServer {
 
 			//setup the user's nextState
 			user.nextState = new UserConnectingState(user);
-
-			// const Vec2 = this.pl.Vec2;
-			// var boxShape = this.pl.Box(0.5, 0.5, Vec2(0, 0));
-			// var playerBody = this.world.createBody({
-			// 	position: Vec2(-10, -1),
-			// 	type: this.pl.Body.DYNAMIC,
-			// 	userData: {userId: user.id}
-			// });
-			// playerBody.createFixture({
-			// 	shape: boxShape,
-			// 	density: 1.0,
-			// 	friction: 0.3
-			// });	
-
-			// user.playerBody = playerBody;
 		}
 		catch(ex) {
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
@@ -250,12 +229,9 @@ class GameServer {
 		}
 	}
 
-
 	cbUserActivateSuccess(id) {
 		console.log('user activation success CB called');
 	}
-
-
 
 	//if user fails to be activated, do the opposite of everything you did in gameserver.onopen
 	cbUserActivateFail(id, failedReason) {
@@ -279,98 +255,6 @@ class GameServer {
 
 		//destroy the websocket handler
 		this.wsm.destroyWebsocket(wsh);
-	}
-
-
-
-
-	getWorld() {
-		var currentBody = this.world.getBodyList();
-		var arrBodies = [];
-		var fixtureIDCounter = 1;
-		while(currentBody)
-		{
-			var bodyObj = {
-				id: 0,
-				x: 0,
-				y: 0,
-				a: 0,
-				fixtures: []
-			};
-
-			var pos = currentBody.getPosition();
-			bodyObj.x = pos.x;
-			bodyObj.y = pos.y;
-			bodyObj.a = currentBody.getAngle();
-
-			var temp = currentBody.getUserData();
-			bodyObj.id = temp.id;
-
-			var currentFixture = currentBody.getFixtureList();
-			while(currentFixture)
-			{
-				var shape = currentFixture.getShape();
-				var vertices = [];
-				switch(currentFixture.getType().toLowerCase())
-				{
-					case "polygon":
-						for(var i = 0; i < shape.m_vertices.length; i++)
-						{
-							var v = {
-								x: shape.m_vertices[i].x,
-								y: shape.m_vertices[i].y
-							};
-							vertices.push(v)
-						}
-						break;
-					case "edge":
-						var v1 = {
-							x: shape.m_vertex1.x,
-							y: shape.m_vertex1.y
-						};
-						var v2 = {
-							x: shape.m_vertex2.x,
-							y: shape.m_vertex2.y
-						};
-						vertices.push(v1);
-						vertices.push(v2);
-						break;
-					default:
-						break;
-				}
-
-				var fixtureObj = {
-					id: fixtureIDCounter,
-					shapeType: currentFixture.getType(),
-					radius: shape.getRadius(),
-					vertices: vertices
-				}
-
-				bodyObj.fixtures.push(fixtureObj);
-				currentFixture = currentFixture.getNext();
-				fixtureIDCounter++;
-			}
-
-			arrBodies.push(bodyObj);
-			currentBody = currentBody.getNext();
-		}
-
-		return arrBodies;
-	}
-
-
-	playerInputEvent(ws, jsonMsg) {
-		console.log('input event')
-		var msg = jsonMsg.msg;
-		var player = this.pm.getPlayerByID(ws.playerId);
-		if(player)
-		{
-			const Vec2 = this.pl.Vec2;
-
-			var p = player.playerBody.getWorldPoint(new Vec2(0, 0));
-			var f = new Vec2(0, 10);
-			player.playerBody.applyLinearImpulse(f, p, true);
-		}
 	}
 
 	startGame() {
@@ -424,19 +308,6 @@ class GameServer {
 			setImmediate(this.gameLoop.bind(this));
 		}
 	}
-
-
-	sendWorldDeltas() {
-		//just send everything for now
-		var arrBodies = this.getWorld();
-		
-		for(var i = 0; i < this.wsm.websocketArray.length; i++)
-		{
-			this.globalfuncs.sendJsonEvent(this.wsm.websocketArray[i], "world-deltas", JSON.stringify(arrBodies));
-		}
-	}
-
-
 
 	/* apis */
 	getServerDetails(req, res) {

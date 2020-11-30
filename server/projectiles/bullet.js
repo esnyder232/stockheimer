@@ -35,7 +35,7 @@ class Bullet {
 			position: Vec2(this.xStarting, this.yStarting),
 			type: pl.Body.DYNAMIC,
 			fixedRotation: true,
-			userData: {characterId: this.id}
+			userData: {type: "projectile", id: this.id}
 		});
 		
 		this.plBody.createFixture({
@@ -58,7 +58,7 @@ class Bullet {
 		{
 			this.gs.world.destroyBody(this.plBody);
 			this.plBody = null;
-		}		
+		}
 	}
 
 	update(dt) {

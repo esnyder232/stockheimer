@@ -44,12 +44,13 @@ class Character {
 
 		//create a plank box
 		var boxShape = pl.Box(0.5, 0.5, Vec2(0, 0));
+		var circleSensor = pl.Circle(Vec2(0, 0), 5);
 
 		this.plBody = world.createBody({
 			position: Vec2(2.5, 3.0),
 			type: pl.Body.DYNAMIC,
 			fixedRotation: true,
-			userData: {characterId: this.id}
+			userData: {type:"character", id: this.id}
 		});
 		
 		this.plBody.createFixture({
@@ -57,6 +58,14 @@ class Character {
 			density: 1.0,
 			friction: 0.3
 		});	
+
+		this.plBody.createFixture({
+			shape: circleSensor,
+			density: 0.0,
+			friction: 0.3,
+			isSensor: true,
+			userData: {type: "mySensor"}
+		});
 	}
 
 	reset() {
@@ -214,6 +223,11 @@ class Character {
 			this.state = this.nextState;
 			this.nextState = null;
 		}
+	}
+
+
+	createAddActiveCharacterEvent() {
+		
 	}
 }
 

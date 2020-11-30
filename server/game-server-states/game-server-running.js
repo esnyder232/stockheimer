@@ -44,7 +44,6 @@ class GameServerRunning extends GameServerBaseState {
 
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
-		
 
 		//notify playing users for character changes
 		for(var i = 0; i < activeCharacters.length; i++)

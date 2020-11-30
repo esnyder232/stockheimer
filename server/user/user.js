@@ -23,6 +23,8 @@ class User {
 		this.bReadyToPlay = false; //flag that gets flipped when the user sends the "readyToPlay" event
 
 		this.inputQueue = [];
+
+		this.trackedObjects = [];
 	}
 
 	init(gameServer) {

@@ -14,7 +14,7 @@ for(var i = 0; i < EventSchema.events.length; i++)
 
 class PacketSystem {
 	constructor() {
-		this.maxPacketSize = 500; //bytes
+		this.maxPacketSize = 200; //bytes
 	}
 
 	init(gs) {

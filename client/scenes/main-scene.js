@@ -139,6 +139,15 @@ export default class MainScene extends Phaser.Scene {
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
 
 		this.text1 = this.add.text(-400, -400, '', { fill: '#00ff00', fontSize: "44px"});
+
+
+		//create a groudn for testing
+		this.groundGraphics = this.add.graphics();;
+		this.groundGraphics.lineStyle(1, 0xff0000, 1.0);
+		this.yAxisGraphic.moveTo(-20 * this.planckUnitsToPhaserUnitsRatio, 5 * this.planckUnitsToPhaserUnitsRatio);
+		this.yAxisGraphic.lineTo(20 * this.planckUnitsToPhaserUnitsRatio, 5 * this.planckUnitsToPhaserUnitsRatio);
+		this.yAxisGraphic.strokePath();
+
 	}
 
 	shutdown() {
@@ -228,6 +237,12 @@ export default class MainScene extends Phaser.Scene {
 			boxGraphics.setX(c.x);
 			boxGraphics.setY(c.y);
 
+			//circle sensor
+			var circleGraphics = this.add.graphics();
+			circleGraphics.lineStyle(1, 0x00ff00, 1);
+			var circle = new Phaser.Geom.Circle(0, 0, 5*this.planckUnitsToPhaserUnitsRatio);
+			circleGraphics.strokeCircleShape(circle);
+
 			var u = this.gc.users.find((x) => {return x.userId === c.userId;});
 			var usernameText = "???";
 			if(u)
@@ -240,6 +255,7 @@ export default class MainScene extends Phaser.Scene {
 				characterId: c.id,
 				activeCharacterId: c.activeId,
 				boxGraphics: boxGraphics,
+				circleGraphics: circleGraphics,
 				textGraphics: textGraphics
 			});
 
@@ -284,6 +300,8 @@ export default class MainScene extends Phaser.Scene {
 			{
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
 				this.userPhaserElements[upeIndex].textGraphics.destroy();
+				this.userPhaserElements[upeIndex].circleGraphics.destroy();
+				
 				this.userPhaserElements.splice(upeIndex, 1);
 
 				//check if this is your character your controlling. If it is, then switch pointer modes
@@ -306,6 +324,9 @@ export default class MainScene extends Phaser.Scene {
 			upe.boxGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
 			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
 			upe.textGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
+
+			upe.circleGraphics.setX(e.characterPosX * this.planckUnitsToPhaserUnitsRatio);
+			upe.circleGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
 		}
 	}
 
