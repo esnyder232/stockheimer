@@ -13,7 +13,7 @@ class UserConnectingState extends UserBaseState {
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
-		this.user.serverToClientEvents.push({
+		this.user.trackedEvents.push({
 			"eventName": "yourUser",
 			"userId": this.user.id
 		})
@@ -21,7 +21,7 @@ class UserConnectingState extends UserBaseState {
 		//tell existing users about the user that joined
 		for(var i = 0; i < activeUsers.length; i++)
 		{
-			activeUsers[i].serverToClientEvents.push({
+			activeUsers[i].trackedEvents.push({
 				"eventName": "userConnected",
 				"userId": this.user.id,
 				"activeUserId": this.user.activeId,
@@ -42,7 +42,7 @@ class UserConnectingState extends UserBaseState {
 		{
 			if(activeUsers[i].id !== this.user.id)
 			{
-				this.user.serverToClientEvents.push({
+				this.user.trackedEvents.push({
 					"eventName": "existingUser",
 					"userId": activeUsers[i].id,
 					"activeUserId": activeUsers[i].activeId,
@@ -51,30 +51,8 @@ class UserConnectingState extends UserBaseState {
 			}
 		}
 
-
-		//tell the client about the existing active characters
-		var activeCharacters = this.user.gs.cm.getActiveCharacters();
-		for(var i = 0; i < activeCharacters.length; i++)
-		{
-			//just to be safe
-			if(activeCharacters[i] && activeCharacters[i].isActive)
-			{
-				//now tell all active clients about the new active character
-				this.user.serverToClientEvents.push( {
-					"eventName": "addActiveCharacter",
-					"userId": activeCharacters[i].userId,
-					"characterId": activeCharacters[i].id,
-					"activeCharacterId": activeCharacters[i].activeId,
-					"characterPosX": 5,
-					"characterPosY": 5,
-					"characterState": "",
-					"characterType": ""
-				})
-			}
-		}
-
 		//send a worldDone signal at the end
-		this.user.serverToClientEvents.push({
+		this.user.trackedEvents.push({
 			"eventName": "worldStateDone"
 		});
 

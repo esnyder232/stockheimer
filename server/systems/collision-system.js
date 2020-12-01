@@ -16,9 +16,11 @@ class CollisionSystem {
 			{type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
 			{type1: "character", 	type2:"projectile", beginFunc: this.beginCharacterProjectileCollision.bind(this), 	endFunc: this.endCharacterProjectileCollision.bind(this)},
 			{type1: "character", 	type2:"wall", 		beginFunc: this.beginCharacterWallCollision.bind(this), 		endFunc: this.endCharacterWallCollision.bind(this)},
+			{type1: "character", 	type2:"user", 		beginFunc: this.beginCharacterUserCollision.bind(this), 		endFunc: this.endCharacterUserCollision.bind(this)},
 			//{type1: "projectile", 	type2:"projectile", beginFunc: this.beginProjectileProjectileCollision.bind(this), 	endFunc: this.endProjectileProjectileCollision.bind(this)},
+			{type1: "projectile", 	type2:"user", 		beginFunc: this.beginProjectileUserCollision.bind(this), 		endFunc: this.endProjectileUserCollision.bind(this)},
 			//{type1: "projectile", 	type2:"wall", 		beginFunc: this.beginProjectileWallCollision.bind(this), 		endFunc: this.endProjectileWallCollision.bind(this)},
-			//{type1: "wall", 		type2:"wall", 		beginFunc: this.beginWallWallCollision.bind(this), 				endFunc: this.endWallWallCollision.bind(this)}
+			{type1: "user", 	type2:"wall", 			beginFunc: this.beginUserWallCollision.bind(this), 				endFunc: this.endUserWallCollision.bind(this)}
 		]
 
 		//calculate fullType and make index
@@ -130,6 +132,27 @@ class CollisionSystem {
 		//console.log('end character wall Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
+	beginCharacterUserCollision(characterUserData, userUserData, contactObj, isCharacterA)
+	{
+		//console.log('begin character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var u = this.gs.um.getUserByID(userUserData.id);
+		if(u !== null)
+		{
+			u.insertTrackedObject(characterUserData);
+		}
+	}
+
+	endCharacterUserCollision(characterUserData, userUserData, contactObj, isCharacterA)
+	{
+		//console.log('end character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var u = this.gs.um.getUserByID(userUserData.id);
+		if(u !== null)
+		{
+			u.deleteTrackedObject(characterUserData);
+		}
+	}
+
+
 
 	////////////////////////////
 	// projectile collilsions //
@@ -142,6 +165,50 @@ class CollisionSystem {
 	endProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)
 	{
 		//console.log('end projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+	}
+
+	beginProjectileUserCollision(projectileUserData, userUserData, contactObj, isProjectileA)
+	{
+		//console.log('begin projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var u = this.gs.um.getUserByID(userUserData.id);
+		if(u !== null)
+		{
+			u.insertTrackedObject(projectileUserData);
+		}
+	}
+
+	endProjectileUserCollision(projectileUserData, userUserData, contactObj, isProjectileA)
+	{
+		//console.log('end projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var u = this.gs.um.getUserByID(userUserData.id);
+		if(u !== null)
+		{
+			u.deleteTrackedObject(projectileUserData);
+		}
+	}
+
+	//////////////////////
+	// Wall collilsions //
+	//////////////////////
+	beginUserWallCollision(userUserData, wallUserData, contactObj, isWallA)
+	{
+		//console.log('begin user wall Collision: A: ' + userUserData.type + " " + userUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isWallA: " + isWallA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var u = this.gs.um.getUserByID(userUserData.id);
+		if(u !== null)
+		{
+			u.insertTrackedObject(wallUserData);
+		}
+		
+	}
+
+	endUserWallCollision(userUserData, wallUserData, contactObj, isWallA)
+	{
+		//console.log('end user wall Collision: A: ' + userUserData.type + " " + userUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isWallA: " + isWallA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var u = this.gs.um.getUserByID(userUserData.id);
+		if(u !== null)
+		{
+			u.deleteTrackedObject(wallUserData);
+		}
 	}
 }
 

@@ -36,6 +36,8 @@ class GameServer {
 		this.positionIterations = 2;
 
 		this.previousTick = 0;
+
+		this.globalGameObjectIDCounter = 0; //game object id that is used for all game object to have. This is used mainly in the priority system so objects from different pools can be pushed together on the same array
 		
 		this.world = null;
 		this.pl = null;
@@ -78,14 +80,101 @@ class GameServer {
 			// var yAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(0, 1));
 			// yAxisBody.createFixture(yAxisShape);
 		
-			//ground
-			var ground = this.world.createBody({
-				position: Vec2(0, -10),
-				userData: {type:"wall", id: 3}
+			//left wall
+			var leftWall = this.world.createBody({
+				position: Vec2(-29, 0),
+				type: this.pl.Body.STATIC,
+				userData: {type:"wall", id: this.getGlobalGameObjectID()}
 			});	
-			var groundShape = this.pl.Box(20, 5, Vec2(0,0));
-			ground.createFixture(groundShape, 0);
+			var leftWallShape = this.pl.Box(5, 28, Vec2(0,0));
+			leftWall.createFixture({
+				shape: leftWallShape,
+				density: 0.0,
+				friction: 1.0
+			});
+
 		
+			//top wall
+			var topWall = this.world.createBody({
+				position: Vec2(0, 24),
+				type: this.pl.Body.STATIC,
+				userData: {type:"wall", id: this.getGlobalGameObjectID()}
+			});	
+			var topWallShape = this.pl.Box(24, 5, Vec2(0,0));
+			topWall.createFixture({
+				shape: topWallShape,
+				density: 0.0,
+				friction: 1.0
+			});
+
+		
+			//right wall
+			var rightWall = this.world.createBody({
+				position: Vec2(29, 0),
+				type: this.pl.Body.STATIC,
+				userData: {type:"wall", id: this.getGlobalGameObjectID()}
+			});	
+			var rightWallShape = this.pl.Box(5, 28, Vec2(0,0));
+			rightWall.createFixture({
+				shape: rightWallShape,
+				density: 0.0,
+				friction: 1.0
+			});
+
+			//bottom wall
+			var bottomWall = this.world.createBody({
+				position: Vec2(0, -22),
+				type: this.pl.Body.STATIC,
+				userData: {type:"wall", id: this.getGlobalGameObjectID()}
+			});	
+			var bottomWallShape = this.pl.Box(24, 5, Vec2(0,0));
+			bottomWall.createFixture({
+				shape: bottomWallShape,
+				density: 0.0,
+				friction: 1.0
+			});
+
+
+
+
+
+
+
+
+
+
+
+
+
+			// var ground = this.world.createBody({
+			// 	position: Vec2(0, -10),
+			// 	type: this.pl.Body.STATIC,
+			// 	userData: {type:"wall", id: this.getGlobalGameObjectID()}
+			// });	
+			// var groundShape = this.pl.Box(20, 5, Vec2(0,0));
+			// ground.createFixture({
+			// 	shape: groundShape,
+			// 	density: 0.0,
+			// 	friction: 1.0
+			// });
+			// ground.createFixture(groundShape, 0);
+		
+			// this.plBody = this.gs.world.createBody({
+			// 	position: Vec2(0, 0),
+			// 	type: pl.Body.DYNAMIC,
+			// 	fixedRotation: true,
+			// 	userData: {type:"user", id: this.id}
+			// });
+	
+			// this.plBody.createFixture({
+			// 	shape: trackingSensor,
+			// 	density: 0.0,
+			// 	friction: 1.0,
+			// 	isSensor: true
+			// });
+
+
+
 			
 			// //box
 			// this.boxBody = this.world.createBody({
@@ -119,7 +208,10 @@ class GameServer {
 		this.cs.init(this);
 
 		this.gameState = new GameServerStopped(this);
-		
+	}
+
+	getGlobalGameObjectID() {
+		return this.globalGameObjectIDCounter++;
 	}
 
 	wsAuthenticate(req, socket, head) {
@@ -214,7 +306,7 @@ class GameServer {
 			wsh.init(this, user.id, ws);
 			
 			//At this point, the user was only created, not initialized. So setup user now.
-			user.init(this);
+			user.userInit(this);
 			user.wsId = wsh.id;
 
 			//activate the user
@@ -250,7 +342,7 @@ class GameServer {
 		this.um.deactivateUserId(user.id);
 
 		//unsetup the user
-		user.reset();
+		user.userDeinit();
 		user.wsId = null;
 
 		//destroy the websocket handler

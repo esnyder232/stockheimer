@@ -72,7 +72,7 @@ class Bullet {
 			var playingUsers = this.gs.um.getPlayingUsers();
 			for(var i = 0; i < playingUsers.length; i++)
 			{
-				playingUsers[i].serverToClientEvents.push({
+				playingUsers[i].trackedEvents.push({
 					"eventName": "projectileUpdate",
 					"id": this.id,
 					"x": pos.x,
@@ -88,13 +88,13 @@ class Bullet {
 				this.reset();
 
 				//tell the clients about the destroyed projectile
-				for(var i = 0; i < playingUsers.length; i++)
-				{
-					playingUsers[i].serverToClientEvents.push({
-						"eventName": "removeProjectile",
-						"id": this.id
-					});
-				}
+				// for(var i = 0; i < playingUsers.length; i++)
+				// {
+				// 	playingUsers[i].trackedEvents.push({
+				// 		"eventName": "removeProjectile",
+				// 		"id": this.id
+				// 	});
+				// }
 			}
 		}
 	}

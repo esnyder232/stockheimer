@@ -26,7 +26,8 @@ class Character {
 		this.eventQueue = [];
 	}
 
-	init(gameServer) {
+	//called only once when the character is first created. This is only called once ever.
+	characterInit(gameServer) {
 		this.gs = gameServer;
 
 		//make simple little input controller
@@ -37,14 +38,16 @@ class Character {
 		this.inputController.isFiring = {state: false, prevState: false};
 		this.inputController.isFiringAlt = {state: false, prevState: false};
 		this.inputController.characterDirection = {value: false, prevValue: false};
+	}
 
+	//called only after the character is activated. Put things in here that other systems will depend on.
+	characterPostActivated() {
 		const pl = this.gs.pl;
 		const Vec2 = pl.Vec2;
 		const world = this.gs.world;
 
 		//create a plank box
 		var boxShape = pl.Box(0.5, 0.5, Vec2(0, 0));
-		var circleSensor = pl.Circle(Vec2(0, 0), 5);
 
 		this.plBody = world.createBody({
 			position: Vec2(2.5, 3.0),
@@ -58,19 +61,21 @@ class Character {
 			density: 1.0,
 			friction: 0.3
 		});	
-
-		this.plBody.createFixture({
-			shape: circleSensor,
-			density: 0.0,
-			friction: 0.3,
-			isSensor: true,
-			userData: {type: "mySensor"}
-		});
 	}
 
-	reset() {
-		this.gs.world.destroyBody(this.plBody);
-		this.plBody = null;
+	//called before the character is officially deactivated with the characterManager.
+	characterPredeactivated() {
+		if(this.plBody !== null)
+		{
+			this.gs.world.destroyBody(this.plBody);
+			this.plBody = null;
+		}
+	}
+
+	//called right before the character is officially deleted by the characterManager.
+	characterDeinit() {
+		this.gs = null;
+		this.inputController = null;
 	}
 
 	update(dt) {
@@ -173,23 +178,21 @@ class Character {
 					{
 						p.size = 0.1;
 						p.init(this.gs, e.x, e.y, e.angle, p.size, 0.8, 1000, 100);
-						// init(gameServer, xc, yc, angle, size, speed, lifespan, density)
-						
 					}
 
 					//tell all clients about the bullet
-					var playingUsers = this.gs.um.getPlayingUsers();
-					for(var i = 0; i < playingUsers.length; i++)
-					{
-						playingUsers[i].serverToClientEvents.push({
-							"eventName": "addProjectile",
-							"id": p.id,
-							"x": p.xStarting,
-							"y": p.yStarting,
-							"angle": p.angle,
-							"size": p.size
-						});
-					}
+					// var playingUsers = this.gs.um.getPlayingUsers();
+					// for(var i = 0; i < playingUsers.length; i++)
+					// {
+					// 	playingUsers[i].trackedEvents.push({
+					// 		"eventName": "addProjectile",
+					// 		"id": p.id,
+					// 		"x": p.xStarting,
+					// 		"y": p.yStarting,
+					// 		"angle": p.angle,
+					// 		"size": p.size
+					// 	});
+					// }
 					
 				}
 			}
@@ -223,11 +226,6 @@ class Character {
 			this.state = this.nextState;
 			this.nextState = null;
 		}
-	}
-
-
-	createAddActiveCharacterEvent() {
-		
 	}
 }
 

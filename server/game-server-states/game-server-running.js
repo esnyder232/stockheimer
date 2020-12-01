@@ -48,13 +48,13 @@ class GameServerRunning extends GameServerBaseState {
 		//notify playing users for character changes
 		for(var i = 0; i < activeCharacters.length; i++)
 		{
-			//check if the character is awake. If so, send a positional update to active players
-			if(activeCharacters[i].plBody.isAwake())
+			//check if the plBody exists (hasn't been deactivated this frame), and check if the character is awake. If so, send a positional update to active players
+			if(activeCharacters[i].plBody !== null && activeCharacters[i].plBody.isAwake())
 			{
 				var bodyPos = activeCharacters[i].plBody.getPosition();
 				for(var j = 0; j < playingUsers.length; j++)
 				{
-					playingUsers[j].serverToClientEvents.push({
+					playingUsers[j].trackedEvents.push({
 						"eventName": "activeCharacterUpdate",
 						"activeCharacterId": activeCharacters[i].activeId,
 						"characterPosX": bodyPos.x,
@@ -64,7 +64,8 @@ class GameServerRunning extends GameServerBaseState {
 			}
 		}
 
-
+		//update systems
+		this.gs.prioritySystem.update(dt);
 
 		//send an empty packet to all users
 		for(var i = 0; i < activeUsers.length; i++)
@@ -135,7 +136,7 @@ class GameServerRunning extends GameServerBaseState {
 					case "fromClientChatMessage":
 						for(var j = 0; j < activeUsers.length; j++)
 						{
-							activeUsers[j].serverToClientEvents.push({
+							activeUsers[j].trackedEvents.push({
 								"eventName": "fromServerChatMessage",
 								"activeUserId": user.activeId,
 								"chatMsg": e.chatMsg
@@ -148,7 +149,7 @@ class GameServerRunning extends GameServerBaseState {
 						if(user.characterId === null)
 						{
 							var c = this.gs.cm.createCharacter();
-							c.init(this.gs);
+							c.characterInit(this.gs);
 							c.userId = user.id;
 							user.characterId = c.id;
 
@@ -180,26 +181,27 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	cbCharacterActivatedSuccess(characterId) {
-		var activeUsers = this.gs.um.getActiveUsers();
+		//var activeUsers = this.gs.um.getActiveUsers();
 		var c = this.gs.cm.getCharacterByID(characterId);
 
 		//just to be safe
 		if(c && c.isActive)
 		{
-			//now tell all active clients about the new active character
-			for(var i = 0; i < activeUsers.length; i++)
-			{
-				activeUsers[i].serverToClientEvents.push( {
-					"eventName": "addActiveCharacter",
-					"userId": c.userId,
-					"characterId": c.id,
-					"activeCharacterId": c.activeId,
-					"characterPosX": 5,
-					"characterPosY": 5,
-					"characterState": "",
-					"characterType": ""
-				})
-			}
+			c.characterPostActivated();
+			// //now tell all active clients about the new active character
+			// for(var i = 0; i < activeUsers.length; i++)
+			// {
+			// 	activeUsers[i].trackedEvents.push( {
+			// 		"eventName": "addActiveCharacter",
+			// 		"userId": c.userId,
+			// 		"characterId": c.id,
+			// 		"activeCharacterId": c.activeId,
+			// 		"characterPosX": 5,
+			// 		"characterPosY": 5,
+			// 		"characterState": "",
+			// 		"characterType": ""
+			// 	})
+			// }
 		}
 	}
 
@@ -221,7 +223,7 @@ class GameServerRunning extends GameServerBaseState {
 		if(c)
 		{
 			c.userId = null
-			c.reset();
+			c.characterDeinit();
 		}	
 
 		//it should already be deactivated, but do it anyway
@@ -242,17 +244,16 @@ class GameServerRunning extends GameServerBaseState {
 			if(c && c.userId === user.id)
 			{
 				//now tell all active clients about removing the active character
-				var activeUsers = this.gs.um.getActiveUsers();
-				for(var j = 0; j < activeUsers.length; j++)
-				{
-					activeUsers[j].serverToClientEvents.push( {
-						"eventName": "removeActiveCharacter",
-						"characterId": c.id
-					});
-				}
-
+				// var activeUsers = this.gs.um.getActiveUsers();
+				// for(var j = 0; j < activeUsers.length; j++)
+				// {
+				// 	activeUsers[j].trackedEvents.push( {
+				// 		"eventName": "removeActiveCharacter",
+				// 		"characterId": c.id
+				// 	});
+				// }
+				c.characterPredeactivated();
 				this.gs.cm.deactivateCharacterId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
-				this.gs.cm.destroyCharacterId(c.id);
 
 				user.characterId = null;
 				c.userId = null;
@@ -265,7 +266,8 @@ class GameServerRunning extends GameServerBaseState {
 		var c = this.gs.cm.getCharacterByID(characterId);
 		if(c)
 		{
-			c.reset();
+			c.characterDeinit();
+			this.gs.cm.destroyCharacterId(c.id);
 		}
 	}
 
@@ -279,7 +281,7 @@ class GameServerRunning extends GameServerBaseState {
 			var activeUsers = this.gs.um.getActiveUsers();
 			for(var i = 0; i < activeUsers.length; i++)
 			{
-				activeUsers[i].serverToClientEvents.push({
+				activeUsers[i].trackedEvents.push({
 					"eventName": "userDisconnected",
 					"userId": u.id
 				});

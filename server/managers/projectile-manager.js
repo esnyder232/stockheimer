@@ -4,11 +4,12 @@ const {Bullet} = require("../projectiles/bullet.js");
 class ProjectileManager {
 	constructor() {
 		this.gs = null;
-		this.nextAvailableId = -1;
+
 		this.projectileArray = [];
 		this.projectileIdArray = []; //eh whatever
 		this.idIndex = {};
-		
+
+		this.nextAvailableActiveId = -1;
 		this.maxAllowed = 65536;
 		
 		this.isDirty = false;
@@ -24,13 +25,13 @@ class ProjectileManager {
 			this.projectileIdArray.push(false);
 		}
 
-		this.nextAvailableId = this.globalfuncs.findNextAvailableId(this.projectileIdArray, this.nextAvailableId+1, this.maxAllowed);
+		this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.projectileIdArray, this.nextAvailableActiveId+1, this.maxAllowed);
 	}
 
 	createProjectile(type) {
 		var p = null;
 
-		if(this.nextAvailableId >= 0)
+		if(this.nextAvailableActiveId >= 0)
 		{
 			switch(type)
 			{
@@ -40,10 +41,11 @@ class ProjectileManager {
 			}
 
 			this.projectileArray.push(p);
-			p.id = this.nextAvailableId;
-			this.projectileIdArray[p.id] = true;
-			this.nextAvailableId = this.globalfuncs.findNextAvailableId(this.projectileIdArray, this.nextAvailableId+1, this.maxAllowed);
+			p.id = this.gs.getGlobalGameObjectID();
+			p.activeId = this.nextAvailableActiveId;
+			this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.projectileIdArray, this.nextAvailableActiveId+1, this.maxAllowed);
 			
+			this.projectileIdArray[p.activeId] = true;
 			this.updateIndex(p.id, p, 'create');
 			
 			console.log('projectile created. Id: ' + p.id);
@@ -100,10 +102,11 @@ class ProjectileManager {
 					{
 						console.log('Projectile deleted. id: ' + this.projectileArray[index].id);
 						this.updateIndex(this.projectileArray[index].id, null, 'delete');
+						this.projectileIdArray[this.projectileArray[index].activeId] = false;
 
-						if(this.nextAvailableId < 0)
+						if(this.nextAvailableActiveId < 0)
 						{
-							this.nextAvailableId = this.projectileArray[index].id;
+							this.nextAvailableActiveId = this.projectileArray[index].activeId;
 						}
 
 						this.projectileArray.splice(index, 1);

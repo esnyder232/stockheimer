@@ -15,11 +15,25 @@ for(var i = 0; i < EventSchema.events.length; i++)
 class PacketSystem {
 	constructor() {
 		this.maxPacketSize = 200; //bytes
+		this.eventQueues = [];	//2d array (each entry in eventQueues is another array). Each array is a queue for events to be sent to the client.
+		this.eventQueuesEventIdIndex = {}; //index for the eventQueues
 	}
 
 	init(gs) {
 		this.gs = gs;
+
+		for(var i = 0; i < EventSchema.events.length; i++)
+		{
+			this.eventQueues.push([]);
+			this.eventQueuesEventIdIndex[EventSchema.events[i].event_id] = i;
+		}
 	}
+
+	//calculates and returns the number of bytes remaining to be written to the current packet
+	getCurrentBytesRemaining() {
+
+	}
+
 
 	createPacketForUser(user)
 	{
@@ -48,14 +62,14 @@ class PacketSystem {
 
 			var bcontinue = true;
 
-			for(var i = 0; i < user.serverToClientEvents.length; i++)
+			for(var i = 0; i < user.trackedEvents.length; i++)
 			{
 				if(!bcontinue)
 				{
 					break;
 				}
 
-				var e = user.serverToClientEvents[i];
+				var e = user.trackedEvents[i];
 				var schema = EventNameIndex[e.eventName];
 
 				if(schema)
@@ -272,7 +286,7 @@ class PacketSystem {
 			}
 
 			//delete events that were processed
-			user.serverToClientEvents.splice(0, m);
+			user.trackedEvents.splice(0, m);
 	
 			view.setUint8(4, m); //payload event count
 			wsh.ws.send(buffer);

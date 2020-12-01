@@ -36,7 +36,7 @@ class UserDisconnectingState extends UserBaseState {
 		//this.user.gs.cm.deleteCharacterId(this.user.characterId);
 		
 		//reset the user
-		this.user.reset();
+		this.user.userDeinit();
 
 
 		super.exit(dt);

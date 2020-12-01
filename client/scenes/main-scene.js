@@ -138,16 +138,26 @@ export default class MainScene extends Phaser.Scene {
 
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
 
-		this.text1 = this.add.text(-400, -400, '', { fill: '#00ff00', fontSize: "44px"});
+		this.text1 = this.add.text(50, 160, '', { fill: '#00ff00', fontSize: "44px"});
 
 
-		//create a groudn for testing
-		this.groundGraphics = this.add.graphics();;
+		//create walls for testing (hard coded just do i can move on)
+		this.groundGraphics = this.add.graphics();
 		this.groundGraphics.lineStyle(1, 0xff0000, 1.0);
-		this.yAxisGraphic.moveTo(-20 * this.planckUnitsToPhaserUnitsRatio, 5 * this.planckUnitsToPhaserUnitsRatio);
-		this.yAxisGraphic.lineTo(20 * this.planckUnitsToPhaserUnitsRatio, 5 * this.planckUnitsToPhaserUnitsRatio);
+		this.yAxisGraphic.moveTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
+		this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
+		this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
+		this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
+		this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
 		this.yAxisGraphic.strokePath();
 
+
+
+		//draw the trackign sensor for testing
+		this.trackingSensorGraphics = this.add.graphics();
+		this.trackingSensorGraphics.lineStyle(1, 0x00ff00, 1);
+		var trackingSensorCircle = new Phaser.Geom.Circle(0, 0, 100*this.planckUnitsToPhaserUnitsRatio);
+		this.trackingSensorGraphics.strokeCircleShape(trackingSensorCircle);
 	}
 
 	shutdown() {
@@ -233,15 +243,9 @@ export default class MainScene extends Phaser.Scene {
 
 			boxGraphics.closePath();
 			boxGraphics.strokePath();
-
-			boxGraphics.setX(c.x);
-			boxGraphics.setY(c.y);
-
-			//circle sensor
-			var circleGraphics = this.add.graphics();
-			circleGraphics.lineStyle(1, 0x00ff00, 1);
-			var circle = new Phaser.Geom.Circle(0, 0, 5*this.planckUnitsToPhaserUnitsRatio);
-			circleGraphics.strokeCircleShape(circle);
+			
+			boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
+			boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
 
 			var u = this.gc.users.find((x) => {return x.userId === c.userId;});
 			var usernameText = "???";
@@ -249,13 +253,12 @@ export default class MainScene extends Phaser.Scene {
 			{
 				usernameText = u.username;
 			}
-			var textGraphics = this.add.text(c.x, c.y + 18, usernameText, { fill: '#00ff00', fontSize: "38px"});
+			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, { fill: '#00ff00', fontSize: "38px"});
 
 			this.userPhaserElements.push({
 				characterId: c.id,
 				activeCharacterId: c.activeId,
 				boxGraphics: boxGraphics,
-				circleGraphics: circleGraphics,
 				textGraphics: textGraphics
 			});
 
@@ -300,7 +303,6 @@ export default class MainScene extends Phaser.Scene {
 			{
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
 				this.userPhaserElements[upeIndex].textGraphics.destroy();
-				this.userPhaserElements[upeIndex].circleGraphics.destroy();
 				
 				this.userPhaserElements.splice(upeIndex, 1);
 
@@ -324,9 +326,6 @@ export default class MainScene extends Phaser.Scene {
 			upe.boxGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
 			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
 			upe.textGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
-
-			upe.circleGraphics.setX(e.characterPosX * this.planckUnitsToPhaserUnitsRatio);
-			upe.circleGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
 		}
 	}
 
@@ -371,8 +370,8 @@ export default class MainScene extends Phaser.Scene {
 
 			//debugging text
 			this.text1.setText([
-				'x: ' + pointer.worldX,
-				'y: ' + pointer.worldY,
+				'x: ' + pointer.worldX + "(" + pointer.worldX / this.planckUnitsToPhaserUnitsRatio + ")",
+				'y: ' + pointer.worldY + "(" + (pointer.worldY / this.planckUnitsToPhaserUnitsRatio) * -1 + ")",
 				'isDown: ' + pointer.isDown,
 				'angle: ' + this.angle
 			]);
@@ -623,100 +622,5 @@ export default class MainScene extends Phaser.Scene {
 			ppu.boxGraphics.setY(ppu.y * this.planckUnitsToPhaserUnitsRatio * -1);
 		}
 	}
-
-
-
-	// createWorld() {
-	// 	console.log('creating world now');
-		
-	// 	for(var i = 0; i < this.world.length; i++)
-	// 	{
-	// 		var o = this.world[i];
-	// 		o.planckGraphics = [];
-
-	// 		for(var j = 0; j < o.fixtures.length; j++)
-	// 		{
-	// 			var f = o.fixtures[j];
-	// 			switch(f.shapeType.toLowerCase())
-	// 			{
-	// 				case "polygon":
-	// 				case "edge":
-	// 					var tempLineGraphics = this.add.graphics();
-
-	// 					tempLineGraphics.lineStyle(1, 0x00ff00, 1);
-	// 					tempLineGraphics.moveTo(f.vertices[0].x, f.vertices[0].y);
-
-	// 					for(var v = 1; v < f.vertices.length; v++)
-	// 					{
-	// 						tempLineGraphics.lineTo(f.vertices[v].x, f.vertices[v].y);
-	// 					}
-
-	// 					tempLineGraphics.closePath();
-	// 					tempLineGraphics.strokePath();
-
-	// 					tempLineGraphics.setX(o.x);
-	// 					tempLineGraphics.setY(o.y);
-
-	// 					o.planckGraphics.push(tempLineGraphics);
-
-	// 					break;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	console.log('creating world done');
-	// }
-
-	// processDeltas(deltas) {
-	// 	//update x, y of all bodies in the world
-	// 	for(var i = 0; i < this.world.length; i++)
-	// 	{
-	// 		var obj = this.world[i];
-	// 		var myDelta = deltas.find((x) => {return x.id == obj.id});
-	// 		if(myDelta)
-	// 		{
-	// 			//console.log('myDelta x, y: %s, %s', myDelta.x, myDelta.y);
-	// 			var newx = myDelta.x * this.planckUnitsToPhaserUnitsRatio;
-	// 			var newy = myDelta.y * this.planckUnitsToPhaserUnitsRatio * -1;
-	// 			var newa = myDelta.a * -this.radiansToDegreesRatio;
-
-	// 			for(var j = 0; j < obj.planckGraphics.length; j++)
-	// 			{
-	// 				obj.planckGraphics[j].setX(newx);
-	// 				obj.planckGraphics[j].setY(newy);
-	// 				obj.planckGraphics[j].setAngle(newa);
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// convertPlankToPhaserUnits() {
-	// 	console.log('converting units now');
-		
-	// 	for(var i = 0; i < this.world.length; i++)
-	// 	{
-	// 		var o = this.world[i];
-	// 		for(var j = 0; j < o.fixtures.length; j++)
-	// 		{
-	// 			var f = o.fixtures[j];
-	// 			switch(f.shapeType.toLowerCase())
-	// 			{
-	// 				case "polygon":
-	// 				case "edge":
-	// 					for(var v = 0; v < f.vertices.length; v++)
-	// 					{
-	// 						f.vertices[v].x = f.vertices[v].x * this.planckUnitsToPhaserUnitsRatio;
-	// 						f.vertices[v].y = f.vertices[v].y * this.planckUnitsToPhaserUnitsRatio * -1;
-	// 					}						
-	// 					break;
-	// 			}
-	// 		}
-
-	// 		o.x = o.x * this.planckUnitsToPhaserUnitsRatio;
-	// 		o.y = o.y * this.planckUnitsToPhaserUnitsRatio * -1;
-	// 	}
-
-	// 	console.log('converting units done');
-	// }
 }
 

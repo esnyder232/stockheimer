@@ -5,7 +5,7 @@ class CharacterManager {
 	constructor() {
 		this.gs = null;
 		
-		this.idCounter = 0;
+		//this.idCounter = 0;
 		this.characterArray = [];
 		this.idIndex = {};
 
@@ -34,9 +34,9 @@ class CharacterManager {
 	createCharacter() {
 		var c = new Character();
 
-		c.id = this.idCounter;
+		c.id = this.gs.getGlobalGameObjectID();
 		c.isActive = false;
-		this.idCounter++;
+		//this.idCounter++;
 
 		this.characterArray.push(c);
 		
