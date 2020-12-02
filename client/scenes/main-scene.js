@@ -491,14 +491,12 @@ export default class MainScene extends Phaser.Scene {
 			});
 		}
 		//if chat was blank, and they hit enter, AND they have a character to control, then switch pointer mode back to "phaser"
-		else
+		if(this.gc.myCharacter !== null)
 		{
-			if(this.gc.myCharacter !== null)
-			{
-				this.switchPointerMode(1); //switch to phaser mode
-				tbChatInput[0].blur();
-			}
+			this.switchPointerMode(1); //switch to phaser mode
+			tbChatInput[0].blur();
 		}
+	
 	}
 
 
