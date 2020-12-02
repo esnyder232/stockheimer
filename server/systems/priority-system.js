@@ -85,6 +85,10 @@ class PrioritySystem {
 										{
 											originalPriorityWeight = 1000000.0;
 										}
+										else
+										{
+											originalPriorityWeight = 10.0;
+										}
 
 									}
 									else if(t.type == "projectile")

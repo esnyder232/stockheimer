@@ -131,7 +131,7 @@ class Character {
 						type: 'bigBullet'
 					}
 
-					this.bigBulletCounter = 0;
+					this.bigBulletCounter = 5000;
 
 					this.eventQueue.push(fireEvent);
 					
@@ -171,13 +171,13 @@ class Character {
 					if(e.type == "bigBullet")
 					{
 						p.size = 3;
-						p.init(this.gs, e.x, e.y, e.angle, p.size, 140, 36000, 3.5);
+						p.init(this.gs, e.x, e.y, e.angle, p.size, 140, 6000, 3.5);
 						
 					}
 					else //small normal bullet
 					{
 						p.size = 0.1;
-						p.init(this.gs, e.x, e.y, e.angle, p.size, 0.8, 36000, 100);
+						p.init(this.gs, e.x, e.y, e.angle, p.size, 0.8, 1000, 100);
 					}
 
 					//tell all clients about the bullet
