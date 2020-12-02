@@ -45,24 +45,24 @@ class GameServerRunning extends GameServerBaseState {
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 
-		//notify playing users for character changes
-		for(var i = 0; i < activeCharacters.length; i++)
-		{
-			//check if the plBody exists (hasn't been deactivated this frame), and check if the character is awake. If so, send a positional update to active players
-			if(activeCharacters[i].plBody !== null && activeCharacters[i].plBody.isAwake())
-			{
-				var bodyPos = activeCharacters[i].plBody.getPosition();
-				for(var j = 0; j < playingUsers.length; j++)
-				{
-					playingUsers[j].trackedEvents.push({
-						"eventName": "activeCharacterUpdate",
-						"activeCharacterId": activeCharacters[i].activeId,
-						"characterPosX": bodyPos.x,
-						"characterPosY": bodyPos.y
-					})
-				}
-			}
-		}
+		// //notify playing users for character changes
+		// for(var i = 0; i < activeCharacters.length; i++)
+		// {
+		// 	//check if the plBody exists (hasn't been deactivated this frame), and check if the character is awake. If so, send a positional update to active players
+		// 	if(activeCharacters[i].plBody !== null && activeCharacters[i].plBody.isAwake())
+		// 	{
+		// 		var bodyPos = activeCharacters[i].plBody.getPosition();
+		// 		for(var j = 0; j < playingUsers.length; j++)
+		// 		{
+		// 			playingUsers[j].trackedEvents.push({
+		// 				"eventName": "activeCharacterUpdate",
+		// 				"activeCharacterId": activeCharacters[i].activeId,
+		// 				"characterPosX": bodyPos.x,
+		// 				"characterPosY": bodyPos.y
+		// 			})
+		// 		}
+		// 	}
+		// }
 
 		//update systems
 		this.gs.prioritySystem.update(dt);
@@ -70,9 +70,12 @@ class GameServerRunning extends GameServerBaseState {
 		//send an empty packet to all users
 		for(var i = 0; i < activeUsers.length; i++)
 		{
-			this.gs.ps.createPacketForUser(activeUsers[i]);
+			var wsh = this.gs.wsm.getWebsocketByID(activeUsers[i].wsId);
+			if(wsh !== null)
+			{
+				wsh.createPacketForUser();
+			}
 		}
-
 
 		//update managers
 		this.gs.wsm.update(dt);

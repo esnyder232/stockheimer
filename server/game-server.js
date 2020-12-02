@@ -10,7 +10,6 @@ const {CharacterManager} = require('./managers/character-manager.js');
 const {ProjectileManager} = require('./managers/projectile-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserConnectingState} = require('./user/user-connecting-state.js');
-const {PacketSystem} = require ('./systems/packet-system.js');
 const {PrioritySystem} = require ('./systems/priority-system.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
 
@@ -42,10 +41,12 @@ class GameServer {
 		this.world = null;
 		this.pl = null;
 
-		this.ps = null;
 		this.wsm = null;
 		this.um = null;
 		this.cm = null;
+		this.pm = null;
+		this.prioritySystem = null;
+		this.cs = null;
 	}
 
 	init() {
@@ -53,7 +54,6 @@ class GameServer {
 		this.pl = planck;
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
-		this.ps = new PacketSystem();
 		this.cm = new CharacterManager();
 		this.pm = new ProjectileManager();
 		this.prioritySystem = new PrioritySystem();
@@ -201,7 +201,6 @@ class GameServer {
 
 		this.wsm.init(this);
 		this.um.init(this);
-		this.ps.init(this);
 		this.cm.init(this);
 		this.pm.init(this);
 		this.prioritySystem.init(this);

@@ -156,7 +156,7 @@ export default class MainScene extends Phaser.Scene {
 		//draw the trackign sensor for testing
 		this.trackingSensorGraphics = this.add.graphics();
 		this.trackingSensorGraphics.lineStyle(1, 0x00ff00, 1);
-		var trackingSensorCircle = new Phaser.Geom.Circle(0, 0, 100*this.planckUnitsToPhaserUnitsRatio);
+		var trackingSensorCircle = new Phaser.Geom.Circle(0, 0, 10*this.planckUnitsToPhaserUnitsRatio);
 		this.trackingSensorGraphics.strokeCircleShape(trackingSensorCircle);
 	}
 

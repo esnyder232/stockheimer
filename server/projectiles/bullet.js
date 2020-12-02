@@ -70,16 +70,16 @@ class Bullet {
 
 			//tell the clients about the projectile's new position. This is gonna break the server :)
 			var playingUsers = this.gs.um.getPlayingUsers();
-			for(var i = 0; i < playingUsers.length; i++)
-			{
-				playingUsers[i].trackedEvents.push({
-					"eventName": "projectileUpdate",
-					"id": this.id,
-					"x": pos.x,
-					"y": pos.y,
-					"angle": this.angle
-				});
-			}
+			// for(var i = 0; i < playingUsers.length; i++)
+			// {
+			// 	playingUsers[i].trackedEvents.push({
+			// 		"eventName": "projectileUpdate",
+			// 		"id": this.id,
+			// 		"x": pos.x,
+			// 		"y": pos.y,
+			// 		"angle": this.angle
+			// 	});
+			// }
 	
 	
 			if(this.lifespan <= 0)
@@ -97,6 +97,27 @@ class Bullet {
 				// }
 			}
 		}
+	}
+
+	serializeProjectileUpdate() {
+		var eventData = null;
+		if(this.plBody !== null)
+		{
+			var bodyPos = this.plBody.getPosition();
+
+			if(bodyPos)
+			{
+				eventData = {
+					"eventName": "projectileUpdate",
+					"id": this.id,
+					"x": bodyPos.x,
+					"y": bodyPos.y,
+					"angle": this.angle
+				};
+			}
+		}
+		
+		return eventData;
 	}
 }
 

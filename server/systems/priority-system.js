@@ -22,6 +22,7 @@ class PrioritySystem {
 		{
 			//process any transactions that occured this frame
 			var u = activeUsers[i];
+			var wsh = this.gs.wsm.getWebsocketByID(u.wsId);
 			
 			if(u.isTrackedObjectsDirty)
 			{
@@ -54,12 +55,7 @@ class PrioritySystem {
 
 								if(index < 0 && obj !== null)
 								{
-									u.trackedObjects.push({
-										id: t.id,
-										type: t.type,
-										priorityAccumulator: 0.0
-									});
-
+									var originalPriorityWeight = 1.0;
 									
 									//create a tracked event for the gameobject
 									if(t.type == "character")
@@ -84,6 +80,12 @@ class PrioritySystem {
 
 										u.trackedEvents.push(temp);
 
+										//if the character is the user's character, give it a higher priority
+										if(obj.userId === u.id)
+										{
+											originalPriorityWeight = 1000000.0;
+										}
+
 									}
 									else if(t.type == "projectile")
 									{
@@ -96,8 +98,16 @@ class PrioritySystem {
 											"size": obj.size
 										});
 									}
-								}
 
+									u.trackedObjects.push({
+										id: t.id,
+										type: t.type,
+										priorityAccumulator: 0.0,
+										originalPriorityWeight: originalPriorityWeight,
+										actualPriorityWeight: originalPriorityWeight,
+										isAwake: true
+									});
+								}
 
 								break;
 
@@ -155,22 +165,135 @@ class PrioritySystem {
 					console.log('priority system: userId: ' + u.id + ", trackedObjects: " + u.trackedObjects.length);
 				}
 			}
+
+			
+			
 		
-			//update priority accumulator. Keep it simple for now, just add dt.
+			//update priority accumulator and weights
 			for(var j = 0; j < u.trackedObjects.length; j++)
 			{
-				u.trackedObjects[j].priorityAccumulator += dt;
+				//check if any tracked objects are sleeping/awake and modify their priority weight
+				switch(u.trackedObjects[j].type)
+				{
+					case "character":
+						var c = this.gs.cm.getCharacterByID(u.trackedObjects[j].id);
+						if(c !== null)
+						{
+							if(c.plBody !== null && c.plBody.isAwake()) {
+								u.trackedObjects[j].actualPriorityWeight = u.trackedObjects[j].originalPriorityWeight;
+								u.trackedObjects[j].isAwake = true;
+							}
+							else {
+								u.trackedObjects[j].actualPriorityWeight = 0.0;
+								u.trackedObjects[j].isAwake = false;
+							}
+						}
+						break;
+					case "projectile":
+						var p = this.gs.pm.getProjectileByID(u.trackedObjects[j].id);
+						if(p !== null)
+						{
+							if(p.plBody !== null && p.plBody.isAwake()) {
+								u.trackedObjects[j].actualPriorityWeight = u.trackedObjects[j].originalPriorityWeight;
+								u.trackedObjects[j].isAwake = true;
+							}
+							else {
+								u.trackedObjects[j].actualPriorityWeight = 0.0;
+								u.trackedObjects[j].isAwake = false;
+							}
+						}
+						break;
+				}
+							
+				//update priority accumulator
+				if(u.trackedObjects[j].isAwake)
+				{
+					u.trackedObjects[j].priorityAccumulator += dt * u.trackedObjects[j].actualPriorityWeight;
+				}
 			}
 
 			//sort the tracked object array
-			u.trackedObjects.sort((a, b) => {return a.priorityAccumulator-b.priorityAccumulator});
+			u.trackedObjects.sort((a, b) => {return b.priorityAccumulator-a.priorityAccumulator});
 
-			//create a packet 
-			//STOPPED HERE - 
-			// do i create a packet HERE and queue it up for the packet system (requires a "simulate" packet where I have to simulate bytes written)
-			// Or do i create the packet in the PACKET SYSTEM right then and there. That way I know exactly how many bytes i'm writing out (because I am writing the packet at that point).
+			//try to create an event for each object based on priority
+			if(wsh !== null)
+			{
+				//this index keeps track of trackedEvents that were sent this frame (used for deletion at the end)
+				var indexOfSentTrackedEvents = [];
+
+				//first, try to pack in the trackedEvents (highest priority)
+				for(var j = 0; j < u.trackedEvents.length; j++)
+				{
+					//check if the websocket handler can fit the event
+					var canFit = wsh.canEventFit(u.trackedEvents[j]);
+
+					//insert the event, and reset the priority accumulator
+					if(canFit)
+					{
+						wsh.insertEvent(u.trackedEvents[j]);
+						indexOfSentTrackedEvents.push(j);
+					}
+					else
+					{
+						//do nothing
+						//continue with the tracked objects to see if any others will fit
+						//possibly start a fragmentation if the event allows it.
+					}
+				}
 
 
+				//second, pack in as many trackedObjects as you can based on the priorityAccumulator
+				for(var j = 0; j < u.trackedObjects.length; j++)
+				{
+					var eventData = null;
+		
+					if(u.trackedObjects[j].isAwake)
+					{
+						//construct eventData here
+						switch(u.trackedObjects[j].type)
+						{
+							case "character":
+								var c = this.gs.cm.getCharacterByID(u.trackedObjects[j].id);
+								if(c !== null)
+								{
+									eventData = c.serializeActiveCharacterUpdateEvent();
+								}
+								break;
+							case "projectile":
+								var p = this.gs.pm.getProjectileByID(u.trackedObjects[j].id);
+								if(p !== null)
+								{
+									eventData = p.serializeProjectileUpdate();
+								}
+								break;
+						}
+
+						if(eventData !== null)
+						{
+							//check if the websocket handler can fit the event
+							var canFit = wsh.canEventFit(eventData);
+
+							//insert the event, and reset the priority accumulator
+							if(canFit)
+							{
+								wsh.insertEvent(eventData);
+								u.trackedObjects[j].priorityAccumulator = 0.0;
+							}
+							else
+							{
+								//do nothing
+								//continue with the tracked objects to see if any others will fit
+							}
+						}
+					}
+				}
+
+				//at the end, splice off the tracked events that we have snet out this frame
+				for(var j = indexOfSentTrackedEvents.length - 1; j >= 0; j--)
+				{
+					u.trackedEvents.splice(indexOfSentTrackedEvents[j], 1);
+				}
+			}
 		}
 	}
 }
