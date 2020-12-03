@@ -45,25 +45,6 @@ class GameServerRunning extends GameServerBaseState {
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 
-		// //notify playing users for character changes
-		// for(var i = 0; i < activeCharacters.length; i++)
-		// {
-		// 	//check if the plBody exists (hasn't been deactivated this frame), and check if the character is awake. If so, send a positional update to active players
-		// 	if(activeCharacters[i].plBody !== null && activeCharacters[i].plBody.isAwake())
-		// 	{
-		// 		var bodyPos = activeCharacters[i].plBody.getPosition();
-		// 		for(var j = 0; j < playingUsers.length; j++)
-		// 		{
-		// 			playingUsers[j].trackedEvents.push({
-		// 				"eventName": "activeCharacterUpdate",
-		// 				"activeCharacterId": activeCharacters[i].activeId,
-		// 				"characterPosX": bodyPos.x,
-		// 				"characterPosY": bodyPos.y
-		// 			})
-		// 		}
-		// 	}
-		// }
-
 		//update systems
 		this.gs.prioritySystem.update(dt);
 
@@ -191,20 +172,6 @@ class GameServerRunning extends GameServerBaseState {
 		if(c && c.isActive)
 		{
 			c.characterPostActivated();
-			// //now tell all active clients about the new active character
-			// for(var i = 0; i < activeUsers.length; i++)
-			// {
-			// 	activeUsers[i].trackedEvents.push( {
-			// 		"eventName": "addActiveCharacter",
-			// 		"userId": c.userId,
-			// 		"characterId": c.id,
-			// 		"activeCharacterId": c.activeId,
-			// 		"characterPosX": 5,
-			// 		"characterPosY": 5,
-			// 		"characterState": "",
-			// 		"characterType": ""
-			// 	})
-			// }
 		}
 	}
 
@@ -246,15 +213,6 @@ class GameServerRunning extends GameServerBaseState {
 
 			if(c && c.userId === user.id)
 			{
-				//now tell all active clients about removing the active character
-				// var activeUsers = this.gs.um.getActiveUsers();
-				// for(var j = 0; j < activeUsers.length; j++)
-				// {
-				// 	activeUsers[j].trackedEvents.push( {
-				// 		"eventName": "removeActiveCharacter",
-				// 		"characterId": c.id
-				// 	});
-				// }
 				c.characterPredeactivated();
 				this.gs.cm.deactivateCharacterId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
 

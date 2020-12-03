@@ -98,7 +98,7 @@ class Character {
 			this.inputController.isFiringAlt.state = lastKnownInput.isFiringAlt;
 			this.inputController.characterDirection.value = lastKnownInput.characterDirection.prevValue;
 
-			this.isInputDirty = true;	//kinda wierd the diry flag set is HERE and not in the charcter...but whatever
+			this.isInputDirty = true;
 
 			//Step 2 - detect any events that occured within the potentially clumped inputs (such as firing a bullet)
 			for(var i = 0; i < this.inputQueue.length; i++)
@@ -179,21 +179,6 @@ class Character {
 						p.size = 0.1;
 						p.init(this.gs, e.x, e.y, e.angle, p.size, 0.8, 1000, 100);
 					}
-
-					//tell all clients about the bullet
-					// var playingUsers = this.gs.um.getPlayingUsers();
-					// for(var i = 0; i < playingUsers.length; i++)
-					// {
-					// 	playingUsers[i].trackedEvents.push({
-					// 		"eventName": "addProjectile",
-					// 		"id": p.id,
-					// 		"x": p.xStarting,
-					// 		"y": p.yStarting,
-					// 		"angle": p.angle,
-					// 		"size": p.size
-					// 	});
-					// }
-					
 				}
 			}
 

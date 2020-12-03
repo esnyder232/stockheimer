@@ -66,35 +66,10 @@ class Bullet {
 
 		if(this.plBody)
 		{
-			var pos = this.plBody.getPosition();
-
-			//tell the clients about the projectile's new position. This is gonna break the server :)
-			var playingUsers = this.gs.um.getPlayingUsers();
-			// for(var i = 0; i < playingUsers.length; i++)
-			// {
-			// 	playingUsers[i].trackedEvents.push({
-			// 		"eventName": "projectileUpdate",
-			// 		"id": this.id,
-			// 		"x": pos.x,
-			// 		"y": pos.y,
-			// 		"angle": this.angle
-			// 	});
-			// }
-	
-	
 			if(this.lifespan <= 0)
 			{
 				this.gs.pm.destroyProjectileId(this.id);
 				this.reset();
-
-				//tell the clients about the destroyed projectile
-				// for(var i = 0; i < playingUsers.length; i++)
-				// {
-				// 	playingUsers[i].trackedEvents.push({
-				// 		"eventName": "removeProjectile",
-				// 		"id": this.id
-				// 	});
-				// }
 			}
 		}
 	}

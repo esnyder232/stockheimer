@@ -28,7 +28,7 @@ class WebsocketHandler {
 
 		this.localSequenceMaxValue = 65535;
 
-		this.maxPacketSize = 300; //bytes
+		this.maxPacketSize = 500; //bytes
 		this.eventQueues = [];	//2d array (each entry in eventQueues is another array). Each array is a queue for events to be sent to the client.
 		this.eventQueuesEventIdIndex = {}; //index for the eventQueues
 		this.eventQueuesEventIdReverseIndex = {}; //reverse index of the eventQueuesEventIdIndex. This holds a mapping of "eventQueuesEventIdIndex.index" -> "EventSchema.eventId"
