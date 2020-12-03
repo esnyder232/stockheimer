@@ -218,14 +218,15 @@ export default class MainScene extends Phaser.Scene {
 	
 			userList.append(newUser);
 	
-			
-	
 			this.userDomElements.push({
 				userId: u.userId,
 				activeUserId: u.activeUserId,
 				userListItem: newUser
 			});
 		}
+		
+		var userCountDiv = $("#user-list-player-count");
+		userCountDiv.text("Players: " + this.gc.users.length + "/32");
 	}
 
 	addActiveCharacter(characterId) {
@@ -340,6 +341,12 @@ export default class MainScene extends Phaser.Scene {
 			//remove the user itself from the list
 			this.userDomElements.splice(udeIndex, 1);
 		}
+	
+	}
+
+	userDisconnectedPost() {
+		var userCountDiv = $("#user-list-player-count");
+		userCountDiv.text("Players: " + this.gc.users.length + "/32");
 	}
 	  
 	update(timeElapsed, dt) {

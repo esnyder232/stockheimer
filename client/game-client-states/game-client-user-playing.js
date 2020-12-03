@@ -76,6 +76,10 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 	cbPostEvent(e) {
 		switch(e.eventName)
 			{
+				case "userDisconnected":
+					this.ms.userDisconnectedPost();
+					break;
+
 				case "userConnected":
 					this.ms.userConnected(e.userId);
 					break;
