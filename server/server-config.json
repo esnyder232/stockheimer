@@ -2,5 +2,9 @@
 	"version": "2020-6-10_12-00-00",
 	"set_timeout_variance": 16,
 	"session_cookie_secret": "mySecret",
-	"https_enabled": false
+	"https_enabled": false,
+	"max_allowed_bandwidth_bits": 1000000,
+	"max_packet_event_bytes_until_fragmentation": 26,
+	"fps": 30,
+	"max_players": 32
 }

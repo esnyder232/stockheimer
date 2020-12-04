@@ -1,4 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const serverConfig = require('../server-config.json');
 
 class PrioritySystem {
 	constructor() {
@@ -6,6 +7,8 @@ class PrioritySystem {
 		this.pl = null;
 		this.world = null;
 		this.globalfuncs = new GlobalFuncs();
+		this.fragmentationLimit = Math.round(serverConfig.max_packet_event_bytes_until_fragmentation);
+		this.fragmentIdCounter = 0; //ids for fragmentInfos
 	}
 
 	init(gs) {
@@ -13,6 +16,7 @@ class PrioritySystem {
 
 		this.pl = this.gs.pl;
 		this.world = this.gs.world;
+
 	}
 
 	update(dt) {
@@ -225,14 +229,109 @@ class PrioritySystem {
 				//this index keeps track of trackedEvents that were sent this frame (used for deletion at the end)
 				var indexOfSentTrackedEvents = [];
 
-				//first, try to pack in the trackedEvents (highest priority)
+				//first, see if there are any fragments that we need to queue up in the trackedEvnets. Only send fragments ONE at a time.
+				if(u.trackedFragmentEvents.length > 0)
+				{
+					var fragmentInfo = u.trackedFragmentEvents[0];
+										
+					if((fragmentInfo.currentFragmentNumber -1) == fragmentInfo.ackedFragmentNumber)
+					{
+						//fragment start
+						if(fragmentInfo.currentFragmentNumber == 0)
+						{
+							var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
+
+							var fragmentEvent = {
+								eventName: "fragmentStart",
+								fragmentLength: fragmentInfo.eventDataView.byteLength,
+								fragmentData: fragmentInfo.eventDataBuffer.slice(0, nextBytes),
+								fragmentId: fragmentInfo.fragmentId //doesn't actually get passed to the client. Just piggy backing off the event for the acknoledgment later.
+							};
+
+							//push the fragmentStart event in the queue of other events
+							fragmentInfo.n += nextBytes;
+							fragmentInfo.currentFragmentNumber++;
+							u.trackedEvents.push(fragmentEvent);
+						}
+						//fragment continue
+						else if(fragmentInfo.currentFragmentNumber < fragmentInfo.maxFragmentNumber)
+						{
+							//calculate the next bytes
+							var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
+	
+							//queue up the next fragment 
+							var fragmentEvent = {
+								eventName: "fragmentContinue",
+								fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes),
+								fragmentId: fragmentInfo.fragmentId //doesn't actually get passed to the client. Just piggy backing off the event for the acknoledgment later.
+							};
+
+							fragmentInfo.n += nextBytes;
+							fragmentInfo.currentFragmentNumber++;
+							u.trackedEvents.push(fragmentEvent);
+						}
+						//fragment end
+						else if(fragmentInfo.currentFragmentNumber == fragmentInfo.maxFragmentNumber)
+						{
+							//calculate the next bytes
+							var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
+
+							//queue up the next fragment 
+							var fragmentEvent = {
+								eventName: "fragmentEnd",
+								fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes),
+								fragmentId: fragmentInfo.fragmentId //doesn't actually get passed to the client. Just piggy backing off the event for the acknoledgment later.
+							};
+
+							fragmentInfo.n += nextBytes;
+							fragmentInfo.currentFragmentNumber++;
+							u.trackedEvents.push(fragmentEvent);
+
+							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
+							// console.log("FRAGMENT END SENT");
+							// console.log(fragmentInfo);
+							u.trackedFragmentEvents.splice(0, 1);
+						}
+					}
+				}
+
+				//second, pack in the trackedEvents (highest priority)
 				for(var j = 0; j < u.trackedEvents.length; j++)
 				{
 					//check if the websocket handler can fit the event
-					var canFit = wsh.canEventFit(u.trackedEvents[j]);
+					var info = wsh.canEventFit(u.trackedEvents[j]);
 
+					//check if the size can vary, and the size is big. If it is, we will start fragmentation. Also only do this if its NOT a fragment already
+					if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.fragmentationLimit)
+					{	
+						var fragmentInfo = {
+							bytesRequired: info.bytesRequired,
+							eventData: u.trackedEvents[j],
+							eventDataBuffer: null,
+							eventDataView: null,
+							fragmentId: this.fragmentIdCounter,
+							n: 0,						//the current byte of the eventDataBuffer we are on
+							currentFragmentNumber: 0, 	//the current fragment number we are trying to send in the "trackedEvents"
+							ackedFragmentNumber: -1,  	//the most recent acked fragment number that was sent to the client
+							maxFragmentNumber: 0		//the max number of fragments we need to send
+						};
+
+						this.fragmentIdCounter++;
+
+						//calculate the max fragments required and create the buffer
+						fragmentInfo.maxFragmentNumber = Math.ceil(fragmentInfo.bytesRequired / this.fragmentationLimit) - 1;
+						fragmentInfo.eventDataBuffer = new ArrayBuffer(fragmentInfo.bytesRequired);
+						fragmentInfo.eventDataView = new DataView(fragmentInfo.eventDataBuffer);
+
+						//encode the entire event in the eventDataBuffer
+						wsh.encodeEventInBuffer(fragmentInfo.eventData, fragmentInfo.eventDataView, 0);
+
+						//push the fragmentInfo into the trackedFragmentEvents so we can keep track of it seperately
+						u.trackedFragmentEvents.push(fragmentInfo);
+						indexOfSentTrackedEvents.push(j); //just push it in this queue so it gets spliced off at the end
+					}
 					//insert the event, and reset the priority accumulator
-					if(canFit)
+					else if(info.canEventFit)
 					{
 						wsh.insertEvent(u.trackedEvents[j]);
 						indexOfSentTrackedEvents.push(j);
@@ -241,12 +340,13 @@ class PrioritySystem {
 					{
 						//do nothing
 						//continue with the tracked objects to see if any others will fit
-						//possibly start a fragmentation if the event allows it.
 					}
 				}
 
 
-				//second, pack in as many trackedObjects as you can based on the priorityAccumulator
+
+
+				//thrid, pack in as many trackedObjects as you can based on the priorityAccumulator
 				for(var j = 0; j < u.trackedObjects.length; j++)
 				{
 					var eventData = null;
@@ -275,10 +375,10 @@ class PrioritySystem {
 						if(eventData !== null)
 						{
 							//check if the websocket handler can fit the event
-							var canFit = wsh.canEventFit(eventData);
+							var info = wsh.canEventFit(eventData);
 
 							//insert the event, and reset the priority accumulator
-							if(canFit)
+							if(info.canEventFit)
 							{
 								wsh.insertEvent(eventData);
 								u.trackedObjects[j].priorityAccumulator = 0.0;
@@ -300,6 +400,42 @@ class PrioritySystem {
 			}
 		}
 	}
+
+	calculateNextFragmentBytes(n, totalByteLength, fragmentationLimit)
+	{
+		var result = 0;
+
+		var bytesRemaining = totalByteLength - n;
+
+		if(Math.floor(bytesRemaining/fragmentationLimit) >= 1)
+		{
+			result = fragmentationLimit;
+		}
+		else
+		{
+			result = bytesRemaining;
+		}
+
+		return result;
+	}
+
+	ackFragment(userId, eventData) {
+		// console.log('ACK FRAGMENT CALLED');
+		// console.log(eventData);
+
+		var u = this.gs.um.getUserByID(userId);
+
+		if(u !== null && u.trackedFragmentEvents.length > 0)
+		{
+			var index = u.trackedFragmentEvents.findIndex((x) => {return x.fragmentId == eventData.fragmentId;});
+			if(index >= 0)
+			{
+				u.trackedFragmentEvents[index].ackedFragmentNumber++;
+			}
+		}
+	}
+
+
 }
 
 exports.PrioritySystem = PrioritySystem;

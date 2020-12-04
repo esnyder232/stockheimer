@@ -28,7 +28,7 @@ class User {
 		this.trackedObjectsTransactions = []; //the changes made to the trackedObjects array
 
 		this.trackedEvents = []; //events that need to eventually be told to the client (based on prioritization)
-
+		this.trackedFragmentEvents = []; //events that need to be fragmented over several packets
 		this.plBody = null; //used for tracking when objects are near the user
 	}
 

@@ -1,5 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const EventSchema = require('../../shared_files/event-schema.json');
+const serverConfig = require('../server-config.json');
 
 //load in the event schema and build indexes. Do it outside the class so it only does this step once.
 var EventIdIndex = {};
@@ -25,7 +26,7 @@ class WebsocketHandler {
 		this.localSequence = 0; 	//current local sequence number
 		this.remoteSequence = 0;	//most recent remote sequence number
 		this.ack = 0;				//most current ack returned by the client
-
+		
 		this.localSequenceMaxValue = 65535;
 
 		this.maxPacketSize = 500; //bytes
@@ -40,6 +41,9 @@ class WebsocketHandler {
 		this.gs = gameServer;
 		this.userId = userId;
 		this.ws = ws;
+
+		//calculate maxPacketSize through config values
+		this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (serverConfig.max_players * serverConfig.fps * 8));
 				
 		//setup actual websocket callbacks
 		ws.on("close", this.onclose.bind(this));
@@ -294,11 +298,6 @@ class WebsocketHandler {
 					{
 						var eventBytes = this.getEventSize(this.eventQueues[i][j]);
 
-						// eventBytes++; //eventId
-
-						// var eventData = q[j];
-						// eventBytes += this.getInternalEventSize(schema, eventData);
-
 						//add the event bytes to current bytes to be written
 						this.currentBytes += eventBytes;
 					}
@@ -306,6 +305,7 @@ class WebsocketHandler {
 			}
 			this.isEventQueuesDirty = false;
 		}
+
 	}
 
 	//calculates how many bytes the event will be required for current packet
@@ -322,24 +322,38 @@ class WebsocketHandler {
 		return eventBytes;
 	}
 
-	//used for the priority system to simply find out if an event is going to fit
+	//used for the priority system to get information before inserting an event
 	canEventFit(eventData) {
-		var result = false;
+		var result = {
+			canEventFit: false,
+			bytesRequired: 0,
+			b_size_varies: false,
+			isFragment: false
+		};
+
+		var schema = EventNameIndex[eventData.eventName];
 
 		//get bytes required
-		var bytesRequired = this.getEventSize(eventData);
+		result.bytesRequired = this.getEventSize(eventData);
+		result.b_size_varies = schema.b_size_varies;
 
 		//calculate current bytes
 		this.calculateBytesUsed();
 
 		//see if it can fit
-		result = bytesRequired <= (this.maxPacketSize - this.currentBytes);
+		result.canEventFit = result.bytesRequired <= (this.maxPacketSize - this.currentBytes);
+
+		//see if its a fragment
+		if(eventData.eventName == "fragmentStart" || eventData.eventName == "fragmentContinue" || eventData.eventName == "fragmentEnd")
+		{
+			result.isFragment = true;
+		}
 
 		return result;
 	}
 
 	//insert the event into the eventQueues
-	insertEvent(eventData) {
+	insertEvent(eventData, cbAck) {
 		var schema = EventNameIndex[eventData.eventName];
 		if(schema !== undefined)
 		{
@@ -390,6 +404,13 @@ class WebsocketHandler {
 								eventBytes += 4 + (s.length*2);
 							}
 							break;
+						case "dataBuffer8": 
+							var db = eventData[schema.parameters[p].txt_param_name];
+							if(db)
+							{
+								eventBytes += 1 + (db.byteLength);
+							}
+							break;
 						default:
 							//intentionally blank
 							break;
@@ -409,6 +430,156 @@ class WebsocketHandler {
 		return eventBytes;
 	}
 
+
+	//encode the event in the buffer at the nth byte. This is assuming the buffer is big enough already to fit the event.
+	//the "view" is a DataView for a buffer (javascript stuff)
+	encodeEventInBuffer(eventData, view, n)
+	{
+		var oldN = n;
+
+		var schema = EventNameIndex[eventData.eventName];
+
+		if(schema !== null)
+		{
+			//event header
+			view.setUint8(n, schema.event_id);
+			n++;
+
+			//go through the parameters and encode each one
+			for(var p = 0; p < schema.parameters.length; p++)
+			{
+				var value = eventData[schema.parameters[p].txt_param_name];
+				switch(schema.parameters[p].txt_actual_data_type)
+				{
+					//standard encoding
+					case "int8":
+						view.setInt8(n, value);
+						n++;
+						break;
+					case "int16":
+						view.setInt16(n, value);
+						n += 2;
+						break;
+					case "int32":
+						view.setInt32(n, value);
+						n += 4;
+						break;
+					case "uint8":
+						view.setUint8(n, value);
+						n++;
+						break;
+					case "uint16":
+						view.setUint16(n, value);
+						n += 2;
+						break;
+					case "uint32":
+						view.setUint32(n, value);
+						n += 4;
+						break;
+					case "str8":
+						//string length
+						view.setUint8(n, value.length);
+						n++;
+
+						//string value
+						for(var j = 0; j < value.length; j++)
+						{
+							view.setUint16(n, value.charCodeAt(j)); 
+							n += 2;
+						}
+						break;
+					case "str16":
+						//string length
+						view.setUint16(n, value.length);
+						n += 2;
+
+						//string value
+						for(var j = 0; j < value.length; j++)
+						{
+							view.setUint16(n, value.charCodeAt(j)); 
+							n += 2;
+						}
+						break;
+					case "str32":
+						//string length
+						view.setUint32(n, value.length);
+						n += 4;
+
+						//string value
+						for(var j = 0; j < value.length; j++)
+						{
+							view.setUint16(n, value.charCodeAt(j)); 
+							n += 2;
+						}
+						break;
+					case "float32":
+						view.setFloat32(n, value);
+						n += 4;
+						break;
+
+					//Custom encodings
+					case "float16p0":
+						view.setInt16(n, Math.round(value/1));
+						n += 2;
+						break;
+					case "float16p1":
+						view.setInt16(n, Math.round(value/0.1));
+						n += 2;
+						break;
+					case "float16p2":
+						view.setInt16(n, Math.round(value/0.01));
+						n += 2;
+						break;
+					case "float16p3":
+						view.setInt16(n, Math.round(value/0.001));
+						n += 2;
+						break;
+
+					case "float8p0":
+						view.setInt8(n, Math.round(value/1));
+						n++;
+						break;
+					case "float8p1":
+						view.setInt8(n, Math.round(value/0.1));
+						n++;
+						break;
+					case "float8p2":
+						view.setInt8(n, Math.round(value/0.01));
+						n++;
+						break;
+					case "float8p3":
+						view.setInt8(n, Math.round(value/0.001));
+						n++;
+						break;
+
+					case "bool":
+						view.setUint8(n, value ? 1 : 0);
+						n++;
+						break;
+
+					case "dataBuffer8":
+						//buffer length
+						view.setUint8(n, value.byteLength);
+						n++;
+
+						var dv = new DataView(value);
+						
+						//buffer value (there is probably a way to slice directly from the value databuffer to the ACTUAL packet databuffer...but I couldn't figure it out :P)
+						for(var j = 0; j < dv.byteLength; j++)
+						{
+							view.setUint8(n, dv.getUint8(j));
+							n += 1;
+						}
+						break;
+					default:
+						//intentionally blank
+						break;
+				}
+			}
+		}
+
+		return n - oldN;
+	}
 
 
 	createPacketForUser() {
@@ -451,149 +622,32 @@ class WebsocketHandler {
 
 					if(bytesRequired <= this.maxPacketSize - n)
 					{
-						var schema = EventNameIndex[e.eventName];
+						//encode the event
+						var bytesWritten = this.encodeEventInBuffer(e, view, n);
 
-						//if the schema exists (I don't know why it wouldn't at this point), encode the event
-						if(schema !== undefined)
+						if(bytesWritten > 0)
 						{
-							view.setUint8(n, schema.event_id);
-							n++;
-		
-							//go through the parameters and encode each one
-							for(var p = 0; p < schema.parameters.length; p++)
-							{
-								var value = e[schema.parameters[p].txt_param_name];
-								switch(schema.parameters[p].txt_actual_data_type)
-								{
-									//standard encoding
-									case "int8":
-										view.setInt8(n, value);
-										n++;
-										break;
-									case "int16":
-										view.setInt16(n, value);
-										n += 2;
-										break;
-									case "int32":
-										view.setInt32(n, value);
-										n += 4;
-										break;
-									case "uint8":
-										view.setUint8(n, value);
-										n++;
-										break;
-									case "uint16":
-										view.setUint16(n, value);
-										n += 2;
-										break;
-									case "uint32":
-										view.setUint32(n, value);
-										n += 4;
-										break;
-									case "str8":
-										//string length
-										view.setUint8(n, value.length);
-										n++;
-		
-										//string value
-										for(var j = 0; j < value.length; j++)
-										{
-											view.setUint16(n, value.charCodeAt(j)); 
-											n += 2;
-										}
-										break;
-									case "str16":
-										//string length
-										view.setUint16(n, value.length);
-										n += 2;
-		
-										//string value
-										for(var j = 0; j < value.length; j++)
-										{
-											view.setUint16(n, value.charCodeAt(j)); 
-											n += 2;
-										}
-										break;
-									case "str32":
-										//string length
-										view.setUint32(n, value.length);
-										n += 4;
-		
-										//string value
-										for(var j = 0; j < value.length; j++)
-										{
-											view.setUint16(n, value.charCodeAt(j)); 
-											n += 2;
-										}
-										break;
-									case "float32":
-										view.setFloat32(n, value);
-										n += 4;
-										break;
-		
-									//Custom encodings
-									case "float16p0":
-										view.setInt16(n, Math.round(value/1));
-										n += 2;
-										break;
-									case "float16p1":
-										view.setInt16(n, Math.round(value/0.1));
-										n += 2;
-										break;
-									case "float16p2":
-										view.setInt16(n, Math.round(value/0.01));
-										n += 2;
-										break;
-									case "float16p3":
-										view.setInt16(n, Math.round(value/0.001));
-										n += 2;
-										break;
-		
-		
-		
-									case "float8p0":
-										view.setInt8(n, Math.round(value/1));
-										n++;
-										break;
-									case "float8p1":
-										view.setInt8(n, Math.round(value/0.1));
-										n++;
-										break;
-									case "float8p2":
-										view.setInt8(n, Math.round(value/0.01));
-										n++;
-										break;
-									case "float8p3":
-										view.setInt8(n, Math.round(value/0.001));
-										n++;
-										break;
-		
-		
-									case "bool":
-										view.setUint8(n, value ? 1 : 0);
-										n++;
-										break;
-									default:
-										//intentionally blank
-										break;
-								}
-							}
-
+							n += bytesWritten;
+							
 							//increase event count
 							m++;
-
-							//mark the event for deletion (used later when double checking that all events made it through)
-							e.isSent = true;
-							this.isEventQueuesDirty = true;
 						}
+						else
+						{
+							console.log('!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
+						}
+
+						//mark the event for deletion (used later when double checking that all events made it through)
+						e.isSent = true;
+						this.isEventQueuesDirty = true;
 					}
 					//the packet is full
 					else
 					{
 						bcontinue = false;
 					}
-				}				
-			}			
+				}
+			}
 		}
 
 		//delete events that were processed, and log a warning when they aren't (should happen, but you never know)
@@ -610,6 +664,12 @@ class WebsocketHandler {
 						console.log('!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
 						console.log(' - User: ' + user.username);
 						console.log(' - event: ' + JSON.stringify(this.eventQueues[i][j]));
+					}
+
+					//check to see if it was a fragment event. If it was, contact the priority manager for feedback.
+					if(this.eventQueues[i][j].eventName == "fragmentStart" || this.eventQueues[i][j].eventName == "fragmentContinue" || this.eventQueues[i][j].eventName == "fragmentEnd")
+					{
+						this.gs.prioritySystem.ackFragment(this.userId, this.eventQueues[i][j]);
 					}
 
 					//console.log('Splicing');

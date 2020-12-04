@@ -1,5 +1,4 @@
 const planck = require('planck-js');
-const crypto = require('crypto');
 const {performance} = require('perf_hooks');
 const cookieParser = require('cookie-parser');
 const {GlobalFuncs} = require('./global-funcs.js');
@@ -12,16 +11,14 @@ const {GameServerStopped} = require('./game-server-states/game-server-stopped.js
 const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {PrioritySystem} = require ('./systems/priority-system.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
-
-
 const serverConfig = require('./server-config.json');
 
 class GameServer {
 	constructor() {
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = 30; //fps
+		this.frameRate = serverConfig.fps; 
 		this.frameNum = 0;
-		this.maxPlayers = 32;
+		this.maxPlayers = serverConfig.max_players;
 		this.inactivePeriod = 10000; //ms - the amount of ms worth of ack loss (packet loss) before a player is considered "inactive" by the server
 		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
 
@@ -410,7 +407,7 @@ class GameServer {
 		try {
 			var gameData = {
 				currentPlayers: this.um.activeUserArray.length,
-				maxPlayers: this.um.maxActiveAllowed
+				maxPlayers: this.maxPlayers
 			}
 			main.push(gameData);
 		}

@@ -4,6 +4,7 @@ export default class EventProcessor {
 	constructor() {
 		this.gc = null;		
 		this.globalfuncs = new GlobalFuncs();
+		this.fragmentedServerToClientEvents = [];
 	}
 	
 	init(gc) {
@@ -11,7 +12,7 @@ export default class EventProcessor {
 	}
 
 	processServerEvents(cbPreEvent, cbPostEvent) {
-		for(var i = this.gc.wsh.serverToClientEvents.length - 1; i >= 0; i--)
+		for(var i = 0; i < this.gc.wsh.serverToClientEvents.length; i++)
 		{
 			var e = this.gc.wsh.serverToClientEvents[i];
 			//call preevent callback. This is mostly just called when things get deleted and the scenes have a chance to update their view accordingly
@@ -167,6 +168,59 @@ export default class EventProcessor {
 						}
 						break;
 
+					case "fragmentStart":
+						var fragmentInfo = {
+							fragmentLength: e.fragmentLength,
+							fragmentData: new ArrayBuffer(e.fragmentLength),
+							fragmentDataView: null,
+							n: 0
+						};
+
+						fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+
+						//copy the fragment in this message to the fragmentedServeRtoClientEvents
+						var dv = new DataView(e.fragmentData);
+						for(var j = 0; j < dv.byteLength; j++)
+						{
+							fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+							fragmentInfo.n++;
+						}
+
+						this.fragmentedServerToClientEvents.push(fragmentInfo);
+
+						break;
+					case "fragmentContinue":
+						if(this.fragmentedServerToClientEvents.length > 0)
+						{
+							var fragmentInfo = this.fragmentedServerToClientEvents[this.fragmentedServerToClientEvents.length-1];
+
+							//copy the fragment in this message to the fragmentedServeRtoClientEvents
+							var dv = new DataView(e.fragmentData);
+							for(var j = 0; j < dv.byteLength; j++)
+							{
+								fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+								fragmentInfo.n++;
+							}
+						}
+						break;
+					case "fragmentEnd":
+						if(this.fragmentedServerToClientEvents.length > 0)
+						{
+							var fragmentInfo = this.fragmentedServerToClientEvents[this.fragmentedServerToClientEvents.length-1];
+
+							//copy the fragment in this message to the fragmentedServeRtoClientEvents
+							var dv = new DataView(e.fragmentData);
+							for(var j = 0; j < dv.byteLength; j++)
+							{
+								fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+								fragmentInfo.n++;
+							}
+
+							this.gc.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
+						}
+						break;
+
+
 				default:
 					//intentionally blank
 					break;
@@ -177,8 +231,8 @@ export default class EventProcessor {
 			{
 				cbPostEvent(e);
 			}
-
-			this.gc.wsh.serverToClientEvents.splice(i, 1);
 		}
+		
+		this.gc.wsh.serverToClientEvents.length = 0;
 	}
 }

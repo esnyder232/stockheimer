@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const {GlobalFuncs} = require('../global-funcs.js');
 const {User} = require('../user/user.js');
+const serverConfig = require('../server-config.json');
 
 class UserManager {
 	constructor() {
@@ -14,7 +15,7 @@ class UserManager {
 		this.nextAvailableActiveId = -1;
 		this.activeUserArray = [];
 		this.activeUserIdArray = [];
-		this.maxActiveAllowed = 32;
+		this.maxActiveAllowed = serverConfig.max_players;
 
 		this.playingUserArray = [];
 		

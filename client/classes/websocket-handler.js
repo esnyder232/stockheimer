@@ -12,7 +12,7 @@ export default class WebsocketHandler {
 		this.remoteSequence = 0;	//most recent remote sequence number
 		this.ack = 0;				//most current ack returned by the server
 
-		this.maxPacketSize = 130; 	//bytes
+		this.maxPacketSize = 260; 	//bytes
 		this.localSequenceMaxValue = 65535;
 
 		this.eventSchema = {};
@@ -21,7 +21,7 @@ export default class WebsocketHandler {
 
 		this.serverToClientEvents = []; //event queue to be processed by the main loop
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events going from client to server
-
+		
 		
 	}
 	
@@ -109,193 +109,194 @@ export default class WebsocketHandler {
 		var view = new DataView(e.data);
 		var n = 0; //number of bytes in
 		var m = 0; //event count
-		var bytesRead = 0;
 
 		//parse the packet header
 		this.remoteSequence = view.getUint16(n);
 		n += 2;
-		bytesRead += 2;
 
 		this.ack = view.getUint16(n);
 		n += 2;
-		bytesRead += 2;
 		
 		m = view.getUint8(n); //event count
 		n++;
-		bytesRead += 1;
 
 		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
 
 		//start going through the events
 		for(var i = 0; i < m; i++)
 		{
-			var eventId = view.getUint8(n);
-			n++;
-			bytesRead += 1;
+			n += this.decodeEvent(n, view);
+		}
+	}
 
-			var schema = this.eventIdIndex[eventId];
+	decodeEvent(n, view, debugMe) {
+		var oldN = n;
 
-			if(schema) 
+		//event id
+		var eventId = view.getUint8(n);
+		n++;
+
+		var schema = this.eventIdIndex[eventId];
+
+		if(schema) 
+		{
+			var eventData = {};
+			eventData.eventName = schema.txt_event_name;
+
+			//go through each parameter for the event
+			for(var p = 0; p < schema.parameters.length; p++)
 			{
-				var eventData = {};
-				eventData.eventName = schema.txt_event_name;
+				var value = 0;
 
-				//go through each parameter for the event
-				for(var p = 0; p < schema.parameters.length; p++)
+				switch(schema.parameters[p].txt_actual_data_type)
 				{
-					var value = 0;
+					//standard decodings
+					case "int8":
+						value = view.getInt8(n);
+						n++;
+						break;
+					case "int16":
+						value = view.getInt16(n);
+						n += 2;
+						break;
+					case "int32":
+						value = view.getInt32(n);
+						n += 4;
+						break;
+					case "uint8":
+						value = view.getUint8(n);
+						n++;
+						break;
+					case "uint16":
+						value = view.getUint16(n);
+						n += 2;
+						break;
+					case "uint32":
+						value = view.getUint32(n);
+						n += 4;
+						break;
+					case "str8":
+						value = "";
 
-					switch(schema.parameters[p].txt_actual_data_type)
-					{
-						//standard decodings
-						case "int8":
-							value = view.getInt8(n);
-							n++;
-							bytesRead++;
-							break;
-						case "int16":
-							value = view.getInt16(n);
+						//string length
+						var l = view.getUint8(n);
+						n++;
+
+						//string value
+						for(var j = 0; j < l; j++)
+						{
+							value += String.fromCharCode(view.getUint16(n)); 
 							n += 2;
-							bytesRead += 2;
-							break;
-						case "int32":
-							value = view.getInt32(n);
-							n += 4;
-							bytesRead += 4;
-							break;
-						case "uint8":
-							value = view.getUint8(n);
-							n++;
-							bytesRead++;
-							break;
-						case "uint16":
-							value = view.getUint16(n);
+						}
+						break;
+					case "str16":
+						value = "";
+
+						//string length
+						var l = view.getUint16(n);
+						n++;
+
+						//string value
+						for(var j = 0; j < l; j++)
+						{
+							value += String.fromCharCode(view.getUint16(n)); 
 							n += 2;
-							bytesRead += 2;
-							break;
-						case "uint32":
-							value = view.getUint32(n);
-							n += 4;
-							bytesRead += 4;
-							break;
-						case "str8":
-							value = "";
+						}
+						break;
+					case "str32":
+						value = "";
 
-							//string length
-							var l = view.getUint8(n);
-							n++;
-							bytesRead++;
+						//string length
+						var l = view.getUint32(n);
+						n++;
 
-							//string value
-							for(var j = 0; j < l; j++)
-							{
-								value += String.fromCharCode(view.getUint16(n)); 
-								n += 2;
-								bytesRead += 2;
-							}
-							break;
-						case "str16":
-							value = "";
-
-							//string length
-							var l = view.getUint16(n);
-							n++;
-							bytesRead++;
-
-							//string value
-							for(var j = 0; j < l; j++)
-							{
-								value += String.fromCharCode(view.getUint16(n)); 
-								n += 2;
-								bytesRead += 2;
-							}
-							break;
-						case "str32":
-							value = "";
-
-							//string length
-							var l = view.getUint32(n);
-							n++;
-							bytesRead++;
-
-							//string value
-							for(var j = 0; j < l; j++)
-							{
-								value += String.fromCharCode(view.getUint16(n)); 
-								n += 2;
-								bytesRead += 2;
-							}
-							break;
-						case "float32":
-							value = view.getFloat32(n);
-							n += 4;
-							bytesRead += 4;
-							break;
-
-						//Custom decodings
-						case "float16p0":
-							value = view.getInt16(n)*1;
+						//string value
+						for(var j = 0; j < l; j++)
+						{
+							value += String.fromCharCode(view.getUint16(n)); 
 							n += 2;
-							bytesRead += 2;
-							break;
-						case "float16p1":
-							value = view.getInt16(n)*0.1;
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "float16p2":
-							value = view.getInt16(n)*0.01;
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "float16p3":
-							value = view.getInt16(n)*0.001;
-							n += 2;
-							bytesRead += 2;
-							break;
+						}
+						break;
+					case "float32":
+						value = view.getFloat32(n);
+						n += 4;
+						break;
+
+					//Custom decodings
+					case "float16p0":
+						value = view.getInt16(n)*1;
+						n += 2;
+						break;
+					case "float16p1":
+						value = view.getInt16(n)*0.1;
+						n += 2;
+						break;
+					case "float16p2":
+						value = view.getInt16(n)*0.01;
+						n += 2;
+						break;
+					case "float16p3":
+						value = view.getInt16(n)*0.001;
+						n += 2;
+						break;
 
 
 
-						case "float8p0":
-							value = view.getInt8(n)*1;
-							n++;
-							bytesRead++;
-							break;
-						case "float8p1":
-							value = view.getInt8(n)*0.1;
-							n++;
-							bytesRead++;
-							break;
-						case "float8p2":
-							value = view.getInt8(n)*0.01;
-							n++;
-							bytesRead++;
-							break;
-						case "float8p3":
-							value = view.getInt8(n)*0.001;
-							n++;
-							bytesRead++;
-							break;
+					case "float8p0":
+						value = view.getInt8(n)*1;
+						n++;
+						break;
+					case "float8p1":
+						value = view.getInt8(n)*0.1;
+						n++;
+						break;
+					case "float8p2":
+						value = view.getInt8(n)*0.01;
+						n++;
+						break;
+					case "float8p3":
+						value = view.getInt8(n)*0.001;
+						n++;
+						break;
 
 
-						case "bool":
-							value = view.getUint8(n) == 1 ? true : false;
-							n++;
-							bytesRead++;
-							break;
-						default:
-							//intentionally blank
-							break;
+					case "bool":
+						value = view.getUint8(n) == 1 ? true : false;
+						n++;
+						break;
 
-					}
+					case "dataBuffer8":
+						value = null;
 
-					//create the key value pair on eventData
-					eventData[schema.parameters[p].txt_param_name] = value;
+						//dataBuffer length
+						var l = view.getUint8(n);
+						n++;
+
+						value = new ArrayBuffer(l);
+						var tempView = new DataView(value);
+
+						//dataBuffer value
+						for(var j = 0; j < l; j++)
+						{
+							tempView.setUint8(j, view.getUint8(n));
+							n += 1;
+						}
+
+						break;
+					default:
+						//intentionally blank
+						break;
+
 				}
 
-				this.serverToClientEvents.push(eventData);
+				//create the key value pair on eventData
+				eventData[schema.parameters[p].txt_param_name] = value;
 			}
+
+			this.serverToClientEvents.push(eventData);
 		}
+
+		return n - oldN;
 	}
 
 
