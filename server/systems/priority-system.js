@@ -45,11 +45,11 @@ class PrioritySystem {
 
 								if(t.type == "character")
 								{
-									obj = this.gs.cm.getCharacterByID(t.id);
+									obj = this.gs.gom.getGameObjectByID(t.id);
 								}
 								else if(t.type == "projectile")
 								{
-									obj = this.gs.pm.getProjectileByID(t.id);
+									obj = this.gs.gom.getGameObjectByID(t.id);
 								}
 								//cheating
 								if(t.type == "wall")
@@ -126,11 +126,11 @@ class PrioritySystem {
 
 								if(t.type == "character")
 								{
-									obj = this.gs.cm.getCharacterByID(t.id);
+									obj = this.gs.gom.getGameObjectByID(t.id);
 								}
 								else if(t.type == "projectile")
 								{
-									obj = this.gs.pm.getProjectileByID(t.id);
+									obj = this.gs.gom.getGameObjectByID(t.id);
 								}
 								//cheating
 								else if(t.type == "wall")
@@ -184,7 +184,7 @@ class PrioritySystem {
 				switch(u.trackedObjects[j].type)
 				{
 					case "character":
-						var c = this.gs.cm.getCharacterByID(u.trackedObjects[j].id);
+						var c = this.gs.gom.getGameObjectByID(u.trackedObjects[j].id);
 						if(c !== null)
 						{
 							if(c.plBody !== null && c.plBody.isAwake()) {
@@ -198,7 +198,7 @@ class PrioritySystem {
 						}
 						break;
 					case "projectile":
-						var p = this.gs.pm.getProjectileByID(u.trackedObjects[j].id);
+						var p = this.gs.gom.getGameObjectByID(u.trackedObjects[j].id);
 						if(p !== null)
 						{
 							if(p.plBody !== null && p.plBody.isAwake()) {
@@ -357,14 +357,14 @@ class PrioritySystem {
 						switch(u.trackedObjects[j].type)
 						{
 							case "character":
-								var c = this.gs.cm.getCharacterByID(u.trackedObjects[j].id);
+								var c = this.gs.gom.getGameObjectByID(u.trackedObjects[j].id);
 								if(c !== null)
 								{
 									eventData = c.serializeActiveCharacterUpdateEvent();
 								}
 								break;
 							case "projectile":
-								var p = this.gs.pm.getProjectileByID(u.trackedObjects[j].id);
+								var p = this.gs.gom.getGameObjectByID(u.trackedObjects[j].id);
 								if(p !== null)
 								{
 									eventData = p.serializeProjectileUpdate();

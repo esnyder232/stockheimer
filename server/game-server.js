@@ -5,12 +5,11 @@ const {GlobalFuncs} = require('./global-funcs.js');
 const {ValidFuncs} = require('./valid-funcs.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
-const {CharacterManager} = require('./managers/character-manager.js');
-const {ProjectileManager} = require('./managers/projectile-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {PrioritySystem} = require ('./systems/priority-system.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
+const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const serverConfig = require('./server-config.json');
 
 class GameServer {
@@ -51,8 +50,7 @@ class GameServer {
 		this.pl = planck;
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
-		this.cm = new CharacterManager();
-		this.pm = new ProjectileManager();
+		this.gom = new GameObjectManager();
 		this.prioritySystem = new PrioritySystem();
 		this.cs = new CollisionSystem();
 		
@@ -198,8 +196,7 @@ class GameServer {
 
 		this.wsm.init(this);
 		this.um.init(this);
-		this.cm.init(this);
-		this.pm.init(this);
+		this.gom.init(this);
 		this.prioritySystem.init(this);
 		this.cs.init(this);
 

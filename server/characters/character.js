@@ -161,24 +161,24 @@ class Character {
 			for(var i = 0; i < this.eventQueue.length; i++)
 			{
 				//spawn the bullet
-				var p = this.gs.pm.createProjectile("bullet");
+				var o = this.gs.gom.createGameObject("bullet");
 				
-				if(p)
+				if(o)
 				{
 					var e = this.eventQueue[i];
-					p.type = e.type;
+					o.bulletType = e.type;
 					
 					if(e.type == "bigBullet")
 					{
-						p.size = 3;
-						p.init(this.gs, e.x, e.y, e.angle, p.size, 140, 6000, 3.5);
-						
+						o.bulletInit(this.gs, e.x, e.y, e.angle, 3, 140, 6000, 3.5);
 					}
 					else //small normal bullet
 					{
-						p.size = 0.1;
-						p.init(this.gs, e.x, e.y, e.angle, p.size, 0.8, 1000, 100);
+						o.bulletInit(this.gs, e.x, e.y, e.angle, 0.1, 0.8, 1000, 100);
 					}
+
+					//just activate it here...whatever
+					this.gs.gom.activateGameObjectId(o.id, o.bulletPostActivated.bind(o), o.cbBulletActivatedFailed.bind(this));
 				}
 			}
 

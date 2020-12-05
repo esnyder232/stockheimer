@@ -22,7 +22,7 @@ class UserPlayingState extends UserBaseState {
 
 		if(this.user.inputQueue.length > 0)
 		{
-			var c = this.user.gs.cm.getCharacterByID(this.user.characterId);
+			var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
 
 			//if you are currently controlling a character, just pass the input events to the character itself
 			if(c !== null)

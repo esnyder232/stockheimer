@@ -32,9 +32,6 @@ class UserDisconnectingState extends UserBaseState {
 		//delete SLOs
 		//this.gs.slom.deleteSLO(sloID);
 		
-		//delete the character
-		//this.user.gs.cm.deleteCharacterId(this.user.characterId);
-		
 		//reset the user
 		this.user.userDeinit();
 

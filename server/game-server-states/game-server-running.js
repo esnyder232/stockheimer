@@ -14,9 +14,7 @@ class GameServerRunning extends GameServerBaseState {
 
 	update(dt) {
 		var activeUsers = this.gs.um.getActiveUsers();
-		var playingUsers = this.gs.um.getPlayingUsers();
-		var activeCharacters = this.gs.cm.getActiveCharacters();
-		var projectiles = this.gs.pm.projectileArray;
+		var activeGameObjects = this.gs.gom.getActiveGameObjects();
 		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++)
@@ -31,15 +29,9 @@ class GameServerRunning extends GameServerBaseState {
 		}
 
 		//update characters
-		for(var i = 0; i < activeCharacters.length; i++)
+		for(var i = 0; i < activeGameObjects.length; i++)
 		{
-			activeCharacters[i].update(dt);
-		}
-
-		//update projectiles
-		for(var i = 0; i < projectiles.length; i++)
-		{
-			projectiles[i].update(dt);
+			activeGameObjects[i].update(dt);
 		}
 
 		//physics update
@@ -61,8 +53,7 @@ class GameServerRunning extends GameServerBaseState {
 		//update managers
 		this.gs.wsm.update(dt);
 		this.gs.um.update(dt);
-		this.gs.cm.update(dt);
-		this.gs.pm.update(dt);
+		this.gs.gom.update(dt);
 
 		this.gs.frameNum++;
 
@@ -132,12 +123,12 @@ class GameServerRunning extends GameServerBaseState {
 						//as long as they don't already have a character controlled, create one for the user.
 						if(user.characterId === null)
 						{
-							var c = this.gs.cm.createCharacter();
+							var c = this.gs.gom.createGameObject('character');
 							c.characterInit(this.gs);
 							c.userId = user.id;
 							user.characterId = c.id;
 
-							this.gs.cm.activateCharacterId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+							this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						}
 						break;
 	
@@ -165,8 +156,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	cbCharacterActivatedSuccess(characterId) {
-		//var activeUsers = this.gs.um.getActiveUsers();
-		var c = this.gs.cm.getCharacterByID(characterId);
+		var c = this.gs.gom.getGameObjectByID(characterId);
 
 		//just to be safe
 		if(c && c.isActive)
@@ -177,7 +167,7 @@ class GameServerRunning extends GameServerBaseState {
 
 	cbCharacterActivatedFailed(characterId, errorMessage) {
 		//character creation failed for some reason. So undo all the stuff you did on character creation
-		var c = this.gs.cm.getCharacterByID(characterId);
+		var c = this.gs.gom.getGameObjectByID(characterId);
 		if(c)
 		{
 			var u = this.gs.um.getUserByID(c.userId);
@@ -197,10 +187,10 @@ class GameServerRunning extends GameServerBaseState {
 		}	
 
 		//it should already be deactivated, but do it anyway
-		this.gs.cm.deactivateCharacterId(characterId);
+		this.gs.gom.deactivateGameObjectId(characterId);
 
 		//destroy character
-		this.gs.cm.destroyCharacterId(characterId);
+		this.gs.gom.destroyGameObject(characterId);
 	}
 
 
@@ -209,12 +199,12 @@ class GameServerRunning extends GameServerBaseState {
 		//as long as they have an existing character, kill it.
 		if(user.characterId !== null)
 		{
-			var c = this.gs.cm.getCharacterByID(user.characterId);
+			var c = this.gs.gom.getGameObjectByID(user.characterId);
 
 			if(c && c.userId === user.id)
 			{
 				c.characterPredeactivated();
-				this.gs.cm.deactivateCharacterId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
+				this.gs.gom.deactivateGameObjectId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
 
 				user.characterId = null;
 				c.userId = null;
@@ -224,11 +214,11 @@ class GameServerRunning extends GameServerBaseState {
 
 	cbDeactivateCharacterSuccess(characterId)
 	{
-		var c = this.gs.cm.getCharacterByID(characterId);
+		var c = this.gs.gom.getGameObjectByID(characterId);
 		if(c)
 		{
 			c.characterDeinit();
-			this.gs.cm.destroyCharacterId(c.id);
+			this.gs.gom.destroyGameObject(c.id);
 		}
 	}
 

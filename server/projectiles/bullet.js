@@ -8,28 +8,34 @@ class Bullet {
 		this.characterId = null;
 
 		this.plBody = null;
-		this.speedMag = 0.8;
+		this.speed = 0.8;
 		this.lifespan = 1000; //ms
 		this.xStarting = 0;
 		this.yStarting = 0;
 		this.angle = 0;
+
+		this.bulletType = "";
 	}
 
-	//angle is in radians
-	//whateveR!!!
-	init(gameServer, xc, yc, angle, size, speed, lifespan, density) {
+	bulletInit(gameServer, xc, yc, angle, size, speed, lifespan, density) {
 		this.gs = gameServer;
 		this.xStarting = xc + ((0.5+(size))*Math.cos(angle));
 		this.yStarting = yc + ((0.5+(size))*Math.sin(angle)*-1);
 		this.angle = angle;
+		this.size = size;
+		this.speed = speed;
 		this.lifespan = lifespan;
+		this.density = density;
+	}
 
+	//called only after the bullet is activated. Put things in here that other systems will depend on.
+	bulletPostActivated() {
 		const pl = this.gs.pl;
 		const Vec2 = pl.Vec2;
 		const world = this.gs.world;
 
 		//create a plank object
-		var boxShape = pl.Box(size, size, Vec2(0, 0));
+		var boxShape = pl.Box(this.size, this.size, Vec2(0, 0));
 
 		this.plBody = world.createBody({
 			position: Vec2(this.xStarting, this.yStarting),
@@ -40,25 +46,42 @@ class Bullet {
 		
 		this.plBody.createFixture({
 			shape: boxShape,
-			density: density,
+			density: this.density,
 			friction: 0.0
 		});	
 
-		var vy = speed * Math.sin(angle) * -1;
-		var vx = speed * Math.cos(angle);
+		var vy = this.speed * Math.sin(this.angle) * -1;
+		var vx = this.speed * Math.cos(this.angle);
 
 		//set the velocity
-		var f = this.plBody.getWorldVector(Vec2(vx*density, vy*density));
+		var f = this.plBody.getWorldVector(Vec2(vx*this.density, vy*this.density));
 		var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
 		this.plBody.applyLinearImpulse(f, p, true);
 	}
 
-	reset() {
+	cbBulletActivatedFailed(id, errorMessage) {
+		//just destroy the bullet
+		this.gs.destroyGameObject(this.id);
+	}
+
+	//called before the bullet is officially deactivated with the game object manager.
+	bulletPredeactivated() {
 		if(this.plBody)
 		{
 			this.gs.world.destroyBody(this.plBody);
 			this.plBody = null;
 		}
+	}
+
+	//callback for successful deactivation...ugh
+	cbDeactivateBulletSuccess() {
+		this.gs.gom.destroyGameObject(this.id);
+		this.bulletDeinit();
+	}
+
+	//called right before the bullet is officially deleted by the game object manager.
+	bulletDeinit() {
+		this.gs = null;
 	}
 
 	update(dt) {
@@ -68,8 +91,8 @@ class Bullet {
 		{
 			if(this.lifespan <= 0)
 			{
-				this.gs.pm.destroyProjectileId(this.id);
-				this.reset();
+				this.gs.gom.deactivateGameObjectId(this.id, this.cbDeactivateBulletSuccess.bind(this));
+				this.bulletPredeactivated();
 			}
 		}
 	}

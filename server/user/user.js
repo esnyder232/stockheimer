@@ -97,7 +97,7 @@ class User {
 
 		if(userData.type == "character")
 		{
-			var o = this.gs.cm.getCharacterByID(userData.id);
+			var o = this.gs.gom.getGameObjectByID(userData.id);
 			if(o !== null)
 			{
 				obj = {transaction: "insert", type: "character", id: o.id};
@@ -105,7 +105,7 @@ class User {
 		}
 		else if(userData.type == "projectile")
 		{
-			var o = this.gs.pm.getProjectileByID(userData.id);
+			var o = this.gs.gom.getGameObjectByID(userData.id);
 			if(o !== null)
 			{
 				obj = {transaction: "insert", type: "projectile", id: o.id};
