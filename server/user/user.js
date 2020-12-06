@@ -65,8 +65,6 @@ class User {
 		});
 	}
 
-
-
 	userPreStopPlaying() {
 		if(this.plBody !== null)
 		{
