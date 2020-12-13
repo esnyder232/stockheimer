@@ -7,6 +7,7 @@ class Character {
 		this.id = null;
 		this.activeId = null;
 		this.isActive = false;
+		this.type = "character";
 
 		this.userId = null;
 
@@ -161,7 +162,7 @@ class Character {
 			for(var i = 0; i < this.eventQueue.length; i++)
 			{
 				//spawn the bullet
-				var o = this.gs.gom.createGameObject("bullet");
+				var o = this.gs.gom.createGameObject("projectile");
 				
 				if(o)
 				{
@@ -213,6 +214,44 @@ class Character {
 		}
 	}
 
+	isAwake() {
+		var result = false;
+		if(this.plBody !== null)
+		{
+			result = this.plBody.isAwake();
+		}
+		return result;
+	}
+
+
+	///////////////////////////////////
+	// EVENT SERIALIZATION FUNCTIONS //
+	///////////////////////////////////
+	serializeAddActiveCharacterEvent() {
+		var eventData = null;
+		if(this.plBody !== null)
+		{
+			var bodyPos = this.plBody.getPosition();
+
+			if(bodyPos)
+			{
+				eventData = {
+					"eventName": "addActiveCharacter",
+					"userId": this.userId,
+					"characterId": this.id,
+					"activeCharacterId": this.activeId,
+					"characterPosX": bodyPos.x,
+					"characterPosY": bodyPos.y,
+					"characterState": "",
+					"characterType": ""
+				};
+			}
+		}
+		
+		return eventData;
+	}
+
+
 	serializeActiveCharacterUpdateEvent() {
 		var eventData = null;
 		if(this.plBody !== null)
@@ -232,6 +271,14 @@ class Character {
 		
 		return eventData;
 	}
+
+	serializeRemoveActiveCharacterEvent() {
+		return {
+			"eventName": "removeActiveCharacter",
+			"characterId": this.id
+		};
+	}
+
 }
 
 exports.Character = Character;

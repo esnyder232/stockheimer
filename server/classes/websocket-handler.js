@@ -25,7 +25,7 @@ class WebsocketHandler {
 
 		this.localSequence = 0; 	//current local sequence number
 		this.remoteSequence = 0;	//most recent remote sequence number
-		this.ack = 0;				//most current ack returned by the client
+		this.ack = -1;				//most current ack returned by the client
 		
 		this.localSequenceMaxValue = 65535;
 
@@ -35,6 +35,9 @@ class WebsocketHandler {
 		this.eventQueuesEventIdReverseIndex = {}; //reverse index of the eventQueuesEventIdIndex. This holds a mapping of "eventQueuesEventIdIndex.index" -> "EventSchema.eventId"
 		this.isEventQueuesDirty = false;
 		this.currentBytes = 0; //current bytes that are queued up to be written to the current packet
+
+		this.ackCallbacks = []; //2D array. Callbacks when a local sequence number gets acked. The index is the localSequence number.
+		this.sendCallbacks = []; //2D array. Callbacks when a packet gets snet to the client (not acked, only sent). The index is the localSequence number. This is mainly used when sending fragments.
 	}
 
 	init(gameServer, userId, ws) {
@@ -57,6 +60,12 @@ class WebsocketHandler {
 			this.eventQueues.push([]);
 			this.eventQueuesEventIdIndex[EventSchema.events[i].event_id] = i;
 			this.eventQueuesEventIdReverseIndex[i] = EventSchema.events[i];
+		}
+
+		for(var i = 0; i <= this.localSequenceMaxValue; i++)
+		{
+			this.ackCallbacks.push([]);
+			this.sendCallbacks.push([]);
 		}
 	}
 
@@ -87,11 +96,11 @@ class WebsocketHandler {
 		var bytesRead = 0;
 
 		//parse the packet header
-		this.remoteSequence = view.getUint16(n);
+		this.remoteSequence = view.getUint16(n); //sequence number
 		n += 2;
 		bytesRead += 2;
 
-		this.ack = view.getUint16(n);
+		var onMessageAck = view.getUint16(n); //ack
 		n += 2;
 		bytesRead += 2;
 		
@@ -269,6 +278,77 @@ class WebsocketHandler {
 				user.clientToServerEvents.push(eventData);
 			}
 		}
+
+		//process any callbacks from the most recent ack from the client
+		//EXAMPLE 1
+		//this.localSequenceMaxValue = 65535;
+		//this.ack = 10
+		//onMessageAck = 15
+		//this means, I need to process:
+		// 11
+		// 12
+		// 13
+		// 14
+		// 15
+		//
+		// ackCallbackStart would be 11. Correct.
+		// ackCallbackRange would be 4. Correct.
+
+		// EXAMPLE 2 (wrap around)
+		//this.localSequenceMaxValue = 65535;
+		//this.ack = 65530
+		//onMessageAck = 5
+		//this means, I need to process:
+		// 65531
+		// 65532
+		// 65533
+		// 65534
+		// 65535
+		// 0
+		// 1
+		// 2
+		// 3
+		// 4
+		// 5
+		//
+		// ackCallbackStart would be 65531. Correct.
+		// ackCallbackRange would be: 10. Correct.
+
+		if(onMessageAck != this.ack)
+		{
+			var ackCallbackStart = this.ack + 1; 
+			var ackCallbackRange = onMessageAck - ackCallbackStart;
+
+			//deals with sequence wrap around
+			if(ackCallbackRange < 0)
+			{
+				ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
+			}
+	
+			// console.log('==== ON MESSAGE CALLBACK CALC ====');
+			// console.log(this.ack);
+			// console.log(onMessageAck);
+			// console.log(ackCallbackStart);
+			// console.log(ackCallbackRange);
+	
+			for(var i = 0; i <= ackCallbackRange; i++)
+			{
+				var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
+				//console.log('--Actual index: ' + actualIndex);
+				if(this.ackCallbacks[actualIndex].length > 0)
+				{
+					console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
+					{
+						this.ackCallbacks[actualIndex][j]();
+					}
+		
+					this.ackCallbacks[actualIndex].length = 0;
+				}
+			}
+	
+			this.ack = onMessageAck;
+		}
 	}
 
 
@@ -353,7 +433,7 @@ class WebsocketHandler {
 	}
 
 	//insert the event into the eventQueues
-	insertEvent(eventData, cbAck) {
+	insertEvent(eventData, cbAck, cbSend, cbSendMiscData) {
 		var schema = EventNameIndex[eventData.eventName];
 		if(schema !== undefined)
 		{
@@ -364,6 +444,18 @@ class WebsocketHandler {
 				//finally, insert the event
 				this.eventQueues[eventQueueIndex].push(eventData);
 				this.isEventQueuesDirty = true;
+
+				//also insert the ack callback if there is any
+				if(cbAck)
+				{
+					this.ackCallbacks[this.localSequence].push(cbAck)
+					console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
+				}
+				if(cbSend)
+				{
+					this.sendCallbacks[this.localSequence].push({cbSend: cbSend, cbSendMiscData: cbSendMiscData})
+					console.log("WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
+				}
 			}
 		}
 	}
@@ -597,9 +689,6 @@ class WebsocketHandler {
 
 		n += 1; //skipping 1 byte for the event count
 
-		this.localSequence++;
-		this.localSequence = this.localSequence % this.localSequenceMaxValue;
-
 		var bcontinue = true;
 
 		//start going through the eventQueues
@@ -650,7 +739,7 @@ class WebsocketHandler {
 			}
 		}
 
-		//delete events that were processed, and log a warning when they aren't (should happen, but you never know)
+		//delete events that were processed, and log a warning when they aren't (shouldn't happen, but you never know)
 		for(var i = 0; i < this.eventQueues.length; i++)
 		{
 			if(this.eventQueues[i].length > 0)
@@ -667,10 +756,10 @@ class WebsocketHandler {
 					}
 
 					//check to see if it was a fragment event. If it was, contact the priority manager for feedback.
-					if(this.eventQueues[i][j].eventName == "fragmentStart" || this.eventQueues[i][j].eventName == "fragmentContinue" || this.eventQueues[i][j].eventName == "fragmentEnd")
-					{
-						this.gs.prioritySystem.ackFragment(this.userId, this.eventQueues[i][j]);
-					}
+					// if(this.eventQueues[i][j].eventName == "fragmentStart" || this.eventQueues[i][j].eventName == "fragmentContinue" || this.eventQueues[i][j].eventName == "fragmentEnd")
+					// {
+					// 	this.gs.prioritySystem.ackFragment(this.userId, this.eventQueues[i][j]);
+					// }
 
 					//console.log('Splicing');
 					this.eventQueues[i].splice(j, 1);
@@ -678,7 +767,24 @@ class WebsocketHandler {
 			}
 		}
 
+		//check to see if a callback was associated with it (mainly for fragments)
+		if(this.sendCallbacks[this.localSequence].length > 0)
+		{
+			console.log("WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
+
+			for(var i = 0; i < this.sendCallbacks[this.localSequence].length; i++)
+			{
+				this.sendCallbacks[this.localSequence][i].cbSend(this.sendCallbacks[this.localSequence][i].cbSendMiscData);
+			}
+
+			this.sendCallbacks[this.localSequence].length = 0;
+		}
+
 		view.setUint8(4, m); //payload event count
+
+		this.localSequence++;
+		this.localSequence = this.localSequence % this.localSequenceMaxValue;
+
 		this.ws.send(buffer);
 	}
 

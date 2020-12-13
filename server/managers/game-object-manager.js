@@ -42,7 +42,7 @@ class GameObjectManager {
 				case "character":
 					o = new Character();
 					break;
-				case "bullet":
+				case "projectile":
 					o = new Bullet();
 					break;
 			}
@@ -91,7 +91,7 @@ class GameObjectManager {
 		}
 		else if(transaction == 'delete')
 		{
-			if(this.idIndex !== undefined)
+			if(this.idIndex[id] !== undefined)
 			{
 				delete this.idIndex[id];
 			}

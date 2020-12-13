@@ -20,7 +20,7 @@ class CollisionSystem {
 			//{type1: "projectile", 	type2:"projectile", beginFunc: this.beginProjectileProjectileCollision.bind(this), 	endFunc: this.endProjectileProjectileCollision.bind(this)},
 			{type1: "projectile", 	type2:"user", 		beginFunc: this.beginProjectileUserCollision.bind(this), 		endFunc: this.endProjectileUserCollision.bind(this)},
 			//{type1: "projectile", 	type2:"wall", 		beginFunc: this.beginProjectileWallCollision.bind(this), 		endFunc: this.endProjectileWallCollision.bind(this)},
-			{type1: "user", 	type2:"wall", 			beginFunc: this.beginUserWallCollision.bind(this), 				endFunc: this.endUserWallCollision.bind(this)}
+			//{type1: "user", 	type2:"wall", 			beginFunc: this.beginUserWallCollision.bind(this), 				endFunc: this.endUserWallCollision.bind(this)}
 		]
 
 		//calculate fullType and make index
@@ -138,7 +138,7 @@ class CollisionSystem {
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
-			u.insertTrackedObject(characterUserData);
+			u.insertTrackedEntity("gameobject", characterUserData.id);
 		}
 	}
 
@@ -148,7 +148,7 @@ class CollisionSystem {
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
-			u.deleteTrackedObject(characterUserData);
+			u.deleteTrackedEntity("gameobject", characterUserData.id);
 		}
 	}
 
@@ -173,7 +173,7 @@ class CollisionSystem {
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
-			u.insertTrackedObject(projectileUserData);
+			u.insertTrackedEntity("gameobject", projectileUserData.id);
 		}
 	}
 
@@ -183,7 +183,7 @@ class CollisionSystem {
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
-			u.deleteTrackedObject(projectileUserData);
+			u.deleteTrackedEntity("gameobject", projectileUserData.id);
 		}
 	}
 

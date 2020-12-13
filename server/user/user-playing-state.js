@@ -20,6 +20,11 @@ class UserPlayingState extends UserBaseState {
 
 		var firingInputFound = false;
 
+		if(this.user.bDisconnected)
+		{
+			this.user.nextState = new UserDisconnectingState(this.user);
+		}
+
 		if(this.user.inputQueue.length > 0)
 		{
 			var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);

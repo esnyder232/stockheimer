@@ -299,8 +299,7 @@ class GameServer {
 			wsh.init(this, user.id, ws);
 			
 			//At this point, the user was only created, not initialized. So setup user now.
-			user.userInit(this);
-			user.wsId = wsh.id;
+			user.userInit(this, wsh.id);
 
 			//activate the user
 			this.um.activateUserId(user.id, this.cbUserActivateSuccess.bind(this), this.cbUserActivateFail.bind(this));

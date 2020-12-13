@@ -38,7 +38,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 
 		//update systems
-		this.gs.prioritySystem.update(dt);
+		//this.gs.prioritySystem.update(dt);
 
 		//send an empty packet to all users
 		for(var i = 0; i < activeUsers.length; i++)
@@ -76,13 +76,12 @@ class GameServerRunning extends GameServerBaseState {
 	websocketClosed(wsh) {
 		var user = this.gs.um.getUserByID(wsh.userId);
 
-		//put user in disconnecting state if it was active
-		//Its important to check if its active, because it may not have been activated yet from the handshake since we are doing transactions now in the userManager
-		if(user && user.isActive)
+		if(user)
 		{
-			user.nextState = new UserDisconnectingState(user);
-			this.gs.wsm.destroyWebsocket(wsh);
+			user.bDisconnected = true;
 		}
+
+		this.gs.wsm.destroyWebsocket(wsh);
 	}
 
 	websocketErrored(wsh) {
@@ -92,7 +91,7 @@ class GameServerRunning extends GameServerBaseState {
 		//not sure why they would not have a user at this point, but better safe than sorry.
 		if(user)
 		{
-			user.nextState = new UserDisconnectingState(user);
+			user.bDisconnected = true;
 		}
 
 		this.gs.wsm.destroyWebsocket(wsh);
@@ -111,7 +110,7 @@ class GameServerRunning extends GameServerBaseState {
 					case "fromClientChatMessage":
 						for(var j = 0; j < activeUsers.length; j++)
 						{
-							activeUsers[j].trackedEvents.push({
+							activeUsers[j].insertTrackedEntityEvent('user', user.id, {
 								"eventName": "fromServerChatMessage",
 								"activeUserId": user.activeId,
 								"chatMsg": e.chatMsg
@@ -232,10 +231,11 @@ class GameServerRunning extends GameServerBaseState {
 			var activeUsers = this.gs.um.getActiveUsers();
 			for(var i = 0; i < activeUsers.length; i++)
 			{
-				activeUsers[i].trackedEvents.push({
-					"eventName": "userDisconnected",
-					"userId": u.id
-				});
+				// activeUsers[i].trackedEvents.push({
+				// 	"eventName": "userDisconnected",
+				// 	"userId": u.id
+				// });
+				activeUsers[i].deleteTrackedEntity("user", userId);
 			}
 
 			//deactivate the user in the server manager

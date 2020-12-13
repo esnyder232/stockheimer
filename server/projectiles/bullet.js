@@ -6,6 +6,7 @@ class Bullet {
 		this.gs = null;
 		this.id = null;
 		this.characterId = null;
+		this.type = "projectile";
 
 		this.plBody = null;
 		this.speed = 0.8;
@@ -97,7 +98,42 @@ class Bullet {
 		}
 	}
 
-	serializeProjectileUpdate() {
+	isAwake() {
+		var result = false;
+		if(this.plBody !== null)
+		{
+			result = this.plBody.isAwake();
+		}
+		return result;
+	}
+	
+	///////////////////////////////////
+	// EVENT SERIALIZATION FUNCTIONS //
+	///////////////////////////////////
+
+	serializeAddProjectileEvent() {
+		var eventData = null;
+		if(this.plBody !== null)
+		{
+			var bodyPos = this.plBody.getPosition();
+
+			if(bodyPos)
+			{
+				eventData = {
+					"eventName": "addProjectile",
+					"id": this.id,
+					"x": bodyPos.x,
+					"y": bodyPos.y,
+					"angle": this.angle,
+					"size": this.size
+				};
+			}
+		}
+		
+		return eventData;
+	}
+
+	serializeProjectileUpdateEvent() {
 		var eventData = null;
 		if(this.plBody !== null)
 		{
@@ -116,6 +152,13 @@ class Bullet {
 		}
 		
 		return eventData;
+	}
+
+	serializeRemoveProjectileEvent() {
+		return {
+			"eventName": "removeProjectile",
+			"id": this.id,
+		};
 	}
 }
 

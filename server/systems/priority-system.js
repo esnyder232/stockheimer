@@ -367,7 +367,7 @@ class PrioritySystem {
 								var p = this.gs.gom.getGameObjectByID(u.trackedObjects[j].id);
 								if(p !== null)
 								{
-									eventData = p.serializeProjectileUpdate();
+									eventData = p.serializeProjectileUpdateEvent();
 								}
 								break;
 						}
