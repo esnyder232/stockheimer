@@ -755,12 +755,6 @@ class WebsocketHandler {
 						console.log(' - event: ' + JSON.stringify(this.eventQueues[i][j]));
 					}
 
-					//check to see if it was a fragment event. If it was, contact the priority manager for feedback.
-					// if(this.eventQueues[i][j].eventName == "fragmentStart" || this.eventQueues[i][j].eventName == "fragmentContinue" || this.eventQueues[i][j].eventName == "fragmentEnd")
-					// {
-					// 	this.gs.prioritySystem.ackFragment(this.userId, this.eventQueues[i][j]);
-					// }
-
 					//console.log('Splicing');
 					this.eventQueues[i].splice(j, 1);
 				}

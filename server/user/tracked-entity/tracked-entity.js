@@ -1,6 +1,5 @@
 const {GlobalFuncs} = require('../../global-funcs.js');
 const {TrackedEntityDestroyedState} = require("./tracked-entity-destroyed-state.js");
-const serverConfig = require('../../server-config.json');
 
 class TrackedEntity {
 	constructor() {
@@ -13,13 +12,9 @@ class TrackedEntity {
 		this.entId = null;
 		this.entType = null;
 		this.eventQueue = [];
-		this.fragmentEventQueue = [];
 		this.pa = 0.0;//priority accumulator
 		this.paWeight = 1; //original priority weight
 		this.isAwake = false;
-
-		this.fragmentIdCounter = 0;
-		this.fragmentationLimit = Math.round(serverConfig.max_packet_event_bytes_until_fragmentation);
 
 		this.stateName = "";
 		this.state = null;
@@ -58,7 +53,7 @@ class TrackedEntity {
 
 	//called when the tracked entity's state is destroyed
 	trackedEntityDestroyed() {
-		this.fragmentEventQueue.length = 0;
+		//this.fragmentEventQueue.length = 0;
 	}
 
 
@@ -87,10 +82,6 @@ class TrackedEntity {
 		this.state.createUpdateEvent(dt);
 	}
 
-	getFragmentId() {
-		return this.fragmentIdCounter++;
-	}
-
 	cbCreateAck() {
 		this.eventQueue.push({
 			"eventName": "createTrackedEntityAck"
@@ -102,38 +93,6 @@ class TrackedEntity {
 			"eventName": "destroyTrackedEntityAck"
 		});
 	}
-
-	cbFragmentSendAck(miscData) {
-		// console.log('ACK FRAGMENT CALLED');
-		// console.log(eventData);
-
-		var index = this.fragmentEventQueue.findIndex((x) => {return x.fragmentId == miscData.fragmentId;});
-		if(index >= 0)
-		{
-			this.fragmentEventQueue[index].ackedFragmentNumber++;
-		}
-
-	}
-
-	calculateNextFragmentBytes(n, totalByteLength, fragmentationLimit)
-	{
-		var result = 0;
-
-		var bytesRemaining = totalByteLength - n;
-
-		if(Math.floor(bytesRemaining/fragmentationLimit) >= 1)
-		{
-			result = fragmentationLimit;
-		}
-		else
-		{
-			result = bytesRemaining;
-		}
-
-		return result;
-	}
-
-
 }
 
 exports.TrackedEntity = TrackedEntity;

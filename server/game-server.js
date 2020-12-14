@@ -7,7 +7,6 @@ const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const {UserConnectingState} = require('./user/user-connecting-state.js');
-const {PrioritySystem} = require ('./systems/priority-system.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
 const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const serverConfig = require('./server-config.json');
@@ -41,7 +40,6 @@ class GameServer {
 		this.um = null;
 		this.cm = null;
 		this.pm = null;
-		this.prioritySystem = null;
 		this.cs = null;
 	}
 
@@ -51,7 +49,6 @@ class GameServer {
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
 		this.gom = new GameObjectManager();
-		this.prioritySystem = new PrioritySystem();
 		this.cs = new CollisionSystem();
 		
 		const Vec2 = this.pl.Vec2;
@@ -197,7 +194,6 @@ class GameServer {
 		this.wsm.init(this);
 		this.um.init(this);
 		this.gom.init(this);
-		this.prioritySystem.init(this);
 		this.cs.init(this);
 
 		this.gameState = new GameServerStopped(this);

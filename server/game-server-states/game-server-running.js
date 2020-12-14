@@ -37,9 +37,6 @@ class GameServerRunning extends GameServerBaseState {
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 
-		//update systems
-		//this.gs.prioritySystem.update(dt);
-
 		//send an empty packet to all users
 		for(var i = 0; i < activeUsers.length; i++)
 		{

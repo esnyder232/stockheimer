@@ -18,97 +18,7 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 		super.update(dt);
 		var processedIndexes = [];
 
-		//first, see if there are any fragments that we need to queue up in the trackedEvnets. Only send fragments ONE at a time.
-		if(this.trackedEntity.fragmentEventQueue.length > 0)
-		{
-			var fragmentInfo = this.trackedEntity.fragmentEventQueue[0];
-								
-			if((fragmentInfo.currentFragmentNumber -1) == fragmentInfo.ackedFragmentNumber)
-			{
-				//fragment start
-				if(fragmentInfo.currentFragmentNumber == 0)
-				{
-					var nextBytes = this.trackedEntity.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.trackedEntity.fragmentationLimit);
-
-					var fragmentEvent = {
-						eventName: "fragmentStart",
-						fragmentLength: fragmentInfo.eventDataView.byteLength,
-						fragmentData: fragmentInfo.eventDataBuffer.slice(0, nextBytes)
-					};
-
-					//see if the fragment can fit
-					var info = this.trackedEntity.user.wsh.canEventFit(fragmentEvent);
-
-					if(info.canEventFit)
-					{
-						this.trackedEntity.user.wsh.insertEvent(fragmentEvent, null, this.trackedEntity.cbFragmentSendAck.bind(this.trackedEntity), {fragmentId: fragmentInfo.fragmentId});
-						fragmentInfo.n += nextBytes;
-						fragmentInfo.currentFragmentNumber++;
-					}
-					else
-					{
-						//do nothing. The event could not fit the packet. Maybe next frame.
-					}
-				}
-				//fragment continue
-				else if(fragmentInfo.currentFragmentNumber < fragmentInfo.maxFragmentNumber)
-				{
-					//calculate the next bytes
-					var nextBytes = this.trackedEntity.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.trackedEntity.fragmentationLimit);
-
-					//queue up the next fragment 
-					var fragmentEvent = {
-						eventName: "fragmentContinue",
-						fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes)
-					};
-
-					//see if the fragment can fit
-					var info = this.trackedEntity.user.wsh.canEventFit(fragmentEvent);
-
-					if(info.canEventFit)
-					{
-						this.trackedEntity.user.wsh.insertEvent(fragmentEvent, null, this.trackedEntity.cbFragmentSendAck.bind(this.trackedEntity), {fragmentId: fragmentInfo.fragmentId});
-						fragmentInfo.n += nextBytes;
-						fragmentInfo.currentFragmentNumber++;
-					}
-					else
-					{
-						//do nothing. The event could not fit the packet. Maybe next frame.
-					}
-				}
-				//fragment end
-				else if(fragmentInfo.currentFragmentNumber == fragmentInfo.maxFragmentNumber)
-				{
-					//calculate the next bytes
-					var nextBytes = this.trackedEntity.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.trackedEntity.fragmentationLimit);
-
-					//queue up the next fragment 
-					var fragmentEvent = {
-						eventName: "fragmentEnd",
-						fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes)
-					};
-
-					//see if the fragment can fit
-					var info = this.trackedEntity.user.wsh.canEventFit(fragmentEvent);
-
-					if(info.canEventFit)
-					{
-						this.trackedEntity.user.wsh.insertEvent(fragmentEvent);
-
-						//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
-						// console.log("FRAGMENT END SENT");
-						// console.log(fragmentInfo);
-						this.trackedEntity.fragmentEventQueue.splice(0, 1);
-					}
-					else
-					{
-						//do nothing. The event could not fit the packet. Maybe next frame.
-					}
-				}
-			}
-		}
-
-		//second, process any events from the event queue
+		//process any events from the event queue
 		for(var i = 0; i < this.trackedEntity.eventQueue.length; i++)
 		{
 			var event = this.trackedEntity.eventQueue[i];
@@ -120,33 +30,12 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 				var info = this.trackedEntity.user.wsh.canEventFit(event);
 
 				//check if the size can vary, and the size is big. If it is, we will start fragmentation. Also only do this if its NOT a fragment already
-				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.trackedEntity.fragmentationLimit)
-				{	
-					var fragmentInfo = {
-						bytesRequired: info.bytesRequired,
-						eventData: event,
-						eventDataBuffer: null,
-						eventDataView: null,
-						fragmentId: this.trackedEntity.getFragmentId(),
-						n: 0,						//the current byte of the eventDataBuffer we are on
-						currentFragmentNumber: 0, 	//the current fragment number we are trying to send in the "trackedEvents"
-						ackedFragmentNumber: -1,  	//the most recent acked fragment number that was sent to the client
-						maxFragmentNumber: 0		//the max number of fragments we need to send
-					};
+				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.trackedEntity.user.fragmentationLimit)
+				{
+					this.trackedEntity.user.insertFragmentEvent(event, info);
 
-					//calculate the max fragments required and create the buffer
-					fragmentInfo.maxFragmentNumber = Math.ceil(fragmentInfo.bytesRequired / this.trackedEntity.fragmentationLimit) - 1;
-					fragmentInfo.eventDataBuffer = new ArrayBuffer(fragmentInfo.bytesRequired);
-					fragmentInfo.eventDataView = new DataView(fragmentInfo.eventDataBuffer);
-
-					//encode the entire event in the eventDataBuffer
-					this.trackedEntity.user.wsh.encodeEventInBuffer(fragmentInfo.eventData, fragmentInfo.eventDataView, 0);
-
-					//push the fragmentInfo into the fragmentEventQueue so we can keep track of it seperately
-					this.trackedEntity.fragmentEventQueue.push(fragmentInfo);
 					processedIndexes.push(i); //just push it in this queue so it gets spliced off at the end
 				}
-
 				//insert the event
 				else if(info.canEventFit)
 				{
