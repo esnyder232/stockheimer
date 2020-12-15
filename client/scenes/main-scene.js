@@ -37,6 +37,8 @@ export default class MainScene extends Phaser.Scene {
 		this.angle = 0;
 		this.prevAngle = 0;
 		this.angleSmallestDelta = 0.001;
+
+		this.damageTexts = []; //little array of damage texts to popup when someone gets hurt
 	}
 
 	init(data) {
@@ -171,6 +173,17 @@ export default class MainScene extends Phaser.Scene {
 			this.removeUser(this.userDomElements[i].userId);
 		}
 
+		//clear out damage texts
+		//update any dmg texts
+		for(var i = this.damageTexts.length - 1; i >= 0; i--)
+		{
+			if(this.damageTexts[i].textGraphics !== null)
+			{
+				this.damageTexts[i].textGraphics.destroy();
+			}
+			this.damageTexts.splice(i, 1);
+		}
+
 		$("#tb-chat-input").off("keyup");
 		$("#tb-chat-input").off("click");
 		$("#ui-div").off("click");
@@ -255,12 +268,14 @@ export default class MainScene extends Phaser.Scene {
 				usernameText = u.username;
 			}
 			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, { fill: '#00ff00', fontSize: "38px"});
+			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 50 , c.hpCur + "/" + c.hpMax, { fill: '#00ff00', fontSize: "38px"});
 
 			this.userPhaserElements.push({
 				characterId: c.id,
 				activeCharacterId: c.activeId,
 				boxGraphics: boxGraphics,
-				textGraphics: textGraphics
+				textGraphics: textGraphics,
+				hpTextGraphics: hpTextGraphics
 			});
 
 			//check if this is your character your controlling. If it is, then switch pointer modes
@@ -304,6 +319,7 @@ export default class MainScene extends Phaser.Scene {
 			{
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
 				this.userPhaserElements[upeIndex].textGraphics.destroy();
+				this.userPhaserElements[upeIndex].hpTextGraphics.destroy();
 				
 				this.userPhaserElements.splice(upeIndex, 1);
 
@@ -321,12 +337,36 @@ export default class MainScene extends Phaser.Scene {
 
 	activeCharacterUpdate(e) {
 		var upe = this.userPhaserElements.find((x) => {return x.activeCharacterId === e.activeCharacterId;});
-		if(upe)
+		var c = this.gc.characters.find((x) => {return x.activeId === e.activeCharacterId});
+
+		if(upe && c)
 		{
 			upe.boxGraphics.setX(e.characterPosX * this.planckUnitsToPhaserUnitsRatio);
 			upe.boxGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
-			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
 			upe.textGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
+			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
+
+			upe.hpTextGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
+			upe.hpTextGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 50)
+			upe.hpTextGraphics.setText(c.hpCur + "/" + c.hpMax);
+
+		}
+	}
+
+	characterDamage(e) {
+		var upe = this.userPhaserElements.find((x) => {return x.activeCharacterId === e.activeCharacterId;});
+		var c = this.gc.characters.find((x) => {return x.activeId === e.activeCharacterId});
+
+		if(upe && c)
+		{
+			var dmgText = {
+				textGraphics: null,
+				countdownTimer: 750 //ms
+			};
+
+			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, { fill: '#ff0000', fontSize: "38px"});
+
+			this.damageTexts.push(dmgText)
 		}
 	}
 
@@ -351,6 +391,21 @@ export default class MainScene extends Phaser.Scene {
 	  
 	update(timeElapsed, dt) {
 		var sendInputEvent = false;
+
+		//update any dmg texts
+		for(var i = this.damageTexts.length - 1; i >= 0; i--)
+		{
+			this.damageTexts[i].countdownTimer -= dt;
+			if(this.damageTexts[i].countdownTimer <= 0)
+			{
+				if(this.damageTexts[i].textGraphics !== null)
+				{
+					this.damageTexts[i].textGraphics.destroy();
+				}
+				this.damageTexts.splice(i, 1);
+			}
+		}
+
 
 		//if pointer mode is "phaser", capture the mouse position and update turret drawing
 		if(this.currentPointerMode === 1) //phaser mode

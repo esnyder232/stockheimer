@@ -44,7 +44,7 @@ class GameServer {
 
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
-		this.reportTimerInterval = 5000; //ms until this console logs the amount of game objects in the game
+		this.reportTimerInterval = 1000; //ms until this console logs the amount of game objects in the game
 	}
 
 	init() {

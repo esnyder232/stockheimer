@@ -87,8 +87,8 @@ export default class EventProcessor {
 						activeId: e.activeCharacterId,
 						x: e.characterPosX,
 						y: e.characterPosY,
-						state: e.characterState,
-						type: e.characterType
+						hpMax: e.characterHpMax,
+						hpCur: e.characterHpCur
 					};
 
 					this.gc.characters.push(c)
@@ -136,6 +136,7 @@ export default class EventProcessor {
 						{
 							c.x = e.characterPosX;
 							c.y = e.characterPosY;
+							c.hpCur = e.characterHpCur;
 						}
 						break;
 
@@ -219,13 +220,6 @@ export default class EventProcessor {
 							this.gc.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
 						}
 						break;
-					case "characterDamage":
-						console.log("CHARACTER DAMAGE EVENT")
-						console.log(e);
-						break;
-
-
-
 				default:
 					//intentionally blank
 					break;

@@ -107,6 +107,10 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				case "projectileUpdate":
 					this.ms.projectileUpdate(e);
 					break;
+
+				case "characterDamage":
+					this.ms.characterDamage(e);
+					break;
 				default:
 					//intentionally blank
 					break;
