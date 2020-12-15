@@ -25,7 +25,7 @@ class WebsocketManager {
 
 		this.updateIndex();
 		
-		console.log('websocket created. Id: ' + wsh.id);
+		//console.log('websocket created. Id: ' + wsh.id);
 		return wsh;
 	}
 
@@ -33,7 +33,7 @@ class WebsocketManager {
 	destroyWebsocket(wsh) {
 		wsh.deleteMe = true;
 		this.isDirty = true;
-		console.log('websocket marked for deletion. Id: ' + wsh.id);
+		//console.log('websocket marked for deletion. Id: ' + wsh.id);
 	}
 
 	updateIndex() {
@@ -57,13 +57,13 @@ class WebsocketManager {
 				if(this.websocketArray[i].deleteMe)
 				{
 					var temp = this.websocketArray.splice(i, 1);
-					console.log('websocket destroyed. Id: ' + temp[0].id);
+					//console.log('websocket destroyed. Id: ' + temp[0].id);
 				}
 			}
 
 			this.updateIndex();
 			this.isDirty = false;
-			console.log('websocket current length: ' + this.websocketArray.length);
+			//console.log('websocket current length: ' + this.websocketArray.length);
 		}
 
 		//update the websocket handler

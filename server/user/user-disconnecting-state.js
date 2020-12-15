@@ -8,7 +8,7 @@ class UserDisconnectingState extends UserBaseState {
 	}
 
 	enter(dt) {
-		console.log(this.stateName + ' enter');
+		//console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 
 		super.enter(dt);
@@ -21,7 +21,7 @@ class UserDisconnectingState extends UserBaseState {
 	}
 
 	exit(dt) {
-		console.log(this.stateName + ' exit');
+		//console.log(this.stateName + ' exit');
 
 		//clean up any relationships the user may have had
 		//this.gs.gameState.deactivateSLOs(this.user.characterId);

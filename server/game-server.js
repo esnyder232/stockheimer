@@ -41,10 +41,14 @@ class GameServer {
 		this.cm = null;
 		this.pm = null;
 		this.cs = null;
+
+		
+		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
+		this.reportTimerInterval = 5000; //ms until this console logs the amount of game objects in the game
 	}
 
 	init() {
-		console.log('initializing game server');
+		//console.log('initializing game server');
 		this.pl = planck;
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
@@ -56,21 +60,6 @@ class GameServer {
 			this.world = this.pl.World({
 				gravity: Vec2(0, 0)
 			});
-		
-			//origin lines
-			// var xAxisBody = this.world.createBody({
-			// 	position: Vec2(0, 0),
-			// 	userData: {id: 1}
-			// });
-			// var xAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(1, 0));
-			// xAxisBody.createFixture(xAxisShape);
-		
-			// var yAxisBody = this.world.createBody({
-			// 	position: Vec2(0, 0),
-			// 	userData: {id: 2}
-			// });
-			// var yAxisShape = this.pl.Edge(Vec2(0, 0), Vec2(0, 1));
-			// yAxisBody.createFixture(yAxisShape);
 		
 			//left wall
 			var leftWall = this.world.createBody({
@@ -125,71 +114,9 @@ class GameServer {
 				density: 0.0,
 				friction: 1.0
 			});
-
-
-
-
-
-
-
-
-
-
-
-
-
-			// var ground = this.world.createBody({
-			// 	position: Vec2(0, -10),
-			// 	type: this.pl.Body.STATIC,
-			// 	userData: {type:"wall", id: this.getGlobalGameObjectID()}
-			// });	
-			// var groundShape = this.pl.Box(20, 5, Vec2(0,0));
-			// ground.createFixture({
-			// 	shape: groundShape,
-			// 	density: 0.0,
-			// 	friction: 1.0
-			// });
-			// ground.createFixture(groundShape, 0);
-		
-			// this.plBody = this.gs.world.createBody({
-			// 	position: Vec2(0, 0),
-			// 	type: pl.Body.DYNAMIC,
-			// 	fixedRotation: true,
-			// 	userData: {type:"user", id: this.id}
-			// });
-	
-			// this.plBody.createFixture({
-			// 	shape: trackingSensor,
-			// 	density: 0.0,
-			// 	friction: 1.0,
-			// 	isSensor: true
-			// });
-
-
-
-			
-			// //box
-			// this.boxBody = this.world.createBody({
-			// 	position: Vec2(1.5, 3.1),
-			// 	type: this.pl.Body.DYNAMIC,
-			// 	userData: {id: 4}
-			// });
-			// var boxShape = this.pl.Box(1, 1);
-			// this.boxBody.createFixture({
-			// 	shape: boxShape,
-			// 	density: 1.0,
-			// 	friction: 0.3
-			// });
-		
-			// var boxShape2 = this.pl.Box(1, 1, Vec2(-1, -1));
-			// this.boxBody.createFixture({
-			// 	shape: boxShape2,
-			// 	density: 1.0,
-			// 	friction: 0.3
-			// });	
 		}
 		
-		console.log('creating gameworld done');
+		//console.log('creating gameworld done');
 
 		this.wsm.init(this);
 		this.um.init(this);
@@ -310,12 +237,12 @@ class GameServer {
 	}
 
 	cbUserActivateSuccess(id) {
-		console.log('user activation success CB called');
+		//console.log('user activation success CB called');
 	}
 
 	//if user fails to be activated, do the opposite of everything you did in gameserver.onopen
 	cbUserActivateFail(id, failedReason) {
-		console.log('user activation failed CB called');
+		//console.log('user activation failed CB called');
 
 		var user = this.um.getUserByID(id);
 		var wsh = this.wsm.getWebsocketByID(user.wsId);
@@ -361,6 +288,14 @@ class GameServer {
 			if(this.gameState)
 			{
 				this.gameState.update(this.frameTimeStep);
+
+				//report timer
+				this.reportTimer += this.frameTimeStep;
+				if(this.reportTimer >= this.reportTimerInterval)
+				{
+					console.log("GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". Gameobjects: " + this.gom.gameObjectArray.length);
+					this.reportTimer = 0;
+				}
 			}
 
 			if(this.nextGameState)

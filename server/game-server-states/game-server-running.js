@@ -58,7 +58,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	exit(dt) {
-		console.log('running server exit');
+		//console.log('running server exit');
 		super.exit(dt);
 	}
 	

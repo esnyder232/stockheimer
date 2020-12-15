@@ -23,6 +23,24 @@ class Character {
 		
 		this.bigBulletCounter = 0;
 
+		//bullshit variables for tech demo
+		this.hpMax = 100;
+		this.hpCur = 100;
+		this.isDirty = false;
+		this.xStarting = 2.5;
+		this.yStarting = 3.0;
+		this.forceImpulses = [];
+
+		//bullshit physics variables for tech demo
+		this.walkingTargetVelVec = null;	//target
+		this.walkingAccVec = null;			//control variable (and the PV is the plank velocity)
+		this.walkingVelMagMax = 4;			//maximum walking speed you can get to
+		this.walkingVelTolerance = 1;		//tolerance for when to snap to the walking velocity
+		this.walkingAccMag = 10.0;			//acceleration to apply when trying to reach walking target
+		this.walkingStoppingAccMag = this.walkingAccMag * 0.75;
+		this.walkingCurrentAccMagx = 0;
+		this.walkingCurrentAccMagy = 0;
+
 		this.inputQueue = [];
 		this.eventQueue = [];
 	}
@@ -47,11 +65,14 @@ class Character {
 		const Vec2 = pl.Vec2;
 		const world = this.gs.world;
 
+		this.walkingTargetVelVec = Vec2(0, 0);
+		this.walkingAccVec = Vec2(0, 0);
+
 		//create a plank box
 		var boxShape = pl.Box(0.5, 0.5, Vec2(0, 0));
 
 		this.plBody = world.createBody({
-			position: Vec2(2.5, 3.0),
+			position: Vec2(this.xStarting, this.yStarting),
 			type: pl.Body.DYNAMIC,
 			fixedRotation: true,
 			userData: {type:"character", id: this.id}
@@ -60,7 +81,7 @@ class Character {
 		this.plBody.createFixture({
 			shape: boxShape,
 			density: 1.0,
-			friction: 0.3
+			friction: 1.0,
 		});	
 	}
 
@@ -77,83 +98,213 @@ class Character {
 	characterDeinit() {
 		this.gs = null;
 		this.inputController = null;
+		this.forceImpulses.length = 0;
 	}
 
 	update(dt) {
+		//for now, just set isDirty to false at the BEGINNING of the update loop
+		this.isDirty = false;
+
 		const Vec2 = this.gs.pl.Vec2;
 
 		//temporary. The character processes the inputs here.
 		var firingInputFound = false;
 
-		if(this.inputQueue.length > 0)
+		if(this.plBody !== null)
 		{
-			//Step 1 - get the last known input, and THAT is the input this frame
-			var lastKnownInput = this.inputQueue[this.inputQueue.length - 1];
-
-			//assign states for the controller this frame
-			this.inputController.up.state = lastKnownInput.up;
-			this.inputController.down.state = lastKnownInput.down;
-			this.inputController.left.state = lastKnownInput.left;
-			this.inputController.right.state = lastKnownInput.right;
-			this.inputController.isFiring.state = lastKnownInput.isFiring;
-			this.inputController.isFiringAlt.state = lastKnownInput.isFiringAlt;
-			this.inputController.characterDirection.value = lastKnownInput.characterDirection.prevValue;
-
-			this.isInputDirty = true;
-
-			//Step 2 - detect any events that occured within the potentially clumped inputs (such as firing a bullet)
-			for(var i = 0; i < this.inputQueue.length; i++)
+			if(this.inputQueue.length > 0)
 			{
-				//the character wants to fire a bullet
-				if(!firingInputFound && this.inputQueue[i].isFiring && !this.inputController.isFiring.prevState)
+				//Step 1 - get the last known input, and THAT is the input this frame
+				var lastKnownInput = this.inputQueue[this.inputQueue.length - 1];
+	
+				//assign states for the controller this frame
+				this.inputController.up.state = lastKnownInput.up;
+				this.inputController.down.state = lastKnownInput.down;
+				this.inputController.left.state = lastKnownInput.left;
+				this.inputController.right.state = lastKnownInput.right;
+				this.inputController.isFiring.state = lastKnownInput.isFiring;
+				this.inputController.isFiringAlt.state = lastKnownInput.isFiringAlt;
+				this.inputController.characterDirection.value = lastKnownInput.characterDirection.prevValue;
+	
+				this.isInputDirty = true;
+	
+				//Step 2 - detect any events that occured within the potentially clumped inputs (such as firing a bullet)
+				for(var i = 0; i < this.inputQueue.length; i++)
 				{
-					firingInputFound = true;
-					var pos = this.plBody.getPosition();
-					var fireEvent = {
-						x: pos.x,
-						y: pos.y,
-						angle: this.inputQueue[i].characterDirection,
-						type: 'bullet'
+					//the character wants to fire a bullet
+					if(!firingInputFound && this.inputQueue[i].isFiring && !this.inputController.isFiring.prevState)
+					{
+						firingInputFound = true;
+						var pos = this.plBody.getPosition();
+						var fireEvent = {
+							x: pos.x,
+							y: pos.y,
+							angle: this.inputQueue[i].characterDirection,
+							type: 'bullet'
+						}
+	
+						this.eventQueue.push(fireEvent);
+						
+						break;
 					}
-
-					this.eventQueue.push(fireEvent);
-					
-					break;
+	
+					if(!firingInputFound && this.inputQueue[i].isFiringAlt && !this.inputController.isFiringAlt.prevState && this.bigBulletCounter <= 0)
+					{
+						firingInputFound = true;
+						var pos = this.plBody.getPosition();
+						var fireEvent = {
+							x: pos.x,
+							y: pos.y,
+							angle: this.inputQueue[i].characterDirection,
+							type: 'bigBullet'
+						}
+	
+						this.bigBulletCounter = 5000;
+	
+						this.eventQueue.push(fireEvent);
+						
+						break;
+					}
 				}
+	
+				//clear all inputs at the end of the frame
+				this.inputQueue.length = 0;
+			}
+	
+			//update state
+			this.walkingTargetVelVec.x = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.walkingVelMagMax;
+			this.walkingTargetVelVec.y = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.walkingVelMagMax;
 
-				if(!firingInputFound && this.inputQueue[i].isFiringAlt && !this.inputController.isFiringAlt.prevState && this.bigBulletCounter <= 0)
+			this.walkingCurrentAccMagx = this.walkingAccMag;
+			this.walkingCurrentAccMagy = this.walkingAccMag;
+
+			//character is trying to stop. Switch acceleration to "stopping" acceleration
+			if(this.walkingTargetVelVec.x == 0)
+			{
+				this.walkingCurrentAccMagx = this.walkingStoppingAccMag;
+			}
+			if(this.walkingTargetVelVec.y == 0)
+			{
+				this.walkingCurrentAccMagy = this.walkingStoppingAccMag;
+			}
+	
+			//apply walking acc
+			var currentVel = this.plBody.getLinearVelocity();
+			var xDiff = this.walkingTargetVelVec.x - currentVel.x; //the difference it would take to get your currentVel to the targetVel
+			var yDiff = this.walkingTargetVelVec.y - currentVel.y; //the difference it would take to get your currentVel to the targetVel
+			var xbound = 0;
+			var ybound = 0;
+			
+			//make the bound a "lower" bound
+			if(xDiff >= 0)
+			{
+				xbound = this.walkingTargetVelVec.x - this.walkingVelTolerance;
+			}
+			//make the bound an "upper" bound
+			else
+			{
+				xbound = this.walkingTargetVelVec.x + this.walkingVelTolerance;
+			}
+	
+			//x direction
+			//make the bound a "lower" bound
+			if(xDiff >= 0)
+			{
+				xbound = this.walkingTargetVelVec.x - this.walkingVelTolerance;
+			}
+			//make the bound an "upper" bound
+			else
+			{
+				xbound = this.walkingTargetVelVec.x + this.walkingVelTolerance;
+			}
+	
+			if(xDiff >= 0)
+			{
+				//You are going to overshoot. Just add enough to snap to the target velocity
+				if(currentVel.x + this.walkingCurrentAccMagx >= xbound)
 				{
-					firingInputFound = true;
-					var pos = this.plBody.getPosition();
-					var fireEvent = {
-						x: pos.x,
-						y: pos.y,
-						angle: this.inputQueue[i].characterDirection,
-						type: 'bigBullet'
-					}
-
-					this.bigBulletCounter = 5000;
-
-					this.eventQueue.push(fireEvent);
-					
-					break;
+					this.walkingAccVec.x = xDiff;
+				}
+				//You are going to undershoot. Just accelerate to the right.
+				else
+				{
+					this.walkingAccVec.x = this.walkingCurrentAccMagx;
+				}
+			}
+			//accelearte to the left
+			else if(xDiff < 0)
+			{
+				//You are within the tolerance. Just add enough to snap to the target velocity
+				if(currentVel.x - this.walkingCurrentAccMagx <= xbound)
+				{
+					this.walkingAccVec.x = xDiff;
+				}
+				//You are outside the tolerance. Just accelerate to the right.
+				else
+				{
+					this.walkingAccVec.x = this.walkingCurrentAccMagx * -1;
+				}
+			}	
+	
+			//y direction
+			//make the bound a "lower" bound
+			if(yDiff >= 0)
+			{
+				ybound = this.walkingTargetVelVec.y - this.walkingVelTolerance;
+			}
+			//make the bound an "upper" bound
+			else
+			{
+				ybound = this.walkingTargetVelVec.y + this.walkingVelTolerance;
+			}
+			
+			if(yDiff >= 0)
+			{
+				//You are going to overshoot. Just add enough to snap to the target velocity
+				if(currentVel.y + this.walkingCurrentAccMagy >= ybound)
+				{
+					this.walkingAccVec.y = yDiff;
+				}
+				//You are going to undershoot. Just accelerate to the right.
+				else
+				{
+					this.walkingAccVec.y = this.walkingCurrentAccMagy;
+				}
+			}
+			//accelearte to the left
+			else if(yDiff < 0)
+			{
+				//You are within the tolerance. Just add enough to snap to the target velocity
+				if(currentVel.y - this.walkingCurrentAccMagy <= ybound)
+				{
+					this.walkingAccVec.y = yDiff;
+				}
+				//You are outside the tolerance. Just accelerate to the right.
+				else
+				{
+					this.walkingAccVec.y = this.walkingCurrentAccMagy * -1;
 				}
 			}
 
-			//clear all inputs at the end of the frame
-			this.inputQueue.length = 0;
-		}
-
-		//update state
-		if(this.isInputDirty)
-		{
-			var currentVelocity = this.plBody.getLinearVelocity();
-			var desiredVelocityX = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.speedMag;
-			var desiredVelocityY = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.speedMag;
-
-			var f = this.plBody.getWorldVector(Vec2((desiredVelocityX - currentVelocity.x), (desiredVelocityY - currentVelocity.y)));
+			var f = this.plBody.getWorldVector(Vec2(this.walkingAccVec.x, this.walkingAccVec.y));
 			var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
 			this.plBody.applyLinearImpulse(f, p, true);
+	
+			//process force impulses
+			if(this.forceImpulses.length > 0)
+			{
+				for(var i = 0; i < this.forceImpulses.length; i++)
+				{
+					if(this.plBody !== null)
+					{
+						var f = this.plBody.getWorldVector(Vec2(this.forceImpulses[i].xDir * this.forceImpulses[i].mag, this.forceImpulses[i].yDir * this.forceImpulses[i].mag));
+						var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
+						this.plBody.applyLinearImpulse(f, p, true);
+					}
+				}
+	
+				this.forceImpulses.length = 0;
+			}
 		}
 
 		//process events
@@ -168,6 +319,7 @@ class Character {
 				{
 					var e = this.eventQueue[i];
 					o.bulletType = e.type;
+					o.characterId = this.id;
 					
 					if(e.type == "bigBullet")
 					{
@@ -203,6 +355,17 @@ class Character {
 			this.isInputDirty = false;
 		}
 
+		if(this.hpCur == 0)
+		{
+			//whatever
+			var u = this.gs.um.getUserByID(this.userId);
+			console.log('User ' + u.username + " died.");
+			if(u !== null)
+			{
+				this.gs.gameState.destroyUsersCharacter(u);
+			}
+		}
+
 		//change state
 		if(this.nextState)
 		{
@@ -214,39 +377,63 @@ class Character {
 		}
 	}
 
-	isAwake() {
+	checkDirty() {
 		var result = false;
 		if(this.plBody !== null)
 		{
 			result = this.plBody.isAwake();
 		}
-		return result;
+		return result || this.isDirty;
 	}
 
+	isHit(dmg) {
+		//debugging
+		var u = this.gs.um.getUserByID(this.userId);
+		if(u !== null)
+		{
+			console.log(u.username + ' hit for ' + dmg + ' dmg');
+		}
+
+		//create event for clients
+		var activeUsers = this.gs.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			
+			activeUsers[i].insertTrackedEntityEvent("gameobject", this.id, {
+				"eventName": "characterDamage",
+				"activeCharacterId": this.activeId,
+				"damage": dmg
+			});
+		}
+
+		this.hpCur -= dmg;
+		if(this.hpCur < 0)
+		{
+			this.hpCur = 0;
+		}
+	}
 
 	///////////////////////////////////
 	// EVENT SERIALIZATION FUNCTIONS //
 	///////////////////////////////////
 	serializeAddActiveCharacterEvent() {
 		var eventData = null;
+		var bodyPos = {x: this.xStarting, y: this.yStarting}
 		if(this.plBody !== null)
 		{
-			var bodyPos = this.plBody.getPosition();
-
-			if(bodyPos)
-			{
-				eventData = {
-					"eventName": "addActiveCharacter",
-					"userId": this.userId,
-					"characterId": this.id,
-					"activeCharacterId": this.activeId,
-					"characterPosX": bodyPos.x,
-					"characterPosY": bodyPos.y,
-					"characterState": "",
-					"characterType": ""
-				};
-			}
+			bodyPos = this.plBody.getPosition();
 		}
+
+		eventData = {
+			"eventName": "addActiveCharacter",
+			"userId": this.userId,
+			"characterId": this.id,
+			"activeCharacterId": this.activeId,
+			"characterPosX": bodyPos.x,
+			"characterPosY": bodyPos.y,
+			"characterHpMax": this.hpMax,
+			"characterHpCur": this.hpCur
+		};
 		
 		return eventData;
 	}
@@ -254,20 +441,20 @@ class Character {
 
 	serializeActiveCharacterUpdateEvent() {
 		var eventData = null;
+		var bodyPos = {x: this.xStarting, y: this.yStarting}
 		if(this.plBody !== null)
 		{
-			var bodyPos = this.plBody.getPosition();
-
-			if(bodyPos)
-			{
-				eventData = {
-					"eventName": "activeCharacterUpdate",
-					"activeCharacterId": this.activeId,
-					"characterPosX": bodyPos.x,
-					"characterPosY": bodyPos.y
-				};
-			}
+			bodyPos = this.plBody.getPosition();
 		}
+
+		eventData = {
+			"eventName": "activeCharacterUpdate",
+			"activeCharacterId": this.activeId,
+			"characterPosX": bodyPos.x,
+			"characterPosY": bodyPos.y,
+			"characterHpCur": this.hpCur
+		};
+
 		
 		return eventData;
 	}

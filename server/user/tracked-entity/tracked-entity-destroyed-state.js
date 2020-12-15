@@ -8,7 +8,7 @@ class TrackedEntityDestroyedState extends TrackedEntityBaseState {
 	}
 
 	enter(dt) {
-		console.log(this.stateName + ' enter. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
+		//console.log(this.stateName + ' enter. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
 		super.enter(dt);
 		this.trackedEntity.stateName = this.stateName;
 		this.trackedEntity.trackedEntityDestroyed();
@@ -37,7 +37,7 @@ class TrackedEntityDestroyedState extends TrackedEntityBaseState {
 	}
 
 	exit(dt) {
-		console.log(this.stateName + ' exit. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
+		//console.log(this.stateName + ' exit. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
 		super.exit(dt);
 	}
 }

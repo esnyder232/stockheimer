@@ -4,6 +4,7 @@ class CollisionSystem {
 	constructor() {
 		this.gs = null;
 		this.globalfuncs = new GlobalFuncs();
+		this.pl = null;
 
 		this.colList = []; //permutations of collision types
 		this.colFullTypeIndex = {}; //index of colList based on type1 + type2 (fullType)
@@ -11,13 +12,14 @@ class CollisionSystem {
 
 	init(gs) {
 		this.gs = gs;
+		this.pl = this.gs.pl;
 
 		this.colList = [
 			// {type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
-			// {type1: "character", 	type2:"projectile", beginFunc: this.beginCharacterProjectileCollision.bind(this), 	endFunc: this.endCharacterProjectileCollision.bind(this)},
+			{type1: "character", 	type2:"projectile", beginFunc: this.beginCharacterProjectileCollision.bind(this), 	endFunc: this.endCharacterProjectileCollision.bind(this)},
 			// {type1: "character", 	type2:"wall", 		beginFunc: this.beginCharacterWallCollision.bind(this), 		endFunc: this.endCharacterWallCollision.bind(this)},
 			{type1: "character", 	type2:"user", 		beginFunc: this.beginCharacterUserCollision.bind(this), 		endFunc: this.endCharacterUserCollision.bind(this)},
-			//{type1: "projectile", 	type2:"projectile", beginFunc: this.beginProjectileProjectileCollision.bind(this), 	endFunc: this.endProjectileProjectileCollision.bind(this)},
+			{type1: "projectile", 	type2:"projectile", beginFunc: this.beginProjectileProjectileCollision.bind(this), 	endFunc: this.endProjectileProjectileCollision.bind(this)},
 			{type1: "projectile", 	type2:"user", 		beginFunc: this.beginProjectileUserCollision.bind(this), 		endFunc: this.endProjectileUserCollision.bind(this)},
 			//{type1: "projectile", 	type2:"wall", 		beginFunc: this.beginProjectileWallCollision.bind(this), 		endFunc: this.endProjectileWallCollision.bind(this)},
 			//{type1: "user", 	type2:"wall", 			beginFunc: this.beginUserWallCollision.bind(this), 				endFunc: this.endUserWallCollision.bind(this)}
@@ -96,7 +98,6 @@ class CollisionSystem {
 		}
 	}
 
-
 	///////////////////////////
 	// character collilsions //
 	///////////////////////////
@@ -114,6 +115,55 @@ class CollisionSystem {
 	beginCharacterProjectileCollision(characterUserData, projectileUserData, contactObj, isCharacterA)
 	{
 		//console.log('begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
+		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
+
+		if(c !== null && p !== null)
+		{
+			var processDamage = true;
+
+			//if its the character's own bullet, see if he is allowed to get hit by it yet
+			if(p.characterId === c.id && p.firedCountdown >= 0)
+			{
+				processDamage = false;
+			}
+
+			if(processDamage)
+			{
+				//add a push back to the character. For now, just push the character position backward from the center of the bullet
+				var pushBackVector = {xDir: 0, yDir: 0, mag: 25};
+				
+				//simple and stupid
+				if(p.bulletType == "bullet")
+				{
+					c.isHit(2);
+					const Vec2 = this.pl.Vec2;
+					var pVel = p.plBody.getLinearVelocity();
+					var temp = Vec2(pVel.x, pVel.y);
+					temp.normalize();
+					pushBackVector.xDir = temp.x;
+					pushBackVector.yDir = temp.y;
+
+					//destroy the projectile too
+					p.lifespan = 0; //cheap and easy
+				}
+				else if(p.bulletType == "bigBullet")
+				{
+					c.isHit(20);
+					const Vec2 = this.pl.Vec2;
+					var cPos = c.plBody.getPosition();
+					var pPos = p.plBody.getPosition();
+
+					var temp = Vec2(cPos.x - pPos.x, cPos.y - pPos.y);
+					temp.normalize();
+					pushBackVector.xDir = temp.x;
+					pushBackVector.yDir = temp.y;
+					pushBackVector.mag = 40;
+				}
+
+				c.forceImpulses.push(pushBackVector);
+			}
+		}
 	}
 
 	endCharacterProjectileCollision(characterUserData, projectileUserData, contactObj, isCharacterA)
@@ -157,9 +207,44 @@ class CollisionSystem {
 	////////////////////////////
 	// projectile collilsions //
 	////////////////////////////
+	beginProjectileProjectileCollision(projectileUserData1, projectileUserData2, contactObj, isProjectileA)
+	{
+		//console.log('begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var p1 = this.gs.gom.getGameObjectByID(projectileUserData1.id);
+		var p2 = this.gs.gom.getGameObjectByID(projectileUserData2.id);
+
+		if(p1 !== null && p2 !== null)
+		{
+			//destroy if the bullet is small
+			if(p1.bulletType == "bullet")
+			{
+				p1.lifespan = 0; //cheap and easy
+			}
+
+			if(p2.bulletType == "bullet")
+			{
+				p2.lifespan = 0;
+			}
+		}
+	}
+
+	endProjectileProjectileCollision(projectileUserData1, projectileUserData2, contactObj, isProjectileA)
+	{
+		//console.log('end projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+	}
+
+
 	beginProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)
 	{
 		//console.log('begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
+
+		if(p !== null)
+		{
+			//destroy the projectile
+			p.lifespan = 0; //cheap and easy
+		}
+
 	}
 
 	endProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)

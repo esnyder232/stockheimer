@@ -7,18 +7,18 @@ class GameServerStopped extends GameServerBaseState {
 	}
 
 	enter(dt) {
-		console.log('stopped server enter');
+		//console.log('stopped server enter');
 		this.gs.runGameLoop = false;
 		super.enter(dt);
 	}
 
 	update(dt) {
-		console.log('stopped server update');
+		//console.log('stopped server update');
 		super.update(dt);
 	}
 
 	exit(dt) {
-		console.log('stopped server exit');
+		//console.log('stopped server exit');
 		super.exit(dt);
 	}
 	

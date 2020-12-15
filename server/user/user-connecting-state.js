@@ -9,7 +9,7 @@ class UserConnectingState extends UserBaseState {
 	}
 
 	enter(dt) {
-		console.log(this.stateName + ' enter');
+		//console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		var playingUsers = this.user.gs.um.getPlayingUsers();
@@ -95,7 +95,7 @@ class UserConnectingState extends UserBaseState {
 	}
 
 	exit(dt) {
-		console.log(this.stateName + ' exit');
+		//console.log(this.stateName + ' exit');
 		super.exit(dt);
 	}
 }

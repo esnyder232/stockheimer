@@ -8,7 +8,7 @@ class TrackedEntityWaitDestroyAckState extends TrackedEntityBaseState {
 	}
 
 	enter(dt) {
-		console.log(this.stateName + ' enter. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
+		//console.log(this.stateName + ' enter. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
 		super.enter(dt);
 		this.trackedEntity.stateName = this.stateName;
 	}
@@ -36,7 +36,7 @@ class TrackedEntityWaitDestroyAckState extends TrackedEntityBaseState {
 	}
 
 	exit(dt) {
-		console.log(this.stateName + ' exit. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
+		//console.log(this.stateName + ' exit. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
 		super.exit(dt);
 
 		//check if there exists any "create" events for the entity. If there isn't, insert a "permanentDestroy" event

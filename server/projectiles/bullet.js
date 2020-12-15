@@ -14,8 +14,10 @@ class Bullet {
 		this.xStarting = 0;
 		this.yStarting = 0;
 		this.angle = 0;
+		this.isDirty = false;
 
 		this.bulletType = "";
+		this.firedCountdown = 250; //ms. This is the amount of time remaining until your own bullets will hurt the character that fired it.
 	}
 
 	bulletInit(gameServer, xc, yc, angle, size, speed, lifespan, density) {
@@ -49,6 +51,7 @@ class Bullet {
 			shape: boxShape,
 			density: this.density,
 			friction: 0.0
+			//isSensor: true
 		});	
 
 		var vy = this.speed * Math.sin(this.angle) * -1;
@@ -86,7 +89,15 @@ class Bullet {
 	}
 
 	update(dt) {
+		//for now, just set isDirty to false at the BEGINNING of the update loop
+		this.isDirty = false;
+
 		this.lifespan -= dt;
+
+		if(this.firedCountdown >= 0)
+		{
+			this.firedCountdown -= dt;
+		}
 
 		if(this.plBody)
 		{
@@ -98,13 +109,13 @@ class Bullet {
 		}
 	}
 
-	isAwake() {
+	checkDirty() {
 		var result = false;
 		if(this.plBody !== null)
 		{
 			result = this.plBody.isAwake();
 		}
-		return result;
+		return result || this.isDirty;
 	}
 	
 	///////////////////////////////////
@@ -113,43 +124,39 @@ class Bullet {
 
 	serializeAddProjectileEvent() {
 		var eventData = null;
+		var bodyPos = {x: this.xStarting, y: this.yStarting};
 		if(this.plBody !== null)
 		{
-			var bodyPos = this.plBody.getPosition();
-
-			if(bodyPos)
-			{
-				eventData = {
-					"eventName": "addProjectile",
-					"id": this.id,
-					"x": bodyPos.x,
-					"y": bodyPos.y,
-					"angle": this.angle,
-					"size": this.size
-				};
-			}
+			bodyPos = this.plBody.getPosition();
 		}
+
+		eventData = {
+			"eventName": "addProjectile",
+			"id": this.id,
+			"x": bodyPos.x,
+			"y": bodyPos.y,
+			"angle": this.angle,
+			"size": this.size
+		};
 		
 		return eventData;
 	}
 
 	serializeProjectileUpdateEvent() {
 		var eventData = null;
+		var bodyPos = {x: this.xStarting, y: this.yStarting};
 		if(this.plBody !== null)
 		{
-			var bodyPos = this.plBody.getPosition();
-
-			if(bodyPos)
-			{
-				eventData = {
-					"eventName": "projectileUpdate",
-					"id": this.id,
-					"x": bodyPos.x,
-					"y": bodyPos.y,
-					"angle": this.angle
-				};
-			}
+			bodyPos = this.plBody.getPosition();
 		}
+
+		eventData = {
+			"eventName": "projectileUpdate",
+			"id": this.id,
+			"x": bodyPos.x,
+			"y": bodyPos.y,
+			"angle": this.angle
+		};
 		
 		return eventData;
 	}

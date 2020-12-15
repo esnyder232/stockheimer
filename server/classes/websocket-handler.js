@@ -70,10 +70,10 @@ class WebsocketHandler {
 	}
 
 	onclose(code, reason) {
-		console.log('Websocket-handler. websocket is now closed. Id: ' + this.id + '. userId: ' + this.userId);
+		console.log();
 		if(code || reason)
 		{
-			console.log("Code: " + code + ". Reason: " + reason);
+			console.log("Websocket-handler. websocket is now closed. Id: " + this.id + '. userId: ' + this.userId + ". Code: " + code + ". Reason: " + reason);
 		}
 		
 		this.gs.gameState.websocketClosed(this);
@@ -337,7 +337,7 @@ class WebsocketHandler {
 				//console.log('--Actual index: ' + actualIndex);
 				if(this.ackCallbacks[actualIndex].length > 0)
 				{
-					console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
 					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
 					{
 						this.ackCallbacks[actualIndex][j]();
@@ -449,12 +449,12 @@ class WebsocketHandler {
 				if(cbAck)
 				{
 					this.ackCallbacks[this.localSequence].push(cbAck)
-					console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
+					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
 				}
 				if(cbSend)
 				{
 					this.sendCallbacks[this.localSequence].push({cbSend: cbSend, cbSendMiscData: cbSendMiscData})
-					console.log("WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
+					//console.log("WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
 				}
 			}
 		}
@@ -764,7 +764,7 @@ class WebsocketHandler {
 		//check to see if a callback was associated with it (mainly for fragments)
 		if(this.sendCallbacks[this.localSequence].length > 0)
 		{
-			console.log("WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
+			//console.log("WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
 
 			for(var i = 0; i < this.sendCallbacks[this.localSequence].length; i++)
 			{

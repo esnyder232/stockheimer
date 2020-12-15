@@ -87,11 +87,9 @@ export default class WebsocketHandler {
 	}
 
 	onclose(e) {
-		this.globalfuncs.appendToLog("WebsocketHandler: Websocket is now closed.");
-		
 		if(e.reason)
 		{
-			this.globalfuncs.appendToLog("Reason: " + e.reason);
+			this.globalfuncs.appendToLog("WebsocketHandler: Websocket is now closed. Reason: " + e.reason);
 		}
 		this.gc.gameState.websocketClosed();
 	}

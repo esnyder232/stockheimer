@@ -14,7 +14,7 @@ class TrackedEntity {
 		this.eventQueue = [];
 		this.pa = 0.0;//priority accumulator
 		this.paWeight = 1; //original priority weight
-		this.isAwake = false;
+		this.isDirty = false;
 
 		this.stateName = "";
 		this.state = null;

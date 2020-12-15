@@ -173,7 +173,7 @@ class User {
 			"id": id
 		});
 
-		console.log('User tracked Entity marked for deletion. User: ' + this.username + ". Entity Type: " + type + ". Entity Id: " + id);
+		//console.log('User tracked Entity marked for deletion. User: ' + this.username + ". Entity Type: " + type + ". Entity Id: " + id);
 	}
 
 	updateTrackedEntityIndex(type, id, obj, transaction) {
@@ -337,7 +337,7 @@ class User {
 		//add to the priority accumulator for tracked entities
 		for(var i = 0; i < this.trackedEntities.length; i++)
 		{
-			if(this.trackedEntities[i].isAwake)
+			if(this.trackedEntities[i].isDirty)
 			{
 				this.trackedEntities[i].pa += dt * this.trackedEntities[i].paWeight;
 			}
@@ -355,7 +355,7 @@ class User {
 		//fourth, create any update events for the tracked entities
 		for(var i = 0; i < this.trackedEntities.length; i++)
 		{
-			if(this.trackedEntities[i].isAwake)
+			if(this.trackedEntities[i].isDirty)
 			{
 				this.trackedEntities[i].createUpdateEvent(dt);
 			}
@@ -373,7 +373,7 @@ class User {
 
 					if(index >= 0)
 					{
-						console.log('Splicing off tracked entity. User: ' + this.username + ". Entity type: " + this.trackedEntities[index].entType + ". Entity Id: " + this.trackedEntities[index].entId);
+						//console.log('Splicing off tracked entity. User: ' + this.username + ". Entity type: " + this.trackedEntities[index].entType + ". Entity Id: " + this.trackedEntities[index].entId);
 						this.trackedEntities[index].trackedEntityDeinit();
 						this.updateTrackedEntityIndex(this.trackedEntities[index].entType, this.trackedEntities[index].entId, null, "delete");
 						this.trackedEntities.splice(index, 1);

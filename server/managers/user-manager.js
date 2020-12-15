@@ -53,7 +53,7 @@ class UserManager {
 		this.tokenIndex[u.token] = u;
 		this.isDirty = true;
 
-		console.log('inactive user created. token: ' + u.token);
+		//console.log('inactive user created. token: ' + u.token);
 
 		return u;
 	}
@@ -71,11 +71,11 @@ class UserManager {
 		this.isDirty = true;
 
 		//just for logging
-		var user = this.getUserByID(id)
-		if(user)
-		{
-			console.log('user marked for deletion. username: ' + user.username + ".    token: " + user.token);
-		}
+		// var user = this.getUserByID(id)
+		// if(user)
+		// {
+		// 	console.log('user marked for deletion. username: ' + user.username + ".    token: " + user.token);
+		// }
 	}
 
 	updateIndex() {
@@ -117,7 +117,7 @@ class UserManager {
 									if(ui >= 0)
 									{
 										var temp = this.userArray.splice(ui, 1);
-										console.log('inactive user deleted. username: ' + temp[0].username + ".    token: " + temp[0].token);
+										//console.log('inactive user deleted. username: ' + temp[0].username + ".    token: " + temp[0].token);
 									}
 
 									//check if they were playing as well (they absolutely shouldn't be, but check anyway)
@@ -126,7 +126,7 @@ class UserManager {
 									if(playingIndex >= 0)
 									{
 										this.playingUserArray.splice(playingIndex, 1);
-										console.log('WARNING: player has been deleted, but they were in the playingUserArray in UserManager. They have been removed from the playerUserArray.');
+										//console.log('WARNING: player has been deleted, but they were in the playingUserArray in UserManager. They have been removed from the playerUserArray.');
 									}
 								}
 								else
@@ -152,7 +152,7 @@ class UserManager {
 											this.nextAvailableActiveId = temp.activeId;
 										}
 
-										console.log('User has been inactivated. username: ' + temp.username + '.   id: ' + temp.id);
+										//console.log('User has been inactivated. username: ' + temp.username + '.   id: ' + temp.id);
 
 										//invalidate the id
 										temp.activeId = null;
@@ -165,7 +165,7 @@ class UserManager {
 									if(playingIndex >= 0)
 									{
 										this.playingUserArray.splice(playingIndex, 1);
-										console.log('WARNING: player has been deleted, but they were in the playingUserArray in UserManager. They have been removed from the playerUserArray.');
+										//console.log('WARNING: player has been deleted, but they were in the playingUserArray in UserManager. They have been removed from the playerUserArray.');
 									}
 
 								}
@@ -199,7 +199,7 @@ class UserManager {
 									this.activeUserIdArray[u.activeId] = true;
 									this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
 
-									console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+									//console.log('User has been activated. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
 								}
 								break;
 
@@ -277,8 +277,8 @@ class UserManager {
 
 			this.updateIndex();
 			this.isDirty = false;
-			console.log('user array current length: ' + this.userArray.length);
-			console.log('active user current length: ' + this.activeUserArray.length);
+			// console.log('user array current length: ' + this.userArray.length);
+			// console.log('active user current length: ' + this.activeUserArray.length);
 		}
 	}
 
@@ -293,11 +293,11 @@ class UserManager {
 		this.isDirty = true;
 
 		//just for logging
-		var user = this.getUserByID(id)
-		if(user)
-		{
-			console.log('user marked for activation. username: ' + user.username + ".    token: " + user.token);
-		}
+		// var user = this.getUserByID(id)
+		// if(user)
+		// {
+		// 	console.log('user marked for activation. username: ' + user.username + ".    token: " + user.token);
+		// }
 	}
 
 	deactivateUserId(id, cbSuccess, cbFail) {
@@ -310,11 +310,11 @@ class UserManager {
 		this.isDirty = true;
 
 		//just for logging
-		var user = this.getUserByID(id)
-		if(user)
-		{
-			console.log('user marked for deactifvation. username: ' + user.username + ".    token: " + user.token);
-		}
+		// var user = this.getUserByID(id)
+		// if(user)
+		// {
+		// 	console.log('user marked for deactifvation. username: ' + user.username + ".    token: " + user.token);
+		// }
 	}
 
 	//marks the user as starting to play
@@ -329,11 +329,11 @@ class UserManager {
 		this.isDirty = true;
 
 		//just for logging
-		var user = this.getUserByID(id)
-		if(user)
-		{
-			console.log('user marked for start playing. username: ' + user.username + ".    token: " + user.token);
-		}
+		// var user = this.getUserByID(id)
+		// if(user)
+		// {
+		// 	console.log('user marked for start playing. username: ' + user.username + ".    token: " + user.token);
+		// }
 	}
 
 	//marks the user as stopping to play
@@ -348,11 +348,11 @@ class UserManager {
 		this.isDirty = true;
 
 		//just for logging
-		var user = this.getUserByID(id)
-		if(user)
-		{
-			console.log('user marked for stop playing. username: ' + user.username + ".    token: " + user.token);
-		}
+		// var user = this.getUserByID(id)
+		// if(user)
+		// {
+		// 	console.log('user marked for stop playing. username: ' + user.username + ".    token: " + user.token);
+		// }
 	}
 
 

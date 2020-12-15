@@ -8,12 +8,12 @@ class GameServerStarting extends GameServerBaseState {
 	}
 	
 	enter(dt) {
-		console.log('starting server enter');
+		//console.log('starting server enter');
 		super.enter(dt);
 	}
 
 	update(dt) {
-		console.log('starting server update');
+		//console.log('starting server update');
 		
 		//do nothing for now
 
@@ -22,7 +22,7 @@ class GameServerStarting extends GameServerBaseState {
 	}
 
 	exit(dt) {
-		console.log('starting server exit');
+		//console.log('starting server exit');
 		super.exit(dt);
 	}
 	

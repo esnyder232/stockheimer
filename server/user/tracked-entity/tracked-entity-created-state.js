@@ -8,7 +8,7 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 	}
 
 	enter(dt) {
-		console.log(this.stateName + ' enter. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
+		//console.log(this.stateName + ' enter. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
 		super.enter(dt);
 		this.trackedEntity.stateName = this.stateName;
 		this.trackedEntity.trackedEntityCreated();
@@ -61,10 +61,10 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 			this.trackedEntity.eventQueue.splice(processedIndexes[i], 1);
 		}
 
-		//check for "awake" status
+		//check for dirty
 		if(this.trackedEntity.entType == "gameobject")
 		{
-			this.trackedEntity.isAwake = this.trackedEntity.ent.isAwake();
+			this.trackedEntity.isDirty = this.trackedEntity.ent.checkDirty();
 		}
 	}
 
@@ -106,7 +106,7 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 
 
 	exit(dt) {
-		console.log(this.stateName + ' exit. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
+		//console.log(this.stateName + ' exit. UserId:' + this.trackedEntity.userId + ". EntType: " + this.trackedEntity.entType + ". EntID: " + this.trackedEntity.entId);
 		super.exit(dt);
 	}
 }

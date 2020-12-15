@@ -8,7 +8,7 @@ class UserPlayingState extends UserBaseState {
 	}
 
 	enter(dt) {
-		console.log(this.stateName + ' enter');
+		//console.log(this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 
 		this.user.gs.um.userStartPlayingId(this.user.id, this.user.userPostStartPlaying());
@@ -44,7 +44,7 @@ class UserPlayingState extends UserBaseState {
 	}
 
 	exit(dt) {
-		console.log(this.stateName + ' exit');
+		//console.log(this.stateName + ' exit');
 		this.user.userPreStopPlaying();
 		this.user.gs.um.userStopPlayingId(this.user.id);
 		super.exit(dt);
