@@ -42,6 +42,7 @@ class User {
 		this.trackedEntityTransactions = [];
 
 		this.plBody = null; //used for tracking when objects are near the user
+		this.userKillCount = 0;
 	}
 
 
@@ -316,7 +317,13 @@ class User {
 				var info = this.wsh.canEventFit(this.trackedEvents[i]);
 
 				//insert the event, and reset the priority accumulator
-				if(info.canEventFit)
+				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.fragmentationLimit)
+				{
+					this.insertFragmentEvent(this.trackedEvents[i], info);
+
+					processedIndexes.push(i); //just push it in this queue so it gets spliced off at the end
+				}
+				else if(info.canEventFit)
 				{
 					this.wsh.insertEvent(this.trackedEvents[i]);
 					processedIndexes.push(i);
@@ -465,7 +472,8 @@ class User {
 			"eventName": "userConnected",
 			"userId": this.id,
 			"activeUserId": this.activeId,
-			"username": this.username
+			"username": this.username,
+			"userKillCount": this.userKillCount
 		};
 	}
 
@@ -482,6 +490,14 @@ class User {
 			"userId": this.id,
 			"activeUserId": this.activeId,
 			"username": this.username
+		};
+	}
+
+	serializeUpdateUserInfoEvent() {
+		return {
+			"eventName": "updateUserInfo",
+			"userId": this.id,
+			"userKillCount": this.userKillCount
 		};
 	}
 

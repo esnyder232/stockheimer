@@ -227,7 +227,7 @@ export default class MainScene extends Phaser.Scene {
 			
 			var newUser = userListItemTemplate.clone();
 			newUser.removeClass("hide");
-			newUser.text(u.username);
+			newUser.text("(kills: " + u.userKillCount + ") - " + u.username);
 	
 			userList.append(newUser);
 	
@@ -367,6 +367,17 @@ export default class MainScene extends Phaser.Scene {
 			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, { fill: '#ff0000', fontSize: "38px"});
 
 			this.damageTexts.push(dmgText)
+		}
+	}
+
+	updateUserInfo(e) {
+		var u = this.gc.users.find((x) => {return x.userId === e.userId});
+		var ude = this.userDomElements.find((x) => {return x.userId === e.userId;});
+
+		if(ude && u)
+		{
+			var myText = "(kills: " + u.userKillCount + ") - " + u.username;
+			ude.userListItem.text(myText);
 		}
 	}
 

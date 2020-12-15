@@ -30,6 +30,7 @@ class Character {
 		this.xStarting = 2.5;
 		this.yStarting = 3.0;
 		this.forceImpulses = [];
+		this.lastHitByUserId = null;
 
 		//bullshit physics variables for tech demo
 		this.walkingTargetVelVec = null;	//target
@@ -320,7 +321,8 @@ class Character {
 					var e = this.eventQueue[i];
 					o.bulletType = e.type;
 					o.characterId = this.id;
-					
+					o.userId = this.userId;
+
 					if(e.type == "bigBullet")
 					{
 						o.bulletInit(this.gs, e.x, e.y, e.angle, 3, 140, 6000, 3.5);
@@ -359,9 +361,65 @@ class Character {
 		{
 			//whatever
 			var u = this.gs.um.getUserByID(this.userId);
-			console.log('User ' + u.username + " died.");
 			if(u !== null)
 			{
+				//announce event that user killed himself
+				var killFeedMessage = "";
+				if(this.lastHitByUserId === null || this.lastHitByUserId === this.userId)
+				{
+					killFeedMessage = "User " + u.username + " killed himself."
+
+					//bullshit way to increase the kill count of a user. This will probably be gone later.
+					var activeUsers = this.gs.um.getActiveUsers();
+					u.userKillCount--;
+					
+					for(var i = 0; i < activeUsers.length; i++)
+					{
+						activeUsers[i].trackedEvents.push({
+							"eventName": "updateUserInfo",
+							"userId": u.id,
+							"userKillCount": u.userKillCount
+						})
+					}
+					
+				}
+				//announce event that user died by someone
+				else
+				{
+					var killerUser = this.gs.um.getUserByID(this.lastHitByUserId);
+					var killerUsername = "???";
+					if(killerUser !== null)
+					{
+						killerUsername = killerUser.username;
+						killerUser.userKillCount++;
+
+						//bullshit way to increase the kill count of a user. This will probably be gone later.
+						var activeUsers = this.gs.um.getActiveUsers();
+						for(var i = 0; i < activeUsers.length; i++)
+						{
+							activeUsers[i].trackedEvents.push({
+								"eventName": "updateUserInfo",
+								"userId": killerUser.id,
+								"userKillCount": killerUser.userKillCount
+							})
+						}
+					}
+
+					killFeedMessage = "User " + killerUsername + " killed " + u.username;
+				}
+
+				console.log(killFeedMessage);
+
+				//create event for clients
+				var activeUsers = this.gs.um.getActiveUsers();
+				for(var i = 0; i < activeUsers.length; i++)
+				{
+					activeUsers[i].trackedEvents.push({
+						"eventName": "killfeedMsg",
+						"killfeedMsg": killFeedMessage
+					});
+				}
+
 				this.gs.gameState.destroyUsersCharacter(u);
 			}
 		}
@@ -386,12 +444,19 @@ class Character {
 		return result || this.isDirty;
 	}
 
-	isHit(dmg) {
+	isHit(dmg, userIdHitBy) {
 		//debugging
 		var u = this.gs.um.getUserByID(this.userId);
-		if(u !== null)
+		var uHitBy = this.gs.um.getUserByID(userIdHitBy);
+
+		if(u !== null && uHitBy !== null)
 		{
-			console.log(u.username + ' hit for ' + dmg + ' dmg');
+			console.log(u.username + ' hit for ' + dmg + ' dmg from ' + uHitBy.username);
+		}
+
+		if(userIdHitBy !== null)
+		{
+			this.lastHitByUserId = userIdHitBy;
 		}
 
 		//create event for clients

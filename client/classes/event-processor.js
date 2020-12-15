@@ -42,8 +42,11 @@ export default class EventProcessor {
 					this.gc.users.push({
 						userId: e.userId,
 						activeUserId: e.activeUserId,
-						username: e.username
+						username: e.username,
+						userKillCount: e.userKillCount
 					});
+
+					console.log(e);
 
 					//try to find your own user if you can
 					if(!this.gc.foundMyUser && this.gc.myUserId !== null)
@@ -219,6 +222,20 @@ export default class EventProcessor {
 
 							this.gc.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
 						}
+						break;
+
+					case "killfeedMsg":
+						this.globalfuncs.appendToLog(e.killfeedMsg);
+						break;
+
+					case "updateUserInfo":
+						var u = this.gc.users.find((x) => {return x.userId === e.userId;});
+						if(u)
+						{
+							u.userKillCount = e.userKillCount;
+						}
+
+
 						break;
 				default:
 					//intentionally blank

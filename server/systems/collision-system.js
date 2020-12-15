@@ -136,7 +136,7 @@ class CollisionSystem {
 				//simple and stupid
 				if(p.bulletType == "bullet")
 				{
-					c.isHit(2);
+					c.isHit(2, p.userId);
 					const Vec2 = this.pl.Vec2;
 					var pVel = p.plBody.getLinearVelocity();
 					var temp = Vec2(pVel.x, pVel.y);
@@ -149,7 +149,7 @@ class CollisionSystem {
 				}
 				else if(p.bulletType == "bigBullet")
 				{
-					c.isHit(20);
+					c.isHit(20, p.userId);
 					const Vec2 = this.pl.Vec2;
 					var cPos = c.plBody.getPosition();
 					var pPos = p.plBody.getPosition();

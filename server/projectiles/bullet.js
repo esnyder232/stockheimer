@@ -6,6 +6,7 @@ class Bullet {
 		this.gs = null;
 		this.id = null;
 		this.characterId = null;
+		this.userId = null; //the user that controller the character that fired the bullet
 		this.type = "projectile";
 
 		this.plBody = null;

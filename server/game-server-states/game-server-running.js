@@ -129,7 +129,17 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 	
 					case "fromClientKillCharacter":
-						this.destroyUsersCharacter(user);
+						//as long as they have an existing character, kill it.
+						if(user.characterId !== null)
+						{
+							var c = this.gs.gom.getGameObjectByID(user.characterId);
+
+							if(c && c.userId === user.id)
+							{
+								c.hpCur = 0;
+							}
+						}
+						//this.destroyUsersCharacter(user);
 						break;
 
 					case "fromClientInputs":
