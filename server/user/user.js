@@ -461,7 +461,69 @@ class User {
 		return result;
 	}
 
+	userKillsCharacter(characterId) {
+		var c = this.gs.gom.getGameObjectByID(characterId);
 
+		if(c !== null)
+		{
+			//announce event that user killed himself
+			var killFeedMessage = "";
+			if(c.lastHitByUserId === null || c.lastHitByUserId === this.id)
+			{
+				killFeedMessage = "User " + this.username + " killed himself."
+
+				//bullshit way to increase the kill count of a user. This will probably be gone later.
+				var activeUsers = this.gs.um.getActiveUsers();
+				this.userKillCount--;
+				
+				for(var i = 0; i < activeUsers.length; i++)
+				{
+					activeUsers[i].trackedEvents.push({
+						"eventName": "updateUserInfo",
+						"userId": this.id,
+						"userKillCount": this.userKillCount
+					})
+				}
+				
+			}
+			//announce event that user died by someone
+			else
+			{
+				var killerUser = this.gs.um.getUserByID(c.lastHitByUserId);
+				var killerUsername = "???";
+				if(killerUser !== null)
+				{
+					killerUsername = killerUser.username;
+					killerUser.userKillCount++;
+
+					//bullshit way to increase the kill count of a user. This will probably be gone later.
+					var activeUsers = this.gs.um.getActiveUsers();
+					for(var i = 0; i < activeUsers.length; i++)
+					{
+						activeUsers[i].trackedEvents.push({
+							"eventName": "updateUserInfo",
+							"userId": killerUser.id,
+							"userKillCount": killerUser.userKillCount
+						})
+					}
+				}
+
+				killFeedMessage = "User " + killerUsername + " killed " + this.username;
+			}
+
+			console.log(killFeedMessage);
+
+			//create event for clients for killfeed
+			var activeUsers = this.gs.um.getActiveUsers();
+			for(var i = 0; i < activeUsers.length; i++)
+			{
+				activeUsers[i].trackedEvents.push({
+					"eventName": "killfeedMsg",
+					"killfeedMsg": killFeedMessage
+				});
+			}
+		}
+	}
 
 	
 	///////////////////////////////////

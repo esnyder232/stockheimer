@@ -58,7 +58,6 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	exit(dt) {
-		//console.log('running server exit');
 		super.exit(dt);
 	}
 	
@@ -139,7 +138,6 @@ class GameServerRunning extends GameServerBaseState {
 								c.hpCur = 0;
 							}
 						}
-						//this.destroyUsersCharacter(user);
 						break;
 
 					case "fromClientInputs":

@@ -62,7 +62,7 @@ input[type="text"]:disabled {
 }
 
 .hide {
-	display:none;
+	display:none !important;
 }
 
 
@@ -87,19 +87,8 @@ input[type="text"]:disabled {
 }
 
 #player-submit {
-	position: absolute;
-	bottom: 0px;
-	right: 0px;
-	margin: 12px;
+	margin-top: 20px;
 }
-
-#player-new {
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
-	margin: 12px;
-}
-
 
 #game-server-details {
 	position: absolute;
@@ -241,7 +230,8 @@ input[type="text"]:disabled {
 }
 
 .form-button {
-	/* intentionally blank for now */
+	margin: 3px auto;
+	display: block;
 }
 
 .form-text {

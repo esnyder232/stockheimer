@@ -55,8 +55,6 @@ class GameObjectManager {
 		
 				this.gameObjectArray.push(o);
 				this.updateIndex(o.id, o, 'create');
-	
-				//console.log("game object '" + o.type + "' created. Id: " + o.id);
 			}
 		}
 		
@@ -74,13 +72,6 @@ class GameObjectManager {
 		})
 
 		this.isDirty = true;
-
-		//just for logging
-		// var o = this.getGameObjectByID(id)
-		// if(o !== null)
-		// {
-		// 	console.log("Game object marked for deletion (" + o.type + "). id: " + o.id);
-		// }
 	}
 
 
@@ -121,7 +112,6 @@ class GameObjectManager {
 									var oi = this.gameObjectArray.findIndex((x) => {return x.id == o.id;});
 									if(oi >= 0)
 									{
-										//console.log("inactive game object deleted (" + this.gameObjectArray[oi].type + "). id: " + this.gameObjectArray[oi].id);
 										this.gameObjectArray.splice(oi, 1);
 									}
 								}
@@ -146,14 +136,11 @@ class GameObjectManager {
 											this.nextAvailableActiveId = this.activeGameObjectArray[oi].activeId;
 										}
 
-										//console.log('Game Object has been deactivated (' + this.activeGameObjectArray[oi].type + '). id: ' + this.activeGameObjectArray[oi].id + "    activeId: " + this.activeGameObjectArray[oi].activeId);
-
 										//invalidate the id
 										this.activeGameObjectArray[oi].activeId = null;
 										this.activeGameObjectArray[oi].isActive = false;
 
 										this.activeGameObjectArray.splice(oi, 1);
-										//console.log('active Game Object current length: ' + this.activeGameObjectArray.length);
 									}
 								}
 								else 
@@ -185,9 +172,6 @@ class GameObjectManager {
 									o.isActive = true;
 									this.activeGameObjectIdArray[o.activeId] = true;
 									this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeGameObjectIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
-
-									// console.log('Game object has been activated (' + o.type + '). id: ' + o.id + "    activeId: " + o.activeId);
-									// console.log('Game Object current length: ' + this.activeGameObjectArray.length);
 								}
 								break;
 							default:
@@ -228,8 +212,6 @@ class GameObjectManager {
 
 			this.updateIndex();
 			this.isDirty = false;
-			// console.log('Game Object array current length: ' + this.gameObjectArray.length);
-			// console.log('Active Game Object array current length: ' + this.activeGameObjectArray.length);
 		}
 	}
 
@@ -241,13 +223,6 @@ class GameObjectManager {
 			"cbFail": cbFail
 		});
 		this.isDirty = true;
-
-		//just for logging
-		// var o = this.getGameObjectByID(id)
-		// if(o !== null)
-		// {
-		// 	console.log("Game object marked for activation (" + o.type + "). id: " + o.id);
-		// }
 	}
 
 	deactivateGameObjectId(id, cbSuccess, cbFail) {
@@ -258,13 +233,6 @@ class GameObjectManager {
 			"cbFail": cbFail
 		});
 		this.isDirty = true;
-
-		//just for logging
-		// var o = this.getGameObjectByID(id)
-		// if(o !== null)
-		// {
-		// 	console.log("Game object marked for deactifvation (" + o.type + "). id: " + o.id);
-		// }
 	}
 
 

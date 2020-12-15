@@ -16,10 +16,15 @@ export default class LobbyScene extends Phaser.Scene {
 		this.username = "";
 
 		this.currentlyConnecting = false;
+		this.enableUsername = true;
+
+		this.showPlayButton = true;
+		this.showNewButton = false;
+		this.showExistingButton = false;
 
 		this.enablePlayButton = false;
-		this.enableUsername = true;
 		this.enableNewButton = false;
+		this.enableExistingButton = false;
 	}
 
 	init(data) {
@@ -33,7 +38,6 @@ export default class LobbyScene extends Phaser.Scene {
 		this.windowsEventMapping = [
 			{event: 'player-submit-click', func: this.playerSubmitClick.bind(this)},
 			{event: 'player-new-click', func: this.playerNewClick.bind(this)}
-			
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -82,6 +86,10 @@ export default class LobbyScene extends Phaser.Scene {
 		this.enablePlayButton = false;
 		this.enableNewButton = false;
 
+		this.showPlayButton = true;
+		this.showNewButton = false;
+		this.showExistingButton = false;
+
 		var data = {};
 
 		//there is a timeout on the api because the server needs time to update itself (1/30 of a second)
@@ -108,6 +116,11 @@ export default class LobbyScene extends Phaser.Scene {
 					usernameInput.val(this.userSession.username);
 					this.enableUsername = !this.userSession.sessionExists;
 					this.enableNewButton = this.userSession.sessionExists;
+					this.enableExistingButton = this.userSession.sessionExists;
+					
+					this.showPlayButton = !this.userSession.sessionExists;
+					this.showExistingButton = this.userSession.sessionExists;
+					this.showNewButton = this.userSession.sessionExists;
 				}
 			})
 			.fail((xhr) => {
@@ -141,10 +154,41 @@ export default class LobbyScene extends Phaser.Scene {
 		var usernameInput = $("#user-name");
 		var playerSubmitButton = $("#player-submit");
 		var playerNewButton = $("#player-new");
+		var playerExistingButton = $("#player-submit-existing")
 
-		usernameInput.attr("disabled", !this.enableUsername);
+		usernameInput.attr("disabled", !this.enableUsername);		
+		
 		playerSubmitButton.attr("disabled", !this.enablePlayButton);
+		if(this.showPlayButton)
+		{
+			playerSubmitButton.removeClass("hide");
+		}
+		else
+		{
+			playerSubmitButton.addClass("hide");
+		}
+		
 		playerNewButton.attr("disabled", !this.enableNewButton);
+		if(this.showNewButton)
+		{
+			playerNewButton.removeClass("hide");
+		}
+		else
+		{
+			playerNewButton.addClass("hide");
+		}
+
+		playerExistingButton.attr("disabled", !this.enableExistingButton);
+		if(this.showExistingButton)
+		{
+			playerExistingButton.removeClass("hide");
+		}
+		else
+		{
+			playerExistingButton.addClass("hide");
+		}
+
+		
 	}
 
 
@@ -156,6 +200,7 @@ export default class LobbyScene extends Phaser.Scene {
 			this.enablePlayButton = false;
 			this.enableUsername = false;
 			this.enableNewButton = false;
+			this.enableExistingButton = false;
 
 			this.updateUI();
 
@@ -178,6 +223,7 @@ export default class LobbyScene extends Phaser.Scene {
 				this.checkUsernameEnablePlayButton();
 				this.enableUsername = !this.userSession.sessionExists;
 				this.enableNewButton = this.userSession.sessionExists;
+				this.enableExistingButton = this.userSession.sessionExists;
 				this.updateUI();
 			})
 		}
@@ -201,6 +247,11 @@ export default class LobbyScene extends Phaser.Scene {
 					this.userSession.sessionExists = false;
 					this.enableUsername = !this.userSession.sessionExists;
 					this.enableNewButton = this.userSession.sessionExists;
+					this.enableExistingButton = this.userSession.sessionExists;
+					
+					this.showPlayButton = !this.userSession.sessionExists;
+					this.showExistingButton = this.userSession.sessionExists;
+					this.showNewButton = this.userSession.sessionExists;
 				})
 				.fail((xhr) => {
 					var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);

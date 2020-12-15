@@ -9,13 +9,10 @@ class GameServerStopping extends GameServerBaseState {
 	}
 
 	enter(dt) {
-		//console.log('stopping server enter');
 		super.enter(dt);
 	}
 
 	update(dt) {
-		//console.log('stopping server update');
-
 		//do nothing for now
 
 		this.gs.nextGameState = new GameServerStopped.GameServerStopped(this.gs);
@@ -24,7 +21,6 @@ class GameServerStopping extends GameServerBaseState {
 	}
 
 	exit(dt) {
-		//console.log('stopping server exit');
 		super.exit(dt);
 	}
 	
