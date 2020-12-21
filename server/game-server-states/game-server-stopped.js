@@ -7,6 +7,7 @@ class GameServerStopped extends GameServerBaseState {
 	}
 
 	enter(dt) {
+		console.log('Game loop stopped.');
 		this.gs.runGameLoop = false;
 		super.enter(dt);
 	}
@@ -20,6 +21,7 @@ class GameServerStopped extends GameServerBaseState {
 	}
 	
 	startGameRequest() {
+		console.log('Game loop start request.');
 		this.gs.nextGameState = new GameServerStarting(this.gs);
 		this.gs.runGameLoop = true;
 

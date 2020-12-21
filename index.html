@@ -34,6 +34,12 @@
 						<input type="button" id="create-character" value="Create Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
 						<input type="button" id="kill-character" value="Kill Character" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
 					</div>
+					<div class="input-controls-div">
+						<input type="button" id="spawn-stationary-enemy" value="Spawn Stationary Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-stationary-enemy'));" />
+						<input type="button" id="spawn-patrol-enemy" value="Spawn Patrol Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-patrol-enemy'));" />
+						<input type="button" id="spawn-seeking-enemy" value="Spawn Seeking Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-seeking-enemy'));" />
+						<input type="button" id="kill-all-enemies" value="Kill all enemies" onclick="window.dispatchEvent(new CustomEvent('kill-all-enemies'));" />
+					</div>
 					<div class="user-list" id="user-list">
 						<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
 						<div class="user-list-item hide" id="user-list-item-template"></div>

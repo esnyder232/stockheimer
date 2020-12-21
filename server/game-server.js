@@ -9,7 +9,11 @@ const {GameServerStopped} = require('./game-server-states/game-server-stopped.js
 const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
 const {GameObjectManager} = require ('./managers/game-object-manager.js');
+const {TilemapManager} = require ('./managers/tilemap-manager.js');
 const serverConfig = require('./server-config.json');
+const path = require('path');
+
+
 
 class GameServer {
 	constructor() {
@@ -41,7 +45,8 @@ class GameServer {
 		this.cm = null;
 		this.pm = null;
 		this.cs = null;
-
+		this.tmm = null;
+		this.appRoot = path.join(__dirname, "..");
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 3000; //ms until this console logs the amount of game objects in the game
@@ -53,6 +58,7 @@ class GameServer {
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
 		this.gom = new GameObjectManager();
+		this.tmm = new TilemapManager();
 		this.cs = new CollisionSystem();
 		
 		const Vec2 = this.pl.Vec2;
@@ -122,6 +128,7 @@ class GameServer {
 		this.um.init(this);
 		this.gom.init(this);
 		this.cs.init(this);
+		this.tmm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 	}

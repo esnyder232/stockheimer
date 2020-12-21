@@ -70,7 +70,6 @@ class WebsocketHandler {
 	}
 
 	onclose(code, reason) {
-		console.log();
 		if(code || reason)
 		{
 			console.log("Websocket-handler. websocket is now closed. Id: " + this.id + '. userId: ' + this.userId + ". Code: " + code + ". Reason: " + reason);

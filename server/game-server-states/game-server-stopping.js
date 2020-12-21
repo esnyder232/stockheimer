@@ -9,6 +9,7 @@ class GameServerStopping extends GameServerBaseState {
 	}
 
 	enter(dt) {
+		console.log('Game loop stopping.');
 		super.enter(dt);
 	}
 

@@ -55,7 +55,11 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
-			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)}
+			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
+			{event: 'spawn-stationary-enemy', func: this.spawnStationaryEnemy.bind(this)},
+			{event: 'spawn-patrol-enemy', func: this.spawnPatrolEnemy.bind(this)},
+			{event: 'spawn-seeking-enemy', func: this.spawnSeekingEnemy.bind(this)},
+			{event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -692,6 +696,40 @@ export default class MainScene extends Phaser.Scene {
 			ppu.boxGraphics.setX(ppu.x * this.planckUnitsToPhaserUnitsRatio);
 			ppu.boxGraphics.setY(ppu.y * this.planckUnitsToPhaserUnitsRatio * -1);
 		}
+	}
+
+
+	spawnStationaryEnemy() {
+		console.log('spawning stationary enemy');
+		this.fromClientSpawnEnemy("stationary");
+	}
+
+	spawnPatrolEnemy() {
+		console.log('spawning patrol enemy');
+		this.fromClientSpawnEnemy("patrol");
+	}
+
+	spawnSeekingEnemy() {
+		console.log('spawning seeeking enemy');
+		this.fromClientSpawnEnemy("seeking");
+	}
+
+	killAllEnemies() {
+		console.log('kill all enemies');
+		this.fromClientKillAllEnemies();
+	}
+
+	fromClientSpawnEnemy(enemyType) {
+		this.gc.wsh.clientToServerEvents.push({
+			"eventName": "fromClientSpawnEnemy",
+			"enemyType": enemyType
+		});
+	}
+
+	fromClientKillAllEnemies() {
+		this.gc.wsh.clientToServerEvents.push({
+			"eventName": "fromClientKillAllEnemies"
+		});
 	}
 }
 

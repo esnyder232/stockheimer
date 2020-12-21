@@ -51,6 +51,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.wsm.update(dt);
 		this.gs.um.update(dt);
 		this.gs.gom.update(dt);
+		this.gs.tmm.update(dt);
 
 		this.gs.frameNum++;
 
@@ -146,6 +147,14 @@ class GameServerRunning extends GameServerBaseState {
 
 					case "fromClientReadyToPlay":
 						user.bReadyToPlay = true;
+						break;
+
+					case "fromClientSpawnEnemy":
+						
+						break;
+
+					case "fromClientKillAllEnemies":
+						
 						break;
 
 					default:
