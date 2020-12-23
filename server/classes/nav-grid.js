@@ -19,6 +19,9 @@ class NavGrid {
 
 		this.castleNode = null;
 		this.toCastleNodeMap = null;
+		this.tiledUnitsToPlanckUnits = 1;
+
+		this.walls = [];
 	}
 
 	init(gameServer, tmId) {
@@ -121,7 +124,37 @@ class NavGrid {
 				}
 			}
 			this.toCastleNodeMap = this.breadthFirstNodeMap(this.castleNode);
+
+
+			//fuck it, we'll just make the walls here
+			const Vec2 = this.gs.pl.Vec2;
+			var wallShape = this.gs.pl.Box(this.tiledUnitsToPlanckUnits/2, this.tiledUnitsToPlanckUnits/2, Vec2(0,0));
+
+			for(var j = 0; j < this.nodes.length; j++)
+			{
+				for(var i = 0; i < this.nodes[j].length; i++)
+				{
+					if(this.nodes[j][i].impassable)
+					{
+						var w = this.gs.world.createBody({
+							position: Vec2(i * this.tiledUnitsToPlanckUnits + (this.tiledUnitsToPlanckUnits/2), (j * this.tiledUnitsToPlanckUnits + (this.tiledUnitsToPlanckUnits/2)) * -1),
+							type: this.gs.pl.Body.STATIC,
+							userData: {type:"wall", id: this.gs.getGlobalGameObjectID()}
+						});
+
+						w.createFixture({
+							shape: wallShape,
+							density: 0.0,
+							friction: 0.0
+						});
+
+						this.walls.push(w);
+					}
+				}
+			}
 		}
+
+		var stopHere = true;
 	}
 
 	//just deletes the old indexes if there was any, and builds the indexes

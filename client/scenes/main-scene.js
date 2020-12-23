@@ -40,6 +40,19 @@ export default class MainScene extends Phaser.Scene {
 
 		this.damageTexts = []; //little array of damage texts to popup when someone gets hurt
 		this.characterSize = 0.75;
+
+		this.cameraTarget = {
+			x: 0,
+			y: 0
+		}
+
+		this.cameraDirty = false;
+
+		this.defaultCenter = {
+			x: 15 * this.planckUnitsToPhaserUnitsRatio,
+			y: 15 * this.planckUnitsToPhaserUnitsRatio * -1
+		}
+
 	}
 
 	init(data) {
@@ -119,7 +132,8 @@ export default class MainScene extends Phaser.Scene {
 
 		//load tilemap
 		this.map = this.make.tilemap({key: "my-tilemap"});
-
+		console.log('MAPPPPPP:')
+		console.log(this)
 		//load tileset
 		this.tileset = this.map.addTilesetImage("testing-tileset", "my-tileset");
 		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra", "my-tileset-extra");
@@ -162,20 +176,18 @@ export default class MainScene extends Phaser.Scene {
 
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
 
-		this.text1 = this.add.text(50, 160, '', { fill: '#0000ff', fontSize: "44px"});
+		this.text1 = this.add.text(600, 375, '', { fill: '#0000ff', fontSize: "22px"});
 
 
 		//create walls for testing (hard coded just do i can move on)
-		this.groundGraphics = this.add.graphics();
-		this.groundGraphics.lineStyle(1, 0xff0000, 1.0);
-		this.yAxisGraphic.moveTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
-		this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
-		this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
-		this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
-		this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
-		this.yAxisGraphic.strokePath();
-
-
+		// this.groundGraphics = this.add.graphics();
+		// this.groundGraphics.lineStyle(1, 0xff0000, 1.0);
+		// this.yAxisGraphic.moveTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
+		// this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
+		// this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
+		// this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
+		// this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
+		// this.yAxisGraphic.strokePath();
 
 		//draw the trackign sensor for testing
 		// this.trackingSensorGraphics = this.add.graphics();
@@ -469,8 +481,8 @@ export default class MainScene extends Phaser.Scene {
 
 			//debugging text
 			this.text1.setText([
-				'x: ' + pointer.worldX + "(" + pointer.worldX / this.planckUnitsToPhaserUnitsRatio + ")",
-				'y: ' + pointer.worldY + "(" + (pointer.worldY / this.planckUnitsToPhaserUnitsRatio) * -1 + ")",
+				'x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX / this.planckUnitsToPhaserUnitsRatio) + ")",
+				'y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY / this.planckUnitsToPhaserUnitsRatio)) * -1 + ")",
 				'isDown: ' + pointer.isDown,
 				'angle: ' + this.angle
 			]);
@@ -542,6 +554,21 @@ export default class MainScene extends Phaser.Scene {
 				"characterDirection": this.angle
 			});
 		}
+
+		//update camera position
+		if(this.gc.myCharacter !== null)
+		{
+			this.cameraTarget.x = this.gc.myCharacter.x;
+			this.cameraTarget.y = this.gc.myCharacter.y;
+		}
+		else
+		{
+			this.cameraTarget.x = this.defaultCenter.x;
+			this.cameraTarget.y = this.defaultCenter.y;
+		}
+
+		this.cameras.main.scrollX = (this.cameraTarget.x * this.planckUnitsToPhaserUnitsRatio) - (this.scale.width/2);
+		this.cameras.main.scrollY = ((this.cameraTarget.y * this.planckUnitsToPhaserUnitsRatio) * -1) - (this.scale.height/2);
 
 		//update inputs
 		this.playerController.update();

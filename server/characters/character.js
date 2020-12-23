@@ -27,8 +27,8 @@ class Character {
 		this.hpMax = 100;
 		this.hpCur = 100;
 		this.isDirty = false;
-		this.xStarting = 2.5;
-		this.yStarting = 3.0;
+		this.xStarting = 15;
+		this.yStarting = -15.0;
 		this.forceImpulses = [];
 		this.lastHitByUserId = null;
 
@@ -70,7 +70,7 @@ class Character {
 		this.walkingAccVec = Vec2(0, 0);
 
 		//create a plank box
-		var boxShape = pl.Box(0.1, 0.1, Vec2(0, 0));
+		var boxShape = pl.Box(0.375, 0.375, Vec2(0, 0));
 
 		this.plBody = world.createBody({
 			position: Vec2(this.xStarting, this.yStarting),
@@ -81,7 +81,7 @@ class Character {
 		
 		this.plBody.createFixture({
 			shape: boxShape,
-			density: 100.0,
+			density: 10.0,
 			friction: 1.0,
 		});	
 	}
