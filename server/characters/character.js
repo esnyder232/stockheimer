@@ -70,7 +70,7 @@ class Character {
 		this.walkingAccVec = Vec2(0, 0);
 
 		//create a plank box
-		var boxShape = pl.Box(0.5, 0.5, Vec2(0, 0));
+		var boxShape = pl.Box(0.1, 0.1, Vec2(0, 0));
 
 		this.plBody = world.createBody({
 			position: Vec2(this.xStarting, this.yStarting),
@@ -81,7 +81,7 @@ class Character {
 		
 		this.plBody.createFixture({
 			shape: boxShape,
-			density: 1.0,
+			density: 100.0,
 			friction: 1.0,
 		});	
 	}

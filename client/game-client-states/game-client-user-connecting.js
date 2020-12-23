@@ -10,7 +10,8 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		//a mini state machine within this state.
 		//0 - connecting websocket
 		//1 - recieving game server state
-		//2 - game server state complete
+		//2 - game server state complete. Now retrieving resources to load into the client
+		//3 - came client 
 		this.connectionState = 0;
 	}
 	
