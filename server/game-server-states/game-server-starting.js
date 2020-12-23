@@ -10,6 +10,7 @@ class GameServerStarting extends GameServerBaseState {
 		super(gs);
 		this.tilemapLoaded = false;
 		this.tilemapFailedToLoad = false;
+		this.tilemapId = null;
 		this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
 	}
 	
@@ -29,11 +30,20 @@ class GameServerStarting extends GameServerBaseState {
 		}
 		else if(this.tilemapLoaded)
 		{
+			//at this point, the tile map is loaded in data. Now process the tilemap to create the game map on the server
+			var tm = this.gs.tmm.getTilemapByID(this.tilemapId);
+
+			var ng = this.gs.ngm.createNavGrid();
+			ng.init(this.gs, tm.id);
+
+
+			this.gs.ngm.destroyNavGrid(ng.id);
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}
 
 		//update some managers
 		this.gs.tmm.update(dt);
+		this.gs.ngm.update(dt);
 
 		super.update(dt);
 	}
@@ -44,6 +54,7 @@ class GameServerStarting extends GameServerBaseState {
 
 	mapLoadFinished(tilemapId)
 	{
+		this.tilemapId = tilemapId;
 		this.tilemapLoaded = true;
 	}
 	

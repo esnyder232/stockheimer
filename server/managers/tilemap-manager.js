@@ -62,7 +62,7 @@ class TilemapManager {
 			{
 				delete this.idIndex[id];
 			}
-			if(this.fullFilepathIndex[id] !== undefined)
+			if(this.fullFilepathIndex[fullFilepath] !== undefined)
 			{
 				delete this.fullFilepathIndex[fullFilepath];
 			}
@@ -119,6 +119,7 @@ class TilemapManager {
 									{
 										//splice it off
 										this.tilemapArray.splice(tmIndex, 1);
+										this.updateIndex(tm.id, tm.fullFilepath, null, "unload");
 										this.transactionQueue[i].statusMessage = "Tile map with id '" + this.transactionQueue[i].id + "' has been unloaded.";
 										this.transactionQueue[i].status = "finished";
 									}
@@ -210,15 +211,11 @@ class TilemapManager {
 			//create a json object and other stuff
 			var tm = new Tilemap();
 			tm.init(this.gs, this.idCounter++, transaction.fullFilepath, data)
-			// var tm = {
-			// 	id: this.idCounter++,
-			// 	fullFilepath: transaction.fullFilepath,
-			// 	rawData: data,
-			// 	jsonData: JSON.parse(data)
-			// }
 
+			transaction.id = tm.id;
+			
 			this.tilemapArray.push(tm);
-			this.updateIndex(tm.id, tm.fullFilepath, tm, "create");
+			this.updateIndex(tm.id, tm.fullFilepath, tm, "load");
 			this.isDirty = true;
 		}
 	}
