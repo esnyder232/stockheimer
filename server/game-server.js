@@ -11,6 +11,7 @@ const {CollisionSystem} = require ('./systems/collision-system.js');
 const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const {TilemapManager} = require ('./managers/tilemap-manager.js');
 const {NavGridManager} = require ('./managers/nav-grid-manager.js');
+const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const path = require('path');
 
@@ -48,6 +49,7 @@ class GameServer {
 		this.cs = null;
 		this.tmm = null;
 		this.ngm = null;
+		this.aim = null;
 		this.appRoot = path.join(__dirname, "..");
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
@@ -63,6 +65,7 @@ class GameServer {
 		this.tmm = new TilemapManager();
 		this.cs = new CollisionSystem();
 		this.ngm = new NavGridManager();
+		this.aim = new AIAgentManager();
 		
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -133,6 +136,7 @@ class GameServer {
 		this.cs.init(this);
 		this.tmm.init(this);
 		this.ngm.init(this);
+		this.aim.init(this);
 
 		this.gameState = new GameServerStopped(this);
 	}

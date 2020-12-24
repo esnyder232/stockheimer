@@ -53,6 +53,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.gom.update(dt);
 		this.gs.tmm.update(dt);
 		this.gs.ngm.update(dt);
+		this.gs.aim.update(dt);
 
 		this.gs.frameNum++;
 
@@ -151,7 +152,13 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 
 					case "fromClientSpawnEnemy":
-						
+						console.log('fromClientSpawnEnemy')
+						var c = this.gs.gom.createGameObject('character');
+						c.characterInit(this.gs);
+						c.userId = user.id;
+						user.characterId = c.id;
+
+						this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						break;
 
 					case "fromClientKillAllEnemies":

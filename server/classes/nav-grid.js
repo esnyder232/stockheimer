@@ -123,8 +123,11 @@ class NavGrid {
 					bCastleFound = true;
 				}
 			}
-			this.toCastleNodeMap = this.breadthFirstNodeMap(this.castleNode);
 
+			if(bCastleFound)
+			{
+				this.toCastleNodeMap = this.breadthFirstNodeMap(this.castleNode);
+			}
 
 			//fuck it, we'll just make the walls here
 			const Vec2 = this.gs.pl.Vec2;
@@ -153,8 +156,6 @@ class NavGrid {
 				}
 			}
 		}
-
-		var stopHere = true;
 	}
 
 	//just deletes the old indexes if there was any, and builds the indexes
@@ -380,110 +381,6 @@ class NavGrid {
 		return finalPath;
 	}
 
-
-
-	// //returns the nodes from nodeStart to the nodeEnd using A* algorithm
-	// AStarSearch(nodeStart, nodeEnd)
-	// {
-	// 	var edgeMap = [];
-	// 	var path = {
-	// 		nodes: [],
-	// 		edges: []
-	// 	}
-
-	// 	var frontier = [];
-	// 	var visited = [];
-
-	// 	frontier.push({node: nodeStart, costSoFar: 0, priority: 0});
-	// 	visited.push({node: nodeStart, costSoFar: 0, priority: 0});
-	// 	var nodeFound = false;
-
-	// 	while(frontier.length > 0 && !nodeFound)
-	// 	{
-	// 		//sort it so the lowest cost is in front
-	// 		frontier.sort((a, b) => {return a.priority - b.priority;});
-	// 		var currentFrontierNode = frontier.shift();
-
-	// 		if(currentFrontierNode.node.id === nodeEnd.id)
-	// 		{
-	// 			nodeFound = true;
-	// 		}
-
-	// 		if(!nodeFound)
-	// 		{
-	// 			//get any edges it may have (and therefore its neighbors)
-	// 			var currentFrontierNodeEdges = edges.filter((x) => {return x.nodeFrom.id === currentFrontierNode.node.id;});
-	// 			for(var j = 0; j < currentFrontierNodeEdges.length; j++)
-	// 			{
-	// 				//check first to see if its impassibla (wall)
-	// 				var neighborNodeInQuestion = currentFrontierNodeEdges[j].nodeTo;
-	// 				var worldTile = world[neighborNodeInQuestion.y][neighborNodeInQuestion.x]
-	// 				if(worldTile.type === "wall")
-	// 				{
-	// 					//do nothing
-	// 				}
-	// 				else
-	// 				{
-	// 					//if the neghibor hasn't been visited, or the last known cost to get TO the neighbor is higher than the current cost, then add it to the frontier
-	// 					var currentCostSoFar = currentFrontierNode.costSoFar;
-	// 					var visitedNode = visited.find((x) => {return x.node.id === neighborNodeInQuestion.id;});
-
-	// 					//calculate movement cost
-	// 					var movementCost = 1;
-	// 					if(worldTile.type == "open")
-	// 					{
-	// 						movementCost = 1;
-	// 					}
-	// 					else if (worldTile.type == "water")
-	// 					{
-	// 						movementCost = 5;
-	// 					}
-
-	// 					var newCost = currentCostSoFar + movementCost;
-
-	// 					if(!visitedNode || visitedNode.costSoFar > newCost)
-	// 					{
-	// 						//calculate heuristic
-	// 						var heuristic = manhattanDistanceHeuristicFunction(neighborNodeInQuestion, nodeEnd);
-
-	// 						//add its neighbors to the frontier
-	// 						frontier.push({node: neighborNodeInQuestion, costSoFar: newCost, priority: newCost + heuristic});
-	// 						visited.push({node: neighborNodeInQuestion, costSoFar: newCost, priority: newCost + heuristic});
-										
-	// 						//add the one edge to the edge map
-	// 						var edgeToAdd = edges.find((x) => {return x.nodeFrom.id === neighborNodeInQuestion.id && x.nodeTo.id === currentFrontierNode.node.id})
-	// 						if(edgeToAdd)
-	// 						{
-	// 							edgeMap.push(edgeToAdd)
-	// 						}
-
-	// 						//do another check to see if its the end node.
-	// 						if(currentFrontierNode.node.id === nodeEnd.id)
-	// 						{
-	// 							nodeFound = true;
-	// 							break;
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-
-	// 	//if the node was found, find it in the visited nodes, and work backwards to the start
-	// 	if(nodeFound) {
-	// 		path = getPathFromEdgeMap(edgeMap, edges, nodeStart, nodeEnd);
-	// 	}
-
-	// 	//debugging
-	// 	path.edgeMap = edgeMap;
-
-	// 	return path;
-	// }
-
-
-
-
-	
 	manhattanDistanceHeuristicFunction(nodeStart, nodeTarget)
 	{
 		return Math.abs(nodeTarget.x - nodeStart.x) + Math.abs(nodeTarget.y - nodeStart.y);
