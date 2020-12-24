@@ -11,6 +11,7 @@ class GameServerStarting extends GameServerBaseState {
 		this.tilemapLoaded = false;
 		this.tilemapFailedToLoad = false;
 		this.tilemapId = null;
+		//this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
 		this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
 	}
 	

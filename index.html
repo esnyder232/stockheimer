@@ -40,21 +40,34 @@
 						<input type="button" id="spawn-seeking-enemy" value="Spawn Seeking Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-seeking-enemy'));" />
 						<input type="button" id="kill-all-enemies" value="Kill all enemies" onclick="window.dispatchEvent(new CustomEvent('kill-all-enemies'));" />
 					</div>
-					<div class="user-list" id="user-list">
-						<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
-						<div class="user-list-item hide" id="user-list-item-template"></div>
+					<div class="panel">
+						<div class="user-list" id="user-list">
+							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
+							<div class="user-list-item hide" id="user-list-item-template"></div>
+						</div>
 					</div>
-					<div class="chat-div">
-						<div class="chat-history" id="chat-history">
-							<div class="chat-history-item hide" id="chat-history-item-template">
-								<div class="chat-history-ts" name="chat-history-ts"></div>
-								<div class="chat-history-name" name="chat-history-name"></div>
-								<div class="chat-history-msg" name="chat-history-msg"></div>
+					<div class="panel">
+						<div class="chat-div-wrapper">
+							<div class="chat-div">
+								<div class="chat-history" id="chat-history">
+									<div class="chat-history-item hide" id="chat-history-item-template">
+										<div class="chat-history-ts" name="chat-history-ts"></div>
+										<div class="chat-history-name" name="chat-history-name"></div>
+										<div class="chat-history-msg" name="chat-history-msg"></div>
+									</div>
+								</div>
+								<div class="chat-input-container">
+									<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="Chat message" maxlength="100"/>
+									<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
+								</div>
 							</div>
 						</div>
-						<div class="chat-input-container">
-							<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="Chat message" maxlength="100"/>
-							<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
+						<div class="debug-div" id="debug-div">
+							<div>Debug:</div>
+							<div id="debug-x"></div>
+							<div id="debug-y">aetj</div>
+							<div id="debug-is-down">sfgj</div>
+							<div id="debug-angle">srtyj</div>
 						</div>
 					</div>
 				</div>

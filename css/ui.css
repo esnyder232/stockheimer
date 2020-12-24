@@ -34,7 +34,6 @@ input[type="text"]:disabled {
 
 #game-container {
 	position: relative;
-	margin-left: 400px;
 }
 
 #game-div {
@@ -49,8 +48,8 @@ input[type="text"]:disabled {
 	top:0px;
 	left:0px;
 	z-index: 100;
-	width:800px;
-	height:600px;
+	width:1440px;
+	height:900px;
 }
 
 .scene-root {
@@ -68,10 +67,10 @@ input[type="text"]:disabled {
 
 #user-name-container {
 	position: absolute;
-	width:25%;
-	height:15%;
+	width:20%;
+	height:12%;
 	top: 15%;
-	left: 35%;
+	left: 40%;
 	background-color: #444444;
 	border-color:#cccccc;
 	border-radius: 20px;
@@ -94,7 +93,7 @@ input[type="text"]:disabled {
 	position: absolute;
 	width: 25%;
 	top: 40%;
-	left: 38%;
+	left: 42%;
 	color: #cccccc;
 }
 
@@ -137,9 +136,10 @@ input[type="text"]:disabled {
 
 
 .user-list {
-	width:49%;
+	width:50%;
 	float:left;
 	border: 1px solid blue;
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .user-list-item {
@@ -147,10 +147,27 @@ input[type="text"]:disabled {
 	float: left;
 }
 
+.panel {
+	width: 50%;
+	float: left;
+}
+
+.chat-div-wrapper {
+	width: 100%;
+	float: right;
+}
 .chat-div {
 	width: 50%;
 	float: right;
 }
+
+.debug-div {
+	width: 50%;
+	float: right;
+	margin-top: 14px;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
 
 .chat-history {
 	float: left;
@@ -158,6 +175,7 @@ input[type="text"]:disabled {
 	height: 300px;
 	border: 1px solid red;
 	overflow-y: scroll;
+	background-color: rgba(0, 0, 0, 0.5);
 }
 
 .chat-history::-webkit-scrollbar {
@@ -208,7 +226,7 @@ input[type="text"]:disabled {
 
 .tb-chat-input {
 	float:left;
-	width:86%;
+	width:85%;
 }
 
 .capture-pointer-events {

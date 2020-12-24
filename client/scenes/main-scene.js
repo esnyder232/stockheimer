@@ -16,7 +16,6 @@ export default class MainScene extends Phaser.Scene {
 
 		this.playerInputKeyboardMap = {};
 		this.playerController = null;
-		this.text1 = null;
 
 		//0 = "browser" mode
 		//1 = "phaser" mode
@@ -46,12 +45,19 @@ export default class MainScene extends Phaser.Scene {
 			y: 0
 		}
 
-		this.cameraDirty = false;
+		this.cameraZoom = 1.4;
+		this.cameraZoomMax = 6;
+		this.cameraZoomMin = 0.5;
 
 		this.defaultCenter = {
-			x: 15 * this.planckUnitsToPhaserUnitsRatio,
-			y: 15 * this.planckUnitsToPhaserUnitsRatio * -1
+			x: 15 ,
+			y: -15
 		}
+
+		this.debugX = null;
+		this.debugY = null;
+		this.debugIsDown = null;
+		this.debugAngle = null;
 
 	}
 
@@ -106,6 +112,11 @@ export default class MainScene extends Phaser.Scene {
 		{
 			this.addActiveCharacter(this.gc.characters[i].id);
 		}
+
+		this.debugX = $("#debug-x");
+		this.debugY = $("#debug-y");
+		this.debugIsDown = $("#debug-is-down");
+		this.debugAngle = $("#debug-angle");
 	}
 
 	chatInputClick(e) {
@@ -122,8 +133,8 @@ export default class MainScene extends Phaser.Scene {
 	preload() {
 		console.log('preload on ' + this.scene.key + ' start');
 		this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-path-testing.json");
-		this.load.image("my-tileset", "assets/tilesets/stockheimer-test-tileset.png");
-		this.load.image("my-tileset-extra", "assets/tilesets/stockheimer-test-tileset-extra.png");
+		this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
+		this.load.image("stockheimer-test-tileset-extra-extruded", "assets/tilesets/stockheimer-test-tileset-extra-extruded.png");
 	}
 
 	create() {
@@ -132,20 +143,15 @@ export default class MainScene extends Phaser.Scene {
 
 		//load tilemap
 		this.map = this.make.tilemap({key: "my-tilemap"});
-		console.log('MAPPPPPP:')
-		console.log(this)
+
 		//load tileset
-		this.tileset = this.map.addTilesetImage("testing-tileset", "my-tileset");
-		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra", "my-tileset-extra");
+		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 1, 2);
+		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 1, 2);
 		
 		//create layers
 		this.layer1 = this.map.createStaticLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], 0, 0).setScale(2);
-		//this.layer1 = this.map.createStaticLayer("Tile Layer 1", this.tilesetExtra, 0, 0);
 
-		//this.map.setScale(3, 3);
-		console.log(this);
-
-		this.cameras.main.setZoom(1);
+		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
 		this.cameras.main.scrollY = 0;
 
@@ -176,27 +182,27 @@ export default class MainScene extends Phaser.Scene {
 
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
 
-		this.text1 = this.add.text(600, 375, '', { fill: '#0000ff', fontSize: "22px"});
+		this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+			//scrolled down
+			if(deltaY > 0)
+			{
+				this.cameraZoom -= 0.1;
+				this.setCameraZoom();
+			}
+			//scrolled up
+			else if(deltaY < 0)
+			{
+				this.cameraZoom += 0.1;
+				this.setCameraZoom();
+			}
+		});
+	}
 
-
-		//create walls for testing (hard coded just do i can move on)
-		// this.groundGraphics = this.add.graphics();
-		// this.groundGraphics.lineStyle(1, 0xff0000, 1.0);
-		// this.yAxisGraphic.moveTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
-		// this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
-		// this.yAxisGraphic.lineTo(24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
-		// this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, -17 * this.planckUnitsToPhaserUnitsRatio * -1);
-		// this.yAxisGraphic.lineTo(-24 * this.planckUnitsToPhaserUnitsRatio, 19 * this.planckUnitsToPhaserUnitsRatio * -1);
-		// this.yAxisGraphic.strokePath();
-
-		//draw the trackign sensor for testing
-		// this.trackingSensorGraphics = this.add.graphics();
-		// this.trackingSensorGraphics.lineStyle(1, 0x00ff00, 1);
-		// var trackingSensorCircle = new Phaser.Geom.Circle(0, 0, 10*this.planckUnitsToPhaserUnitsRatio);
-		// this.trackingSensorGraphics.strokeCircleShape(trackingSensorCircle);
-
-
-		//get the map and draw it (hard coded for now)		
+	setCameraZoom() {
+		console.log(this.cameraZoom);
+		this.cameraZoom = this.cameraZoom >= this.cameraZoomMax ? this.cameraZoomMax : this.cameraZoom;
+		this.cameraZoom = this.cameraZoom <= this.cameraZoomMin ? this.cameraZoomMin : this.cameraZoom;
+		this.cameras.main.setZoom(this.cameraZoom);
 	}
 
 	shutdown() {
@@ -305,8 +311,16 @@ export default class MainScene extends Phaser.Scene {
 			{
 				usernameText = u.username;
 			}
-			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, { fill: '#0000ff', fontSize: "38px"});
-			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 50 , c.hpCur + "/" + c.hpMax, { fill: '#0000ff', fontSize: "38px"});
+
+			var textStyle = {
+				color: '#0000ff', 
+				fontSize: "18px",
+				strokeThickness: 1,
+				stroke: '#0000ff'
+			}
+
+			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
+			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.hpCur + "/" + c.hpMax, textStyle);
 
 			this.userPhaserElements.push({
 				characterId: c.id,
@@ -385,7 +399,7 @@ export default class MainScene extends Phaser.Scene {
 			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
 
 			upe.hpTextGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
-			upe.hpTextGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 50)
+			upe.hpTextGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 34)
 			upe.hpTextGraphics.setText(c.hpCur + "/" + c.hpMax);
 
 		}
@@ -402,7 +416,14 @@ export default class MainScene extends Phaser.Scene {
 				countdownTimer: 750 //ms
 			};
 
-			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, { fill: '#ff0000', fontSize: "38px"});
+			var textStyle = {
+				color: '#ff0000', 
+				fontSize: "18px",
+				strokeThickness: 1,
+				stroke: '#ff0000'
+			}
+
+			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);
 
 			this.damageTexts.push(dmgText)
 		}
@@ -463,6 +484,8 @@ export default class MainScene extends Phaser.Scene {
 
 			this.targetLineGraphic.clear();
 
+			pointer.updateWorldPoint(this.cameras.main);
+
 			//redraw the target line
 			var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
 			var y1 = this.gc.myCharacter.y * this.planckUnitsToPhaserUnitsRatio * -1;
@@ -480,12 +503,10 @@ export default class MainScene extends Phaser.Scene {
 			this.targetLineGraphic.strokeLineShape(this.targetLine);
 
 			//debugging text
-			this.text1.setText([
-				'x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX / this.planckUnitsToPhaserUnitsRatio) + ")",
-				'y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY / this.planckUnitsToPhaserUnitsRatio)) * -1 + ")",
-				'isDown: ' + pointer.isDown,
-				'angle: ' + this.angle
-			]);
+			this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX / this.planckUnitsToPhaserUnitsRatio) + ")");
+			this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY / this.planckUnitsToPhaserUnitsRatio)) * -1 + ")");
+			this.debugIsDown.text('isDown: ' + pointer.isDown);
+			this.debugAngle.text('angle: ' + this.angle);
 
 			//check to see if the user wants to fire a bullet
 			if(pointer.leftButtonDown())
@@ -698,7 +719,7 @@ export default class MainScene extends Phaser.Scene {
 		{
 			var boxGraphics = this.add.graphics();
 
-			boxGraphics.lineStyle(1, 0x00ffff, 1);
+			boxGraphics.lineStyle(1, 0xff0000, 1);
 			boxGraphics.moveTo(-p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top left
 			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top right
 			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, p.size * this.planckUnitsToPhaserUnitsRatio); //bottom right

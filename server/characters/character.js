@@ -325,11 +325,11 @@ class Character {
 
 					if(e.type == "bigBullet")
 					{
-						o.bulletInit(this.gs, e.x, e.y, e.angle, 3, 140, 6000, 3.5);
+						o.bulletInit(this.gs, e.x, e.y, e.angle, 1.4, 33, 6000, 7.0);
 					}
 					else //small normal bullet
 					{
-						o.bulletInit(this.gs, e.x, e.y, e.angle, 0.1, 0.8, 1000, 100);
+						o.bulletInit(this.gs, e.x, e.y, e.angle, 0.05, 0.1, 1000, 100);
 					}
 
 					//just activate it here...whatever

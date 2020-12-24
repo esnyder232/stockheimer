@@ -51,8 +51,8 @@ export default class GameClient {
 			type: Phaser.AUTO,
 			//mode: Phaser.Scale.FIT,
 			backgroundColor: '#333333',
-			width: 800,
-			height:600,
+			width: 1440,
+			height:900,
 			parent: 'game-div',
 			pixelArt: true,
 			// scale: {
