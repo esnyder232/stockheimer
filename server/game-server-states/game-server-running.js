@@ -154,20 +154,18 @@ class GameServerRunning extends GameServerBaseState {
 
 					case "fromClientSpawnEnemy":
 						console.log('fromClientSpawnEnemy')
-						// var ai = this.gs.aim.createAIAgent();
-						// var c = this.gs.gom.createGameObject('character');
+						var ai = this.gs.aim.createAIAgent();
+						var c = this.gs.gom.createGameObject('character');
 						
-						// ai.aiAgentInit(this.gs, c.id);
+						ai.aiAgentInit(this.gs, c.id);
 						
-						// c.characterInit(this.gs);
-						// c.userId = user.id;
-						// user.characterId = c.id;
-						
-						// ai.init(this.gs);
-						// c.userId = user.id;
-						// user.characterId = c.id;
+						c.ownerId = ai.id;
+						c.ownerType = "ai";
+						c.characterInit(this.gs);
+						c.xStarting = 15;
+						c.yStarting = -10;
 
-						// this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+						this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						break;
 
 					case "fromClientKillAllEnemies":
