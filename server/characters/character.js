@@ -11,7 +11,6 @@ class Character {
 		this.type = "character";
 		this.globalfuncs = null;
 
-		//this.userId = null;
 		this.ownerId = null;
 		this.ownerType = ""; //translated to an integer when sent to the client. Integer mapping in game-constants.json.
 
@@ -327,7 +326,6 @@ class Character {
 					var e = this.eventQueue[i];
 					o.bulletType = e.type;
 					o.characterId = this.id;
-					//o.userId = this.userId;
 					o.ownerId = this.ownerId;
 					o.ownerType = this.ownerType;
 
@@ -369,16 +367,18 @@ class Character {
 		{
 			//tell the user he has killed a character if applicable
 			//whatever
-			//var u = this.gs.um.getUserByID(this.userId);
+			// var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
 
-			var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
+			// if(this.ownerType === "user" && owner !== null)
+			// {
+			// 	owner.userCharacterDied(this.id);
+			// }
+			// else if(this.ownerType === "ai" && owner !== null)
+			// {
+			// 	owner.userCharacterDied(this.id);
+			// }
 
-			if(this.ownerType === "user" && owner !== null)
-			{
-				owner.userCharacterDied(this.id);
-			}
-
-			//this.gs.gameState.destroyUsersCharacter(u);
+			this.gs.gameState.characterDied(this.id);
 			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
 		}
 
@@ -412,10 +412,6 @@ class Character {
 			var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
 			var ownerHitBy = this.globalfuncs.getOwner(this.gs, this.lastHitByOwnerId, this.lastHitByOwnerType);
 
-			//var u = this.gs.um.getUserByID(this.userId);
-			//var uHitBy = this.gs.um.getUserByID(userIdHitBy);
-
-			
 			if(owner !== null && ownerHitBy !== null)
 			{
 				console.log(owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);

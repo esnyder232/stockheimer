@@ -122,9 +122,6 @@ export default class EventProcessor {
 
 
 				case "removeActiveCharacter":
-					console.log('removeActiveCharacter event');
-					console.log(e);
-					
 					var ci = this.gc.characters.findIndex((x) => {return x.id == e.characterId});
 
 					//if the character was found, splice it off the array

@@ -169,7 +169,12 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 
 					case "fromClientKillAllEnemies":
-						
+						var allAiAgents = this.gs.aim.AIAgentArray;
+						for(var i = 0 ; i < allAiAgents.length; i++)
+						{
+							this.gs.aim.destroyAIAgent(allAiAgents[i].id);
+							this.destroyOwnersCharacter(allAiAgents[i].id, "ai");
+						}
 						break;
 
 					default:
@@ -207,7 +212,7 @@ class GameServerRunning extends GameServerBaseState {
 			owner.characterId = null;	
 		}
 
-		//reset character's userId
+		//reset character's ownerId
 		if(c)
 		{
 			c.ownerId = null
@@ -270,6 +275,137 @@ class GameServerRunning extends GameServerBaseState {
 			this.gs.um.deactivateUserId(u.id);
 		}
 	}
+
+	characterDied(characterId) {
+		var c = this.gs.gom.getGameObjectByID(characterId);
+
+		if(c !== null)
+		{
+			//get the killer
+			var killerOwner = this.gs.globalfuncs.getOwner(this.gs, c.lastHitByOwnerId, c.lastHitByOwnerType);
+
+			//get the victim
+			var victimOwner = this.gs.globalfuncs.getOwner(this.gs, c.ownerId, c.ownerType);
+
+			//increase the users killcount if applicable, and announce it in the kill feed.
+			//This will probably be gone later or moved somewhere else later.
+			if(killerOwner !== null && victimOwner !== null)
+			{
+				//if the killer is a user, increase that user's killcount
+				if(c.lastHitByOwnerType === "user")
+				{
+					if(killerOwner.id === victimOwner.id && c.ownerType === "user")
+					{
+						killerOwner.userKillCount--;	
+					}
+					else
+					{
+						killerOwner.userKillCount++;
+					}
+					
+					var activeUsers = this.gs.um.getActiveUsers();
+					for(var i = 0; i < activeUsers.length; i++)
+					{
+						activeUsers[i].trackedEvents.push({
+							"eventName": "updateUserInfo",
+							"userId": killerOwner.id,
+							"userKillCount": killerOwner.userKillCount
+						})
+					}
+				}
+
+				//announce the killer and victim in the kill feed
+				var killFeedMessage = "";
+
+				if(killerOwner.id === victimOwner.id && c.ownerType === "user")
+				{
+					killFeedMessage = killerOwner.username + " decided to kill himself."
+				}
+				else
+				{
+					killFeedMessage = killerOwner.username + " killed " + victimOwner.username;
+				}
+
+				console.log(killFeedMessage);
+
+				//create event for clients for killfeed
+				var activeUsers = this.gs.um.getActiveUsers();
+				for(var i = 0; i < activeUsers.length; i++)
+				{
+					activeUsers[i].trackedEvents.push({
+						"eventName": "killfeedMsg",
+						"killfeedMsg": killFeedMessage
+					});
+				}
+			}
+
+			
+
+
+
+			// //announce event that user killed himself
+			// var killFeedMessage = "";
+			// if(c.lastHitByOwnerId === null || (c.lastHitByOwnerId === this.id && c.lastHitByOwnerType === "user"))
+			// {
+			// 	killFeedMessage = "User " + this.username + " killed himself."
+
+			// 	//bullshit way to increase the kill count of a user. This will probably be gone later.
+			// 	var activeUsers = this.gs.um.getActiveUsers();
+			// 	this.userKillCount--;
+				
+			// 	for(var i = 0; i < activeUsers.length; i++)
+			// 	{
+			// 		activeUsers[i].trackedEvents.push({
+			// 			"eventName": "updateUserInfo",
+			// 			"userId": this.id,
+			// 			"userKillCount": this.userKillCount
+			// 		})
+			// 	}
+				
+			// }
+			// //announce event that user died by someone
+			// else
+			// {
+			// 	var killerOwner = this.globalfuncs.getOwner(this.gs, c.lastHitByOwnerId, c.lastHitByOwnerType);
+			// 	var killerUsername = "???";
+			// 	if(killerOwner !== null)
+			// 	{
+			// 		killerUsername = killerOwner.username;
+
+			// 		//bullshit way to increase the kill count of a user. This will probably be gone later.
+			// 		if(c.lastHitByOwnerType === "user")
+			// 		{
+			// 			killerOwner.userKillCount++;
+						
+			// 			var activeUsers = this.gs.um.getActiveUsers();
+			// 			for(var i = 0; i < activeUsers.length; i++)
+			// 			{
+			// 				activeUsers[i].trackedEvents.push({
+			// 					"eventName": "updateUserInfo",
+			// 					"userId": killerOwner.id,
+			// 					"userKillCount": killerOwner.userKillCount
+			// 				})
+			// 			}
+			// 		}
+			// 	}
+
+			// 	killFeedMessage = killerUsername + " killed " + this.username;
+			// }
+
+			// console.log(killFeedMessage);
+
+			// //create event for clients for killfeed
+			// var activeUsers = this.gs.um.getActiveUsers();
+			// for(var i = 0; i < activeUsers.length; i++)
+			// {
+			// 	activeUsers[i].trackedEvents.push({
+			// 		"eventName": "killfeedMsg",
+			// 		"killfeedMsg": killFeedMessage
+			// 	});
+			// }
+		}
+	}
+
 }
 
 
