@@ -1,5 +1,6 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
+const GameConstants = require('../../shared_files/game-constants.json');
 
 class Character {
 	constructor() {
@@ -8,8 +9,11 @@ class Character {
 		this.activeId = null;
 		this.isActive = false;
 		this.type = "character";
+		this.globalfuncs = null;
 
-		this.userId = null;
+		//this.userId = null;
+		this.ownerId = null;
+		this.ownerType = ""; //translated to an integer when sent to the client. Integer mapping in game-constants.json.
 
 		this.stateName = "";
 		this.state = null;
@@ -30,7 +34,8 @@ class Character {
 		this.xStarting = 15;
 		this.yStarting = -15.0;
 		this.forceImpulses = [];
-		this.lastHitByUserId = null;
+		this.lastHitByOwnerId = null;
+		this.lastHitByOwnerType = null;
 
 		//bullshit physics variables for tech demo
 		this.walkingTargetVelVec = null;	//target
@@ -49,6 +54,7 @@ class Character {
 	//called only once when the character is first created. This is only called once ever.
 	characterInit(gameServer) {
 		this.gs = gameServer;
+		this.globalfuncs = new GlobalFuncs();
 
 		//make simple little input controller
 		this.inputController.up = {state: false, prevState: false};
@@ -321,7 +327,9 @@ class Character {
 					var e = this.eventQueue[i];
 					o.bulletType = e.type;
 					o.characterId = this.id;
-					o.userId = this.userId;
+					//o.userId = this.userId;
+					o.ownerId = this.ownerId;
+					o.ownerType = this.ownerType;
 
 					if(e.type == "bigBullet")
 					{
@@ -359,15 +367,19 @@ class Character {
 
 		if(this.hpCur == 0)
 		{
+			//tell the user he has killed a character if applicable
 			//whatever
-			var u = this.gs.um.getUserByID(this.userId);
-			
-			if(u !== null)
+			//var u = this.gs.um.getUserByID(this.userId);
+
+			var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
+
+			if(this.ownerType === "user" && owner !== null)
 			{
-				u.userKillsCharacter(this.id);
+				owner.userCharacterDied(this.id);
 			}
 
-			this.gs.gameState.destroyUsersCharacter(u);
+			//this.gs.gameState.destroyUsersCharacter(u);
+			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
 		}
 
 		//change state
@@ -390,33 +402,38 @@ class Character {
 		return result || this.isDirty;
 	}
 
-	isHit(dmg, userIdHitBy) {
-		//debugging
-		var u = this.gs.um.getUserByID(this.userId);
-		var uHitBy = this.gs.um.getUserByID(userIdHitBy);
-
-		if(u !== null && uHitBy !== null)
+	isHit(dmg, ownerIdHitBy, ownerTypeHitBy) {
+		if(ownerIdHitBy !== null)
 		{
-			console.log(u.username + ' hit for ' + dmg + ' dmg from ' + uHitBy.username);
+			this.lastHitByOwnerId = ownerIdHitBy;
+			this.lastHitByOwnerType = ownerTypeHitBy;
+
+			//debugging
+			var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
+			var ownerHitBy = this.globalfuncs.getOwner(this.gs, this.lastHitByOwnerId, this.lastHitByOwnerType);
+
+			//var u = this.gs.um.getUserByID(this.userId);
+			//var uHitBy = this.gs.um.getUserByID(userIdHitBy);
+
+			
+			if(owner !== null && ownerHitBy !== null)
+			{
+				console.log(owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);
+			}
 		}
 
-		if(userIdHitBy !== null)
-		{
-			this.lastHitByUserId = userIdHitBy;
-		}
-
-		//create event for clients
+		//create event for clients to notify them of damage
 		var activeUsers = this.gs.um.getActiveUsers();
 		for(var i = 0; i < activeUsers.length; i++)
 		{
-			
 			activeUsers[i].insertTrackedEntityEvent("gameobject", this.id, {
 				"eventName": "characterDamage",
 				"activeCharacterId": this.activeId,
 				"damage": dmg
 			});
 		}
-
+		
+		
 		this.hpCur -= dmg;
 		if(this.hpCur < 0)
 		{
@@ -435,9 +452,17 @@ class Character {
 			bodyPos = this.plBody.getPosition();
 		}
 
+		var eventOwnerType = GameConstants.owner_types[this.ownerType];
+
+		if(eventOwnerType === undefined)
+		{
+			eventOwnerType = 0;
+		}
+
 		eventData = {
 			"eventName": "addActiveCharacter",
-			"userId": this.userId,
+			"ownerId": this.ownerId,
+			"ownerType": eventOwnerType,
 			"characterId": this.id,
 			"activeCharacterId": this.activeId,
 			"characterPosX": bodyPos.x,

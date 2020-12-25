@@ -7,12 +7,16 @@ class AIAgent {
 		this.globalfuncs = null;
 		this.id = null;
 		this.characterId = null;
+
+		this.username = "";
 	}
 
-	init(gameServer, characterId) {
+	aiAgentInit(gameServer, characterId) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
 		this.characterId = characterId
+
+		this.username = "AI " + this.id;
 	}
 }
 

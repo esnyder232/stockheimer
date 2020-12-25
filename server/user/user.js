@@ -10,6 +10,7 @@ class User {
 		this.id = null;
 		this.activeId = null;
 		this.isActive = false;
+		this.globalfuncs = null;
 
 		this.username = "";
 		this.wsId = null;
@@ -48,7 +49,9 @@ class User {
 
 	userInit(gameServer, wsId) {
 		this.gs = gameServer;
+		this.globalfuncs = new GlobalFuncs();
 		this.wsId = wsId;
+		
 
 		//get a direct reference to the websocket handler
 		this.wsh = this.gs.wsm.getWebsocketByID(this.wsId);
@@ -132,7 +135,7 @@ class User {
 				if(e.ent.type == "character")
 				{
 					//if the character belongs to this user, give it a high priority
-					if(e.ent.userId == this.id)
+					if(e.ent.ownerType === "user" && e.ent.ownerId == this.id)
 					{
 						e.paWeight = 1000;
 					}
@@ -461,14 +464,14 @@ class User {
 		return result;
 	}
 
-	userKillsCharacter(characterId) {
+	userCharacterDied(characterId) {
 		var c = this.gs.gom.getGameObjectByID(characterId);
 
 		if(c !== null)
 		{
 			//announce event that user killed himself
 			var killFeedMessage = "";
-			if(c.lastHitByUserId === null || c.lastHitByUserId === this.id)
+			if(c.lastHitByOwnerId === null || (c.lastHitByOwnerId === this.id && c.lastHitByOwnerType === "user"))
 			{
 				killFeedMessage = "User " + this.username + " killed himself."
 
@@ -489,26 +492,31 @@ class User {
 			//announce event that user died by someone
 			else
 			{
-				var killerUser = this.gs.um.getUserByID(c.lastHitByUserId);
+				//var killerUser = this.gs.um.getUserByID(c.lastHitByUserId);
+				var killerOwner = this.globalfuncs.getOwner(this.gs, c.lastHitByOwnerId, c.lastHitByOwnerType);
 				var killerUsername = "???";
-				if(killerUser !== null)
+				if(killerOwner !== null)
 				{
-					killerUsername = killerUser.username;
-					killerUser.userKillCount++;
+					killerUsername = killerOwner.username;
 
 					//bullshit way to increase the kill count of a user. This will probably be gone later.
-					var activeUsers = this.gs.um.getActiveUsers();
-					for(var i = 0; i < activeUsers.length; i++)
+					if(c.lastHitByOwnerType === "user")
 					{
-						activeUsers[i].trackedEvents.push({
-							"eventName": "updateUserInfo",
-							"userId": killerUser.id,
-							"userKillCount": killerUser.userKillCount
-						})
+						killerOwner.userKillCount++;
+						
+						var activeUsers = this.gs.um.getActiveUsers();
+						for(var i = 0; i < activeUsers.length; i++)
+						{
+							activeUsers[i].trackedEvents.push({
+								"eventName": "updateUserInfo",
+								"userId": killerOwner.id,
+								"userKillCount": killerOwner.userKillCount
+							})
+						}
 					}
 				}
 
-				killFeedMessage = "User " + killerUsername + " killed " + this.username;
+				killFeedMessage = killerUsername + " killed " + this.username;
 			}
 
 			console.log(killFeedMessage);

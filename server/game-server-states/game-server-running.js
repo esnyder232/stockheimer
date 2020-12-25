@@ -123,7 +123,8 @@ class GameServerRunning extends GameServerBaseState {
 						{
 							var c = this.gs.gom.createGameObject('character');
 							c.characterInit(this.gs);
-							c.userId = user.id;
+							c.ownerId = user.id;
+							c.ownerType = "user";
 							user.characterId = c.id;
 
 							this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
@@ -136,7 +137,7 @@ class GameServerRunning extends GameServerBaseState {
 						{
 							var c = this.gs.gom.getGameObjectByID(user.characterId);
 
-							if(c && c.userId === user.id)
+							if(c && c.ownerId === user.id)
 							{
 								c.hpCur = 0;
 							}
@@ -153,12 +154,20 @@ class GameServerRunning extends GameServerBaseState {
 
 					case "fromClientSpawnEnemy":
 						console.log('fromClientSpawnEnemy')
-						var c = this.gs.gom.createGameObject('character');
-						c.characterInit(this.gs);
-						c.userId = user.id;
-						user.characterId = c.id;
+						// var ai = this.gs.aim.createAIAgent();
+						// var c = this.gs.gom.createGameObject('character');
+						
+						// ai.aiAgentInit(this.gs, c.id);
+						
+						// c.characterInit(this.gs);
+						// c.userId = user.id;
+						// user.characterId = c.id;
+						
+						// ai.init(this.gs);
+						// c.userId = user.id;
+						// user.characterId = c.id;
 
-						this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+						// this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						break;
 
 					case "fromClientKillAllEnemies":
@@ -191,19 +200,20 @@ class GameServerRunning extends GameServerBaseState {
 		var c = this.gs.gom.getGameObjectByID(characterId);
 		if(c)
 		{
-			var u = this.gs.um.getUserByID(c.userId);
+			var owner = this.globalfuncs.getOwner(this.gs, c.ownerId, c.ownerType);
 		}
 
 		//reset the user's characterId to null;
-		if(u)
+		if(owner)
 		{
-			u.characterId = null;	
+			owner.characterId = null;	
 		}
 
 		//reset character's userId
 		if(c)
 		{
-			c.userId = null
+			c.ownerId = null
+			c.ownerType = "";
 			c.characterDeinit();
 		}	
 
@@ -215,20 +225,22 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 
-	destroyUsersCharacter(user)
+	destroyOwnersCharacter(ownerId, ownerType)
 	{
-		//as long as they have an existing character, kill it.
-		if(user.characterId !== null)
-		{
-			var c = this.gs.gom.getGameObjectByID(user.characterId);
+		var owner = this.globalfuncs.getOwner(this.gs, ownerId, ownerType);
 
-			if(c && c.userId === user.id)
+		//as long as they have an existing character, kill it.
+		if(owner !== null && owner.characterId !== null)
+		{
+			var c = this.gs.gom.getGameObjectByID(owner.characterId);
+
+			if(c && c.ownerId === owner.id)
 			{
 				c.characterPredeactivated();
 				this.gs.gom.deactivateGameObjectId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
 
-				user.characterId = null;
-				c.userId = null;
+				owner.characterId = null;
+				c.ownerId = null;
 			}
 		}
 	}
@@ -253,10 +265,6 @@ class GameServerRunning extends GameServerBaseState {
 			var activeUsers = this.gs.um.getActiveUsers();
 			for(var i = 0; i < activeUsers.length; i++)
 			{
-				// activeUsers[i].trackedEvents.push({
-				// 	"eventName": "userDisconnected",
-				// 	"userId": u.id
-				// });
 				activeUsers[i].deleteTrackedEntity("user", userId);
 			}
 

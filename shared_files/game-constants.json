@@ -1,0 +1,7 @@
+{
+	"owner_types": {
+		"none": 0,
+		"user": 1,
+		"ai": 2
+	}
+}

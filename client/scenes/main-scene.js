@@ -305,13 +305,21 @@ export default class MainScene extends Phaser.Scene {
 			boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
 			boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
 
-			var u = this.gc.users.find((x) => {return x.userId === c.userId;});
 			var usernameText = "???";
-			if(u)
+			if(c.ownerType === "user")
 			{
-				usernameText = u.username;
+				var u = this.gc.users.find((x) => {return x.userId === c.ownerId;});
+				
+				if(u)
+				{
+					usernameText = u.username;
+				}
 			}
-
+			else if(c.ownerType === "ai")
+			{
+				usernameText = "AI " + c.ownerId
+			}
+			
 			var textStyle = {
 				color: '#0000ff', 
 				fontSize: "18px",

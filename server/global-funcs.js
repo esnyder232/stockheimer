@@ -73,6 +73,22 @@ class GlobalFuncs {
 		
 		return result;
 	}
+
+	//helper function for finding an owner to a character (either user or ai)
+	getOwner(gameServer, ownerId, ownerType)
+	{
+		var owner = null;
+		if(ownerType === "user")
+		{
+			owner = gameServer.um.getUserByID(ownerId);
+		}
+		else if (ownerType === "ai")
+		{
+			owner = gameServer.aim.getAIAgentByID(ownerId);
+		}
+
+		return owner;
+	}
 	
 }
 

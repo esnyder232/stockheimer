@@ -5,8 +5,9 @@ class Bullet {
 	constructor() {
 		this.gs = null;
 		this.id = null;
-		this.characterId = null;
-		this.userId = null; //the user that controller the character that fired the bullet
+		this.characterId = null; //the character that fired the bullet
+		this.ownerId = null; //the user/ai that controller the character that fired the bullet
+		this.ownerType = "";
 		this.type = "projectile";
 
 		this.plBody = null;

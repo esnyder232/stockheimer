@@ -98,9 +98,19 @@ export default class GameClient {
 			this.phaserGame.input.keyboard.enabled = true;
 		});
 
+		//fetch the game constants
+		$.ajax({url: "./shared_files/game-constants.json", method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.gameConstants = responseData;
+		})
+		.fail((xhr) => {
+			this.globalfuncs.appendToLog('VERY BAD ERROR: Failed to get game-constants.');
+		})
+
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
 		this.gameLoop();
+		console.log(this);
 
 		$(document).on("contextmenu", this.contextMenuListener.bind(this));
 	}

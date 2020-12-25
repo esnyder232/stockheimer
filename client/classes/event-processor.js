@@ -86,13 +86,24 @@ export default class EventProcessor {
 				case "addActiveCharacter":
 					var c = {
 						id: e.characterId,
-						userId: e.userId,
+						ownerId: e.ownerId,
+						ownerType: e.ownerType,
 						activeId: e.activeCharacterId,
 						x: e.characterPosX,
 						y: e.characterPosY,
 						hpMax: e.characterHpMax,
 						hpCur: e.characterHpCur
 					};
+
+					//translate the owner type to a string again
+					//DONT CARE!!!
+					for (const key in this.gc.gameConstants.owner_types) {
+						var val = this.gc.gameConstants.owner_types[key];
+						if(val === c.ownerType)
+						{
+							c.ownerType = key;
+						}
+					}
 
 					this.gc.characters.push(c)
 
@@ -101,7 +112,7 @@ export default class EventProcessor {
 					{
 						console.log('checking if its my character');
 						console.log(this.gc.myUser);
-						if(c.userId === this.gc.myUser.userId)
+						if(c.ownerType === "user" && c.ownerId === this.gc.myUser.userId)
 						{
 							this.gc.foundMyCharacter = true;
 							this.gc.myCharacter = c;
@@ -124,7 +135,7 @@ export default class EventProcessor {
 						//check if this is your character
 						if(this.gc.foundMyUser && this.gc.foundMyCharacter)
 						{
-							if(temp.userId == this.gc.myUser.userId)
+							if(temp.ownerType === "user" && temp.ownerId === this.gc.myUser.userId)
 							{
 								this.gc.foundMyCharacter = false;
 								this.gc.myCharacter = null;
