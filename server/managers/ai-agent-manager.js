@@ -132,6 +132,10 @@ class AIAgentManager {
 			return null;
 		}
 	}
+
+	getAIAgents() {
+		return this.AIAgentArray;
+	}
 }
 
 exports.AIAgentManager = AIAgentManager;

@@ -15,6 +15,7 @@ class GameServerRunning extends GameServerBaseState {
 	update(dt) {
 		var activeUsers = this.gs.um.getActiveUsers();
 		var activeGameObjects = this.gs.gom.getActiveGameObjects();
+		var aiAgents = this.gs.aim.getAIAgents();
 		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++)
@@ -26,6 +27,12 @@ class GameServerRunning extends GameServerBaseState {
 		for(var i = 0; i < activeUsers.length; i++)
 		{
 			activeUsers[i].update(dt);
+		}
+
+		//update ai
+		for(var i = 0; i < aiAgents.length; i++) 
+		{
+			aiAgents[i].update(dt);
 		}
 
 		//update characters
@@ -162,8 +169,37 @@ class GameServerRunning extends GameServerBaseState {
 						c.ownerId = ai.id;
 						c.ownerType = "ai";
 						c.characterInit(this.gs);
-						c.xStarting = 15;
-						c.yStarting = -10;
+
+						//north of castle
+						// var xStarting = 15;
+						// var yStarting = -10;
+
+						//south of castle
+						// var xStarting = 15;
+						// var yStarting = -20;
+
+						//west of castle
+						// var xStarting = 10;
+						// var yStarting = -15;
+
+						//east of castle
+						var xStarting = 20;
+						var yStarting = -15;
+
+
+						var userChar = this.gs.gom.getGameObjectByID(user.characterId);
+						if(userChar !== null)
+						{
+							var pos = userChar.plBody.getPosition();
+							if(pos !== null)
+							{
+								xStarting = pos.x;
+								yStarting = pos.y;
+							}
+						}
+
+						c.xStarting = xStarting;
+						c.yStarting = yStarting;
 
 						this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						break;
@@ -338,71 +374,6 @@ class GameServerRunning extends GameServerBaseState {
 					});
 				}
 			}
-
-			
-
-
-
-			// //announce event that user killed himself
-			// var killFeedMessage = "";
-			// if(c.lastHitByOwnerId === null || (c.lastHitByOwnerId === this.id && c.lastHitByOwnerType === "user"))
-			// {
-			// 	killFeedMessage = "User " + this.username + " killed himself."
-
-			// 	//bullshit way to increase the kill count of a user. This will probably be gone later.
-			// 	var activeUsers = this.gs.um.getActiveUsers();
-			// 	this.userKillCount--;
-				
-			// 	for(var i = 0; i < activeUsers.length; i++)
-			// 	{
-			// 		activeUsers[i].trackedEvents.push({
-			// 			"eventName": "updateUserInfo",
-			// 			"userId": this.id,
-			// 			"userKillCount": this.userKillCount
-			// 		})
-			// 	}
-				
-			// }
-			// //announce event that user died by someone
-			// else
-			// {
-			// 	var killerOwner = this.globalfuncs.getOwner(this.gs, c.lastHitByOwnerId, c.lastHitByOwnerType);
-			// 	var killerUsername = "???";
-			// 	if(killerOwner !== null)
-			// 	{
-			// 		killerUsername = killerOwner.username;
-
-			// 		//bullshit way to increase the kill count of a user. This will probably be gone later.
-			// 		if(c.lastHitByOwnerType === "user")
-			// 		{
-			// 			killerOwner.userKillCount++;
-						
-			// 			var activeUsers = this.gs.um.getActiveUsers();
-			// 			for(var i = 0; i < activeUsers.length; i++)
-			// 			{
-			// 				activeUsers[i].trackedEvents.push({
-			// 					"eventName": "updateUserInfo",
-			// 					"userId": killerOwner.id,
-			// 					"userKillCount": killerOwner.userKillCount
-			// 				})
-			// 			}
-			// 		}
-			// 	}
-
-			// 	killFeedMessage = killerUsername + " killed " + this.username;
-			// }
-
-			// console.log(killFeedMessage);
-
-			// //create event for clients for killfeed
-			// var activeUsers = this.gs.um.getActiveUsers();
-			// for(var i = 0; i < activeUsers.length; i++)
-			// {
-			// 	activeUsers[i].trackedEvents.push({
-			// 		"eventName": "killfeedMsg",
-			// 		"killfeedMsg": killFeedMessage
-			// 	});
-			// }
 		}
 	}
 

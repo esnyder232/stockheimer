@@ -42,7 +42,7 @@ class Character {
 		this.walkingVelMagMax = 4;			//maximum walking speed you can get to
 		this.walkingVelTolerance = 1;		//tolerance for when to snap to the walking velocity
 		this.walkingAccMag = 10.0;			//acceleration to apply when trying to reach walking target
-		this.walkingStoppingAccMag = this.walkingAccMag * 0.75;
+		this.walkingStoppingAccMag = this.walkingAccMag * 1000;
 		this.walkingCurrentAccMagx = 0;
 		this.walkingCurrentAccMagy = 0;
 
@@ -62,7 +62,7 @@ class Character {
 		this.inputController.right = {state: false, prevState: false};
 		this.inputController.isFiring = {state: false, prevState: false};
 		this.inputController.isFiringAlt = {state: false, prevState: false};
-		this.inputController.characterDirection = {value: false, prevValue: false};
+		this.inputController.characterDirection = {value: 0.0, prevValue: 0.0};
 	}
 
 	//called only after the character is activated. Put things in here that other systems will depend on.
@@ -86,7 +86,7 @@ class Character {
 		
 		this.plBody.createFixture({
 			shape: boxShape,
-			density: 10.0,
+			density: 2.0,
 			friction: 1.0,
 		});	
 	}
@@ -177,6 +177,12 @@ class Character {
 				this.inputQueue.length = 0;
 			}
 	
+			//debug
+			if(this.inputController["right"].state === false && this.inputController["right"].prevState === true)
+			{
+				var stophere = true;
+			}
+
 			//update state
 			this.walkingTargetVelVec.x = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.walkingVelMagMax;
 			this.walkingTargetVelVec.y = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.walkingVelMagMax;

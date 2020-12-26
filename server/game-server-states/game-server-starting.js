@@ -11,7 +11,6 @@ class GameServerStarting extends GameServerBaseState {
 		this.tilemapLoaded = false;
 		this.tilemapFailedToLoad = false;
 		this.tilemapId = null;
-		//this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
 		this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
 	}
 	
@@ -37,8 +36,8 @@ class GameServerStarting extends GameServerBaseState {
 			var ng = this.gs.ngm.createNavGrid();
 			ng.init(this.gs, tm.id);
 
+			this.gs.activeNavGrid = ng; //temporary
 
-			this.gs.ngm.destroyNavGrid(ng.id);
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}
 

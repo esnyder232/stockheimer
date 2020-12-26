@@ -48,6 +48,8 @@ class NavGrid {
 						id: this.nodeIdCounter++,
 						x: i,
 						y: j,
+						xc: i + 0.5,
+						yc: j + 0.5,
 						edges: [],
 						impassable: tileType.impassable === true ? true : false,
 						movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
@@ -411,6 +413,22 @@ class NavGrid {
 		return finalPath;	
 	}
 	
+	getPathToCastle(xStart, yStart) {
+		var path = [];
+		if(yStart >= 0 && yStart < this.nodes.length)
+		{
+			if(xStart >= 0 && xStart < this.nodes[yStart].length)
+			{
+				var nodeId = this.nodes[yStart][xStart].id;
+				if(this.toCastleNodeMap[nodeId] !== undefined)
+				{
+					path = this.toCastleNodeMap[nodeId];
+				}
+			}
+		}
+		
+		return path;
+	}
 
 
 

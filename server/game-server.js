@@ -15,8 +15,6 @@ const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const path = require('path');
 
-
-
 class GameServer {
 	constructor() {
 		this.globalfuncs = new GlobalFuncs();
@@ -51,6 +49,8 @@ class GameServer {
 		this.ngm = null;
 		this.aim = null;
 		this.appRoot = path.join(__dirname, "..");
+
+		this.activeNavGrid = null; //temporary
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 3000; //ms until this console logs the amount of game objects in the game
