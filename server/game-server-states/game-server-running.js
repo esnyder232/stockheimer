@@ -163,51 +163,88 @@ class GameServerRunning extends GameServerBaseState {
 					case "fromClientSpawnEnemy":
 						if(this.checkEnemyPasscode(e.enemyControlPass))
 						{
-							var ai = this.gs.aim.createAIAgent();
-							var c = this.gs.gom.createGameObject('character');
-							
-							ai.aiAgentInit(this.gs, c.id);
-							
-							c.ownerId = ai.id;
-							c.ownerType = "ai";
-							c.characterInit(this.gs);
-	
-							//north of castle
-							var xStarting = 15;
-							var yStarting = -10;
-	
-							//south of castle
-							// var xStarting = 15;
-							// var yStarting = -20;
-	
-							//west of castle
-							// var xStarting = 10;
-							// var yStarting = -15;
-	
-							//east of castle
-							// var xStarting = 20;
-							// var yStarting = -15;
-
-							
-	
-	
-							var userChar = this.gs.gom.getGameObjectByID(user.characterId);
-							if(userChar !== null)
+							//spawn 1 enemy at the player's location
+							if(e.spawnLocation === "player")
 							{
-								var pos = userChar.plBody.getPosition();
-								if(pos !== null)
+								var ai = this.gs.aim.createAIAgent();
+								var c = this.gs.gom.createGameObject('character');
+								
+								ai.aiAgentInit(this.gs, c.id);
+								
+								c.ownerId = ai.id;
+								c.ownerType = "ai";
+								c.characterInit(this.gs);
+		
+								//north of castle
+								var xStarting = 15;
+								var yStarting = -10;
+		
+								//south of castle
+								// var xStarting = 15;
+								// var yStarting = -20;
+		
+								//west of castle
+								// var xStarting = 10;
+								// var yStarting = -15;
+		
+								//east of castle
+								// var xStarting = 20;
+								// var yStarting = -15;
+
+								var userChar = this.gs.gom.getGameObjectByID(user.characterId);
+								if(userChar !== null)
 								{
-									xStarting = pos.x;
-									yStarting = pos.y;
+									var pos = userChar.plBody.getPosition();
+									if(pos !== null)
+									{
+										xStarting = pos.x;
+										yStarting = pos.y;
+									}
+								}
+	
+								c.xStarting = xStarting;
+								c.yStarting = yStarting;
+								c.hpCur = 25;
+								c.hpMax = 25;
+	
+								this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+							}
+							//spawn 1 enemy at each red zone (enemy spawn)
+							else if(e.spawnLocation === "red")
+							{
+								if(this.gs.activeNavGrid !== null)
+								{
+									var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
+									if(tm !== null)
+									{
+										for(var j = 0; j < tm.enemySpawnZones.length; j++)
+										{
+											var z = tm.enemySpawnZones[j];
+
+											var ai = this.gs.aim.createAIAgent();
+											var c = this.gs.gom.createGameObject('character');
+											
+											ai.aiAgentInit(this.gs, c.id);
+											
+											c.ownerId = ai.id;
+											c.ownerType = "ai";
+											c.characterInit(this.gs);
+
+											var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
+											var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
+				
+											c.xStarting = xStarting;
+											c.yStarting = yStarting;
+											c.hpCur = 25;
+											c.hpMax = 25;
+
+											
+	
+											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+										}
+									}
 								}
 							}
-	
-							c.xStarting = xStarting;
-							c.yStarting = yStarting;
-							c.hpCur = 25;
-							c.hpMax = 25;
-	
-							this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						}
 
 						break;

@@ -12,8 +12,12 @@ class Tilemap {
 
 		this.width = 0;
 		this.height = 0;
+		this.tilewidth = 1;
+		this.tileheight = 1;
 		this.tileset = []; //this is a flattened version of the tileset array in the jsonData. The index for this array is the gid from Tiled
 		this.navGridLayer = null;
+		this.enemySpawnLayer = null;
+		this.enemySpawnZones = [];
 	}
 
 	init(gameServer, id, fullFilepath, rawData) {
@@ -28,11 +32,14 @@ class Tilemap {
 
 		this.width = this.jsonData.width;
 		this.height = this.jsonData.height;
+		this.tilewidth = this.jsonData.tilewidth;
+		this.tileheight = this.jsonData.tileheight;
 
 		//create tileset
 		//create a '0' gid tile (in Tiled, a 0 gid means there is no tile assigned at all)
 		var gid0 = this.createTileForTileset(0, []);
 		this.tileset.push(gid0);
+		this.enemySpawnZones = [];
 
 		for(var i = 0; i < this.jsonData.tilesets.length; i++)
 		{
@@ -77,12 +84,67 @@ class Tilemap {
 						{
 							this.navGridLayer = currentLayer;
 						}
+
+						//a property with "enemySpawns = true" on it will be used for the enemy spawning locations
+						if(currentProperty.name.toLowerCase() === "enemyspawns" 
+						&& currentProperty.type === "bool"
+						&& currentProperty.value === true)
+						{
+							this.enemySpawnLayer = currentLayer;
+						}
 					}
 				}
 			}
 		}
 
+		//create enemy spawn zones
+		if(this.enemySpawnLayer !== null && this.enemySpawnLayer.objects)
+		{
+			var xOffset = -this.tilewidth/2;
+			var yOffset = -this.tileheight/2;
+			for(var i = 0; i < this.enemySpawnLayer.objects.length; i++)
+			{
+				var z = this.enemySpawnLayer.objects[i];
+
+				z.xPlanck = (z.x + xOffset) / this.tilewidth;
+				z.yPlanck = ((z.y + yOffset) / this.tileheight) * -1;
+				z.widthPlanck = z.height / this.tilewidth;
+				z.heightPlanck = z.height / this.tileheight;
+
+				this.enemySpawnZones.push(z);
+			}
+		}
+
 		var stophere = true;
+	}
+
+	
+	createEnemySpawnZone(tiledObject) {
+		var t = {
+			gid: gid
+		}
+
+		for(var i = 0; i < properties.length; i++)
+		{
+			var key = properties[i].name;
+			var type = properties[i].type;
+			var val = properties[i].value;
+			var parsedVal = null;
+
+			switch(type)
+			{
+				case "bool":
+					parsedVal = val;
+					break;
+				case "string":
+				default:
+					parsedVal = val;
+					break;
+			}
+			t[key] = parsedVal;
+		}
+
+		return t;
 	}
 
 	createTileForTileset(gid, properties) {

@@ -36,13 +36,7 @@
                 {
                  "height":64,
                  "id":2,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"spawn1"
-                        }],
+                 "name":"spawn1",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -53,13 +47,7 @@
                 {
                  "height":64,
                  "id":3,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"spawn2"
-                        }],
+                 "name":"spawn2",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -70,13 +58,7 @@
                 {
                  "height":48,
                  "id":6,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"spawn3"
-                        }],
+                 "name":"spawn3",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -87,13 +69,7 @@
                 {
                  "height":48,
                  "id":7,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"spawn4"
-                        }],
+                 "name":"spawn4",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -104,13 +80,7 @@
                 {
                  "height":48,
                  "id":8,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"spawn6"
-                        }],
+                 "name":"spawn6",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -121,13 +91,7 @@
                 {
                  "height":48,
                  "id":9,
-                 "name":"",
-                 "properties":[
-                        {
-                         "name":"name",
-                         "type":"string",
-                         "value":"spawn5"
-                        }],
+                 "name":"spawn5",
                  "rotation":0,
                  "type":"",
                  "visible":true,
@@ -136,6 +100,12 @@
                  "y":272
                 }],
          "opacity":1,
+         "properties":[
+                {
+                 "name":"enemySpawns",
+                 "type":"bool",
+                 "value":true
+                }],
          "type":"objectgroup",
          "visible":true,
          "x":0,
@@ -518,7 +488,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -1908,7 +1878,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 

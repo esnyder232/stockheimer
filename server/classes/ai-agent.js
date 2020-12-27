@@ -36,9 +36,13 @@ class AIAgent {
 				if(pos !== null)
 				{
 					this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
-					this.pathSet = true;
-					this.followPath = true;
-					this.currentNode = 0;
+
+					if(this.nodePathToCastle.length > 0)
+					{
+						this.pathSet = true;
+						this.followPath = true;
+						this.currentNode = 0;
+					}
 				}
 			}
 			
@@ -46,15 +50,18 @@ class AIAgent {
 			if(this.followPath)
 			{
 				//sense if you are at your destination
-				var errorX = this.nodePathToCastle[this.currentNode].x - pos.x;
-				var errorY = (this.nodePathToCastle[this.currentNode].y * -1) - pos.y;
-				var squaredDistance = errorX * errorX + errorY * errorY;
-
-				if(squaredDistance <= this.nodeRadiusSquared)
+				if(this.nodePathToCastle[this.currentNode])
 				{
-					this.currentNodeReached = true;
+					var errorX = this.nodePathToCastle[this.currentNode].x - pos.x;
+					var errorY = (this.nodePathToCastle[this.currentNode].y * -1) - pos.y;
+					var squaredDistance = errorX * errorX + errorY * errorY;
+	
+					if(squaredDistance <= this.nodeRadiusSquared)
+					{
+						this.currentNodeReached = true;
+					}
 				}
-
+				
 				//for now, lets just do cardinal direction path steering...path steering on diagonals and arbitrary lines is getting complicated
 				//current node reached
 				if(this.currentNodeReached)
@@ -87,50 +94,54 @@ class AIAgent {
 			//navigate to the current node
 			if(this.followPath)
 			{
-				var nodeTarget = this.nodePathToCastle[this.currentNode];
-
-				//the *-1 is to flip the y coordinates for planck cooridnate plane
-				var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
-				
-				//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
-				//this basically just flips the direction of the x and y
-				var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
-
-				angle += radiansToAdd;
-
-				//determine the direction: N, E, S, W
-				//hackilicous
-				var xAngle = Math.cos(angle);
-				var yAngle = Math.sin(angle);
-
-				var finalInput = {
-					up: false,
-					down: false,
-					left: false,
-					right: false,
-					isFiring: false,
-					isFiringAlt: false,
-					characterDirection: 0.0
-				}
-				if(xAngle >= 0.5)
+				if(this.nodePathToCastle[this.currentNode])
 				{
-					finalInput.right = true;
-				}
-				else if (xAngle <= -0.5)
-				{
-					finalInput.left = true;
-				}
 
-				if(yAngle >= 0.5)
-				{
-					finalInput.up = true;
-				}
-				else if (yAngle <= -0.5)
-				{
-					finalInput.down = true;
-				}
+					var nodeTarget = this.nodePathToCastle[this.currentNode];
 
-				character.inputQueue.push(finalInput);
+					//the *-1 is to flip the y coordinates for planck cooridnate plane
+					var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
+					
+					//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
+					//this basically just flips the direction of the x and y
+					var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
+	
+					angle += radiansToAdd;
+	
+					//determine the direction: N, E, S, W
+					//hackilicous
+					var xAngle = Math.cos(angle);
+					var yAngle = Math.sin(angle);
+	
+					var finalInput = {
+						up: false,
+						down: false,
+						left: false,
+						right: false,
+						isFiring: false,
+						isFiringAlt: false,
+						characterDirection: 0.0
+					}
+					if(xAngle >= 0.5)
+					{
+						finalInput.right = true;
+					}
+					else if (xAngle <= -0.5)
+					{
+						finalInput.left = true;
+					}
+	
+					if(yAngle >= 0.5)
+					{
+						finalInput.up = true;
+					}
+					else if (yAngle <= -0.5)
+					{
+						finalInput.down = true;
+					}
+	
+					character.inputQueue.push(finalInput);
+				}
 			}
 		}
 	}

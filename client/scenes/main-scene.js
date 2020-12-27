@@ -828,15 +828,6 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
-
-	// {event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
-	// {event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
-	// {event: 'make-enemies-seek-castle', func: this.makeEnemiesSeekCastle.bind(this)},
-	// {event: 'make-enemies-seek-player', func: this.makeEnemiesSeekPlayer.bind(this)},
-	// {event: 'make-enemies-stop', func: this.makeEnemiesStop.bind(this)},
-	// {event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)}
-
-
 	spawnEnemyPlayer() {
 		console.log('spawning enemy at player');
 		this.fromClientSpawnEnemy("player");
