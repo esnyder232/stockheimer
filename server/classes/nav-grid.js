@@ -431,6 +431,18 @@ class NavGrid {
 		return path;
 	}
 
+	getNode(x, y) {
+		var node = null;
+		if(y >= 0 && y < this.nodes.length)
+		{
+			if(x >= 0 && x < this.nodes[y].length)
+			{
+				var node = this.nodes[y][x];
+			}
+		}
+		
+		return node;
+	}
 
 
 }

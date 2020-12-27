@@ -238,7 +238,7 @@ class GameServerRunning extends GameServerBaseState {
 											c.hpCur = 25;
 											c.hpMax = 25;
 
-											
+
 	
 											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 										}
@@ -252,8 +252,24 @@ class GameServerRunning extends GameServerBaseState {
 					case "fromClientEnemyBehavior":
 						if(this.checkEnemyPasscode(e.enemyControlPass))
 						{
-							console.log('fromClientEnemyBehavior called');
-							console.log(e);
+							if(e.enemyBehavior === "seek-castle")
+							{
+								var aiAgents = this.gs.aim.getAIAgents();
+
+								for(var j = 0 ; j < aiAgents.length; j++)
+								{
+									aiAgents[j].seekCastle();
+								}
+							}
+							else if(e.enemyBehavior === "seek-player")
+							{
+								var aiAgents = this.gs.aim.getAIAgents();
+
+								for(var j = 0 ; j < aiAgents.length; j++)
+								{
+									aiAgents[j].seekPlayer(user);
+								}
+							}
 						}
 
 						break;

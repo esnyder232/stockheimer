@@ -25,18 +25,49 @@ class AIAgent {
 		this.username = "AI " + this.id;
 	}
 
-	update(dt) {
+	seekCastle() {
 		var character = this.gs.gom.getGameObjectByID(this.characterId);
 		if(character !== null && character.isActive)
 		{
 			var pos = character.plBody.getPosition();
-			//contact the nav grid to get a path
-			if(!this.pathSet)
-			{
-				if(pos !== null)
-				{
-					this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
 
+			//contact the nav grid to get a path
+			if(pos !== null)
+			{
+				this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
+
+				if(this.nodePathToCastle.length > 0)
+				{
+					this.pathSet = true;
+					this.followPath = true;
+					this.currentNode = 0;
+				}
+			}
+		}
+	}
+
+	seekPlayer(user) {
+		var aiCharacter = this.gs.gom.getGameObjectByID(this.characterId);
+		var userCharacter = this.gs.gom.getGameObjectByID(user.characterId);
+		if(aiCharacter !== null && aiCharacter.isActive && userCharacter !== null && userCharacter.isActive)
+		{
+			var aiPos = aiCharacter.plBody.getPosition();
+			var userPos = userCharacter.plBody.getPosition();
+
+			//contact the nav grid to get a path
+			if(aiPos !== null && userPos !== null)
+			{
+				//this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
+				var nodeStart = null;
+				var nodeEnd = null;
+
+				var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
+				var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
+
+				if(aiNode !== null && userNode !== null)
+				{
+					this.nodePathToCastle = this.gs.activeNavGrid.AStarSearch(aiNode, userNode);
+					
 					if(this.nodePathToCastle.length > 0)
 					{
 						this.pathSet = true;
@@ -45,6 +76,15 @@ class AIAgent {
 					}
 				}
 			}
+		}
+	}
+
+
+	update(dt) {
+		var character = this.gs.gom.getGameObjectByID(this.characterId);
+		if(character !== null && character.isActive)
+		{
+			var pos = character.plBody.getPosition();
 			
 			//determine the node to navigate to
 			if(this.followPath)
