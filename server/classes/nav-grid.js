@@ -48,8 +48,6 @@ class NavGrid {
 						id: this.nodeIdCounter++,
 						x: i,
 						y: j,
-						xc: i + 0.5,
-						yc: j + 0.5,
 						edges: [],
 						impassable: tileType.impassable === true ? true : false,
 						movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
@@ -141,8 +139,11 @@ class NavGrid {
 				{
 					if(this.nodes[j][i].impassable)
 					{
+						var xPlanck = i * this.tiledUnitsToPlanckUnits;
+						var yPlanck = (j * this.tiledUnitsToPlanckUnits) * -1;
+
 						var w = this.gs.world.createBody({
-							position: Vec2(i * this.tiledUnitsToPlanckUnits + (this.tiledUnitsToPlanckUnits/2), (j * this.tiledUnitsToPlanckUnits + (this.tiledUnitsToPlanckUnits/2)) * -1),
+							position: Vec2(xPlanck, yPlanck),
 							type: this.gs.pl.Body.STATIC,
 							userData: {type:"wall", id: this.gs.getGlobalGameObjectID()}
 						});

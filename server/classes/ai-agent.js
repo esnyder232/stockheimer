@@ -46,8 +46,8 @@ class AIAgent {
 			if(this.followPath)
 			{
 				//sense if you are at your destination
-				var errorX = this.nodePathToCastle[this.currentNode].xc - pos.x;
-				var errorY = (this.nodePathToCastle[this.currentNode].yc * -1) - pos.y;
+				var errorX = this.nodePathToCastle[this.currentNode].x - pos.x;
+				var errorY = (this.nodePathToCastle[this.currentNode].y * -1) - pos.y;
 				var squaredDistance = errorX * errorX + errorY * errorY;
 
 				if(squaredDistance <= this.nodeRadiusSquared)
@@ -90,11 +90,11 @@ class AIAgent {
 				var nodeTarget = this.nodePathToCastle[this.currentNode];
 
 				//the *-1 is to flip the y coordinates for planck cooridnate plane
-				var angle = Math.atan(((nodeTarget.yc*-1) - pos.y) / (nodeTarget.xc - pos.x));
+				var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
 				
 				//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
 				//this basically just flips the direction of the x and y
-				var radiansToAdd = (nodeTarget.xc - pos.x) < 0 ? Math.PI : 0;
+				var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
 
 				angle += radiansToAdd;
 

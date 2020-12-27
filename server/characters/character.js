@@ -87,7 +87,7 @@ class Character {
 		this.plBody.createFixture({
 			shape: boxShape,
 			density: 2.0,
-			friction: 1.0,
+			friction: 0.0,
 		});	
 	}
 

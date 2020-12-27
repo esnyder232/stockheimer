@@ -101,6 +101,9 @@ export default class MainScene extends Phaser.Scene {
 		$("#ui-div").on("click", this.uiDivClick.bind(this));
 		$(document).on("keyup", this.documentEnterClicked.bind(this));
 
+		//custom registers on scroll
+		$("#game-div").on("mousewheel", this.documentScroll.bind(this));
+
 		//initialize userlist
 		for(var i = 0; i < this.gc.users.length; i++)
 		{
@@ -117,6 +120,34 @@ export default class MainScene extends Phaser.Scene {
 		this.debugY = $("#debug-y");
 		this.debugIsDown = $("#debug-is-down");
 		this.debugAngle = $("#debug-angle");
+	}
+
+	documentScroll(e) {
+		//browser mode
+		if(this.currentPointerMode === 0)
+		{
+			//console.log('browser mode scroll');
+			//do nothing
+		}
+		//phaser mode
+		else if(this.currentPointerMode === 1)
+		{
+			e.stopPropagation();
+			e.preventDefault();
+
+			//scrolled down
+			if(e.originalEvent.deltaY > 0)
+			{
+				this.cameraZoom -= 0.1;
+				this.setCameraZoom();
+			}
+			//scrolled up
+			else if(e.originalEvent.deltaY < 0)
+			{
+				this.cameraZoom += 0.1;
+				this.setCameraZoom();
+			}
+		}
 	}
 
 	chatInputClick(e) {
@@ -149,7 +180,9 @@ export default class MainScene extends Phaser.Scene {
 		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 1, 2);
 		
 		//create layers
-		this.layer1 = this.map.createStaticLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], 0, 0).setScale(2);
+		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+		this.layer1 = this.map.createStaticLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
 
 		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
@@ -182,20 +215,22 @@ export default class MainScene extends Phaser.Scene {
 
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
 
-		this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
-			//scrolled down
-			if(deltaY > 0)
-			{
-				this.cameraZoom -= 0.1;
-				this.setCameraZoom();
-			}
-			//scrolled up
-			else if(deltaY < 0)
-			{
-				this.cameraZoom += 0.1;
-				this.setCameraZoom();
-			}
-		});
+		// this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+		// 	//scrolled down
+		// 	if(deltaY > 0)
+		// 	{
+		// 		this.cameraZoom -= 0.1;
+		// 		this.setCameraZoom();
+		// 	}
+		// 	//scrolled up
+		// 	else if(deltaY < 0)
+		// 	{
+		// 		this.cameraZoom += 0.1;
+		// 		this.setCameraZoom();
+		// 	}
+
+		// 	return true;
+		// });
 	}
 
 	setCameraZoom() {
@@ -231,6 +266,7 @@ export default class MainScene extends Phaser.Scene {
 		$("#tb-chat-input").off("click");
 		$("#ui-div").off("click");
 		$(document).off("keyup");
+		$("#game-div").off("mousewheel");
 
 		$("#main-scene-root").addClass("hide");
 
@@ -511,8 +547,8 @@ export default class MainScene extends Phaser.Scene {
 			this.targetLineGraphic.strokeLineShape(this.targetLine);
 
 			//debugging text
-			this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX / this.planckUnitsToPhaserUnitsRatio) + ")");
-			this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY / this.planckUnitsToPhaserUnitsRatio)) * -1 + ")");
+			this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
+			this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
 			this.debugIsDown.text('isDown: ' + pointer.isDown);
 			this.debugAngle.text('angle: ' + this.angle);
 
