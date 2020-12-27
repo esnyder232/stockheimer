@@ -87,7 +87,7 @@ export default class GameClient {
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		//add events to allow users to type in the text boxes
-		var textboxes = $("input[type='text']");
+		var textboxes = $("input[type='text'], input[type='password']");
 		textboxes.on("focus", () => {
 			this.phaserGame.input.keyboard.preventDefault = false;
 			this.phaserGame.input.keyboard.enabled = false;

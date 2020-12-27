@@ -1,6 +1,7 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
 const {UserDisconnectingState} = require('../user/user-disconnecting-state.js');
+const crypto = require('crypto');
 
 class GameServerRunning extends GameServerBaseState {
 	constructor(gs) {
@@ -160,57 +161,77 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 
 					case "fromClientSpawnEnemy":
-						console.log('fromClientSpawnEnemy')
-						var ai = this.gs.aim.createAIAgent();
-						var c = this.gs.gom.createGameObject('character');
-						
-						ai.aiAgentInit(this.gs, c.id);
-						
-						c.ownerId = ai.id;
-						c.ownerType = "ai";
-						c.characterInit(this.gs);
-
-						//north of castle
-						// var xStarting = 15;
-						// var yStarting = -10;
-
-						//south of castle
-						// var xStarting = 15;
-						// var yStarting = -20;
-
-						//west of castle
-						// var xStarting = 10;
-						// var yStarting = -15;
-
-						//east of castle
-						var xStarting = 20;
-						var yStarting = -15;
-
-
-						var userChar = this.gs.gom.getGameObjectByID(user.characterId);
-						if(userChar !== null)
+						if(this.checkEnemyPasscode(e.enemyControlPass))
 						{
-							var pos = userChar.plBody.getPosition();
-							if(pos !== null)
+							var ai = this.gs.aim.createAIAgent();
+							var c = this.gs.gom.createGameObject('character');
+							
+							ai.aiAgentInit(this.gs, c.id);
+							
+							c.ownerId = ai.id;
+							c.ownerType = "ai";
+							c.characterInit(this.gs);
+	
+							//north of castle
+							var xStarting = 15;
+							var yStarting = -10;
+	
+							//south of castle
+							// var xStarting = 15;
+							// var yStarting = -20;
+	
+							//west of castle
+							// var xStarting = 10;
+							// var yStarting = -15;
+	
+							//east of castle
+							// var xStarting = 20;
+							// var yStarting = -15;
+
+							
+	
+	
+							var userChar = this.gs.gom.getGameObjectByID(user.characterId);
+							if(userChar !== null)
 							{
-								xStarting = pos.x;
-								yStarting = pos.y;
+								var pos = userChar.plBody.getPosition();
+								if(pos !== null)
+								{
+									xStarting = pos.x;
+									yStarting = pos.y;
+								}
 							}
+	
+							c.xStarting = xStarting;
+							c.yStarting = yStarting;
+							c.hpCur = 25;
+							c.hpMax = 25;
+	
+							this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 						}
 
-						c.xStarting = xStarting;
-						c.yStarting = yStarting;
+						break;
 
-						this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+					case "fromClientEnemyBehavior":
+						if(this.checkEnemyPasscode(e.enemyControlPass))
+						{
+							console.log('fromClientEnemyBehavior called');
+							console.log(e);
+						}
+
 						break;
 
 					case "fromClientKillAllEnemies":
-						var allAiAgents = this.gs.aim.AIAgentArray;
-						for(var i = 0 ; i < allAiAgents.length; i++)
+						if(this.checkEnemyPasscode(e.enemyControlPass))
 						{
-							this.gs.aim.destroyAIAgent(allAiAgents[i].id);
-							this.destroyOwnersCharacter(allAiAgents[i].id, "ai");
+							var allAiAgents = this.gs.aim.getAIAgents();
+							for(var j = 0 ; j < allAiAgents.length; j++)
+							{
+								this.gs.aim.destroyAIAgent(allAiAgents[j].id);
+								this.destroyOwnersCharacter(allAiAgents[j].id, "ai");
+							}
 						}
+
 						break;
 
 					default:
@@ -223,6 +244,24 @@ class GameServerRunning extends GameServerBaseState {
 			user.clientToServerEvents.length = 0;
 		}
 	}
+
+	//quick and dirty check for enemy control password
+	checkEnemyPasscode(input)
+	{
+		var result = false;
+
+		//quick and dirty hash
+		var hash = crypto.createHash('md5').update(input).digest('hex');
+		
+		//yup
+		if(hash === "dae730c0502583c56927fe31c600536d")
+		{
+			result = true;
+		}
+
+		return result;
+	}
+
 
 	cbCharacterActivatedSuccess(characterId) {
 		var c = this.gs.gom.getGameObjectByID(characterId);

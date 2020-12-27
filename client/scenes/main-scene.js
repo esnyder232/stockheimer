@@ -76,9 +76,16 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-			{event: 'spawn-stationary-enemy', func: this.spawnStationaryEnemy.bind(this)},
-			{event: 'spawn-patrol-enemy', func: this.spawnPatrolEnemy.bind(this)},
-			{event: 'spawn-seeking-enemy', func: this.spawnSeekingEnemy.bind(this)},
+			
+			// {event: 'spawn-stationary-enemy', func: this.spawnStationaryEnemy.bind(this)},
+			// {event: 'spawn-patrol-enemy', func: this.spawnPatrolEnemy.bind(this)},
+			// {event: 'spawn-castle-seek-enemy', func: this.spawnCastleSeekEnemy.bind(this)},
+
+			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
+			{event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
+			{event: 'make-enemies-seek-castle', func: this.makeEnemiesSeekCastle.bind(this)},
+			{event: 'make-enemies-seek-player', func: this.makeEnemiesSeekPlayer.bind(this)},
+			{event: 'make-enemies-stop', func: this.makeEnemiesStop.bind(this)},
 			{event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)}
 		];
 
@@ -98,6 +105,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//custom register on enter and stuff for pointer mode
 		$("#tb-chat-input").on("click", this.chatInputClick.bind(this));
+		$("#tb-enemy-password").on("click", this.passInputClick.bind(this));
 		$("#ui-div").on("click", this.uiDivClick.bind(this));
 		$(document).on("keyup", this.documentEnterClicked.bind(this));
 
@@ -151,6 +159,10 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	chatInputClick(e) {
+		return false; //make sure to return false here or the ui div will return the pointer mode to "phaser" 
+	}
+
+	passInputClick(e) {
 		return false; //make sure to return false here or the ui div will return the pointer mode to "phaser" 
 	}
 
@@ -264,9 +276,12 @@ export default class MainScene extends Phaser.Scene {
 
 		$("#tb-chat-input").off("keyup");
 		$("#tb-chat-input").off("click");
+		$("#tb-enemy-password").off("click");
 		$("#ui-div").off("click");
 		$(document).off("keyup");
 		$("#game-div").off("mousewheel");
+
+		
 
 		$("#main-scene-root").addClass("hide");
 
@@ -384,6 +399,7 @@ export default class MainScene extends Phaser.Scene {
 
 	switchPointerMode(mode)
 	{
+		console.log('switching pointer mode');
 		if(mode === 1) //1 - phaser mode
 		{
 			this.currentPointerMode = 1;
@@ -813,19 +829,37 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
-	spawnStationaryEnemy() {
-		console.log('spawning stationary enemy');
-		this.fromClientSpawnEnemy("stationary");
+	// {event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
+	// {event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
+	// {event: 'make-enemies-seek-castle', func: this.makeEnemiesSeekCastle.bind(this)},
+	// {event: 'make-enemies-seek-player', func: this.makeEnemiesSeekPlayer.bind(this)},
+	// {event: 'make-enemies-stop', func: this.makeEnemiesStop.bind(this)},
+	// {event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)}
+
+
+	spawnEnemyPlayer() {
+		console.log('spawning enemy at player');
+		this.fromClientSpawnEnemy("player");
 	}
 
-	spawnPatrolEnemy() {
-		console.log('spawning patrol enemy');
-		this.fromClientSpawnEnemy("patrol");
+	spawnEnemyRed() {
+		console.log('spawning enemy at red');
+		this.fromClientSpawnEnemy("red");
 	}
 
-	spawnSeekingEnemy() {
-		console.log('spawning seeeking enemy');
-		this.fromClientSpawnEnemy("seeking");
+	makeEnemiesSeekCastle() {
+		console.log('making enemies seek castle');
+		this.fromClientMakeEnemyBehavior("seek-castle");
+	}
+
+	makeEnemiesSeekPlayer() {
+		console.log('making enemies seek player');
+		this.fromClientMakeEnemyBehavior("seek-player");
+	}
+
+	makeEnemiesStop() {
+		console.log('making enemies stop');
+		this.fromClientMakeEnemyBehavior("stop");
 	}
 
 	killAllEnemies() {
@@ -833,16 +867,36 @@ export default class MainScene extends Phaser.Scene {
 		this.fromClientKillAllEnemies();
 	}
 
-	fromClientSpawnEnemy(enemyType) {
+	fromClientSpawnEnemy(spawnLocation) {
+		var pass = $("#tb-enemy-password").val();
+		
 		this.gc.wsh.clientToServerEvents.push({
 			"eventName": "fromClientSpawnEnemy",
-			"enemyType": enemyType
+			"spawnLocation": spawnLocation,
+			"enemyControlPass": pass
+		});
+	}
+
+	fromClientMakeEnemyBehavior(enemyBehavior) {
+		var pass = $("#tb-enemy-password").val();
+		if(!pass)
+			pass = "";
+		
+		this.gc.wsh.clientToServerEvents.push({
+			"eventName": "fromClientEnemyBehavior",
+			"enemyBehavior": enemyBehavior,
+			"enemyControlPass": pass
 		});
 	}
 
 	fromClientKillAllEnemies() {
+		var pass = $("#tb-enemy-password").val();
+		if(!pass)
+			pass = "";
+
 		this.gc.wsh.clientToServerEvents.push({
-			"eventName": "fromClientKillAllEnemies"
+			"eventName": "fromClientKillAllEnemies",
+			"enemyControlPass": pass
 		});
 	}
 }

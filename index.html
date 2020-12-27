@@ -35,9 +35,12 @@
 						<input type="button" id="kill-character" value="Kill Character" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
 					</div>
 					<div class="input-controls-div">
-						<input type="button" id="spawn-stationary-enemy" value="Spawn Stationary Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-stationary-enemy'));" />
-						<input type="button" id="spawn-patrol-enemy" value="Spawn Patrol Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-patrol-enemy'));" />
-						<input type="button" id="spawn-seeking-enemy" value="Spawn Seeking Enemy" onclick="window.dispatchEvent(new CustomEvent('spawn-seeking-enemy'));" />
+						<input type="password" id="tb-enemy-password" placeholder="passcode for enemies" />
+						<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
+						<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
+						<input type="button" id="make-enemies-seek-castle" value="Seek Castle" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-castle'));" />
+						<input type="button" id="make-enemies-seek-player" value="Seek Player" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-player'));" />
+						<input type="button" id="make-enemies-stop" value="Stop enemies" onclick="window.dispatchEvent(new CustomEvent('make-enemies-stop'));" />
 						<input type="button" id="kill-all-enemies" value="Kill all enemies" onclick="window.dispatchEvent(new CustomEvent('kill-all-enemies'));" />
 					</div>
 					<div class="panel">
@@ -63,11 +66,11 @@
 							</div>
 						</div>
 						<div class="debug-div" id="debug-div">
-							<div>Debug:</div>
+							<div>Debug Information:</div>
 							<div id="debug-x"></div>
-							<div id="debug-y">aetj</div>
-							<div id="debug-is-down">sfgj</div>
-							<div id="debug-angle">srtyj</div>
+							<div id="debug-y"></div>
+							<div id="debug-is-down"></div>
+							<div id="debug-angle"></div>
 						</div>
 					</div>
 				</div>
