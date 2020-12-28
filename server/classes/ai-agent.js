@@ -56,6 +56,8 @@ class AIAgent {
 					this.pathSet = true;
 					this.followPath = true;
 					this.currentNode = 0;
+
+					this.findNextLOSNode(pos);
 				}
 			}
 		}
@@ -84,6 +86,8 @@ class AIAgent {
 						this.pathSet = true;
 						this.followPath = true;
 						this.currentNode = 0;
+
+						this.findNextLOSNode(aiPos);
 					}
 				}
 			}
@@ -142,6 +146,8 @@ class AIAgent {
 				if(this.currentNodeReached)
 				{
 					this.currentNode++;
+
+					this.findNextLOSNode(pos);
 					
 					//destination reached
 					if(this.currentNode > this.nodePathToCastle.length-1)
@@ -163,6 +169,22 @@ class AIAgent {
 					}
 
 					this.currentNodeReached = false;
+
+					// //do line of sight tests to get the next logical node
+					// var nodeInLOS = true;
+					// while(nodeInLOS)
+					// {
+					// 	nodeInLOS = this.lineOfSightTest(pos, this.nodePathToCastle[this.currentNode + 1]);
+					// 	if(nodeInLOS)
+					// 	{
+					// 		console.log('current node in LOS(' + this.nodePathToCastle[this.currentNode].x + ',' + this.nodePathToCastle[this.currentNode].y + '). Skipping the node.')
+					// 		this.currentNode++
+					// 	}
+					// 	else
+					// 	{
+					// 		console.log('current node NOT in LOS(' + this.nodePathToCastle[this.currentNode].x + ',' + this.nodePathToCastle[this.currentNode].y + ').')
+					// 	}
+					// }
 				}
 			}
 
@@ -194,8 +216,9 @@ class AIAgent {
 						//turn off shimmy mode
 						if(this.shimmyCurrentTimer <= 0)
 						{
-							console.log('shimm mode disengaged!');
+							//console.log('shimm mode disengaged!');
 							this.shimmyOveride = false;
+							this.findNextLOSNode(pos);
 						}
 					}
 					//steer like normal
@@ -266,7 +289,7 @@ class AIAgent {
 						//engage shimmy mode
 						if(this.shimmyOverrideAccumulationValue >= this.shimmyOverrideAccumulationThreshold)
 						{
-							console.log('shimm mode engaged!');
+							//console.log('shimm mode engaged!');
 							this.shimmyOveride = true;
 							this.shimmyOverrideAccumulationValue = 0;
 
@@ -354,6 +377,73 @@ class AIAgent {
 
 	fixtureCallback(fixture, point, normal, fraction) {
 		this.raycastObjects.push({
+			fixture: fixture,
+			point: point,
+			normal: normal,
+			fraction: fraction
+		});
+	}
+
+	//Reassigns the this.currentNode to be the next node that is in the lino of sight of the current position.
+	//this.currentNode will always be < this.nodePathToCastle.length-1
+	findNextLOSNode(pos)
+	{
+		//do line of sight tests to get the next logical node
+		var nodeInLOS = true;
+		while(nodeInLOS)
+		{
+			if(this.currentNode < this.nodePathToCastle.length-1)
+			{
+				nodeInLOS = this.lineOfSightTest(pos, this.nodePathToCastle[this.currentNode + 1]);
+				if(nodeInLOS)
+				{
+					//console.log('current node in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + '). Skipping the node.')
+					this.currentNode++
+				}
+				else
+				{
+					//console.log('current node NOT in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + ').')
+				}
+			}
+			//final node is reached
+			else
+			{
+				nodeInLOS = false;
+			}
+		}
+	}
+
+
+
+	lineOfSightTest(pos, node)
+	{
+		const Vec2 = this.gs.pl.Vec2;
+		var isNodeInLOS = true;
+
+		var p1 = new Vec2(pos.x, pos.y);
+		var p2 = new Vec2(node.x, -node.y);
+
+		this.lineOfSightObjects = [];
+		this.gs.world.rayCast(p1, p2, this.lineOfSightCallback.bind(this));
+
+		//if objects were detected in front of the ai, then calculate avoidance vector
+		if(this.lineOfSightObjects.length > 0)
+		{
+			for(var i = 0; i < this.lineOfSightObjects.length; i++)			
+			{
+				if(this.lineOfSightObjects[i].fixture.getBody().getUserData().type === "wall")
+				{
+					isNodeInLOS = false;
+					break;
+				}
+			}
+		}
+
+		return isNodeInLOS;
+	}
+
+	lineOfSightCallback(fixture, point, normal, fraction) {
+		this.lineOfSightObjects.push({
 			fixture: fixture,
 			point: point,
 			normal: normal,

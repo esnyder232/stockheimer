@@ -287,7 +287,7 @@ class GameServerRunning extends GameServerBaseState {
 											c.yStarting = yStarting;
 											c.hpCur = 25;
 											c.hpMax = 25;
-										 c.walkingVelMagMax = 1;
+											c.walkingVelMagMax = 1;
 
 											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 										}
