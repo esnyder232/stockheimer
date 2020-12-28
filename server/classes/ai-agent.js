@@ -57,10 +57,6 @@ class AIAgent {
 			//contact the nav grid to get a path
 			if(aiPos !== null && userPos !== null)
 			{
-				//this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
-				var nodeStart = null;
-				var nodeEnd = null;
-
 				var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
 				var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
 
@@ -76,6 +72,30 @@ class AIAgent {
 					}
 				}
 			}
+		}
+	}
+
+	stop() {
+		this.pathSet = false;
+		this.followPath = false;
+		this.currentNode = 0;
+		this.nodePathToCastle = [];
+
+		var character = this.gs.gom.getGameObjectByID(this.characterId);
+		if(character !== null && character.isActive)
+		{
+			var finalInput = {
+				up: false,
+				down: false,
+				left: false,
+				right: false,
+				isFiring: false,
+				isFiringAlt: false,
+				characterDirection: 0.0
+			}
+	
+			//stop the character
+			character.inputQueue.push(finalInput);
 		}
 	}
 

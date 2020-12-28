@@ -217,6 +217,53 @@ class GameServerRunning extends GameServerBaseState {
 									var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
 									if(tm !== null)
 									{
+										// //create 2 for congestion testing
+										// var z = tm.enemySpawnZones[3];
+
+										// //ai 1
+										// var ai1 = this.gs.aim.createAIAgent();
+										// var c1 = this.gs.gom.createGameObject('character');
+										
+										// ai1.aiAgentInit(this.gs, c1.id);
+										
+										// c1.ownerId = ai1.id;
+										// c1.ownerType = "ai";
+										// c1.characterInit(this.gs);
+
+										// var xStarting = z.xPlanck + 1.1;
+										// var yStarting = z.yPlanck - 0.5;
+
+										// c1.xStarting = xStarting;
+										// c1.yStarting = yStarting;
+										// c1.hpCur = 25;
+										// c1.hpMax = 25;
+
+										// this.gs.gom.activateGameObjectId(c1.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+
+
+
+										// //ai 2
+										// var ai2 = this.gs.aim.createAIAgent();
+										// var c2 = this.gs.gom.createGameObject('character');
+										
+										// ai2.aiAgentInit(this.gs, c2.id);
+										
+										// c2.ownerId = ai2.id;
+										// c2.ownerType = "ai";
+										// c2.characterInit(this.gs);
+
+										// var xStarting = z.xPlanck + 1.9;
+										// var yStarting = z.yPlanck - 0.5;
+			
+										// c2.xStarting = xStarting;
+										// c2.yStarting = yStarting;
+										// c2.hpCur = 25;
+										// c2.hpMax = 25;
+
+										// this.gs.gom.activateGameObjectId(c2.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+
+
+										//create one for each red zone
 										for(var j = 0; j < tm.enemySpawnZones.length; j++)
 										{
 											var z = tm.enemySpawnZones[j];
@@ -238,8 +285,6 @@ class GameServerRunning extends GameServerBaseState {
 											c.hpCur = 25;
 											c.hpMax = 25;
 
-
-	
 											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 										}
 									}
@@ -268,6 +313,15 @@ class GameServerRunning extends GameServerBaseState {
 								for(var j = 0 ; j < aiAgents.length; j++)
 								{
 									aiAgents[j].seekPlayer(user);
+								}
+							}
+							else if(e.enemyBehavior === "stop")
+							{
+								var aiAgents = this.gs.aim.getAIAgents();
+
+								for(var j = 0 ; j < aiAgents.length; j++)
+								{
+									aiAgents[j].stop();
 								}
 							}
 						}

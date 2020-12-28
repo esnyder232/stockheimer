@@ -75,7 +75,23 @@ class Character {
 		this.walkingAccVec = Vec2(0, 0);
 
 		//create a plank box
-		var boxShape = pl.Box(0.375, 0.375, Vec2(0, 0));
+		//var boxShape = pl.Box(0.375, 0.375, Vec2(0, 0));
+		// this.plBody = world.createBody({
+		// 	position: Vec2(this.xStarting, this.yStarting),
+		// 	type: pl.Body.DYNAMIC,
+		// 	fixedRotation: true,
+		// 	userData: {type:"character", id: this.id}
+		// });
+		
+		// this.plBody.createFixture({
+		// 	shape: boxShape,
+		// 	density: 2.0,
+		// 	friction: 0.0,
+		// });	
+
+
+
+		var circleShape = pl.Circle(Vec2(0, 0), 0.375);
 
 		this.plBody = world.createBody({
 			position: Vec2(this.xStarting, this.yStarting),
@@ -85,7 +101,7 @@ class Character {
 		});
 		
 		this.plBody.createFixture({
-			shape: boxShape,
+			shape: circleShape,
 			density: 2.0,
 			friction: 0.0,
 		});	
