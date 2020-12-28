@@ -206,6 +206,7 @@ class GameServerRunning extends GameServerBaseState {
 								c.yStarting = yStarting;
 								c.hpCur = 25;
 								c.hpMax = 25;
+								c.walkingVelMagMax = 1;
 	
 								this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 							}
@@ -237,6 +238,7 @@ class GameServerRunning extends GameServerBaseState {
 										// c1.yStarting = yStarting;
 										// c1.hpCur = 25;
 										// c1.hpMax = 25;
+										// c1.walkingVelMagMax = 1;
 
 										// this.gs.gom.activateGameObjectId(c1.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 
@@ -259,6 +261,7 @@ class GameServerRunning extends GameServerBaseState {
 										// c2.yStarting = yStarting;
 										// c2.hpCur = 25;
 										// c2.hpMax = 25;
+										// c2.walkingVelMagMax = 1;
 
 										// this.gs.gom.activateGameObjectId(c2.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 
@@ -284,6 +287,7 @@ class GameServerRunning extends GameServerBaseState {
 											c.yStarting = yStarting;
 											c.hpCur = 25;
 											c.hpMax = 25;
+										 c.walkingVelMagMax = 1;
 
 											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 										}

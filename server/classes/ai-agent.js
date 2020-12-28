@@ -15,6 +15,21 @@ class AIAgent {
 		this.followPath = false;
 		this.currentNodeReached = false;
 		this.nodeRadiusSquared = 0.01; //radius to determine if the character has reached its current node
+
+		this.shimmyOveride = false;		//this tells the ai to shimmy to the left or right of their intended direction (in case there is an obstacle in the way)
+		this.shimmyCurrentTimer = 0;	//current time to shimmy left or right
+		this.shimmyTimeLength = 300;	//ms to follow shimmy velocity direction
+		this.shimmyTimeLengthVariance = 300; //+-ms variance to shimmyTimeLength
+		this.shimmyDirection = {
+			x: 0,
+			y: 0
+		};
+		this.shimmyOverrideAccumulationValue = 0; //basically, number of frames the entity hasn't moved
+		this.shimmyOverrideAccumulationThreshold = 5; //number of frames to determine if the shimmyOverride should be engaged.
+		this.agentPrevPosition = {
+			x: 0,
+			y: 0
+		}
 	}
 
 	aiAgentInit(gameServer, characterId) {
@@ -156,15 +171,50 @@ class AIAgent {
 			{
 				if(this.nodePathToCastle[this.currentNode])
 				{
+					var seekVelVec = {
+						x: 0,
+						y: 0,
+					}
+					var avoidanceVelVec = {
+						x: 0,
+						y: 0,
+					}
+					var finalVelVec = {
+						x: 0,
+						y: 0
+					};
 
-					var nodeTarget = this.nodePathToCastle[this.currentNode];
+					//engage shimmy steering
+					if(this.shimmyOveride)
+					{
+						seekVelVec.x = this.shimmyDirection.x;
+						seekVelVec.y = this.shimmyDirection.y;
+						this.shimmyCurrentTimer -= dt;
+
+						//turn off shimmy mode
+						if(this.shimmyCurrentTimer <= 0)
+						{
+							console.log('shimm mode disengaged!');
+							this.shimmyOveride = false;
+						}
+					}
+					//steer like normal
+					else
+					{
+						seekVelVec = this.calcSeekSteering(pos);
+						//avoidanceVelVec = this.calcAvoidanceSteering(pos, seekVelVec);
+					}
+					
+					finalVelVec.x = seekVelVec.x + avoidanceVelVec.x;
+					finalVelVec.y = seekVelVec.y + avoidanceVelVec.y;
+					//console.log("avoidanceVelVec: x: " + avoidanceVelVec.x + ", y: " + avoidanceVelVec.y)
 
 					//the *-1 is to flip the y coordinates for planck cooridnate plane
-					var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
+					var angle = Math.atan((finalVelVec.y) / finalVelVec.x);
 					
 					//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
 					//this basically just flips the direction of the x and y
-					var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
+					var radiansToAdd = finalVelVec.x < 0 ? Math.PI : 0;
 	
 					angle += radiansToAdd;
 	
@@ -201,9 +251,114 @@ class AIAgent {
 					}
 	
 					character.inputQueue.push(finalInput);
+
+					//check position from prev position. If you haven't moved in a while, add to the shimmy accumulator
+					if(!this.shimmyOveride)
+					{
+						var dx = Math.abs(this.agentPrevPosition.x - pos.x);
+						var dy = Math.abs(this.agentPrevPosition.y - pos.y);
+						
+						if(dx < 0.01 && dy < 0.01)
+						{
+							this.shimmyOverrideAccumulationValue += 1;
+						}
+	
+						//engage shimmy mode
+						if(this.shimmyOverrideAccumulationValue >= this.shimmyOverrideAccumulationThreshold)
+						{
+							console.log('shimm mode engaged!');
+							this.shimmyOveride = true;
+							this.shimmyOverrideAccumulationValue = 0;
+
+							var randAngleMultiplier = Math.floor(Math.random() * 2) + 1;
+							var randAngleDir = Math.floor(Math.random() * 2) === 0 ? 1 : -1;
+							var randShimmyTimeLength = Math.floor(Math.random() * this.shimmyTimeLengthVariance);
+
+							var shimmyAngle = (randAngleMultiplier * Math.PI/4) * randAngleDir;
+							this.shimmyDirection.x = Math.cos(angle + shimmyAngle);
+							this.shimmyDirection.y = Math.sin(angle + shimmyAngle);
+							this.shimmyCurrentTimer = this.shimmyTimeLength + randShimmyTimeLength;
+						}
+					}
+
+					this.agentPrevPosition.x = pos.x;
+					this.agentPrevPosition.y = pos.y;
 				}
 			}
 		}
+	}
+
+	calcSeekSteering(pos) {
+		var velVec = {
+			x: 0,
+			y: 0
+		}
+		var nodeTarget = this.nodePathToCastle[this.currentNode];
+
+		//the *-1 is to flip the y coordinates for planck cooridnate plane
+		var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
+		
+		//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
+		//this basically just flips the direction of the x and y
+		var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
+
+		angle += radiansToAdd;
+
+		velVec.x = Math.cos(angle);
+		velVec.y = Math.sin(angle);
+		
+		return velVec;
+		
+	}
+
+
+	calcAvoidanceSteering(pos, seekVelVec) {
+		const Vec2 = this.gs.pl.Vec2;
+		var velVec = {
+			x: 0,
+			y: 0
+		}
+
+		var p1 = new Vec2(pos.x, pos.y);
+		var p2 = new Vec2(pos.x + (seekVelVec.x * 0.5), pos.y + (seekVelVec.y * 0.5));
+
+		this.raycastObjects = [];
+		this.gs.world.rayCast(p1, p2, this.fixtureCallback.bind(this));
+
+		//if objects were detected in front of the ai, then calculate avoidance vector
+		if(this.raycastObjects.length > 0)
+		{
+			var avoidanceForce = 15;
+			var firstObjectPos = this.raycastObjects[0].fixture.getBody().getPosition();
+			velVec.x = (pos.x - firstObjectPos.x) * avoidanceForce;
+			velVec.y = (pos.y - firstObjectPos.y) * avoidanceForce;
+
+			// var nodeTarget = this.nodePathToCastle[this.currentNode];
+	
+			// //the *-1 is to flip the y coordinates for planck cooridnate plane
+			// var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
+			
+			// //this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
+			// //this basically just flips the direction of the x and y
+			// var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
+	
+			// angle += radiansToAdd;
+	
+			// velVec.x = character.walkingVelMagMax * Math.cos(angle);
+			// velVec.y = character.walkingVelMagMax * Math.sin(angle);
+		}
+
+		
+		return velVec;
+	}
+
+	fixtureCallback(fixture, point, normal, fraction) {
+		this.raycastObjects.push({
+			fixture: fixture,
+			point: point,
+			normal: normal,
+			fraction: fraction
+		});
 	}
 }
 
