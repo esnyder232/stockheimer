@@ -1,6 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const {AIAgentForcedIdleState} = require('./ai-agent-states/ai-agent-forced-idle-state.js');
 
-//This class keeps track of nodes and edges for a particular tilemap. It also holds the functions for the actual pathing (breadth first/A*/ect).
+
 class AIAgent {
 	constructor() {
 		this.gs = null;
@@ -38,6 +39,9 @@ class AIAgent {
 		this.charactersInVision = [];
 		this.isAttackInterval = 1000; //ms
 		this.isAttackCurrentTimer = 0; //ms
+
+		this.state = null;
+		this.nextState = null;
 	}
 
 	aiAgentInit(gameServer, characterId) {
@@ -46,6 +50,9 @@ class AIAgent {
 		this.characterId = characterId
 
 		this.username = "AI " + this.id;
+
+		this.state = new AIAgentForcedIdleState(this);
+		this.nextState = null;
 	}
 
 	characterEnteredVision(characterId) {
@@ -436,6 +443,15 @@ class AIAgent {
 			if(inputChanged)
 			{
 				character.inputQueue.push(finalInput);
+			}
+
+			if(this.nextState !== null)
+			{
+				this.state.exit();
+				this.nextState.enter();
+
+				this.state = this.nextState;
+				this.nextState = null;
 			}
 		}
 	}

@@ -357,10 +357,9 @@ class GameServerRunning extends GameServerBaseState {
 								killFeedMessage = "====== PVP ENABLED ======";
 							}
 							var activeUsers = this.gs.um.getActiveUsers();
-							for(var i = 0; i < activeUsers.length; i++)
+							for(var j = 0; j < activeUsers.length; j++)
 							{
-								
-								activeUsers[i].trackedEvents.push({
+								activeUsers[j].trackedEvents.push({
 									"eventName": "killfeedMsg",
 									"killfeedMsg": killFeedMessage
 								});
