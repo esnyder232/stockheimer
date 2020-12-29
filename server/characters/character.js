@@ -430,14 +430,14 @@ class Character {
 			this.lastHitByOwnerId = ownerIdHitBy;
 			this.lastHitByOwnerType = ownerTypeHitBy;
 
-			//debugging
-			var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
-			var ownerHitBy = this.globalfuncs.getOwner(this.gs, this.lastHitByOwnerId, this.lastHitByOwnerType);
+			// //debugging
+			// var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
+			// var ownerHitBy = this.globalfuncs.getOwner(this.gs, this.lastHitByOwnerId, this.lastHitByOwnerType);
 
-			if(owner !== null && ownerHitBy !== null)
-			{
-				console.log(owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);
-			}
+			// if(owner !== null && ownerHitBy !== null)
+			// {
+			// 	console.log(owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);
+			// }
 		}
 
 		//create event for clients to notify them of damage

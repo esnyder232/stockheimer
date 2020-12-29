@@ -218,7 +218,7 @@ class GameServerRunning extends GameServerBaseState {
 									var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
 									if(tm !== null)
 									{
-										// //create 2 for congestion testing
+										//create 2 for congestion testing
 										// var z = tm.enemySpawnZones[3];
 
 										// //ai 1
@@ -381,7 +381,16 @@ class GameServerRunning extends GameServerBaseState {
 		if(c && c.isActive)
 		{
 			c.characterPostActivated();
+
+			//eh, just put it in here. Probably gonna be moved later.
+			if(c.ownerType === "ai")
+			{
+				var ai = this.gs.aim.getAIAgentByID(c.ownerId);
+				ai.postCharacterActivate(c.id);
+			}
 		}
+
+		
 	}
 
 	cbCharacterActivatedFailed(characterId, errorMessage) {

@@ -52,8 +52,8 @@ class Bullet {
 		this.plBody.createFixture({
 			shape: boxShape,
 			density: this.density,
-			friction: 0.0
-			//isSensor: true
+			friction: 0.0,
+			isSensor: true
 		});	
 
 		var vy = this.speed * Math.sin(this.angle) * -1;

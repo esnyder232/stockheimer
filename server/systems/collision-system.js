@@ -15,13 +15,14 @@ class CollisionSystem {
 		this.pl = this.gs.pl;
 
 		this.colList = [
+			{type1: "ai-agent", 	type2:"character", 	beginFunc: this.beginAIAgentCharacterCollision.bind(this), 	endFunc: this.endAIAgentCharacterCollision.bind(this)},
 			// {type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
 			{type1: "character", 	type2:"projectile", beginFunc: this.beginCharacterProjectileCollision.bind(this), 	endFunc: this.endCharacterProjectileCollision.bind(this)},
 			// {type1: "character", 	type2:"wall", 		beginFunc: this.beginCharacterWallCollision.bind(this), 		endFunc: this.endCharacterWallCollision.bind(this)},
 			{type1: "character", 	type2:"user", 		beginFunc: this.beginCharacterUserCollision.bind(this), 		endFunc: this.endCharacterUserCollision.bind(this)},
 			{type1: "projectile", 	type2:"projectile", beginFunc: this.beginProjectileProjectileCollision.bind(this), 	endFunc: this.endProjectileProjectileCollision.bind(this)},
 			{type1: "projectile", 	type2:"user", 		beginFunc: this.beginProjectileUserCollision.bind(this), 		endFunc: this.endProjectileUserCollision.bind(this)},
-			//{type1: "projectile", 	type2:"wall", 		beginFunc: this.beginProjectileWallCollision.bind(this), 		endFunc: this.endProjectileWallCollision.bind(this)},
+			{type1: "projectile", 	type2:"wall", 		beginFunc: this.beginProjectileWallCollision.bind(this), 		endFunc: this.endProjectileWallCollision.bind(this)},
 			//{type1: "user", 	type2:"wall", 			beginFunc: this.beginUserWallCollision.bind(this), 				endFunc: this.endUserWallCollision.bind(this)}
 		]
 
@@ -43,8 +44,8 @@ class CollisionSystem {
 		//console.log('beginContact!');
 
 		//first, we need to get the user data objects from the collision so we know what types of game objects collided
-		var uda = contactObj.getFixtureA().getBody().getUserData();
-		var udb = contactObj.getFixtureB().getBody().getUserData();
+		var uda = this.getUserData(contactObj.getFixtureA());
+		var udb = this.getUserData(contactObj.getFixtureB());
 
 		if(uda !== null && udb !== null)
 		{
@@ -73,8 +74,8 @@ class CollisionSystem {
 		//console.log('endContact!');
 
 		//first, we need to get the user data objects from the collision so we know what types of game objects collided
-		var uda = contactObj.getFixtureA().getBody().getUserData();
-		var udb = contactObj.getFixtureB().getBody().getUserData();
+		var uda = this.getUserData(contactObj.getFixtureA());
+		var udb = this.getUserData(contactObj.getFixtureB());
 
 		if(uda !== null && udb !== null)
 		{
@@ -97,6 +98,50 @@ class CollisionSystem {
 			}
 		}
 	}
+
+	//Get the user data if it exists on the fixture.
+	//If it doesn't exist on the fixture, get the user data if it exists on the body.
+	//If it doesn't exist on the body, return null.
+	getUserData(fixture)
+	{
+		var userData = fixture.getUserData();
+		if(userData === null)
+		{
+			userData = fixture.getBody().getUserData();
+		}
+
+		return userData;
+	}
+
+
+	///////////////////////////
+	// AI Agent collilsions  //
+	///////////////////////////
+	beginAIAgentCharacterCollision(AIAgentUserData, characterUserData, contactObj, isAIAgentA)
+	{
+		//console.log('begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var ai = this.gs.aim.getAIAgentByID(AIAgentUserData.id);
+		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
+
+		if(ai !== null && c !== null)
+		{
+			ai.characterEnteredVision(c.id);
+		}
+	}
+
+	endAIAgentCharacterCollision(AIAgentUserData, characterUserData, contactObj, isAIAgentA)
+	{
+		//console.log('begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var ai = this.gs.aim.getAIAgentByID(AIAgentUserData.id);
+		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
+
+		if(ai !== null && c !== null)
+		{
+			ai.characterExitedVision(c.id);
+		}
+	}
+
+
 
 	///////////////////////////
 	// character collilsions //
@@ -122,8 +167,13 @@ class CollisionSystem {
 		{
 			var processDamage = true;
 
+			//check to see if its a user projectile vs user character or ai projectile vs ai projectile (iow, let user's bullets pass through eachother, and same with ais)
+			if(p.ownerType === c.ownerType)
+			{
+				processDamage = false;
+			}
 			//if its the character's own bullet, see if he is allowed to get hit by it yet
-			if(p.characterId === c.id && p.firedCountdown >= 0)
+			else if(p.characterId === c.id && p.firedCountdown >= 0)
 			{
 				processDamage = false;
 			}

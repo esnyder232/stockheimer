@@ -13,6 +13,7 @@ class AIAgent {
 		this.nodePathToCastle = [];
 		this.currentNode = 0;
 		this.followPath = false;
+		
 		this.currentNodeReached = false;
 		this.nodeRadiusSquared = 0.01; //radius to determine if the character has reached its current node
 
@@ -30,6 +31,13 @@ class AIAgent {
 			x: 0,
 			y: 0
 		}
+
+		this.attackTarget = false;
+		this.targetCharacterIdToAttack = null;
+
+		this.charactersInVision = [];
+		this.isAttackInterval = 1000; //ms
+		this.isAttackCurrentTimer = 0; //ms
 	}
 
 	aiAgentInit(gameServer, characterId) {
@@ -38,6 +46,86 @@ class AIAgent {
 		this.characterId = characterId
 
 		this.username = "AI " + this.id;
+	}
+
+	characterEnteredVision(characterId) {
+		if(characterId !== this.characterId && !this.charactersInVision.includes(characterId))
+		{
+			this.charactersInVision.push(characterId);
+
+			//check if target is a user. If so, attack him.
+			if(this.targetCharacterIdToAttack === null)
+			{
+				var c = this.gs.gom.getGameObjectByID(characterId);
+				if(c !== null && c.ownerType === 'user')
+				{
+					this.attackTarget = true;
+					this.targetCharacterIdToAttack = characterId;
+				}
+			}
+		}
+	}
+
+	characterExitedVision(characterId) {
+		if(this.charactersInVision.includes(characterId))
+		{
+			var i = this.charactersInVision.findIndex((x) => {return x === characterId});
+			if(i >= 0)
+			{
+				this.charactersInVision.splice(i, 1);
+
+				//if the target was the currently attacked target, scan if there are other characters to attack. If not, turn attacking off.
+				if(this.targetCharacterIdToAttack === characterId)
+				{
+					var nextUser = this.charactersInVision.find((x) => {
+						var c = this.gs.gom.getGameObjectByID(x);
+						if(c !== null)
+						{
+							return c.ownerType === 'user';
+						}
+						return false;
+					});
+
+					//switch attacking to next user
+					if(nextUser !== undefined) 
+					{
+						this.attackTarget = true;
+						this.targetCharacterIdToAttack = nextUser;
+					}
+					//turn off attacking
+					else
+					{
+						this.attackTarget = false;
+						this.targetCharacterIdToAttack = null;
+					}
+				}
+			}
+		}
+	}
+
+	postCharacterActivate(characterId) {
+		var character = this.gs.gom.getGameObjectByID(this.characterId);
+		if(character !== null && character.isActive)
+		{
+			var pos = character.plBody.getPosition();
+			if(pos !== null) 
+			{
+				//create a aiVision body for the ai agent
+				const Vec2 = this.gs.pl.Vec2;
+				const pl = this.gs.pl;
+				
+				var trackingSensor = pl.Circle(Vec2(0, 0), 8);
+
+				//attach the sensor to the character. Meh, we'll see how choatic it gets :)
+				character.plBody.createFixture({
+					shape: trackingSensor,
+					density: 0.0,
+					friction: 1.0,
+					isSensor: true,
+					userData: {type:"ai-agent", id:this.id}
+				});
+			}
+		}
 	}
 
 	seekCastle() {
@@ -124,7 +212,70 @@ class AIAgent {
 		if(character !== null && character.isActive)
 		{
 			var pos = character.plBody.getPosition();
-			
+			var inputChanged = false;
+
+			var finalInput = {
+				up: false,
+				down: false,
+				left: false,
+				right: false,
+				isFiring: false,
+				isFiringAlt: false,
+				characterDirection: 0.0
+			}
+
+			//shoot bullets at target
+			if(this.attackTarget)
+			{
+				//fire a bullet
+				if(this.isAttackCurrentTimer <= 0)
+				{
+					var targetCharacter = this.gs.gom.getGameObjectByID(this.targetCharacterIdToAttack);
+					var targetCharacterPos = null;
+					
+					//checks n' shit
+					if(targetCharacter !== null)
+					{
+						if(targetCharacter.plBody !== null)
+						{
+							targetCharacterPos = targetCharacter.plBody.getPosition();
+						}
+					}
+
+					//NOW fire a bullet
+					if(targetCharacterPos !== null)
+					{
+						//calculate angle
+						dx = targetCharacterPos.x - pos.x;
+						dy = targetCharacterPos.y - pos.y;
+
+						var angle = Math.atan(-dy / dx);
+						
+						//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
+						//this basically just flips the direction of the x and y
+						var radiansToAdd = dx < 0 ? Math.PI : 0;
+
+						angle += radiansToAdd;
+
+						finalInput.isFiring = true;
+						finalInput.characterDirection = angle;
+						inputChanged = true;
+						
+						this.isAttackCurrentTimer = this.isAttackInterval;
+					}
+				}
+			}
+
+			if(this.isAttackCurrentTimer > 0)
+			{
+				this.isAttackCurrentTimer -= dt;
+				if(this.isAttackCurrentTimer <= 0)
+				{
+					finalInput.isFiring = false;
+					inputChanged = true;
+				}
+			}
+
 			//determine the node to navigate to
 			if(this.followPath)
 			{
@@ -154,37 +305,15 @@ class AIAgent {
 					{
 						this.followPath = false;
 
-						var finalInput = {
-							up: false,
-							down: false,
-							left: false,
-							right: false,
-							isFiring: false,
-							isFiringAlt: false,
-							characterDirection: 0.0
-						}
-
 						//stop the character
-						character.inputQueue.push(finalInput);
+						finalInput.up = false;
+						finalInput.down = false;
+						finalInput.left = false;
+						finalInput.right = false;
+						inputChanged = true;
 					}
 
 					this.currentNodeReached = false;
-
-					// //do line of sight tests to get the next logical node
-					// var nodeInLOS = true;
-					// while(nodeInLOS)
-					// {
-					// 	nodeInLOS = this.lineOfSightTest(pos, this.nodePathToCastle[this.currentNode + 1]);
-					// 	if(nodeInLOS)
-					// 	{
-					// 		console.log('current node in LOS(' + this.nodePathToCastle[this.currentNode].x + ',' + this.nodePathToCastle[this.currentNode].y + '). Skipping the node.')
-					// 		this.currentNode++
-					// 	}
-					// 	else
-					// 	{
-					// 		console.log('current node NOT in LOS(' + this.nodePathToCastle[this.currentNode].x + ',' + this.nodePathToCastle[this.currentNode].y + ').')
-					// 	}
-					// }
 				}
 			}
 
@@ -246,34 +375,27 @@ class AIAgent {
 					var xAngle = Math.cos(angle);
 					var yAngle = Math.sin(angle);
 	
-					var finalInput = {
-						up: false,
-						down: false,
-						left: false,
-						right: false,
-						isFiring: false,
-						isFiringAlt: false,
-						characterDirection: 0.0
-					}
 					if(xAngle >= 0.5)
 					{
 						finalInput.right = true;
+						inputChanged = true;
 					}
 					else if (xAngle <= -0.5)
 					{
 						finalInput.left = true;
+						inputChanged = true;
 					}
 	
 					if(yAngle >= 0.5)
 					{
 						finalInput.up = true;
+						inputChanged = true;
 					}
 					else if (yAngle <= -0.5)
 					{
 						finalInput.down = true;
+						inputChanged = true;
 					}
-	
-					character.inputQueue.push(finalInput);
 
 					//check position from prev position. If you haven't moved in a while, add to the shimmy accumulator
 					if(!this.shimmyOveride)
@@ -307,6 +429,13 @@ class AIAgent {
 					this.agentPrevPosition.x = pos.x;
 					this.agentPrevPosition.y = pos.y;
 				}
+			}
+
+
+			//input the finalInput to the character
+			if(inputChanged)
+			{
+				character.inputQueue.push(finalInput);
 			}
 		}
 	}
