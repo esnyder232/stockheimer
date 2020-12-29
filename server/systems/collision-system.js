@@ -168,10 +168,11 @@ class CollisionSystem {
 			var processDamage = true;
 
 			//check to see if its a user projectile vs user character or ai projectile vs ai projectile (iow, let user's bullets pass through eachother, and same with ais)
-			// if(p.ownerType === c.ownerType)
-			// {
-			// 	processDamage = true;
-			// }
+			if(!this.gs.pvpEnabled && p.ownerType === c.ownerType)
+			{
+				processDamage = false;
+			}
+
 			//if its the character's own bullet, see if he is allowed to get hit by it yet
 			if(p.characterId === c.id && p.firedCountdown >= 0)
 			{

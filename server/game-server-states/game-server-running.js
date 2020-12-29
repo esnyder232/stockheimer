@@ -345,6 +345,31 @@ class GameServerRunning extends GameServerBaseState {
 
 						break;
 
+					case "fromClientTogglePvp":
+						if(this.checkEnemyPasscode(e.enemyControlPass))
+						{
+							this.gs.pvpEnabled = !this.gs.pvpEnabled;
+
+							//send a message to each active player to tell them about pvp
+							var killFeedMessage = "====== PVP DISABLED ======";
+							if(this.gs.pvpEnabled)
+							{
+								killFeedMessage = "====== PVP ENABLED ======";
+							}
+							var activeUsers = this.gs.um.getActiveUsers();
+							for(var i = 0; i < activeUsers.length; i++)
+							{
+								
+								activeUsers[i].trackedEvents.push({
+									"eventName": "killfeedMsg",
+									"killfeedMsg": killFeedMessage
+								});
+							}
+						}
+
+						
+						break;
+
 					default:
 						//intentionally blank
 						break;

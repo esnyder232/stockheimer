@@ -86,7 +86,9 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'make-enemies-seek-castle', func: this.makeEnemiesSeekCastle.bind(this)},
 			{event: 'make-enemies-seek-player', func: this.makeEnemiesSeekPlayer.bind(this)},
 			{event: 'make-enemies-stop', func: this.makeEnemiesStop.bind(this)},
-			{event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)}
+			{event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)},
+			{event: 'toggle-pvp', func: this.togglePvp.bind(this)},
+			
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -915,6 +917,17 @@ export default class MainScene extends Phaser.Scene {
 
 		this.gc.wsh.clientToServerEvents.push({
 			"eventName": "fromClientKillAllEnemies",
+			"enemyControlPass": pass
+		});
+	}
+
+	togglePvp() {
+		var pass = $("#tb-enemy-password").val();
+		if(!pass)
+			pass = "";
+
+		this.gc.wsh.clientToServerEvents.push({
+			"eventName": "fromClientTogglePvp",
 			"enemyControlPass": pass
 		});
 	}
