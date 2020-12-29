@@ -527,6 +527,7 @@ export default class MainScene extends Phaser.Scene {
 	  
 	update(timeElapsed, dt) {
 		var sendInputEvent = false;
+		//console.log('dt ' + dt);
 
 		//update any dmg texts
 		for(var i = this.damageTexts.length - 1; i >= 0; i--)
@@ -540,6 +541,18 @@ export default class MainScene extends Phaser.Scene {
 				}
 				this.damageTexts.splice(i, 1);
 			}
+		}
+
+		//update any projectiles on the client side (no longer update driven from server side)
+		for(var i = 0; i < this.projectilePhaserElements.length; i++)
+		{
+			var ppu = this.projectilePhaserElements[i];
+
+			ppu.x += ppu.xSpeedPhaser * (dt/1000);
+			ppu.y += ppu.ySpeedPhaser * (dt/1000);
+
+			ppu.boxGraphics.setX(ppu.x);
+			ppu.boxGraphics.setY(ppu.y);
 		}
 
 
@@ -795,16 +808,25 @@ export default class MainScene extends Phaser.Scene {
 			boxGraphics.closePath();
 			boxGraphics.strokePath();
 
-			boxGraphics.setX(p.x * this.planckUnitsToPhaserUnitsRatio);
-			boxGraphics.setY(p.y * this.planckUnitsToPhaserUnitsRatio * -1);
-		
-			this.projectilePhaserElements.push({
+			//calculate the xSpeed and ySpeed components (in phaser units)
+			var xSpeedPhaser = (p.speed * this.planckUnitsToPhaserUnitsRatio) * Math.cos(p.angle);
+			var ySpeedPhaser = (p.speed * this.planckUnitsToPhaserUnitsRatio) * Math.sin(p.angle);
+
+			var ppu = {
 				id: p.id,
-				x: p.x,
-				y: p.y,
+				x: p.x * this.planckUnitsToPhaserUnitsRatio,
+				y: p.y * this.planckUnitsToPhaserUnitsRatio * -1,
 				angle: p.angle,
-				boxGraphics: boxGraphics
-			});
+				boxGraphics: boxGraphics,
+				speed: p.speed,
+				xSpeedPhaser: xSpeedPhaser,
+				ySpeedPhaser: ySpeedPhaser
+			}
+
+			boxGraphics.setX(ppu.x);
+			boxGraphics.setY(ppu.y);
+
+			this.projectilePhaserElements.push(ppu);
 		}
 	}
 

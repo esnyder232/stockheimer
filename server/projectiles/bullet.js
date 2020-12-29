@@ -22,7 +22,7 @@ class Bullet {
 		this.firedCountdown = 250; //ms. This is the amount of time remaining until your own bullets will hurt the character that fired it.
 	}
 
-	bulletInit(gameServer, xc, yc, angle, size, speed, lifespan, density) {
+	bulletInit(gameServer, xc, yc, angle, size, speed, lifespan) {
 		this.gs = gameServer;
 		this.xStarting = xc + ((0.5+(size))*Math.cos(angle));
 		this.yStarting = yc + ((0.5+(size))*Math.sin(angle)*-1);
@@ -30,7 +30,7 @@ class Bullet {
 		this.size = size;
 		this.speed = speed;
 		this.lifespan = lifespan;
-		this.density = density;
+		//this.density = density;
 	}
 
 	//called only after the bullet is activated. Put things in here that other systems will depend on.
@@ -51,7 +51,7 @@ class Bullet {
 		
 		this.plBody.createFixture({
 			shape: boxShape,
-			density: this.density,
+			density: 1/(this.size*this.size),
 			friction: 0.0,
 			isSensor: true
 		});	
@@ -60,9 +60,8 @@ class Bullet {
 		var vx = this.speed * Math.cos(this.angle);
 
 		//set the velocity
-		var f = this.plBody.getWorldVector(Vec2(vx*this.density, vy*this.density));
-		var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
-		this.plBody.applyLinearImpulse(f, p, true);
+		var vel = new Vec2(vx, vy);
+		this.plBody.setLinearVelocity(vel);
 	}
 
 	cbBulletActivatedFailed(id, errorMessage) {
@@ -138,7 +137,8 @@ class Bullet {
 			"x": bodyPos.x,
 			"y": bodyPos.y,
 			"angle": this.angle,
-			"size": this.size
+			"size": this.size,
+			"speed": this.speed
 		};
 		
 		return eventData;

@@ -157,7 +157,8 @@ export default class EventProcessor {
 							x: e.x,
 							y: e.y,
 							angle: e.angle,
-							size: e.size
+							size: e.size,
+							speed: e.speed
 						});
 						break;
 
