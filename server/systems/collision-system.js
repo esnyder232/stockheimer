@@ -170,7 +170,7 @@ class CollisionSystem {
 			//check to see if its a user projectile vs user character or ai projectile vs ai projectile (iow, let user's bullets pass through eachother, and same with ais)
 			if(p.ownerType === c.ownerType)
 			{
-				processDamage = false;
+				processDamage = true;
 			}
 			//if its the character's own bullet, see if he is allowed to get hit by it yet
 			else if(p.characterId === c.id && p.firedCountdown >= 0)
