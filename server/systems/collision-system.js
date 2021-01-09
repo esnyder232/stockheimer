@@ -55,7 +55,7 @@ class CollisionSystem {
 			var udArray = [uda, udb];
 
 			//sort types alphabetically
-			udArray = udArray.sort((a, b) => {
+			udArray.sort((a, b) => {
 				return (a.type < b.type) ? -1 : (a.type > b.type) ? 1 : 0;
 			});
 
@@ -85,7 +85,7 @@ class CollisionSystem {
 			var udArray = [uda, udb];
 
 			//sort types alphabetically
-			udArray = udArray.sort((a, b) => {
+			udArray.sort((a, b) => {
 				return (a.type < b.type) ? -1 : (a.type > b.type) ? 1 : 0;
 			});
 
@@ -125,7 +125,7 @@ class CollisionSystem {
 
 		if(ai !== null && c !== null)
 		{
-			ai.characterEnteredVision(c.id);
+			ai.characterEnteredVision(c);
 		}
 	}
 
@@ -137,7 +137,7 @@ class CollisionSystem {
 
 		if(ai !== null && c !== null)
 		{
-			ai.characterExitedVision(c.id);
+			ai.characterExitedVision(c);
 		}
 	}
 

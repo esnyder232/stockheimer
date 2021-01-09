@@ -219,28 +219,28 @@ class GameServerRunning extends GameServerBaseState {
 									if(tm !== null)
 									{
 										//create 2 for congestion testing
-										// var z = tm.enemySpawnZones[3];
+										var z = tm.enemySpawnZones[3];
 
-										// //ai 1
-										// var ai1 = this.gs.aim.createAIAgent();
-										// var c1 = this.gs.gom.createGameObject('character');
+										//ai 1
+										var ai1 = this.gs.aim.createAIAgent();
+										var c1 = this.gs.gom.createGameObject('character');
 										
-										// ai1.aiAgentInit(this.gs, c1.id);
+										ai1.aiAgentInit(this.gs, c1.id);
 										
-										// c1.ownerId = ai1.id;
-										// c1.ownerType = "ai";
-										// c1.characterInit(this.gs);
+										c1.ownerId = ai1.id;
+										c1.ownerType = "ai";
+										c1.characterInit(this.gs);
 
-										// var xStarting = z.xPlanck + 1.1;
-										// var yStarting = z.yPlanck - 0.5;
+										var xStarting = z.xPlanck + 1.1;
+										var yStarting = z.yPlanck - 0.5;
 
-										// c1.xStarting = xStarting;
-										// c1.yStarting = yStarting;
-										// c1.hpCur = 25;
-										// c1.hpMax = 25;
-										// c1.walkingVelMagMax = 1;
+										c1.xStarting = xStarting;
+										c1.yStarting = yStarting;
+										c1.hpCur = 25;
+										c1.hpMax = 25;
+										c1.walkingVelMagMax = 1;
 
-										// this.gs.gom.activateGameObjectId(c1.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+										this.gs.gom.activateGameObjectId(c1.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 
 
 
@@ -267,30 +267,30 @@ class GameServerRunning extends GameServerBaseState {
 
 
 										//create one for each red zone
-										for(var j = 0; j < tm.enemySpawnZones.length; j++)
-										{
-											var z = tm.enemySpawnZones[j];
+										// for(var j = 0; j < tm.enemySpawnZones.length; j++)
+										// {
+										// 	var z = tm.enemySpawnZones[j];
 
-											var ai = this.gs.aim.createAIAgent();
-											var c = this.gs.gom.createGameObject('character');
+										// 	var ai = this.gs.aim.createAIAgent();
+										// 	var c = this.gs.gom.createGameObject('character');
 											
-											ai.aiAgentInit(this.gs, c.id);
+										// 	ai.aiAgentInit(this.gs, c.id);
 											
-											c.ownerId = ai.id;
-											c.ownerType = "ai";
-											c.characterInit(this.gs);
+										// 	c.ownerId = ai.id;
+										// 	c.ownerType = "ai";
+										// 	c.characterInit(this.gs);
 
-											var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
-											var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
+										// 	var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
+										// 	var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
 				
-											c.xStarting = xStarting;
-											c.yStarting = yStarting;
-											c.hpCur = 25;
-											c.hpMax = 25;
-											c.walkingVelMagMax = 1;
+										// 	c.xStarting = xStarting;
+										// 	c.yStarting = yStarting;
+										// 	c.hpCur = 25;
+										// 	c.hpMax = 25;
+										// 	c.walkingVelMagMax = 1;
 
-											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
-										}
+										// 	this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+										// }
 									}
 								}
 							}
@@ -307,25 +307,26 @@ class GameServerRunning extends GameServerBaseState {
 
 								for(var j = 0 ; j < aiAgents.length; j++)
 								{
-									aiAgents[j].seekCastle();
+									aiAgents[j].bForceIdle = false;
 								}
 							}
-							else if(e.enemyBehavior === "seek-player")
-							{
-								var aiAgents = this.gs.aim.getAIAgents();
+							// else if(e.enemyBehavior === "seek-player")
+							// {
+							// 	var aiAgents = this.gs.aim.getAIAgents();
 
-								for(var j = 0 ; j < aiAgents.length; j++)
-								{
-									aiAgents[j].seekPlayer(user);
-								}
-							}
+							// 	for(var j = 0 ; j < aiAgents.length; j++)
+							// 	{
+							// 		aiAgents[j].seekPlayer(user);
+							// 	}
+							// }
 							else if(e.enemyBehavior === "stop")
 							{
 								var aiAgents = this.gs.aim.getAIAgents();
 
 								for(var j = 0 ; j < aiAgents.length; j++)
 								{
-									aiAgents[j].stop();
+									//aiAgents[j].stop();
+									aiAgents[j].bForceIdle = true;
 								}
 							}
 						}
@@ -461,8 +462,6 @@ class GameServerRunning extends GameServerBaseState {
 				c.characterPredeactivated();
 				this.gs.gom.deactivateGameObjectId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
 
-				owner.characterId = null;
-				c.ownerId = null;
 			}
 		}
 	}
@@ -470,10 +469,35 @@ class GameServerRunning extends GameServerBaseState {
 	cbDeactivateCharacterSuccess(characterId)
 	{
 		var c = this.gs.gom.getGameObjectByID(characterId);
-		if(c)
+		var owner = null;
+		var ownerType = "";
+		var ownerId = null;
+		
+		if(c !== null)
+		{
+			ownerType = c.ownerType;
+			ownerId = c.ownerId;
+			owner = this.globalfuncs.getOwner(this.gs, ownerId, ownerType);
+		}
+		
+		//hacky as shit, but delete the ai agent as well if the character was controlled by an ai
+		if(owner !== null && ownerType === "ai")
+		{
+			owner.aiAgentDeinit();
+			this.gs.aim.destroyAIAgent(ownerId);
+		}
+
+		//destroy the character game object
+		if(c !== null)
 		{
 			c.characterDeinit();
 			this.gs.gom.destroyGameObject(c.id);
+		}
+
+		//disassociate the owner from the character
+		if(owner !== null)
+		{
+			owner.characterId = null;
 		}
 	}
 

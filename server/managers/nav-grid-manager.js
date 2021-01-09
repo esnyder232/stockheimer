@@ -119,7 +119,6 @@ class NavGridManager {
 				this.transactionQueue.length = 0;
 			}
 
-			this.updateIndex();
 			this.isDirty = false;
 		}
 	}

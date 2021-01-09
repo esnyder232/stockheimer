@@ -1,5 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const {AIAgentForcedIdleState} = require('./ai-agent-states/ai-agent-forced-idle-state.js');
+const {AIAgentInitializingState} = require('./ai-agent-states/ai-agent-initializing-state.js');
 
 
 class AIAgent {
@@ -8,6 +8,7 @@ class AIAgent {
 		this.globalfuncs = null;
 		this.id = null;
 		this.characterId = null;
+		this.bCharacterIsActive = false;
 
 		this.username = "";
 		this.pathSet = false;
@@ -33,15 +34,25 @@ class AIAgent {
 			y: 0
 		}
 
-		this.attackTarget = false;
+		//this.attackTarget = false;
 		this.targetCharacterIdToAttack = null;
+		this.targetCharacter = null;
+		this.targetCharacterDistanceSquared = 0;
+		this.attackingRangeSquared = 49;
+		this.playerSeekingRange = 10;
 
-		this.charactersInVision = [];
+		this.userCharactersInVision = [];
 		this.isAttackInterval = 1000; //ms
 		this.isAttackCurrentTimer = 0; //ms
 
 		this.state = null;
 		this.nextState = null;
+		this.stateName = "";
+
+		this.bForceIdle = false;	//used to force the ai-agent to go to the "forced idle" state. Mainly for debugging.
+
+		this.character = null; 		//direct reference to the character the ai agent is controlling
+		this.characterPos = null;	//direct reference to the character's planck position vector
 	}
 
 	aiAgentInit(gameServer, characterId) {
@@ -51,89 +62,140 @@ class AIAgent {
 
 		this.username = "AI " + this.id;
 
-		this.state = new AIAgentForcedIdleState(this);
+		this.state = new AIAgentInitializingState(this);		
+		this.nextState = null;
+
+		this.state.enter();
+	}
+
+	aiAgentDeinit() {
+		this.character = null;
+		this.characterPos = null;
 		this.nextState = null;
 	}
 
-	characterEnteredVision(characterId) {
-		if(characterId !== this.characterId && !this.charactersInVision.includes(characterId))
+	characterEnteredVision(c) {
+		var a = this.userCharactersInVision.find((x) => {return x.c === c});
+		if(c.id !== this.characterId && a === undefined && c.ownerType === "user")
 		{
-			this.charactersInVision.push(characterId);
+			var characterDistanceObj = {
+				c: c,
+				distanceSquared: 99999
+			};
 
-			//check if target is a user. If so, attack him.
-			if(this.targetCharacterIdToAttack === null)
-			{
-				var c = this.gs.gom.getGameObjectByID(characterId);
-				if(c !== null && c.ownerType === 'user')
-				{
-					this.attackTarget = true;
-					this.targetCharacterIdToAttack = characterId;
-				}
-			}
+			this.userCharactersInVision.push(characterDistanceObj);
+
+			// //check if target is a user. If so, attack him.
+			// if(this.targetCharacterIdToAttack === null)
+			// {
+			// 	var c = this.gs.gom.getGameObjectByID(characterId);
+			// 	if(c !== null && c.ownerType === 'user')
+			// 	{
+			// 		this.attackTarget = true;
+			// 		this.targetCharacterIdToAttack = characterId;
+			// 	}
+			// }
 		}
 	}
 
-	characterExitedVision(characterId) {
-		if(this.charactersInVision.includes(characterId))
+	characterExitedVision(c) {
+		var i = this.userCharactersInVision.findIndex((x) => {return x.c === c});
+		if(i >= 0)
 		{
-			var i = this.charactersInVision.findIndex((x) => {return x === characterId});
-			if(i >= 0)
-			{
-				this.charactersInVision.splice(i, 1);
+			this.userCharactersInVision.splice(i, 1);
 
-				//if the target was the currently attacked target, scan if there are other characters to attack. If not, turn attacking off.
-				if(this.targetCharacterIdToAttack === characterId)
-				{
-					var nextUser = this.charactersInVision.find((x) => {
-						var c = this.gs.gom.getGameObjectByID(x);
-						if(c !== null)
-						{
-							return c.ownerType === 'user';
-						}
-						return false;
-					});
+			// //if the target was the currently attacked target, scan if there are other characters to attack. If not, turn attacking off.
+			// if(this.targetCharacterIdToAttack === characterId)
+			// {
+			// 	var nextUser = this.userCharactersInVision.find((x) => {
+			// 		var c = this.gs.gom.getGameObjectByID(x);
+			// 		if(c !== null)
+			// 		{
+			// 			return c.ownerType === 'user';
+			// 		}
+			// 		return false;
+			// 	});
 
-					//switch attacking to next user
-					if(nextUser !== undefined) 
-					{
-						this.attackTarget = true;
-						this.targetCharacterIdToAttack = nextUser;
-					}
-					//turn off attacking
-					else
-					{
-						this.attackTarget = false;
-						this.targetCharacterIdToAttack = null;
-					}
-				}
-			}
+			// 	//switch attacking to next user
+			// 	if(nextUser !== undefined) 
+			// 	{
+			// 		this.attackTarget = true;
+			// 		this.targetCharacterIdToAttack = nextUser;
+			// 	}
+			// 	//turn off attacking
+			// 	else
+			// 	{
+			// 		this.attackTarget = false;
+			// 		this.targetCharacterIdToAttack = null;
+			// 	}
+			// }
+			
 		}
 	}
+
+	sortUserCharactersInVision() {
+		if(this.characterPos !== null && this.userCharactersInVision.length > 0)
+		{
+			//first get the squared distance for each user character
+			for(var i = 0; i < this.userCharactersInVision.length; i++)
+			{
+				var co = this.userCharactersInVision[i];
+				var cop = co.c.getPlanckPosition();
+				if(cop !== null)
+				{
+					var dx = cop.x - this.characterPos.x;
+					var dy = cop.y - this.characterPos.y;
+					co.distanceSquared = dx*dx + dy*dy;
+				}
+				else
+				{
+					co.distanceSquared = 999999;
+				}
+			}
+
+			//next, sort
+			this.userCharactersInVision.sort((a, b) => {return a.distanceSquared - b.distanceSquared;});
+
+			// //debug
+			// console.log("+++" + this.username + " distances: ");
+			// for(var i = 0; i < this.userCharactersInVision.length; i++)
+			// {
+			// 	var u = this.gs.um.getUserByID(this.userCharactersInVision[i].c.ownerId);
+			// 	if(u !== null)
+			// 	{
+			// 		console.log("User: " + u.username + " distance squared is: " + this.userCharactersInVision[i].distanceSquared)
+			// 	}
+			// }
+		}
+	}
+
+	updateTargetCharacterDistance() {
+		if(this.characterPos !== null && this.targetCharacter !== null)
+		{
+			var cop = this.targetCharacter.getPlanckPosition();
+			if(cop !== null)
+			{
+				var dx = cop.x - this.characterPos.x;
+				var dy = cop.y - this.characterPos.y;
+				this.targetCharacterDistanceSquared = dx*dx + dy*dy;
+			}
+			else
+			{
+				this.targetCharacterDistanceSquared = 999999;
+			}
+		}
+
+		//debugging
+		//console.log('updateing target character distance: ' + this.targetCharacterDistanceSquared);
+	}
+
+	
 
 	postCharacterActivate(characterId) {
-		var character = this.gs.gom.getGameObjectByID(this.characterId);
-		if(character !== null && character.isActive)
-		{
-			var pos = character.plBody.getPosition();
-			if(pos !== null) 
-			{
-				//create a aiVision body for the ai agent
-				const Vec2 = this.gs.pl.Vec2;
-				const pl = this.gs.pl;
-				
-				var trackingSensor = pl.Circle(Vec2(0, 0), 8);
-
-				//attach the sensor to the character. Meh, we'll see how choatic it gets :)
-				character.plBody.createFixture({
-					shape: trackingSensor,
-					density: 0.0,
-					friction: 1.0,
-					isSensor: true,
-					userData: {type:"ai-agent", id:this.id}
-				});
-			}
-		}
+		this.bCharacterIsActive = true;
 	}
+
+
 
 	seekCastle() {
 		var character = this.gs.gom.getGameObjectByID(this.characterId);
@@ -142,7 +204,7 @@ class AIAgent {
 			var pos = character.plBody.getPosition();
 
 			//contact the nav grid to get a path
-			if(pos !== null)
+			if(this.characterPos !== null)
 			{
 				this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
 
@@ -213,12 +275,39 @@ class AIAgent {
 		}
 	}
 
+	insertStopInput() {
+		var finalInput = {
+			up: false,
+			down: false,
+			left: false,
+			right: false,
+			isFiring: false,
+			isFiringAlt: false,
+			characterDirection: 0.0
+		}
+
+		//stop the character
+		this.character.inputQueue.push(finalInput);
+	}
 
 	update(dt) {
-		var character = this.gs.gom.getGameObjectByID(this.characterId);
-		if(character !== null && character.isActive)
+		
+		this.state.update(dt);
+
+		if(this.nextState !== null)
 		{
-			var pos = character.plBody.getPosition();
+			this.state.exit();
+			this.nextState.enter();
+
+			this.state = this.nextState;
+			this.nextState = null;
+		}
+
+		//var character = this.gs.gom.getGameObjectByID(this.characterId);		
+		//if(character !== null && character.isActive)
+		if(false)
+		{
+			//var pos = character.plBody.getPosition();
 			var inputChanged = false;
 
 			var finalInput = {
@@ -253,8 +342,8 @@ class AIAgent {
 					if(targetCharacterPos !== null)
 					{
 						//calculate angle
-						dx = targetCharacterPos.x - pos.x;
-						dy = targetCharacterPos.y - pos.y;
+						dx = targetCharacterPos.x - this.characterPos.x;
+						dy = targetCharacterPos.y - this.characterPos.y;
 
 						var angle = Math.atan(-dy / dx);
 						
@@ -289,8 +378,8 @@ class AIAgent {
 				//sense if you are at your destination
 				if(this.nodePathToCastle[this.currentNode])
 				{
-					var errorX = this.nodePathToCastle[this.currentNode].x - pos.x;
-					var errorY = (this.nodePathToCastle[this.currentNode].y * -1) - pos.y;
+					var errorX = this.nodePathToCastle[this.currentNode].x - this.characterPos.x;
+					var errorY = (this.nodePathToCastle[this.currentNode].y * -1) - this.characterPos.y;
 					var squaredDistance = errorX * errorX + errorY * errorY;
 	
 					if(squaredDistance <= this.nodeRadiusSquared)
@@ -305,7 +394,7 @@ class AIAgent {
 				{
 					this.currentNode++;
 
-					this.findNextLOSNode(pos);
+					this.findNextLOSNode(this.characterPos);
 					
 					//destination reached
 					if(this.currentNode > this.nodePathToCastle.length-1)
@@ -354,13 +443,13 @@ class AIAgent {
 						{
 							//console.log('shimm mode disengaged!');
 							this.shimmyOveride = false;
-							this.findNextLOSNode(pos);
+							this.findNextLOSNode(this.characterPos);
 						}
 					}
 					//steer like normal
 					else
 					{
-						seekVelVec = this.calcSeekSteering(pos);
+						seekVelVec = this.calcSeekSteering(this.characterPos);
 						//avoidanceVelVec = this.calcAvoidanceSteering(pos, seekVelVec);
 					}
 					
@@ -407,8 +496,8 @@ class AIAgent {
 					//check position from prev position. If you haven't moved in a while, add to the shimmy accumulator
 					if(!this.shimmyOveride)
 					{
-						var dx = Math.abs(this.agentPrevPosition.x - pos.x);
-						var dy = Math.abs(this.agentPrevPosition.y - pos.y);
+						var dx = Math.abs(this.agentPrevPosition.x - this.characterPos.x);
+						var dy = Math.abs(this.agentPrevPosition.y - this.characterPos.y);
 						
 						if(dx < 0.01 && dy < 0.01)
 						{
@@ -433,8 +522,8 @@ class AIAgent {
 						}
 					}
 
-					this.agentPrevPosition.x = pos.x;
-					this.agentPrevPosition.y = pos.y;
+					this.agentPrevPosition.x = this.characterPos.x;
+					this.agentPrevPosition.y = this.characterPos.y;
 				}
 			}
 
@@ -533,13 +622,16 @@ class AIAgent {
 	//this.currentNode will always be < this.nodePathToCastle.length-1
 	findNextLOSNode(pos)
 	{
+		const Vec2 = this.gs.pl.Vec2;
 		//do line of sight tests to get the next logical node
 		var nodeInLOS = true;
 		while(nodeInLOS)
 		{
 			if(this.currentNode < this.nodePathToCastle.length-1)
 			{
-				nodeInLOS = this.lineOfSightTest(pos, this.nodePathToCastle[this.currentNode + 1]);
+				var nodePos = new Vec2(this.nodePathToCastle[this.currentNode + 1].x, -this.nodePathToCastle[this.currentNode + 1].y);
+
+				nodeInLOS = this.lineOfSightTest(pos, nodePos);
 				if(nodeInLOS)
 				{
 					//console.log('current node in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + '). Skipping the node.')
@@ -560,13 +652,13 @@ class AIAgent {
 
 
 
-	lineOfSightTest(pos, node)
+	lineOfSightTest(pos, pos2)
 	{
 		const Vec2 = this.gs.pl.Vec2;
-		var isNodeInLOS = true;
+		var isInLOS = true;
 
 		var p1 = new Vec2(pos.x, pos.y);
-		var p2 = new Vec2(node.x, -node.y);
+		var p2 = new Vec2(pos2.x, pos2.y);
 
 		this.lineOfSightObjects = [];
 		this.gs.world.rayCast(p1, p2, this.lineOfSightCallback.bind(this));
@@ -578,13 +670,13 @@ class AIAgent {
 			{
 				if(this.lineOfSightObjects[i].fixture.getBody().getUserData().type === "wall")
 				{
-					isNodeInLOS = false;
+					isInLOS = false;
 					break;
 				}
 			}
 		}
 
-		return isNodeInLOS;
+		return isInLOS;
 	}
 
 	lineOfSightCallback(fixture, point, normal, fraction) {

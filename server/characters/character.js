@@ -121,6 +121,9 @@ class Character {
 		this.gs = null;
 		this.inputController = null;
 		this.forceImpulses.length = 0;
+		this.ownerId = null;
+		this.ownerType = null;
+
 	}
 
 	update(dt) {
@@ -413,6 +416,14 @@ class Character {
 			this.state = this.nextState;
 			this.nextState = null;
 		}
+	}
+
+	getPlanckPosition() {
+		if(this.plBody !== null)
+		{
+			return this.plBody.getPosition();
+		}
+		return null;
 	}
 
 	checkDirty() {

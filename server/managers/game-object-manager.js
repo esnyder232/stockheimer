@@ -112,6 +112,7 @@ class GameObjectManager {
 									var oi = this.gameObjectArray.findIndex((x) => {return x.id == o.id;});
 									if(oi >= 0)
 									{
+										this.updateIndex(this.gameObjectArray[oi].id, null, "delete");
 										this.gameObjectArray.splice(oi, 1);
 									}
 								}
@@ -209,8 +210,7 @@ class GameObjectManager {
 				//delete all transactions when done with processing them
 				this.transactionQueue.length = 0;
 			}
-
-			this.updateIndex();
+			
 			this.isDirty = false;
 		}
 	}
