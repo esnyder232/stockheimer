@@ -296,11 +296,12 @@ class GameServer {
 	//For example: setTimeout(..., 50) has +16ms variance on Windows 10, and +1ms variance on Debian 10 
 	//(iow, setimeout will be called between 50-66ms on windows, and 50-51ms on debian 10)
 	gameLoop() {
+		var nowTime = performance.now();
 
 		//if its the designated time has passed, run the update function
-		if(this.previousTick + (this.frameTimeStep) < performance.now())
+		if(this.previousTick + (this.frameTimeStep) < nowTime)
 		{
-			this.previousTick = performance.now();
+			this.previousTick = nowTime;
 			if(this.gameState)
 			{
 				this.gameState.update(this.frameTimeStep);
@@ -325,7 +326,7 @@ class GameServer {
 		}
 
 		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
-		if(performance.now() - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
+		if(nowTime - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
 		{
 			//call the sloppy timer
 			if(this.runGameLoop)
