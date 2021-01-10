@@ -1,6 +1,7 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
 const GameConstants = require('../../shared_files/game-constants.json');
+const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
 
 class Character {
 	constructor() {
@@ -74,23 +75,6 @@ class Character {
 		this.walkingTargetVelVec = Vec2(0, 0);
 		this.walkingAccVec = Vec2(0, 0);
 
-		//create a plank box
-		//var boxShape = pl.Box(0.375, 0.375, Vec2(0, 0));
-		// this.plBody = world.createBody({
-		// 	position: Vec2(this.xStarting, this.yStarting),
-		// 	type: pl.Body.DYNAMIC,
-		// 	fixedRotation: true,
-		// 	userData: {type:"character", id: this.id}
-		// });
-		
-		// this.plBody.createFixture({
-		// 	shape: boxShape,
-		// 	density: 2.0,
-		// 	friction: 0.0,
-		// });	
-
-
-
 		var circleShape = pl.Circle(Vec2(0, 0), 0.375);
 
 		this.plBody = world.createBody({
@@ -104,7 +88,9 @@ class Character {
 			shape: circleShape,
 			density: 2.0,
 			friction: 0.0,
-		});	
+			filterCategoryBits: CollisionCategories["character_body"],
+			filterMaskBits: CollisionMasks["character_body"]
+		});
 	}
 
 	//called before the character is officially deactivated with the characterManager.

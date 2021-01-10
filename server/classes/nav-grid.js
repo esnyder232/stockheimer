@@ -1,4 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
 
 //This class keeps track of nodes and edges for a particular tilemap. It also holds the functions for the actual pathing (breadth first/A*/ect).
 class NavGrid {
@@ -151,7 +152,9 @@ class NavGrid {
 						w.createFixture({
 							shape: wallShape,
 							density: 0.0,
-							friction: 0.0
+							friction: 0.0,
+							filterCategoryBits: CollisionCategories["wall_body"],
+							filterMaskBits: CollisionMasks["wall_body"]
 						});
 
 						this.walls.push(w);

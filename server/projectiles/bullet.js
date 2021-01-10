@@ -1,5 +1,6 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
+const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
 
 class Bullet {
 	constructor() {
@@ -53,7 +54,9 @@ class Bullet {
 			shape: boxShape,
 			density: 1/(this.size*this.size),
 			friction: 0.0,
-			isSensor: true
+			isSensor: true,
+			filterCategoryBits: CollisionCategories["projectile_body"],
+			filterMaskBits: CollisionMasks["projectile_body"]
 		});	
 
 		var vy = this.speed * Math.sin(this.angle) * -1;

@@ -1,6 +1,8 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
+const {CollisionCategories, CollisionMasks} = require('../../collision-data.js');
+
 
 //This annoying state is the first state the AI agent ever enters.
 //Its sole purpose is to wait until the game object (character the ai is controlling) is activated (meaning the character is in the game loop/in planck/etc).
@@ -46,6 +48,8 @@ class AIAgentInitializingState extends AIAgentBaseState.AIAgentBaseState {
 						density: 0.0,
 						friction: 1.0,
 						isSensor: true,
+						filterCategoryBits: CollisionCategories["ai_sensor"],
+						filterMaskBits: CollisionMasks["ai_sensor"],
 						userData: {type:"ai-agent", id: this.aiAgent.id}
 					});
 

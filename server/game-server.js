@@ -73,60 +73,6 @@ class GameServer {
 			this.world = this.pl.World({
 				gravity: Vec2(0, 0)
 			});
-		
-			// //left wall
-			// var leftWall = this.world.createBody({
-			// 	position: Vec2(-29, 0),
-			// 	type: this.pl.Body.STATIC,
-			// 	userData: {type:"wall", id: this.getGlobalGameObjectID()}
-			// });	
-			// var leftWallShape = this.pl.Box(5, 28, Vec2(0,0));
-			// leftWall.createFixture({
-			// 	shape: leftWallShape,
-			// 	density: 0.0,
-			// 	friction: 1.0
-			// });
-
-		
-			// //top wall
-			// var topWall = this.world.createBody({
-			// 	position: Vec2(0, 24),
-			// 	type: this.pl.Body.STATIC,
-			// 	userData: {type:"wall", id: this.getGlobalGameObjectID()}
-			// });	
-			// var topWallShape = this.pl.Box(24, 5, Vec2(0,0));
-			// topWall.createFixture({
-			// 	shape: topWallShape,
-			// 	density: 0.0,
-			// 	friction: 1.0
-			// });
-
-		
-			// //right wall
-			// var rightWall = this.world.createBody({
-			// 	position: Vec2(29, 0),
-			// 	type: this.pl.Body.STATIC,
-			// 	userData: {type:"wall", id: this.getGlobalGameObjectID()}
-			// });	
-			// var rightWallShape = this.pl.Box(5, 28, Vec2(0,0));
-			// rightWall.createFixture({
-			// 	shape: rightWallShape,
-			// 	density: 0.0,
-			// 	friction: 1.0
-			// });
-
-			// //bottom wall
-			// var bottomWall = this.world.createBody({
-			// 	position: Vec2(0, -22),
-			// 	type: this.pl.Body.STATIC,
-			// 	userData: {type:"wall", id: this.getGlobalGameObjectID()}
-			// });	
-			// var bottomWallShape = this.pl.Box(24, 5, Vec2(0,0));
-			// bottomWall.createFixture({
-			// 	shape: bottomWallShape,
-			// 	density: 0.0,
-			// 	friction: 1.0
-			// });
 		}
 		
 		//console.log('creating gameworld done');

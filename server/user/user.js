@@ -3,6 +3,7 @@ const {GlobalFuncs} = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
 const serverConfig = require('../server-config.json');
+const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
 
 class User {
 	constructor() {
@@ -82,7 +83,9 @@ class User {
 			shape: trackingSensor,
 			density: 0.0,
 			friction: 1.0,
-			isSensor: true
+			isSensor: true,
+			filterCategoryBits: CollisionCategories["user_sensor"],
+			filterMaskBits: CollisionMasks["user_sensor"]
 		});
 	}
 
