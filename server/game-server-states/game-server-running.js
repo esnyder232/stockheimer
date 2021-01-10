@@ -11,6 +11,36 @@ class GameServerRunning extends GameServerBaseState {
 	enter(dt) {
 		console.log('running server enter');
 		super.enter(dt);
+
+		//testing for cpu usage on server
+		var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
+		for(var j = 0; j < 20; j++)
+		{
+			var z = tm.enemySpawnZones[3];
+
+			var ai = this.gs.aim.createAIAgent();
+			var c = this.gs.gom.createGameObject('character');
+			
+			ai.aiAgentInit(this.gs, c.id);
+			
+			c.ownerId = ai.id;
+			c.ownerType = "ai";
+			c.characterInit(this.gs);
+
+			var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
+			var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
+
+			c.xStarting = xStarting;
+			c.yStarting = yStarting;
+			c.hpCur = 25;
+			c.hpMax = 25;
+			c.walkingVelMagMax = 1;
+
+			ai.bForceIdle = true;
+
+			this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+		}
+
 	}
 
 	update(dt) {
