@@ -40,14 +40,14 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			case 1:
 				this.gc.ep.processServerEvents(null, this.cbPostEvent.bind(this));
 
-				//this.gc.wsh.createPacketForUser();
+				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
 
 				break;
 			case 2:
 				console.log('User connection complete. Letting the user play now.');
 
-				//this.gc.wsh.createPacketForUser();
+				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
 
 				this.gc.nextGameState = new GameClientUserPlaying(this.gc);

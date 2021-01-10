@@ -14,7 +14,6 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	update(dt) {
-		/*
 		var activeUsers = this.gs.um.getActiveUsers();
 		var activeGameObjects = this.gs.gom.getActiveGameObjects();
 		var aiAgents = this.gs.aim.getAIAgents();
@@ -65,7 +64,6 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.aim.update(dt);
 
 		this.gs.frameNum++;
-		*/
 
 		super.update(dt);
 	}
