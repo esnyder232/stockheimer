@@ -51,7 +51,7 @@ class WebsocketHandler {
 		//setup actual websocket callbacks
 		ws.on("close", this.onclose.bind(this));
 		ws.on("error", this.onerror.bind(this));
-		ws.on("message", this.onmessage.bind(this));
+		//ws.on("message", this.onmessage.bind(this));
 		ws.on("pong", this.onpong.bind(this));
 		ws.binaryType = 'arraybuffer';
 
