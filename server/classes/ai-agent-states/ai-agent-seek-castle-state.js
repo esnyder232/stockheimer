@@ -252,6 +252,47 @@ class AIAgentSeekCastleState extends AIAgentBaseState.AIAgentBaseState {
 		}
 
 
+		//flag to see if the castle exists
+		var c = this.aiAgent.gs.castleObject;
+
+		//if the castle exists, check if its close enough to attack
+		if(c !== null)
+		{
+			this.aiAgent.updateCastleDistance();
+
+			var isLOS = false;
+			var isInAttackRange = false;
+			
+			//check if the castle is within attack range
+			if(this.aiAgent.castleDistanceSquared <= this.aiAgent.attackingRangeSquared)
+			{
+				isInAttackRange = true;
+			}
+
+			//if the target is within attack range, check to see if you have a LOS to them
+			if(isInAttackRange) {
+				var cpos = this.aiAgent.gs.castleObject.getPlanckPosition();
+	
+				if(cpos !== null)
+				{
+					isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+				}
+			}
+
+			//make a decision if you can
+			//if the castle is close enough to attack and you have LOS, attack the castle
+			if(isInAttackRange && isLOS)
+			{
+				this.aiAgent.nextState = new AIAgentAttackCastleState.AIAgentAttackCastleState(this.aiAgent);
+			}
+		}
+		//castle does not exist. Go to idle
+		else
+		{
+			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+		}
+
+
 		//any state can be forced into the forced idle state with bForceIdle
 		if(this.aiAgent.bForceIdle)
 		{

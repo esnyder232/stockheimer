@@ -40,6 +40,8 @@ class AIAgent {
 		this.attackingRangeSquared = 49;
 		this.playerSeekingRange = 10;
 
+		this.castleDistanceSquared = 0;
+
 		this.userCharactersInVision = [];
 		this.isAttackInterval = 1000; //ms
 		this.isAttackCurrentTimer = 0; //ms
@@ -186,6 +188,26 @@ class AIAgent {
 
 		//debugging
 		//console.log('updateing target character distance: ' + this.targetCharacterDistanceSquared);
+	}
+
+	updateCastleDistance() {
+		if(this.characterPos !== null && this.gs.castleObject !== null)
+		{
+			var cpos = this.gs.castleObject.getPlanckPosition();
+			if(cpos !== null)
+			{
+				var dx = cpos.x - this.characterPos.x;
+				var dy = cpos.y - this.characterPos.y;
+				this.castleDistanceSquared = dx*dx + dy*dy;
+			}
+			else
+			{
+				this.castleDistanceSquared = 999999;
+			}
+		}
+
+		//debugging
+		//console.log('updateing castle distance: ' + this.castleDistanceSquared);
 	}
 
 	

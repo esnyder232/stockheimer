@@ -74,7 +74,17 @@ class Castle {
 
 	//called right before the castle is officially deleted by the game object manager.
 	castleDeinit() {
+		//lol, whatever
+		this.gs.castleObject = null;
 		this.gs = null;
+	}
+
+	getPlanckPosition() {
+		if(this.plBody !== null)
+		{
+			return this.plBody.getPosition();
+		}
+		return null;
 	}
 
 	update(dt) {

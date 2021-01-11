@@ -16,7 +16,7 @@ class GameServerRunning extends GameServerBaseState {
 		var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
 		for(var j = 0; j < 20; j++)
 		{
-			var z = tm.enemySpawnZones[3];
+			var z = tm.enemySpawnZones[0];
 
 			var ai = this.gs.aim.createAIAgent();
 			var c = this.gs.gom.createGameObject('character');
@@ -34,7 +34,7 @@ class GameServerRunning extends GameServerBaseState {
 			c.yStarting = yStarting;
 			c.hpCur = 25;
 			c.hpMax = 25;
-			c.walkingVelMagMax = 1;
+			c.walkingVelMagMax = 3;
 
 			ai.bForceIdle = true;
 
@@ -249,7 +249,7 @@ class GameServerRunning extends GameServerBaseState {
 									if(tm !== null)
 									{
 										//create 2 for congestion testing
-										var z = tm.enemySpawnZones[3];
+										var z = tm.enemySpawnZones[0];
 
 										//ai 1
 										var ai1 = this.gs.aim.createAIAgent();
@@ -268,7 +268,7 @@ class GameServerRunning extends GameServerBaseState {
 										c1.yStarting = yStarting;
 										c1.hpCur = 25;
 										c1.hpMax = 25;
-										c1.walkingVelMagMax = 1;
+										c1.walkingVelMagMax = 3;
 
 										this.gs.gom.activateGameObjectId(c1.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 

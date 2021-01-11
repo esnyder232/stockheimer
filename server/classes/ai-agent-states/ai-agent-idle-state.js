@@ -1,6 +1,7 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentSeekPlayerState = require('./ai-agent-seek-player-state.js');
+const AIAgentAttackCastleState = require('./ai-agent-attack-castle-state.js');
 const AIAgentAttackPlayerState = require('./ai-agent-attack-player-state.js');
 
 class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
@@ -69,6 +70,9 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 				// 	}
 				// }
 
+				
+				//flag to see if the castle exists
+				var c = this.aiAgent.gs.castleObject;
 
 				//if there is a player within LOS, seek/attack the player
 				if(closestLOSCharacterObject !== null)
@@ -87,12 +91,46 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 						this.aiAgent.nextState = new AIAgentSeekPlayerState.AIAgentSeekPlayerState(this.aiAgent);
 					}
 				}
-				//else, just seek the castle
-				else
+				//if the castle exists, check whether to seek or attack the castle
+				else if(c !== null)
 				{
-					this.aiAgent.nextState = new AIAgentSeekCastleState.AIAgentSeekCastleState(this.aiAgent);
-				}
+					this.aiAgent.updateCastleDistance();
 
+					var isLOS = false;
+					var isInAttackRange = false;
+					
+					//check if the castle is within attack range
+					this.aiAgent.updateCastleDistance();
+					
+					if(this.aiAgent.castleDistanceSquared <= this.aiAgent.attackingRangeSquared)
+					{
+						isInAttackRange = true;
+					}
+		
+					//if the target is within attack range, check to see if you have a LOS to them
+					if(isInAttackRange) {
+						var cpos = this.aiAgent.gs.castleObject.getPlanckPosition();
+			
+						if(cpos !== null)
+						{
+							isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+						}
+					}
+		
+					//make a decision if you can
+					//if the castle is close enough to attack and you have LOS, attack teh castle
+					if(isInAttackRange && isLOS)
+					{
+						this.aiAgent.nextState = new AIAgentAttackCastleState.AIAgentAttackCastleState(this.aiAgent);
+					}
+					//castle is too far away. Seek to it
+					else
+					{
+						this.aiAgent.nextState = new AIAgentSeekCastleState.AIAgentSeekCastleState(this.aiAgent);
+					}
+				}
+				
+				//otherwise, just do nothing (stay idle)
 				this.checkTimer = 0;
 			}
 
