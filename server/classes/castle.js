@@ -21,10 +21,11 @@ class Castle {
 		this.castleName = "CastleNameHere";
 	}
 
-	castleInit(gameServer, xc, yc) {
+	castleInit(gameServer, xc, yc, castleName) {
 		this.gs = gameServer;
 		this.xStarting = xc;
 		this.yStarting = yc;
+		this.castleName = castleName;
 	}
 
 	//called only after the castle is activated
@@ -38,7 +39,7 @@ class Castle {
 
 		this.plBody = world.createBody({
 			position: Vec2(this.xStarting, this.yStarting),
-			type: this.gs.pl.Body.STATIC,
+			type: this.gs.pl.Body.KINEMATIC,
 			fixedRotation: true,
 			userData: {type: "castle", id: this.id}
 		});

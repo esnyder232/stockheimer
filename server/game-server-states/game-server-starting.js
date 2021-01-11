@@ -38,17 +38,17 @@ class GameServerStarting extends GameServerBaseState {
 
 			this.gs.activeNavGrid = ng; //temporary
 
-			//create castle object (temporary location for it)
-			var castle = this.gs.gom.createGameObject("castle");
-			this.gs.castleObject = castle;
+			// //create castle object (temporary location for it)
+			// var castle = this.gs.gom.createGameObject("castle");
+			// this.gs.castleObject = castle;
 
-			var xc = this.gs.activeNavGrid.castleNode.x;
-			var yc = -this.gs.activeNavGrid.castleNode.y;
+			// var xc = this.gs.activeNavGrid.castleNode.x;
+			// var yc = -this.gs.activeNavGrid.castleNode.y;
 
-			castle.castleInit(this.gs, xc, yc);
+			// castle.castleInit(this.gs, xc, yc);
 
-			//just activate here, fuckin whatever
-			this.gs.gom.activateGameObjectId(castle.id, castle.castlePostActivated.bind(castle), castle.cbCastleActivatedFailed.bind(castle));
+			// //just activate here, fuckin whatever
+			// this.gs.gom.activateGameObjectId(castle.id, castle.castlePostActivated.bind(castle), castle.cbCastleActivatedFailed.bind(castle));
 
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}

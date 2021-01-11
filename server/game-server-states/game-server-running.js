@@ -12,6 +12,8 @@ class GameServerRunning extends GameServerBaseState {
 		console.log('running server enter');
 		super.enter(dt);
 
+		//this.spawnCastle();
+
 		//testing for cpu usage on server
 		var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
 		for(var j = 0; j < 20; j++)
@@ -324,6 +326,19 @@ class GameServerRunning extends GameServerBaseState {
 									}
 								}
 							}
+							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
+							else if (e.spawnLocation === "respawnCastle")
+							{
+								this.spawnCastle();
+							}
+							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
+							else if (e.spawnLocation === "destroyCastle")
+							{
+								if(this.gs.castleObject !== null)
+								{
+									this.gs.castleObject.hpCur = 0;
+								}
+							}
 						}
 
 						break;
@@ -408,6 +423,38 @@ class GameServerRunning extends GameServerBaseState {
 	
 			//delete all events
 			user.clientToServerEvents.length = 0;
+		}
+	}
+
+	spawnCastle() {
+		if(this.gs.castleObject === null)
+		{
+			//create castle object 
+			var castle = this.gs.gom.createGameObject("castle");
+			this.gs.castleObject = castle; //temporary location for it
+
+			var xc = this.gs.activeNavGrid.castleNode.x;
+			var yc = -this.gs.activeNavGrid.castleNode.y;
+
+			//get a random user for the name of the castle for now
+			var castleName = "Castle";
+			var activeUsers = this.gs.um.getActiveUsers();
+
+			var randIndex = Math.floor(Math.random() * activeUsers.length);
+			if(randIndex === activeUsers.length)
+			{
+				randIndex = activeUsers.length-1;
+			}
+
+			if(randIndex >= 0)
+			{
+				castleName = activeUsers[randIndex].username + "'s Castle";
+			}
+
+			castle.castleInit(this.gs, xc, yc, castleName);
+
+			//just activate here, fuckin whatever
+			this.gs.gom.activateGameObjectId(castle.id, castle.castlePostActivated.bind(castle), castle.cbCastleActivatedFailed.bind(castle));
 		}
 	}
 
