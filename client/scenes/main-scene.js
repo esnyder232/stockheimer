@@ -533,7 +533,7 @@ export default class MainScene extends Phaser.Scene {
 		var userCountDiv = $("#user-list-player-count");
 		userCountDiv.text("Players: " + this.gc.users.length + "/32");
 	}
-	  
+
 	update(timeElapsed, dt) {
 		var sendInputEvent = false;
 		//console.log('dt ' + dt);
