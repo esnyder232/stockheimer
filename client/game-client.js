@@ -20,7 +20,8 @@ export default class GameClient {
 		this.users = []; //temp living location for users
 		this.characters = [];
 		this.projectiles = [];
-		
+		this.castles = [];
+
 		this.myUserId = null;
 		this.myUser = null;
 		this.myCharacter = null;
@@ -36,6 +37,7 @@ export default class GameClient {
 		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
 
 		this.isContextMenuOn = true;
+		
 	}
 
 	init() {
@@ -146,6 +148,7 @@ export default class GameClient {
 		this.myUser = null;
 		this.foundMyUser = false;
 		this.foundMyCharacter = false;
+		this.castles = [];
 	}
 
 	gameLoop() {

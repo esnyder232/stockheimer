@@ -110,8 +110,6 @@ export default class EventProcessor {
 					//check if this is your character
 					if(this.gc.foundMyUser && !this.gc.foundMyCharacter)
 					{
-						console.log('checking if its my character');
-						console.log(this.gc.myUser);
 						if(c.ownerType === "user" && c.ownerId === this.gc.myUser.userId)
 						{
 							this.gc.foundMyCharacter = true;
@@ -243,9 +241,29 @@ export default class EventProcessor {
 						{
 							u.userKillCount = e.userKillCount;
 						}
-
-
 						break;
+
+					case "addCastle":
+						this.gc.castles.push(e);
+						break;
+
+					case "castleUpdate":
+						var c = this.gc.castles.find((x) => {return x.id === e.id;});
+						if(c)
+						{
+							c.castleHpMax = e.castleHpMax;
+							c.castleHpCur = e.castleHpCur;
+						}
+						break;
+							
+					case "removeCastle":
+						var c = this.gc.castles.findIndex((x) => {return x.id === e.id;});
+						if(c >= 0)
+						{
+							this.gc.castles.splice(c, 1);
+						}
+						break;
+		
 				default:
 					//intentionally blank
 					break;

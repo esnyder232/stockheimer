@@ -55,6 +55,8 @@ class GameServer {
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 3000; //ms until this console logs the amount of game objects in the game
+
+		this.castleObject = null;
 	}
 
 	init() {

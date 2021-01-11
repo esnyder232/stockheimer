@@ -78,9 +78,9 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 				case "character":
 					eventData = this.trackedEntity.ent.serializeActiveCharacterUpdateEvent();
 					break;
-				// case "projectile":
-				// 	eventData = this.trackedEntity.ent.serializeProjectileUpdateEvent();
-				// 	break;
+				case "castle":
+					eventData = this.trackedEntity.ent.serializeCastleUpdateEvent();
+					break;
 			}
 	
 			if(eventData !== null)

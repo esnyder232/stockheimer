@@ -1,7 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {AIAgentInitializingState} = require('./ai-agent-states/ai-agent-initializing-state.js');
 
-
 class AIAgent {
 	constructor() {
 		this.gs = null;

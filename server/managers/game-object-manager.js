@@ -1,6 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {Character} = require('../characters/character.js');
 const {Bullet} = require("../projectiles/bullet.js");
+const {Castle} = require("../classes/castle.js");
 
 class GameObjectManager {
 	constructor() {
@@ -44,6 +45,9 @@ class GameObjectManager {
 					break;
 				case "projectile":
 					o = new Bullet();
+					break;
+				case "castle":
+					o = new Castle();
 					break;
 			}
 

@@ -67,6 +67,10 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					this.ms.removeProjectile(e);
 					break;
 
+				case "removeCastle":
+					this.ms.removeCastle(e.id);
+					break;
+
 				default:
 					//intentionally blank
 					break;
@@ -115,6 +119,19 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				case "updateUserInfo":
 					this.ms.updateUserInfo(e);
 					break;
+
+				case "addCastle":
+					this.ms.addCastle(e.id);
+					break;
+
+				case "castleUpdate":
+					this.ms.castleUpdate(e);
+					break;
+
+				case "castleDamage":
+					this.ms.castleDamage(e);
+					break;
+
 				default:
 					//intentionally blank
 					break;

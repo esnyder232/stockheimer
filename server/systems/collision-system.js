@@ -15,7 +15,9 @@ class CollisionSystem {
 		this.pl = this.gs.pl;
 
 		this.colList = [
-			{type1: "ai-agent", 	type2:"character", 	beginFunc: this.beginAIAgentCharacterCollision.bind(this), 	endFunc: this.endAIAgentCharacterCollision.bind(this)},
+			{type1: "ai-agent", 	type2:"character", 	beginFunc: this.beginAIAgentCharacterCollision.bind(this), 		endFunc: this.endAIAgentCharacterCollision.bind(this)},
+			{type1: "castle", 		type2:"projectile",	beginFunc: this.beginCastleProjectileCollision.bind(this), 		endFunc: this.endCastleProjectileCollision.bind(this)},
+			{type1: "castle", 		type2:"user", 		beginFunc: this.beginCastleUserCollision.bind(this), 			endFunc: this.endCastleUserCollision.bind(this)},
 			// {type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
 			{type1: "character", 	type2:"projectile", beginFunc: this.beginCharacterProjectileCollision.bind(this), 	endFunc: this.endCharacterProjectileCollision.bind(this)},
 			// {type1: "character", 	type2:"wall", 		beginFunc: this.beginCharacterWallCollision.bind(this), 		endFunc: this.endCharacterWallCollision.bind(this)},
@@ -142,6 +144,59 @@ class CollisionSystem {
 	}
 
 
+
+	////////////////////////
+	// Castle collilsions //
+	////////////////////////
+	beginCastleProjectileCollision(castleUserData, projectileUserData, contactObj, isCastleA)
+	{
+		var c = this.gs.castleObject;
+		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
+
+		if(c !== null && p !== null)
+		{
+			var processDamage = true;
+
+			//if the bullet is from a user, don't damage the castle
+			if(p.ownerType === "user")
+			{
+				processDamage = false;
+			}
+
+			if(processDamage)
+			{
+				c.isHit(2);
+			}
+
+			//destroy the projectile
+			p.lifespan = 0; //cheap and easy
+		}
+	}
+
+	endCastleProjectileCollision(castleUserData, projectileUserData, contactObj, isCastleA)
+	{
+		
+	}
+
+	beginCastleUserCollision(castleUserData, userData, contactObj, isCastleA)
+	{
+		var u = this.gs.um.getUserByID(userData.id);
+		if(u !== null)
+		{
+			u.insertTrackedEntity("gameobject", castleUserData.id);
+		}
+	}
+
+	endCastleUserCollision(castleUserData, userData, contactObj, isCastleA)
+	{
+		var u = this.gs.um.getUserByID(userData.id);
+		if(u !== null)
+		{
+			u.deleteTrackedEntity("gameobject", castleUserData.id);
+		}
+	}
+
+	
 
 	///////////////////////////
 	// character collilsions //

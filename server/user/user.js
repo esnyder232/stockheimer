@@ -151,6 +151,10 @@ class User {
 				{
 					e.paWeight = 1;
 				}
+				else if(e.ent.type == "castle")
+				{
+					e.paWeight = 1;
+				}
 			}
 
 			e.eventQueue.push({

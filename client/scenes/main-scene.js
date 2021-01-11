@@ -126,6 +126,12 @@ export default class MainScene extends Phaser.Scene {
 			this.addActiveCharacter(this.gc.characters[i].id);
 		}
 
+		//initialize castles (not sure if this actually need to be here lol)
+		for(var i = 0; i < this.gc.castles.length; i++)
+		{
+			this.addCastle(this.gc.castles[i].id);
+		}
+
 		this.debugX = $("#debug-x");
 		this.debugY = $("#debug-y");
 		this.debugIsDown = $("#debug-is-down");
@@ -339,7 +345,6 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	addActiveCharacter(characterId) {
-		console.log('adding box graphics');
 		var c = this.gc.characters.find((x) => {return x.id === characterId;});
 		if(c)
 		{
@@ -857,6 +862,100 @@ export default class MainScene extends Phaser.Scene {
 			ppu.boxGraphics.setY(ppu.y * this.planckUnitsToPhaserUnitsRatio * -1);
 		}
 	}
+
+	addCastle(id) {
+		var c = this.gc.castles.find((x) => {return x.id === id;});
+		if(c)
+		{
+			var halfSize = c.size/2;
+			var boxGraphics = this.add.graphics();
+			boxGraphics.lineStyle(1, 0x0000ff, 1);
+
+			//box
+			boxGraphics.moveTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
+			boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top right
+			boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom right
+			boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom left
+			boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
+
+			boxGraphics.closePath();
+			boxGraphics.strokePath();
+			
+			boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
+			boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
+
+			var usernameText = c.castleName;
+
+			var textStyle = {
+				color: '#0000ff', 
+				fontSize: "18px",
+				strokeThickness: 1,
+				stroke: '#0000ff'
+			}
+
+			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
+			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.castleHpCur + "/" + c.castleHpMax, textStyle);
+
+			this.userPhaserElements.push({
+				id: c.id,
+				boxGraphics: boxGraphics,
+				textGraphics: textGraphics,
+				hpTextGraphics: hpTextGraphics
+			});
+		}
+	}
+
+	removeCastle(id) {		
+		var c = this.gc.castles.find((x) => {return x.id === id});
+
+		if(c)
+		{
+			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.id === c.id;});
+			if(upeIndex >= 0)
+			{
+				this.userPhaserElements[upeIndex].boxGraphics.destroy();
+				this.userPhaserElements[upeIndex].textGraphics.destroy();
+				this.userPhaserElements[upeIndex].hpTextGraphics.destroy();
+				
+				this.userPhaserElements.splice(upeIndex, 1);
+			}
+		}
+	}
+	
+	castleUpdate(e) {
+		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
+		var c = this.gc.castles.find((x) => {return x.id === e.id});
+
+		if(upe && c)
+		{
+			upe.hpTextGraphics.setText(c.castleHpCur + "/" + c.castleHpMax);
+		}
+	}
+
+	castleDamage(e) {
+		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
+		var c = this.gc.castles.find((x) => {return x.id === e.id});
+
+		if(upe && c)
+		{
+			var dmgText = {
+				textGraphics: null,
+				countdownTimer: 750 //ms
+			};
+
+			var textStyle = {
+				color: '#ff0000', 
+				fontSize: "18px",
+				strokeThickness: 1,
+				stroke: '#ff0000'
+			}
+
+			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);
+
+			this.damageTexts.push(dmgText)
+		}
+	}
+
 
 	spawnEnemyPlayer() {
 		console.log('spawning enemy at player');

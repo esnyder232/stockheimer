@@ -34,6 +34,9 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 					case "character":
 						event = this.trackedEntity.ent.serializeAddActiveCharacterEvent();
 						break;
+					case "castle":
+						event = this.trackedEntity.ent.serializeAddCastleEvent();
+						break;
 				}
 				break;
 		}
