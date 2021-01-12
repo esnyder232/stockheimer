@@ -192,6 +192,7 @@ export default class MainScene extends Phaser.Scene {
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
 		$("#main-scene-root").removeClass("hide");
+		$(".main-scene-buttons").removeClass("hide");
 
 		//load tilemap
 		this.map = this.make.tilemap({key: "my-tilemap"});
@@ -293,6 +294,7 @@ export default class MainScene extends Phaser.Scene {
 		
 
 		$("#main-scene-root").addClass("hide");
+		$(".main-scene-buttons").addClass("hide");
 
 		if(this.playerController !== null)
 		{
@@ -407,6 +409,17 @@ export default class MainScene extends Phaser.Scene {
 			if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
 			{
 				this.switchPointerMode(1); //switch to phaser mode
+				var createCharacterBtn = $("#create-character");
+				var killCharacterBtn = $("#kill-character");
+
+				if(createCharacterBtn.length > 0)
+				{
+					createCharacterBtn.addClass("hide");
+				}
+				if(killCharacterBtn.length > 0)
+				{
+					killCharacterBtn.removeClass("hide");
+				}
 			}
 		}
 	}
@@ -456,6 +469,18 @@ export default class MainScene extends Phaser.Scene {
 
 					//also destroy the target line
 					this.targetLineGraphic.clear();
+
+					var createCharacterBtn = $("#create-character");
+					var killCharacterBtn = $("#kill-character");
+					
+					if(createCharacterBtn.length > 0)
+					{
+						createCharacterBtn.removeClass("hide");
+					}
+					if(killCharacterBtn.length > 0)
+					{
+						killCharacterBtn.addClass("hide");
+					}
 				}
 			}
 		}

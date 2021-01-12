@@ -61,15 +61,18 @@
 							<div id="debug-angle"></div>
 						</div>
 					</div>
+					<div class="main-scene-buttons-misc">
+						<input type="button" id="create-character" value="Spawn Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
+					</div>
 				</div>
 				<div class="log-div">
-					<div class="input-controls-div">
-						<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
-						<input type="button" id="create-character" value="Create Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
-						<input type="button" id="kill-character" value="Kill Character" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
+					<div class="input-controls-div main-scene-buttons hide">
+						<input type="button" id="exit-game" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+						<!-- <input type="button" id="create-character" value="Spawn Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" /> -->
+						<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
 					</div>
-					<div class="input-controls-div">
-						<input type="password" id="tb-enemy-password" placeholder="passcode for enemies" />
+					<div class="input-debug-controls-div main-scene-buttons hide">
+						<input type="password" id="tb-enemy-password" placeholder="passcode for debug buttons" />
 						<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
 						<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
 						<input type="button" id="make-enemies-seek-castle" value="Seek Castle" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-castle'));" />

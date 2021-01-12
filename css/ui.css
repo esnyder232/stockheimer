@@ -114,12 +114,12 @@ input[type="text"]:disabled {
 	position: absolute;
 	bottom: 12px;
 	left: 5%;
-	width: 95%;
+	width: 90%;
 }
 
 
 #temp-log {
-	width: 90%;
+	width: 100%;
 	height: 100px;
 	background-color: rgba(0, 0, 0, 0.5);
 	overflow-y: scroll;
@@ -147,9 +147,14 @@ input[type="text"]:disabled {
 	width:100%;
 }
 
-.input-controls-div {
-	width: 100%;
-	float: left;	
+.input-controls-div input[type="button"] {
+	float: left;
+	font-size:32px;
+}
+
+.input-debug-controls-div {
+	float: right;
+	margin-top: 22px;
 }
 
 
@@ -250,6 +255,7 @@ input[type="text"]:disabled {
 	float: right;
 	margin-top: 14px;
 	background-color: rgba(0, 0, 0, 0.5);
+	max-width: 500px;
 }
 
 
@@ -261,7 +267,29 @@ input[type="text"]:disabled {
 	pointer-events: none;
 }
 
+.main-scene-buttons-misc {
+	position:absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+}
 
+#create-character {
+	margin: 0px auto;
+	margin-top: 22%;
+	display: block;
+	padding: 16px;
+	font-size: 20px;
+}
+
+#kill-character {
+	color:darkred;
+}
+
+#exit-game {
+	margin-right: 12px;
+}
 
 .tb-chat-submit {
 	float: left;
