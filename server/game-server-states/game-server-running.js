@@ -46,6 +46,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	update(dt) {
+		//console.log("gameloop framenum " + this.gs.frameNum);
 		var activeUsers = this.gs.um.getActiveUsers();
 		var activeGameObjects = this.gs.gom.getActiveGameObjects();
 		var aiAgents = this.gs.aim.getAIAgents();
@@ -239,6 +240,8 @@ class GameServerRunning extends GameServerBaseState {
 								c.hpCur = 25;
 								c.hpMax = 25;
 								c.walkingVelMagMax = 1;
+								
+								ai.bForceIdle = false;
 	
 								this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 							}

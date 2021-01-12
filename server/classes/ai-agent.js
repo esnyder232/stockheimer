@@ -574,7 +574,14 @@ class AIAgent {
 		var nodeTarget = this.nodePathToCastle[this.currentNode];
 
 		//the *-1 is to flip the y coordinates for planck cooridnate plane
-		var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
+		var dx = nodeTarget.x - pos.x;
+		var dy = (nodeTarget.y*-1) - pos.y;
+
+		if(Math.abs(dx) === 0 && Math.abs(dy) === 0)
+		{
+			dx = 1;
+		}
+		var angle = Math.atan(dy / dx);
 		
 		//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
 		//this basically just flips the direction of the x and y

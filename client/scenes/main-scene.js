@@ -137,6 +137,19 @@ export default class MainScene extends Phaser.Scene {
 		this.debugY = $("#debug-y");
 		this.debugIsDown = $("#debug-is-down");
 		this.debugAngle = $("#debug-angle");
+
+		//always hide the kill character button and show create button
+		var createCharacterBtn = $("#create-character");
+		var killCharacterBtn = $("#kill-character");
+		
+		if(createCharacterBtn.length > 0)
+		{
+			createCharacterBtn.removeClass("hide");
+		}
+		if(killCharacterBtn.length > 0)
+		{
+			killCharacterBtn.addClass("hide");
+		}
 	}
 
 	documentScroll(e) {

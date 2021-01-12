@@ -47,6 +47,11 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 					//calculate angle
 					var dx = targetCharacterPos.x - this.aiAgent.characterPos.x;
 					var dy = targetCharacterPos.y - this.aiAgent.characterPos.y;
+					
+					if(Math.abs(dx) === 0 && Math.abs(dy) === 0)
+					{
+						dx = 1
+					}
 					var angle = Math.atan(-dy / dx);
 					
 					//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.

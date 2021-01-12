@@ -172,6 +172,11 @@ class AIAgentSeekCastleState extends AIAgentBaseState.AIAgentBaseState {
 			finalVelVec.x = seekVelVec.x;
 			finalVelVec.y = seekVelVec.y;
 
+			if(Math.abs(finalVelVec.x) === 0 && Math.abs(finalVelVec.y) === 0)
+			{
+				finalVelVec.x = 1
+			}
+
 			//the *-1 is to flip the y coordinates for planck cooridnate plane
 			var angle = Math.atan((finalVelVec.y) / finalVelVec.x);
 			
