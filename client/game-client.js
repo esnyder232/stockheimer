@@ -110,6 +110,9 @@ export default class GameClient {
 		console.log(this);
 
 		$(document).on("contextmenu", this.contextMenuListener.bind(this));
+
+		//hide loading text
+		$(".loading-text").addClass("hide");
 	}
 
 	turnOffContextMenu() {
