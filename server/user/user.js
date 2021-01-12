@@ -73,7 +73,7 @@ class User {
 		var trackingSensor = pl.Circle(Vec2(0, 0), 100);
 
 		this.plBody = this.gs.world.createBody({
-			position: Vec2(0, 0),
+			position: Vec2(15, -15),
 			type: pl.Body.DYNAMIC,
 			fixedRotation: true,
 			userData: {type:"user", id: this.id}

@@ -85,10 +85,9 @@ export default class EventProcessor {
 				
 				case "addActiveCharacter":
 					var c = {
-						id: e.characterId,
+						id: e.id,
 						ownerId: e.ownerId,
 						ownerType: e.ownerType,
-						activeId: e.activeCharacterId,
 						x: e.characterPosX,
 						y: e.characterPosY,
 						hpMax: e.characterHpMax,
@@ -120,7 +119,7 @@ export default class EventProcessor {
 
 
 				case "removeActiveCharacter":
-					var ci = this.gc.characters.findIndex((x) => {return x.id == e.characterId});
+					var ci = this.gc.characters.findIndex((x) => {return x.id == e.id});
 
 					//if the character was found, splice it off the array
 					if(ci >= 0)
@@ -140,7 +139,7 @@ export default class EventProcessor {
 					break;
 
 					case "activeCharacterUpdate":
-						var c = this.gc.characters.find((x) => {return x.activeId === e.activeCharacterId});
+						var c = this.gc.characters.find((x) => {return x.id === e.id});
 						if(c)
 						{
 							c.x = e.characterPosX;

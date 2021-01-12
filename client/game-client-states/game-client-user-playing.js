@@ -60,7 +60,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					break;
 
 				case "removeActiveCharacter":
-					this.ms.removeActiveCharacter(e.characterId);
+					this.ms.removeActiveCharacter(e.id);
 					break;
 
 				case "removeProjectile":
@@ -97,7 +97,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					break;
 				
 				case "addActiveCharacter":
-					this.ms.addActiveCharacter(e.characterId);
+					this.ms.addActiveCharacter(e.id);
 					break;
 
 				case "activeCharacterUpdate":

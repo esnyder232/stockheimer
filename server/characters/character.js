@@ -7,7 +7,6 @@ class Character {
 	constructor() {
 		this.gs = null;
 		this.id = null;
-		this.activeId = null;
 		this.isActive = false;
 		this.type = "character";
 		this.globalfuncs = null;
@@ -443,7 +442,7 @@ class Character {
 		{
 			activeUsers[i].insertTrackedEntityEvent("gameobject", this.id, {
 				"eventName": "characterDamage",
-				"activeCharacterId": this.activeId,
+				"id": this.id,
 				"damage": dmg
 			});
 		}
@@ -478,8 +477,7 @@ class Character {
 			"eventName": "addActiveCharacter",
 			"ownerId": this.ownerId,
 			"ownerType": eventOwnerType,
-			"characterId": this.id,
-			"activeCharacterId": this.activeId,
+			"id": this.id,
 			"characterPosX": bodyPos.x,
 			"characterPosY": bodyPos.y,
 			"characterHpMax": this.hpMax,
@@ -500,7 +498,7 @@ class Character {
 
 		eventData = {
 			"eventName": "activeCharacterUpdate",
-			"activeCharacterId": this.activeId,
+			"id": this.id,
 			"characterPosX": bodyPos.x,
 			"characterPosY": bodyPos.y,
 			"characterHpCur": this.hpCur
@@ -513,7 +511,7 @@ class Character {
 	serializeRemoveActiveCharacterEvent() {
 		return {
 			"eventName": "removeActiveCharacter",
-			"characterId": this.id
+			"id": this.id
 		};
 	}
 

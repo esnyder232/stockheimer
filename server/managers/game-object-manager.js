@@ -7,14 +7,11 @@ class GameObjectManager {
 	constructor() {
 		this.gs = null;
 		
-		//this.idCounter = 0;
 		this.gameObjectArray = [];
 		this.idIndex = {};
 
-		this.nextAvailableActiveId = -1;
 		this.activeGameObjectArray = [];
-		this.activeGameObjectIdArray = [];
-		this.maxActiveAllowed = 65536;
+		this.activeIdIndex = {};
 		
 		this.isDirty = false;
 		this.transactionQueue = [];
@@ -23,44 +20,31 @@ class GameObjectManager {
 	init(gameServer) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
-
-		for(var i = 0; i < this.maxActiveAllowed; i++)
-		{
-			this.activeGameObjectIdArray.push(false);
-		}
-
-		this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeGameObjectIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
 	}
 
 	//this creates an "inactive" Game Object
 	createGameObject(type) {
 		var o = null;
 
-		if(this.nextAvailableActiveId >= 0)
+		switch(type)
 		{
-			switch(type)
-			{
-				case "character":
-					o = new Character();
-					break;
-				case "projectile":
-					o = new Bullet();
-					break;
-				case "castle":
-					o = new Castle();
-					break;
-			}
-
-			if(o !== null)
-			{
-				o.id = this.gs.getGlobalGameObjectID();
-				o.isActive = false;
-				o.type = type;
-		
-				this.gameObjectArray.push(o);
-				this.updateIndex(o.id, o, 'create');
-			}
+			case "character":
+				o = new Character();
+				break;
+			case "projectile":
+				o = new Bullet();
+				break;
+			case "castle":
+				o = new Castle();
+				break;
 		}
+
+		o.id = this.gs.getGlobalGameObjectID();
+		o.isActive = false;
+		o.type = type;
+
+		this.gameObjectArray.push(o);
+		this.updateIndex(o.id, o, 'create');
 		
 		return o;
 	}
@@ -89,6 +73,17 @@ class GameObjectManager {
 			if(this.idIndex[id] !== undefined)
 			{
 				delete this.idIndex[id];
+			}
+		}
+		else if(transaction == "activate")
+		{
+			this.activeIdIndex[id] = obj;
+		}
+		else if(transaction == "deactivate")
+		{
+			if(this.activeIdIndex[id] !== undefined)
+			{
+				delete this.activeIdIndex[id];
 			}
 		}
 	}
@@ -134,18 +129,9 @@ class GameObjectManager {
 
 									if(oi >= 0)
 									{
-										this.activeGameObjectIdArray[this.activeGameObjectArray[oi].activeId] = false;
-
-										if(this.nextAvailableActiveId < 0)
-										{
-											this.nextAvailableActiveId = this.activeGameObjectArray[oi].activeId;
-										}
-
-										//invalidate the id
-										this.activeGameObjectArray[oi].activeId = null;
 										this.activeGameObjectArray[oi].isActive = false;
-
 										this.activeGameObjectArray.splice(oi, 1);
+										this.updateIndex(o.id, o, "deactivate");
 									}
 								}
 								else 
@@ -163,20 +149,11 @@ class GameObjectManager {
 									errorMessage = "Game object is already activated.";
 								}
 
-								if(!bError && this.nextAvailableActiveId < 0)
-								{
-									bError = true;
-									errorMessage = "Max allowed activated game objects reached.";
-								}
-
 								if(!bError)
 								{
 									this.activeGameObjectArray.push(o);
-
-									o.activeId = this.nextAvailableActiveId;
 									o.isActive = true;
-									this.activeGameObjectIdArray[o.activeId] = true;
-									this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeGameObjectIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
+									this.updateIndex(o.id, o, "activate");
 								}
 								break;
 							default:

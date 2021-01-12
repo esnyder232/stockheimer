@@ -59,6 +59,8 @@ export default class MainScene extends Phaser.Scene {
 		this.debugIsDown = null;
 		this.debugAngle = null;
 
+		this.frameNum = 0;
+
 	}
 
 	init(data) {
@@ -411,8 +413,7 @@ export default class MainScene extends Phaser.Scene {
 			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.hpCur + "/" + c.hpMax, textStyle);
 
 			this.userPhaserElements.push({
-				characterId: c.id,
-				activeCharacterId: c.activeId,
+				id: c.id,
 				boxGraphics: boxGraphics,
 				textGraphics: textGraphics,
 				hpTextGraphics: hpTextGraphics
@@ -466,7 +467,7 @@ export default class MainScene extends Phaser.Scene {
 
 		if(c)
 		{
-			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.characterId === c.id;});
+			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.id === c.id;});
 			if(upeIndex >= 0)
 			{
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
@@ -500,8 +501,8 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	activeCharacterUpdate(e) {
-		var upe = this.userPhaserElements.find((x) => {return x.activeCharacterId === e.activeCharacterId;});
-		var c = this.gc.characters.find((x) => {return x.activeId === e.activeCharacterId});
+		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
+		var c = this.gc.characters.find((x) => {return x.id === e.id});
 
 		if(upe && c)
 		{
@@ -518,8 +519,8 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	characterDamage(e) {
-		var upe = this.userPhaserElements.find((x) => {return x.activeCharacterId === e.activeCharacterId;});
-		var c = this.gc.characters.find((x) => {return x.activeId === e.activeCharacterId});
+		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
+		var c = this.gc.characters.find((x) => {return x.id === e.id});
 
 		if(upe && c)
 		{
@@ -721,6 +722,8 @@ export default class MainScene extends Phaser.Scene {
 		this.prevAngle = this.angle;
 		this.prevIsFiring = this.isFiring;
 		this.prevIsFiringAlt = this.isFiringAlt;
+
+		this.frameNum++;
 	}
 
 
