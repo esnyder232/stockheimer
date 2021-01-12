@@ -6,10 +6,12 @@
 		<link rel="stylesheet" href="css/ui.css" />
 	</head>
 	<body>
-		<div id="game-container">
-			<div id="game-div"></div>
+		<div id="game-div">
 			<div id="ui-div">
 				<div class="scene-root hide" id="lobby-scene-root">
+					<div class="game-title">
+						Stockheimer
+					</div>
 					<div id="user-name-container">
 						<div class="form-text" id="player-text">Player Name:</div>
 						<input type="text" class="form-input" id="user-name" maxlength="32" />
@@ -29,23 +31,6 @@
 					<h1>Disconnecting...</h1>
 				</div>
 				<div class="scene-root hide" id="main-scene-root">
-					<div class="input-controls-div">
-						<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
-						<input type="button" id="create-character" value="Create Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
-						<input type="button" id="kill-character" value="Kill Character" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
-					</div>
-					<div class="input-controls-div">
-						<input type="password" id="tb-enemy-password" placeholder="passcode for enemies" />
-						<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
-						<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
-						<input type="button" id="make-enemies-seek-castle" value="Seek Castle" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-castle'));" />
-						<input type="button" id="make-enemies-seek-player" value="Seek Player" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-player'));" />
-						<input type="button" id="make-enemies-stop" value="Stop enemies" onclick="window.dispatchEvent(new CustomEvent('make-enemies-stop'));" />
-						<input type="button" id="kill-all-enemies" value="Kill all enemies" onclick="window.dispatchEvent(new CustomEvent('kill-all-enemies'));" />
-						<input type="button" id="toggle-pvp" value="Toggle PVP" onclick="window.dispatchEvent(new CustomEvent('toggle-pvp'));" />
-						<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
-						<input type="button" id="destroy-castle" value="Destroy Castle" onclick="window.dispatchEvent(new CustomEvent('destroy-castle'));" />
-					</div>
 					<div class="panel">
 						<div class="user-list" id="user-list">
 							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
@@ -77,8 +62,27 @@
 						</div>
 					</div>
 				</div>
-				<div id="temp-log" readonly></div>
-			</div>			
+				<div class="log-div">
+					<div class="input-controls-div">
+						<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+						<input type="button" id="create-character" value="Create Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
+						<input type="button" id="kill-character" value="Kill Character" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
+					</div>
+					<div class="input-controls-div">
+						<input type="password" id="tb-enemy-password" placeholder="passcode for enemies" />
+						<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
+						<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
+						<input type="button" id="make-enemies-seek-castle" value="Seek Castle" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-castle'));" />
+						<input type="button" id="make-enemies-seek-player" value="Seek Player" onclick="window.dispatchEvent(new CustomEvent('make-enemies-seek-player'));" />
+						<input type="button" id="make-enemies-stop" value="Stop enemies" onclick="window.dispatchEvent(new CustomEvent('make-enemies-stop'));" />
+						<input type="button" id="kill-all-enemies" value="Kill all enemies" onclick="window.dispatchEvent(new CustomEvent('kill-all-enemies'));" />
+						<input type="button" id="toggle-pvp" value="Toggle PVP" onclick="window.dispatchEvent(new CustomEvent('toggle-pvp'));" />
+						<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
+						<input type="button" id="destroy-castle" value="Destroy Castle" onclick="window.dispatchEvent(new CustomEvent('destroy-castle'));" />
+					</div>
+					<div id="temp-log" readonly></div>
+				</div>
+			</div>
 		</div>
 	</body>
 	

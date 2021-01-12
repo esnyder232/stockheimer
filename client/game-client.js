@@ -51,18 +51,8 @@ export default class GameClient {
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
-			//mode: Phaser.Scale.FIT,
 			backgroundColor: '#333333',
-			width: 1440,
-			height:900,
-			parent: 'game-div',
 			pixelArt: true,
-			// scale: {
-			// 	mode: Phaser.Scale.FIT,
-			// 	parent: 'game-div',
-			// 	width: 800,
-			// 	height: 600
-			// },
 			physics: {
 				default: 'arcade',
 				arcade: {
@@ -76,9 +66,14 @@ export default class GameClient {
 				}
 			},
 			scale: {
+				parent: "game-div",
+				mode: Phaser.Scale.RESIZE,
+				width: 800,
+				height: 600,
 				zoom:1
 			}
 		}
+
 
 		this.phaserGame = new Phaser.Game(this.phaserConfig);
 

@@ -1,20 +1,31 @@
+html {
+	width: 100%;
+	height: 100%;
+}
+
 body {
 	font-family: Arial, Helvetica, sans-serif;
 	color: #cccccc;
 	background-color: #181a1b;
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	font-size: 18px;
 }
 
 input[type='button'] {
 	pointer-events: all;
 	background-color: #181a1b;
 	border-color: #736b5e;
-    color: #e8e6e3;
+	color: #e8e6e3;
+	padding: 4px;
 }
 
 input[type="text"] {
 	background-color: #181a1b;
 	color: rgb(216, 212, 207);
 	border-color: rgb(106, 98, 87);
+	padding: 4px;
 }
 
 input[type='button']:disabled {
@@ -29,27 +40,15 @@ input[type="text"]:disabled {
 	border-color: #47494b;
 }
 
-
-
-
-#game-container {
-	position: relative;
-}
-
-#game-div {
-	position: absolute;
-	top:0px;
-	left:0px;
-	z-index:0;
-}
+#game-div {}
 
 #ui-div {
 	position: absolute;
 	top:0px;
 	left:0px;
 	z-index: 100;
-	width:1440px;
-	height:900px;
+	width:100%;
+	height:100%;
 }
 
 .scene-root {
@@ -64,13 +63,16 @@ input[type="text"]:disabled {
 	display:none !important;
 }
 
+.game-title {
+	font-size: 108px;
+	margin: 0px auto;
+	width: 75%;
+	text-align: center;
+	margin-top: 8%;
+}
 
 #user-name-container {
-	position: absolute;
-	width:20%;
-	height:12%;
-	top: 15%;
-	left: 40%;
+	width: 310px;
 	background-color: #444444;
 	border-color:#cccccc;
 	border-radius: 20px;
@@ -78,32 +80,48 @@ input[type="text"]:disabled {
 	border-style: solid;
 	padding:12px;
 	color: #cccccc;
+	max-width: 315px;
+	height: 150px;
+	margin: 0px auto;
+	margin-top: 5%;
 }
 
 #user-name {
 	width: 96%;
 	margin-top:4px;
+	margin-bottom: 32px;
 }
 
 #player-submit {
 	margin-top: 20px;
+	padding: 8px 20px;
 }
 
 #game-server-details {
-	position: absolute;
-	width: 25%;
-	top: 40%;
-	left: 42%;
+	/* position: absolute; */
+	/* width: 25%; */
+	/* top: 40%; */
+	/* left: 42%; */
 	color: #cccccc;
+	/* float: left; */
+	margin: 0px auto;
+	width: 50%;
+	margin-top: 1%;
+	text-align: center;
 }
 
-#temp-log {
+.log-div {
 	position: absolute;
+	bottom: 12px;
+	left: 5%;
+	width: 95%;
+}
+
+
+#temp-log {
 	width: 90%;
 	height: 100px;
 	background-color: rgba(0, 0, 0, 0.5);
-	bottom: 12px;
-	left: 5%;
 	overflow-y: scroll;
 	resize: none;
 	color: #cccccc;
@@ -148,31 +166,29 @@ input[type="text"]:disabled {
 }
 
 .panel {
-	width: 50%;
+	width: 49%;
 	float: left;
+	margin: 0.5% 0.5%;
+	height: 75%;
 }
 
 .chat-div-wrapper {
 	width: 100%;
 	float: right;
+	height: 85%;
+	padding-bottom: 27px;
 }
 .chat-div {
 	width: 50%;
 	float: right;
+	max-width: 500px;
+	height: 100%;
 }
-
-.debug-div {
-	width: 50%;
-	float: right;
-	margin-top: 14px;
-	background-color: rgba(0, 0, 0, 0.5);
-}
-
 
 .chat-history {
 	float: left;
 	width: 100%;
-	height: 300px;
+	height: 100%;
 	border: 1px solid red;
 	overflow-y: scroll;
 	background-color: rgba(0, 0, 0, 0.5);
@@ -199,21 +215,21 @@ input[type="text"]:disabled {
 
 .chat-history-ts {
 	float: left;
-	font-size: 10px;
+	font-size: 14px;
 	margin-top: 4px;
 	font-style: italic;
 }
 
 .chat-history-name {
 	float: left;
-	font-size: 14px;
+	font-size: 18px;
 	font-weight: bold;
 	margin-left: 4px;
 }
 
 .chat-history-msg {
 	float: left;
-	font-size: 14px;
+	font-size: 18px;
 	margin-left: 4px;
 	word-break: break-word;
 }
@@ -228,6 +244,14 @@ input[type="text"]:disabled {
 	float:left;
 	width:85%;
 }
+
+.debug-div {
+	width: 50%;
+	float: right;
+	margin-top: 14px;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
 
 .capture-pointer-events {
 	pointer-events: all;

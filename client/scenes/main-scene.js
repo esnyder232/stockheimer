@@ -89,8 +89,7 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)},
 			{event: 'toggle-pvp', func: this.togglePvp.bind(this)},
 			{event: 'respawn-castle', func: this.respawnCastle.bind(this)},
-			{event: 'destroy-castle', func: this.destroyCastle.bind(this)},
-			
+			{event: 'destroy-castle', func: this.destroyCastle.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
