@@ -595,9 +595,10 @@ class GameServerRunning extends GameServerBaseState {
 			}
 
 			//deactivate the user in the server manager
-			this.gs.um.deactivateUserId(u.id);
+			this.gs.um.deactivateUserId(u.id, this.gs.cbUserDeactivateSuccess.bind(this.gs));
 		}
 	}
+
 
 	characterDied(characterId) {
 		var c = this.gs.gom.getGameObjectByID(characterId);

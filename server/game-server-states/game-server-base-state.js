@@ -16,6 +16,8 @@ class GameServerBaseState {
 
 	websocketClosed(wsh) {}
 	websocketErrored(wsh) {}
+
+	cbUserDeactivateSuccess(id) {}
 }
 
 

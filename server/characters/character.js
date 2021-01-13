@@ -302,9 +302,15 @@ class Character {
 				}
 			}
 
-			var f = this.plBody.getWorldVector(Vec2(this.walkingAccVec.x, this.walkingAccVec.y));
-			var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
-			this.plBody.applyLinearImpulse(f, p, true);
+			
+			if(Math.abs(this.walkingAccVec.x) >= 0.001 || Math.abs(this.walkingAccVec.y) >= 0.001)
+			{
+				var f = this.plBody.getWorldVector(Vec2(this.walkingAccVec.x, this.walkingAccVec.y));
+				var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
+
+				this.plBody.applyLinearImpulse(f, p, true);
+			}
+			
 	
 			//process force impulses
 			if(this.forceImpulses.length > 0)
@@ -417,6 +423,7 @@ class Character {
 		{
 			result = this.plBody.isAwake();
 		}
+
 		return result || this.isDirty;
 	}
 

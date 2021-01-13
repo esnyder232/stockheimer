@@ -202,6 +202,16 @@ class GameServer {
 
 	cbUserActivateSuccess(id) {
 		//console.log('user activation success CB called');
+		//adjust all user's websocket handler's max packet size
+		var activeUsers = this.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			//i don't know why it would EVER be null at this point. Buy just to be safe.
+			if(activeUsers[i].wsh !== null)
+			{
+				activeUsers[i].wsh.updateMaxPacketSize();
+			}
+		}
 	}
 
 	//if user fails to be activated, do the opposite of everything you did in gameserver.onopen
@@ -227,6 +237,20 @@ class GameServer {
 		//destroy the websocket handler
 		this.wsm.destroyWebsocket(wsh);
 	}
+
+	cbUserDeactivateSuccess(id) {
+		//adjust all user's websocket handler's max packet size
+		var activeUsers = this.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			//i don't know why it would EVER be null at this point. Buy just to be safe.
+			if(activeUsers[i].wsh !== null)
+			{
+				activeUsers[i].wsh.updateMaxPacketSize();
+			}
+		}	
+	}
+
 
 	startGame() {
 		console.log("Starting game");

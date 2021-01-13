@@ -29,11 +29,12 @@ class WebsocketHandler {
 		
 		this.localSequenceMaxValue = 65535;
 
-		this.maxPacketSize = 500; //bytes
+		this.maxPacketSize = 100; //bytes. Dynamically set based on current number of players and max bandwidth set in server config.
+		this.MTU = 1000; //bytes. following Glenn Fiedler's advice. 1000 bytes for MTU just to be safe from IP fragmentation
 		this.eventQueues = [];	//2d array (each entry in eventQueues is another array). Each array is a queue for events to be sent to the client.
 		this.eventQueuesEventIdIndex = {}; //index for the eventQueues
 		this.eventQueuesEventIdReverseIndex = {}; //reverse index of the eventQueuesEventIdIndex. This holds a mapping of "eventQueuesEventIdIndex.index" -> "EventSchema.eventId"
-		this.isEventQueuesDirty = false;
+		this.isEventQueuesDirty = true;
 		this.currentBytes = 0; //current bytes that are queued up to be written to the current packet
 
 		this.ackCallbacks = []; //2D array. Callbacks when a local sequence number gets acked. The index is the localSequence number.
@@ -46,7 +47,7 @@ class WebsocketHandler {
 		this.ws = ws;
 
 		//calculate maxPacketSize through config values
-		this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (serverConfig.max_players * serverConfig.fps * 8));
+		//this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (serverConfig.max_players * serverConfig.fps * 8));
 				
 		//setup actual websocket callbacks
 		ws.on("close", this.onclose.bind(this));
@@ -66,6 +67,18 @@ class WebsocketHandler {
 		{
 			this.ackCallbacks.push([]);
 			this.sendCallbacks.push([]);
+		}
+	}
+
+	//should be called whenever a user joins/leaves the server to adjust max packet size for existing users
+	updateMaxPacketSize() {
+		var currentPlayers = this.gs.um.getActiveUsers().length;
+
+		this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (currentPlayers * serverConfig.fps * 8));
+
+		if(this.maxPacketSize > this.MTU)
+		{
+			this.maxPacketSize = this.MTU;
 		}
 	}
 
@@ -677,7 +690,9 @@ class WebsocketHandler {
 		//console.log('creating packet for user: ' + user.username + '    localSequenceNumber: ' + this.localSequence);
 		
 		var user = this.gs.um.getUserByID(this.userId);
-		var buffer = new ArrayBuffer(this.maxPacketSize);
+		//var buffer = new ArrayBuffer(this.maxPacketSize);
+		this.calculateBytesUsed();
+		var buffer = new ArrayBuffer(this.currentBytes);
 		var view = new DataView(buffer);
 		var n = 0; //current byte within the packet
 		var m = 0; //number of events
