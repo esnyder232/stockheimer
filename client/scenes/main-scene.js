@@ -47,7 +47,7 @@ export default class MainScene extends Phaser.Scene {
 
 		this.cameraZoom = 1.4;
 		this.cameraZoomMax = 6;
-		this.cameraZoomMin = 0.5;
+		this.cameraZoomMin = 0.4;
 
 		this.defaultCenter = {
 			x: 15 ,
@@ -170,13 +170,13 @@ export default class MainScene extends Phaser.Scene {
 			//scrolled down
 			if(e.originalEvent.deltaY > 0)
 			{
-				this.cameraZoom -= 0.1;
+				this.cameraZoom -= 0.2;
 				this.setCameraZoom();
 			}
 			//scrolled up
 			else if(e.originalEvent.deltaY < 0)
 			{
-				this.cameraZoom += 0.1;
+				this.cameraZoom += 0.2;
 				this.setCameraZoom();
 			}
 		}
@@ -213,13 +213,13 @@ export default class MainScene extends Phaser.Scene {
 		this.map = this.make.tilemap({key: "my-tilemap"});
 
 		//load tileset
-		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 1, 2);
-		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 1, 2);
+		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 10, 20);
+		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 10, 20);
 		
 		//create layers
 		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
 		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		this.layer1 = this.map.createStaticLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
+		this.layer1 = this.map.createLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
 
 		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
@@ -268,13 +268,20 @@ export default class MainScene extends Phaser.Scene {
 
 		// 	return true;
 		// });
+
+
+		//this.cameras.main.roundPixels = true;
+		this.cameras.main.setRoundPixels(true);
 	}
 
 	setCameraZoom() {
-		console.log(this.cameraZoom);
 		this.cameraZoom = this.cameraZoom >= this.cameraZoomMax ? this.cameraZoomMax : this.cameraZoom;
 		this.cameraZoom = this.cameraZoom <= this.cameraZoomMin ? this.cameraZoomMin : this.cameraZoom;
+
+		this.cameraZoom = Math.round(this.cameraZoom * 10)/10;
 		this.cameras.main.setZoom(this.cameraZoom);
+
+		//console.log(this.cameraZoom);
 	}
 
 	shutdown() {
