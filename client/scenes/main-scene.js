@@ -115,7 +115,7 @@ export default class MainScene extends Phaser.Scene {
 		$(document).on("keyup", this.documentEnterClicked.bind(this));
 
 		//custom registers on scroll
-		$("#game-div").on("mousewheel", this.documentScroll.bind(this));
+		$("#game-div").on("wheel", this.documentScroll.bind(this));
 
 		//initialize userlist
 		for(var i = 0; i < this.gc.users.length; i++)
