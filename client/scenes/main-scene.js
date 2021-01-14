@@ -697,7 +697,7 @@ export default class MainScene extends Phaser.Scene {
 		//send the input event this frame if needed
 		if(sendInputEvent)
 		{
-			this.gc.wsh.clientToServerEvents.push({
+			this.gc.ep.clientToServerEvents.push({
 				"eventName": "fromClientInputs",
 				"up": this.playerController.up.state,
 				"down": this.playerController.down.state,
@@ -767,7 +767,7 @@ export default class MainScene extends Phaser.Scene {
 		{
 			tbChatInput.val("");
 
-			this.gc.wsh.clientToServerEvents.push({
+			this.gc.ep.clientToServerEvents.push({
 				"eventName": "fromClientChatMessage",
 				"chatMsg": chatMsg
 			});
@@ -830,7 +830,7 @@ export default class MainScene extends Phaser.Scene {
 	createCharacterClick() {
 		if(this.gc.myCharacter === null)
 		{
-			this.gc.wsh.clientToServerEvents.push({
+			this.gc.ep.clientToServerEvents.push({
 				"eventName": "fromClientSpawnCharacter"
 			});
 		}
@@ -840,7 +840,7 @@ export default class MainScene extends Phaser.Scene {
 	killCharacterClick() {
 		if(this.gc.myCharacter !== null)
 		{
-			this.gc.wsh.clientToServerEvents.push({
+			this.gc.ep.clientToServerEvents.push({
 				"eventName": "fromClientKillCharacter"
 			});
 		}
@@ -1039,7 +1039,7 @@ export default class MainScene extends Phaser.Scene {
 	fromClientSpawnEnemy(spawnLocation) {
 		var pass = $("#tb-enemy-password").val();
 		
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": spawnLocation,
 			"enemyControlPass": pass
@@ -1051,7 +1051,7 @@ export default class MainScene extends Phaser.Scene {
 		if(!pass)
 			pass = "";
 		
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientEnemyBehavior",
 			"enemyBehavior": enemyBehavior,
 			"enemyControlPass": pass
@@ -1063,7 +1063,7 @@ export default class MainScene extends Phaser.Scene {
 		if(!pass)
 			pass = "";
 
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientKillAllEnemies",
 			"enemyControlPass": pass
 		});
@@ -1074,7 +1074,7 @@ export default class MainScene extends Phaser.Scene {
 		if(!pass)
 			pass = "";
 
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientTogglePvp",
 			"enemyControlPass": pass
 		});
@@ -1085,7 +1085,7 @@ export default class MainScene extends Phaser.Scene {
 		if(!pass)
 			pass = "";
 
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": "respawnCastle",
 			"enemyControlPass": pass
@@ -1097,7 +1097,7 @@ export default class MainScene extends Phaser.Scene {
 		if(!pass)
 			pass = "";
 
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": "destroyCastle",
 			"enemyControlPass": pass

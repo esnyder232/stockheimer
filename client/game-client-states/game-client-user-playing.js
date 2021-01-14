@@ -6,7 +6,6 @@ import MainScene from "../scenes/main-scene.js"
 export default class GameClientUserPlaying extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
-		this.ep = this.gc.ep;
 		this.ms = null;
 	}
 	
@@ -18,7 +17,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		});
 
 		//tell the server you are ready to play
-		this.gc.wsh.clientToServerEvents.push({
+		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientReadyToPlay"
 		});
 	}
@@ -28,7 +27,12 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 		this.gc.ep.processServerEvents(this.cbPreEvent.bind(this), this.cbPostEvent.bind(this));
 
+		//put the packet algorithm here (insert from clientToServerEvents 1st, then fragmented events 2nd)
+		this.gc.ep.insertEventsIntoPacket();
+
+		//send the packet to the server
 		this.gc.wsh.createPacketForUser();
+
 		this.gc.wsh.update(dt);
 	}
 

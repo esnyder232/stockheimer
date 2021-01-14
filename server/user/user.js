@@ -25,6 +25,8 @@ class User {
 		this.serverToClientEvents = []; //event queue to be processed by the packet system
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events coming from the client
 
+		this.fragmentedClientToServerEvents = []; //fragmented events from client to the server
+
 		this.characterId = null; //temp character id to establish a relationship between a user and character
 		this.bReadyToPlay = false; //flag that gets flipped when the user sends the "readyToPlay" event
 		this.bDisconnected = false; //flag that gets flipped when the user disconnects or times out
@@ -160,6 +162,67 @@ class User {
 			e.eventQueue.push({
 				"eventName": "createTrackedEntity",
 			});
+		}
+	}
+
+	processFragmentEvent(e) {
+		switch(e.eventName)
+		{
+			case "fragmentStart":
+				var fragmentInfo = {
+					fragmentLength: e.fragmentLength,
+					fragmentData: new ArrayBuffer(e.fragmentLength),
+					fragmentDataView: null,
+					n: 0
+				};
+
+				fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+
+				//copy the fragment in this message to the fragmentedClientToServerEvents
+				var dv = new DataView(e.fragmentData);
+				for(var j = 0; j < dv.byteLength; j++)
+				{
+					fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+					fragmentInfo.n++;
+				}
+
+				this.fragmentedClientToServerEvents.push(fragmentInfo);
+
+				break;
+			case "fragmentContinue":
+				if(this.fragmentedClientToServerEvents.length > 0)
+				{
+					var fragmentInfo = this.fragmentedClientToServerEvents[this.fragmentedClientToServerEvents.length-1];
+
+					//copy the fragment in this message to the fragmentedClientToServerEvents
+					var dv = new DataView(e.fragmentData);
+					if(fragmentInfo.n == 150)
+					{
+						var stopHere = true;
+					}
+					for(var j = 0; j < dv.byteLength; j++)
+					{
+						fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+						fragmentInfo.n++;
+					}
+				}
+				break;
+			case "fragmentEnd":
+				if(this.fragmentedClientToServerEvents.length > 0)
+				{
+					var fragmentInfo = this.fragmentedClientToServerEvents[this.fragmentedClientToServerEvents.length-1];
+
+					//copy the fragment in this message to the fragmentedClientToServerEvents
+					var dv = new DataView(e.fragmentData);
+					for(var j = 0; j < dv.byteLength; j++)
+					{
+						fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+						fragmentInfo.n++;
+					}
+
+					this.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
+				}
+				break;
 		}
 	}
 

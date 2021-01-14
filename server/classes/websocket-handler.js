@@ -101,7 +101,6 @@ class WebsocketHandler {
 	}
 
 	onmessage(e) {
-		var user = this.gs.um.getUserByID(this.userId);
 		var view = new DataView(e);
 		var n = 0; //number of bytes in
 		var m = 0; //event count
@@ -123,172 +122,7 @@ class WebsocketHandler {
 		//start going through the events
 		for(var i = 0; i < m; i++)
 		{
-			var eventId = view.getUint8(n);
-			n++;
-			bytesRead += 1;
-
-			var schema = EventIdIndex[eventId];
-
-			if(schema) 
-			{
-				var eventData = {};
-				eventData.eventName = schema.txt_event_name;
-
-				//go through each parameter for the event
-				for(var p = 0; p < schema.parameters.length; p++)
-				{
-					var value = 0;
-
-					switch(schema.parameters[p].txt_actual_data_type)
-					{
-						//standard decodings
-						case "int8":
-							value = view.getInt8(n);
-							n++;
-							bytesRead++;
-							break;
-						case "int16":
-							value = view.getInt16(n);
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "int32":
-							value = view.getInt32(n);
-							n += 4;
-							bytesRead += 4;
-							break;
-						case "uint8":
-							value = view.getUint8(n);
-							n++;
-							bytesRead++;
-							break;
-						case "uint16":
-							value = view.getUint16(n);
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "uint32":
-							value = view.getUint32(n);
-							n += 4;
-							bytesRead += 4;
-							break;
-						case "str8":
-							value = "";
-
-							//string length
-							var l = view.getUint8(n);
-							n++;
-							bytesRead++;
-
-							//string value
-							for(var j = 0; j < l; j++)
-							{
-								value += String.fromCharCode(view.getUint16(n)); 
-								n += 2;
-								bytesRead += 2;
-							}
-							break;
-						case "str16":
-							value = "";
-
-							//string length
-							var l = view.getUint16(n);
-							n++;
-							bytesRead++;
-
-							//string value
-							for(var j = 0; j < l; j++)
-							{
-								value += String.fromCharCode(view.getUint16(n)); 
-								n += 2;
-								bytesRead += 2;
-							}
-							break;
-						case "str32":
-							value = "";
-
-							//string length
-							var l = view.getUint32(n);
-							n++;
-							bytesRead++;
-
-							//string value
-							for(var j = 0; j < l; j++)
-							{
-								value += String.fromCharCode(view.getUint16(n)); 
-								n += 2;
-								bytesRead += 2;
-							}
-							break;
-						case "float32":
-							value = view.getFloat32(n);
-							n += 4;
-							bytesRead += 4;
-							break;
-
-						//Custom decodings
-						case "float16p0":
-							value = view.getInt16(n)*1;
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "float16p1":
-							value = view.getInt16(n)*0.1;
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "float16p2":
-							value = view.getInt16(n)*0.01;
-							n += 2;
-							bytesRead += 2;
-							break;
-						case "float16p3":
-							value = view.getInt16(n)*0.001;
-							n += 2;
-							bytesRead += 2;
-							break;
-
-
-
-						case "float8p0":
-							value = view.getInt8(n)*1;
-							n++;
-							bytesRead++;
-							break;
-						case "float8p1":
-							value = view.getInt8(n)*0.1;
-							n++;
-							bytesRead++;
-							break;
-						case "float8p2":
-							value = view.getInt8(n)*0.01;
-							n++;
-							bytesRead++;
-							break;
-						case "float8p3":
-							value = view.getInt8(n)*0.001;
-							n++;
-							bytesRead++;
-							break;
-
-
-						case "bool":
-							value = view.getUint8(n) == 1 ? true : false;
-							n++;
-							bytesRead++;
-							break;
-						default:
-							//intentionally blank
-							break;
-
-					}
-
-					//create the key value pair on eventData
-					eventData[schema.parameters[p].txt_param_name] = value;
-				}
-
-				user.clientToServerEvents.push(eventData);
-			}
+			n += this.decodeEvent(n, view);
 		}
 
 		//process any callbacks from the most recent ack from the client
@@ -362,6 +196,183 @@ class WebsocketHandler {
 			this.ack = onMessageAck;
 		}
 	}
+
+
+
+	decodeEvent(n, view, debugMe) {
+		var user = this.gs.um.getUserByID(this.userId);
+		var oldN = n;
+
+		//event id
+		var eventId = view.getUint8(n);
+		n++;
+
+		var schema = EventIdIndex[eventId];
+
+		if(schema) 
+		{
+			var eventData = {};
+			eventData.eventName = schema.txt_event_name;
+
+			//go through each parameter for the event
+			for(var p = 0; p < schema.parameters.length; p++)
+			{
+				var value = 0;
+
+				switch(schema.parameters[p].txt_actual_data_type)
+				{
+					//standard decodings
+					case "int8":
+						value = view.getInt8(n);
+						n++;
+						break;
+					case "int16":
+						value = view.getInt16(n);
+						n += 2;
+						break;
+					case "int32":
+						value = view.getInt32(n);
+						n += 4;
+						break;
+					case "uint8":
+						value = view.getUint8(n);
+						n++;
+						break;
+					case "uint16":
+						value = view.getUint16(n);
+						n += 2;
+						break;
+					case "uint32":
+						value = view.getUint32(n);
+						n += 4;
+						break;
+					case "str8":
+						value = "";
+
+						//string length
+						var l = view.getUint8(n);
+						n++;
+
+						//string value
+						for(var j = 0; j < l; j++)
+						{
+							value += String.fromCharCode(view.getUint16(n)); 
+							n += 2;
+						}
+						break;
+					case "str16":
+						value = "";
+
+						//string length
+						var l = view.getUint16(n);
+						n += 2;
+
+						//string value
+						for(var j = 0; j < l; j++)
+						{
+							value += String.fromCharCode(view.getUint16(n)); 
+							n += 2;
+						}
+						break;
+					case "str32":
+						value = "";
+
+						//string length
+						var l = view.getUint32(n);
+						n++;
+
+						//string value
+						for(var j = 0; j < l; j++)
+						{
+							value += String.fromCharCode(view.getUint16(n)); 
+							n += 2;
+						}
+						break;
+					case "float32":
+						value = view.getFloat32(n);
+						n += 4;
+						break;
+
+					//Custom decodings
+					case "float16p0":
+						value = view.getInt16(n)*1;
+						n += 2;
+						break;
+					case "float16p1":
+						value = view.getInt16(n)*0.1;
+						n += 2;
+						break;
+					case "float16p2":
+						value = view.getInt16(n)*0.01;
+						n += 2;
+						break;
+					case "float16p3":
+						value = view.getInt16(n)*0.001;
+						n += 2;
+						break;
+
+
+
+					case "float8p0":
+						value = view.getInt8(n)*1;
+						n++;
+						break;
+					case "float8p1":
+						value = view.getInt8(n)*0.1;
+						n++;
+						break;
+					case "float8p2":
+						value = view.getInt8(n)*0.01;
+						n++;
+						break;
+					case "float8p3":
+						value = view.getInt8(n)*0.001;
+						n++;
+						break;
+
+
+					case "bool":
+						value = view.getUint8(n) == 1 ? true : false;
+						n++;
+						break;
+
+					case "dataBuffer8":
+						value = null;
+
+						//dataBuffer length
+						var l = view.getUint8(n);
+						n++;
+
+						value = new ArrayBuffer(l);
+						var tempView = new DataView(value);
+
+						//dataBuffer value
+						for(var j = 0; j < l; j++)
+						{
+							tempView.setUint8(j, view.getUint8(n));
+							n += 1;
+						}
+
+						break;
+					default:
+						//intentionally blank
+						break;
+
+				}
+
+				//create the key value pair on eventData
+				eventData[schema.parameters[p].txt_param_name] = value;
+			}
+
+			//this.ep.serverToClientEvents.push(eventData);
+			user.clientToServerEvents.push(eventData);
+		}
+
+		return n - oldN;
+	}
+
+
+
 
 
 
@@ -489,28 +500,28 @@ class WebsocketHandler {
 					{
 						case "str8": 
 							var s = eventData[schema.parameters[p].txt_param_name];
-							if(s)
+							if(s !== undefined)
 							{
 								eventBytes += 1 + (s.length*2);
 							}
 							break;
 						case "str16": 
 							var s = eventData[schema.parameters[p].txt_param_name];
-							if(s)
+							if(s !== undefined)
 							{
 								eventBytes += 2 + (s.length*2);
 							}
 							break;
 						case "str32": 
 							var s = eventData[schema.parameters[p].txt_param_name];
-							if(s)
+							if(s !== undefined)
 							{
 								eventBytes += 4 + (s.length*2);
 							}
 							break;
 						case "dataBuffer8": 
 							var db = eventData[schema.parameters[p].txt_param_name];
-							if(db)
+							if(db !== undefined)
 							{
 								eventBytes += 1 + (db.byteLength);
 							}
@@ -723,7 +734,7 @@ class WebsocketHandler {
 					//check the length of event to make sure it fits
 					var bytesRequired = this.getEventSize(e);
 
-					if(bytesRequired <= this.maxPacketSize - n)
+					if(bytesRequired <= this.currentBytes - n)
 					{
 						//encode the event
 						var bytesWritten = this.encodeEventInBuffer(e, view, n);

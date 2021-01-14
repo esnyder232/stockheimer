@@ -414,10 +414,14 @@ class GameServerRunning extends GameServerBaseState {
 								});
 							}
 						}
-
-						
 						break;
 
+					case "fragmentStart":
+					case "fragmentContinue":
+					case "fragmentEnd":
+						user.processFragmentEvent(e);
+						var stopHere = true;
+						break;
 					default:
 						//intentionally blank
 						break;

@@ -85,7 +85,7 @@ input[type="text"]:disabled {
 	background-color: #444444;
 	border-color:#cccccc;
 	border-radius: 20px;
-	border-width: 14px;
+	border-width: 16px;
 	border-style: solid;
 	padding:12px;
 	color: #cccccc;

@@ -1,20 +1,225 @@
 import GlobalFuncs from "../global-funcs.js"
+import User from "./user.js";
+import ClientConfig from '../client-config.json';
 
 export default class EventProcessor {
 	constructor() {
-		this.gc = null;		
+		this.gc = null;
+		this.wsh = null;
+		
 		this.globalfuncs = new GlobalFuncs();
 		this.fragmentedServerToClientEvents = [];
+		this.fragmentedClientToServerEvents = []; //events that are to be sent to the server in fragments
+
+		this.serverToClientEvents = []; //event queue to be processed by the main loop
+		this.clientToServerEvents = []; //event queue to be processed by the main loop for events going from client to server
+		
+		this.fragmentIdCounter = 0;
+		this.fragmentationLimit = Math.round(ClientConfig.max_packet_event_bytes_until_fragmentation);
+
 	}
 	
-	init(gc) {
+	init(gc, wsh) {
 		this.gc = gc;
+		this.wsh = wsh;
 	}
 
-	processServerEvents(cbPreEvent, cbPostEvent) {
-		for(var i = 0; i < this.gc.wsh.serverToClientEvents.length; i++)
+	insertEventsIntoPacket() {
+		//first, process the regular events here
+		if(this.clientToServerEvents.length > 0)
 		{
-			var e = this.gc.wsh.serverToClientEvents[i];
+			var processedIndexes = [];
+
+			for(var i = 0; i < this.clientToServerEvents.length; i++)
+			{
+				//check if the websocket handler can fit the event
+				var info = this.wsh.canEventFit(this.clientToServerEvents[i]);
+
+				//insert the event, and reset the priority accumulator
+				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.fragmentationLimit)
+				{
+					this.insertFragmentEvent(this.clientToServerEvents[i], info);
+
+					processedIndexes.push(i); //just push it in this queue so it gets spliced off at the end
+				}
+				else if(info.canEventFit)
+				{
+					this.wsh.insertEvent(this.clientToServerEvents[i]);
+					processedIndexes.push(i);
+				}
+				else
+				{
+					//do nothing. The event couldn't fit...maybe next frame it can.
+				}
+			}
+
+			//splice off any tracked events that were processed
+			for(var i = processedIndexes.length - 1; i >= 0; i--)
+			{
+				this.clientToServerEvents.splice(i, 1);
+			}
+		}
+		
+		//second, see if there are any fragmented messages that need to go to the server
+		if(this.fragmentedClientToServerEvents.length > 0)
+		{
+			var fragmentInfo = this.fragmentedClientToServerEvents[0];
+
+			if((fragmentInfo.currentFragmentNumber -1) == fragmentInfo.ackedFragmentNumber)
+			{
+				//fragment start
+				if(fragmentInfo.currentFragmentNumber == 0)
+				{
+					var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
+
+					var fragmentEvent = {
+						eventName: "fragmentStart",
+						fragmentLength: fragmentInfo.eventDataView.byteLength,
+						fragmentData: fragmentInfo.eventDataBuffer.slice(0, nextBytes)
+					};
+
+					//see if the fragment can fit
+					var info = this.wsh.canEventFit(fragmentEvent);
+
+					if(info.canEventFit)
+					{
+						this.wsh.insertEvent(fragmentEvent, null, this.cbFragmentSendAck.bind(this), {fragmentId: fragmentInfo.fragmentId});
+						fragmentInfo.n += nextBytes;
+						fragmentInfo.currentFragmentNumber++;
+					}
+					else
+					{
+						//do nothing. The event could not fit the packet. Maybe next frame.
+					}
+				}
+				//fragment continue
+				else if(fragmentInfo.currentFragmentNumber < fragmentInfo.maxFragmentNumber)
+				{
+					//calculate the next bytes
+					var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
+
+					//queue up the next fragment 
+					var fragmentEvent = {
+						eventName: "fragmentContinue",
+						fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes)
+					};
+
+					//see if the fragment can fit
+					var info = this.wsh.canEventFit(fragmentEvent);
+					
+					if(info.canEventFit)
+					{
+						this.wsh.insertEvent(fragmentEvent, null, this.cbFragmentSendAck.bind(this), {fragmentId: fragmentInfo.fragmentId});
+						fragmentInfo.n += nextBytes;
+						fragmentInfo.currentFragmentNumber++;
+					}
+					else
+					{
+						//do nothing. The event could not fit the packet. Maybe next frame.
+					}
+				}
+				//fragment end
+				else if(fragmentInfo.currentFragmentNumber == fragmentInfo.maxFragmentNumber)
+				{
+					//calculate the next bytes
+					var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
+
+					//queue up the next fragment 
+					var fragmentEvent = {
+						eventName: "fragmentEnd",
+						fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes)
+					};
+
+					//see if the fragment can fit
+					var info = this.wsh.canEventFit(fragmentEvent);
+
+					if(info.canEventFit)
+					{
+						this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck);
+
+						//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
+						// console.log("FRAGMENT END SENT");
+						// console.log(fragmentInfo);
+						this.fragmentedClientToServerEvents.splice(0, 1);
+					}
+					else
+					{
+						//do nothing. The event could not fit the packet. Maybe next frame.
+					}
+				}
+			}
+		}
+	}
+
+
+	insertFragmentEvent(event, info, cbFinalFragmentAck) {
+		var fragmentInfo = {
+			bytesRequired: info.bytesRequired,
+			eventData: event,
+			eventDataBuffer: null,
+			eventDataView: null,
+			fragmentId: this.getFragmentId(),
+			n: 0,						//the current byte of the eventDataBuffer we are on
+			currentFragmentNumber: 0, 	//the current fragment number we are trying to send in the "trackedEvents"
+			ackedFragmentNumber: -1,  	//the most recent acked fragment number that was sent to the client
+			maxFragmentNumber: 0,		//the max number of fragments we need to send
+			cbFinalFragmentAck: cbFinalFragmentAck	//the callback for when the final fragment gets acknowledged out
+		};
+
+		//calculate the max fragments required and create the buffer
+		fragmentInfo.maxFragmentNumber = Math.ceil(fragmentInfo.bytesRequired / this.fragmentationLimit) - 1;
+		fragmentInfo.eventDataBuffer = new ArrayBuffer(fragmentInfo.bytesRequired);
+		fragmentInfo.eventDataView = new DataView(fragmentInfo.eventDataBuffer);
+
+		//encode the entire event in the eventDataBuffer
+		this.wsh.encodeEventInBuffer(fragmentInfo.eventData, fragmentInfo.eventDataView, 0);
+
+		//push the fragmentInfo into the fragmentedClientToServerEvents so we can keep track of it seperately
+		this.fragmentedClientToServerEvents.push(fragmentInfo);
+	}
+
+
+
+	cbFragmentSendAck(miscData) {
+		//console.log('ACK FRAGMENT CALLED');
+		//console.log(miscData);
+
+		var index = this.fragmentedClientToServerEvents.findIndex((x) => {return x.fragmentId == miscData.fragmentId;});
+		if(index >= 0)
+		{
+			//console.log('fragment found. Increasing now.');
+			this.fragmentedClientToServerEvents[index].ackedFragmentNumber++;
+		}
+	}
+
+	calculateNextFragmentBytes(n, totalByteLength, fragmentationLimit)
+	{
+		var result = 0;
+
+		var bytesRemaining = totalByteLength - n;
+
+		if(Math.floor(bytesRemaining/fragmentationLimit) >= 1)
+		{
+			result = fragmentationLimit;
+		}
+		else
+		{
+			result = bytesRemaining;
+		}
+
+		return result;
+	}
+
+	getFragmentId() {
+		return this.fragmentIdCounter++;
+	}
+
+
+
+	processServerEvents(cbPreEvent, cbPostEvent) {
+		for(var i = 0; i < this.serverToClientEvents.length; i++)
+		{
+			var e = this.serverToClientEvents[i];
 			//call preevent callback. This is mostly just called when things get deleted and the scenes have a chance to update their view accordingly
 			if(cbPreEvent)
 			{
@@ -39,12 +244,10 @@ export default class EventProcessor {
 					break;
 
 				case "userConnected":
-					this.gc.users.push({
-						userId: e.userId,
-						activeUserId: e.activeUserId,
-						username: e.username,
-						userKillCount: e.userKillCount
-					});
+					var u = new User();
+					u.init(this.gc, e.userId, e.activeUserId, e.username, e.userKillCount);
+
+					this.gc.users.push(u);
 
 					console.log(e);
 
@@ -275,6 +478,6 @@ export default class EventProcessor {
 			}
 		}
 		
-		this.gc.wsh.serverToClientEvents.length = 0;
+		this.serverToClientEvents.length = 0;
 	}
 }

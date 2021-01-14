@@ -46,8 +46,8 @@ export default class GameClient {
 		this.wsh = new WebsocketHandler();
 		this.ep = new EventProcessor();
 
-		this.wsh.init(this);
-		this.ep.init(this);
+		this.wsh.init(this, this.ep);
+		this.ep.init(this, this.wsh);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -172,6 +172,7 @@ export default class GameClient {
 			catch(ex) {
 				this.globalfuncs.appendToLog("Exception caught in game loop: " + ex)
 				console.log(ex);
+				var stopHere = true;
 			}
 		}
 
