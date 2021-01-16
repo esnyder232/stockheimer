@@ -2,13 +2,14 @@ import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 import config from '../client-config.json';
 import PlayerController from "../classes/player-controller.js"
+import ClientConstants from "../client-constants.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
 		super(config);
 		this.globalfuncs = new GlobalFuncs();
 		this.planckUnitsToPhaserUnitsRatio = 32;
-		this.radiansToDegreesRatio = 180/3.14
+		this.radiansToDegreesRatio = 180/3.14;
 		
 		this.userDomElements = [];	//list of json objects that contain user spcific dom elements
 		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
@@ -221,6 +222,8 @@ export default class MainScene extends Phaser.Scene {
 		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
 		this.layer1 = this.map.createLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
 
+		this.layer1.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
+
 		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
 		this.cameras.main.scrollY = 0;
@@ -418,6 +421,10 @@ export default class MainScene extends Phaser.Scene {
 
 			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
 			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.hpCur + "/" + c.hpMax, textStyle);
+
+			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
 			this.userPhaserElements.push({
 				id: c.id,
@@ -882,6 +889,8 @@ export default class MainScene extends Phaser.Scene {
 			boxGraphics.setX(ppu.x);
 			boxGraphics.setY(ppu.y);
 
+			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+
 			this.projectilePhaserElements.push(ppu);
 		}
 	}
@@ -944,6 +953,10 @@ export default class MainScene extends Phaser.Scene {
 
 			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
 			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.castleHpCur + "/" + c.castleHpMax, textStyle);
+
+			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
 			this.userPhaserElements.push({
 				id: c.id,
