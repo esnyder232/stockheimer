@@ -408,7 +408,7 @@ class GameServerRunning extends GameServerBaseState {
 							var activeUsers = this.gs.um.getActiveUsers();
 							for(var j = 0; j < activeUsers.length; j++)
 							{
-								activeUsers[j].trackedEvents.push({
+								activeUsers[j].serverToClientEvents.push({
 									"eventName": "killfeedMsg",
 									"killfeedMsg": killFeedMessage
 								});
@@ -419,7 +419,7 @@ class GameServerRunning extends GameServerBaseState {
 					case "fragmentStart":
 					case "fragmentContinue":
 					case "fragmentEnd":
-						user.processFragmentEvent(e);
+						user.fromClientFragmentEvent(e);
 						var stopHere = true;
 						break;
 					default:
@@ -634,7 +634,7 @@ class GameServerRunning extends GameServerBaseState {
 					var activeUsers = this.gs.um.getActiveUsers();
 					for(var i = 0; i < activeUsers.length; i++)
 					{
-						activeUsers[i].trackedEvents.push({
+						activeUsers[i].serverToClientEvents.push({
 							"eventName": "updateUserInfo",
 							"userId": killerOwner.id,
 							"userKillCount": killerOwner.userKillCount
@@ -660,7 +660,7 @@ class GameServerRunning extends GameServerBaseState {
 				var activeUsers = this.gs.um.getActiveUsers();
 				for(var i = 0; i < activeUsers.length; i++)
 				{
-					activeUsers[i].trackedEvents.push({
+					activeUsers[i].serverToClientEvents.push({
 						"eventName": "killfeedMsg",
 						"killfeedMsg": killFeedMessage
 					});

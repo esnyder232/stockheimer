@@ -147,6 +147,7 @@ export default class GameClient {
 		this.foundMyUser = false;
 		this.foundMyCharacter = false;
 		this.castles = [];
+		this.ep.reset();
 	}
 
 	gameLoop() {

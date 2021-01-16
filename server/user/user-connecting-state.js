@@ -15,7 +15,7 @@ class UserConnectingState extends UserBaseState {
 		var playingUsers = this.user.gs.um.getPlayingUsers();
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
-		this.user.trackedEvents.push({
+		this.user.serverToClientEvents.push({
 			"eventName": "yourUser",
 			"userId": this.user.id
 		})
@@ -41,7 +41,7 @@ class UserConnectingState extends UserBaseState {
 		//send a worldDone signal at the end
 		//how the fuck do we send this now?!?!?
 		//for now, just send this out. Its not gonna ACTUALLY wait for the world state to be acknowledged by the user, but whatever.
-		this.user.trackedEvents.push({
+		this.user.serverToClientEvents.push({
 			"eventName": "worldStateDone"
 		});
 
