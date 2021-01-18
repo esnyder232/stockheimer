@@ -5,10 +5,10 @@ const cookieParser = require('cookie-parser');
 const {GameServer} = require("./server/game-server.js");
 const serverConfig = require('./server/server-config.json');
 const {GlobalFuncs}= require('./server/global-funcs');
+const logger = require("./logger.js");
 
 const globalfuncs = new GlobalFuncs();
 const app = express();
-
 const port = 7000;
 
 
@@ -21,7 +21,7 @@ const wssConfig = {
 const wss = new websocket.Server(wssConfig);
 
 //create http server
-const expressServer = app.listen(port, () => {console.log('Webserver listening on port %s', port)});
+const expressServer = app.listen(port, () => {logger.log("info", 'Webserver listening on port ' + port)});
 
 //make the game server
 var gs = new GameServer();

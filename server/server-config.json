@@ -6,5 +6,7 @@
 	"max_allowed_bandwidth_bits": 1000000,
 	"max_packet_event_bytes_until_fragmentation": 30,
 	"fps": 30,
-	"max_players": 32
+	"max_players": 32,
+	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",
+	"log_level": "info"
 }

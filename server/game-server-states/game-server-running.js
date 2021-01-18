@@ -2,6 +2,7 @@ const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
 const {UserDisconnectingState} = require('../user/user-disconnecting-state.js');
 const crypto = require('crypto');
+const logger = require('../../logger.js');
 
 class GameServerRunning extends GameServerBaseState {
 	constructor(gs) {
@@ -96,6 +97,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.ngm.update(dt);
 		this.gs.aim.update(dt);
 
+		logger.log("debug", "Framenum:" + this.gs.frameNum);
 		this.gs.frameNum++;
 
 		super.update(dt);
