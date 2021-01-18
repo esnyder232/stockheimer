@@ -1,5 +1,6 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStarting} = require('./game-server-starting.js');
+const logger = require('../../logger.js');
 
 class GameServerStopped extends GameServerBaseState {
 	constructor(gs) {
@@ -7,7 +8,7 @@ class GameServerStopped extends GameServerBaseState {
 	}
 
 	enter(dt) {
-		console.log('Game loop stopped.');
+		logger.log("info", 'Game loop stopped.');
 		this.gs.runGameLoop = false;
 		super.enter(dt);
 	}
@@ -21,7 +22,7 @@ class GameServerStopped extends GameServerBaseState {
 	}
 	
 	startGameRequest() {
-		console.log('Game loop start request.');
+		logger.log("info", 'Game loop start request.');
 		this.gs.nextGameState = new GameServerStarting(this.gs);
 		this.gs.runGameLoop = true;
 

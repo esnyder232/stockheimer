@@ -14,6 +14,7 @@ const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const path = require('path');
+const logger = require("../logger.js");
 
 class GameServer {
 	constructor() {
@@ -60,7 +61,7 @@ class GameServer {
 	}
 
 	init() {
-		//console.log('initializing game server');
+		//logger.log("info", 'initializing game server');
 		this.pl = planck;
 		this.wsm = new WebsocketManager();
 		this.um = new UserManager();
@@ -77,7 +78,7 @@ class GameServer {
 			});
 		}
 		
-		//console.log('creating gameworld done');
+		//logger.log("info", 'creating gameworld done');
 
 		this.wsm.init(this);
 		this.um.init(this);
@@ -170,7 +171,7 @@ class GameServer {
 			authResult.errorMessage = "Internal server error when authenticating: " + ex;
 			authResult.userMessage = "Internal server error when authentication.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
-			console.log(ex);
+			logger.log("info", ex);
 		}
 
 		if(!authResult.bError)
@@ -196,12 +197,12 @@ class GameServer {
 		}
 		catch(ex) {
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
-			console.log(ex);
+			logger.log("info", ex);
 		}
 	}
 
 	cbUserActivateSuccess(id) {
-		//console.log('user activation success CB called');
+		//logger.log("info", 'user activation success CB called');
 		//adjust all user's websocket handler's max packet size
 		var activeUsers = this.um.getActiveUsers();
 		for(var i = 0; i < activeUsers.length; i++)
@@ -216,7 +217,7 @@ class GameServer {
 
 	//if user fails to be activated, do the opposite of everything you did in gameserver.onopen
 	cbUserActivateFail(id, failedReason) {
-		//console.log('user activation failed CB called');
+		//logger.log("info", 'user activation failed CB called');
 
 		var user = this.um.getUserByID(id);
 		var wsh = this.wsm.getWebsocketByID(user.wsId);
@@ -253,12 +254,12 @@ class GameServer {
 
 
 	startGame() {
-		console.log("Starting game");
+		logger.log("info", "Starting game");
 		this.gameState.startGameRequest();
 	}
 
 	stopGame() {
-		console.log("Stopping game");
+		logger.log("info", "Stopping game");
 		this.gameState.stopGameRequest();
 	}
 
@@ -282,7 +283,7 @@ class GameServer {
 				this.reportTimer += this.frameTimeStep;
 				if(this.reportTimer >= this.reportTimerInterval)
 				{
-					console.log("GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". Gameobjects: " + this.gom.gameObjectArray.length);
+					logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". Gameobjects: " + this.gom.gameObjectArray.length);
 					this.reportTimer = 0;
 				}
 			}
@@ -330,7 +331,7 @@ class GameServer {
 		catch(ex) {
 			userMessage = "Internal server error.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
-			console.log(ex);
+			logger.log("info", ex);
 			bError = true;
 		}
 
@@ -380,7 +381,7 @@ class GameServer {
 		}
 		catch(ex) {
 			bError = true;
-			console.log(req.path, "Exception caught in getGameSession: " + ex, ex.stack);
+			logger.log("info", req.path, "Exception caught in getGameSession: " + ex, ex.stack);
 			userMessage = "Internal server error.";
 		}
 	
@@ -439,7 +440,7 @@ class GameServer {
 		}
 		catch(ex) {
 			bError = true;
-			console.log(req.path, "Exception caught in clearUserSession: " + ex, ex.stack);
+			logger.log("info", req.path, "Exception caught in clearUserSession: " + ex, ex.stack);
 			userMessage = "Internal server error.";
 		}
 	
@@ -457,7 +458,7 @@ class GameServer {
 	//This is where we can do checks for if the players are at maximum capicity, or player name filtering, etc.
 	//If the player is allowed to connect and they don't have a user setup yet, this also creates the user for them in UserManager and sets the user-session cookie on the client.
 	joinRequest(req, res) {
-		console.log("join request called")
+		logger.log("info", "join request called")
 		var bError = false;
 		var data = {};
 		var main = [];
@@ -546,7 +547,7 @@ class GameServer {
 		catch(ex) {
 			userMessage = "Internal server error.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
-			console.log(ex);
+			logger.log("info", ex);
 			bError = true;
 		}
 

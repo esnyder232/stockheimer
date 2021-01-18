@@ -1,6 +1,7 @@
 const {UserBaseState} = require('./user-base-state.js');
 const {UserPlayingState} = require('./user-playing-state.js');
 const {UserDisconnectingState} = require('./user-disconnecting-state.js');
+const logger = require('../../logger.js');
 
 class UserConnectingState extends UserBaseState {
 	constructor(user) {
@@ -9,7 +10,7 @@ class UserConnectingState extends UserBaseState {
 	}
 
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		var playingUsers = this.user.gs.um.getPlayingUsers();
@@ -68,7 +69,7 @@ class UserConnectingState extends UserBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 	}
 }

@@ -3,6 +3,7 @@ const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
 const serverConfig = require('../server-config.json');
 const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
+const logger = require('../../logger.js');
 
 class User {
 	constructor() {
@@ -246,7 +247,7 @@ class User {
 			"id": id
 		});
 
-		//console.log('User tracked Entity marked for deletion. User: ' + this.username + ". Entity Type: " + type + ". Entity Id: " + id);
+		//logger.log("info", 'User tracked Entity marked for deletion. User: ' + this.username + ". Entity Type: " + type + ". Entity Id: " + id);
 	}
 
 	updateTrackedEntityIndex(type, id, obj, transaction) {
@@ -456,7 +457,7 @@ class User {
 
 					if(index >= 0)
 					{
-						//console.log('Splicing off tracked entity. User: ' + this.username + ". Entity type: " + this.trackedEntities[index].entType + ". Entity Id: " + this.trackedEntities[index].entId);
+						//logger.log("info", 'Splicing off tracked entity. User: ' + this.username + ". Entity type: " + this.trackedEntities[index].entType + ". Entity Id: " + this.trackedEntities[index].entId);
 						this.trackedEntities[index].trackedEntityDeinit();
 						this.updateTrackedEntityIndex(this.trackedEntities[index].entType, this.trackedEntities[index].entId, null, "delete");
 						this.trackedEntities.splice(index, 1);
@@ -509,8 +510,8 @@ class User {
 	}
 
 	cbFragmentSendAck(miscData) {
-		// console.log('ACK FRAGMENT CALLED');
-		// console.log(miscData);
+		// logger.log("info", 'ACK FRAGMENT CALLED');
+		// logger.log("info", miscData);
 
 		var index = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === miscData.fragmentId;});
 		if(index >= 0)

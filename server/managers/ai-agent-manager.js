@@ -1,5 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {AIAgent} = require('../classes/ai-agent.js');
+const logger = require('../../logger.js');
 
 class AIAgentManager {
 	constructor() {
@@ -95,7 +96,7 @@ class AIAgentManager {
 					
 					if(bError)
 					{
-						console.log('AI Agent transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						logger.log("info", 'AI Agent transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 
 						//call the callback if it exists
 						if(this.transactionQueue[i].cbFail)

@@ -1,5 +1,6 @@
 const {UserBaseState} = require('./user-base-state.js');
 const UserDisconnectedState = require('./user-disconnected-state.js');
+const logger = require('../../logger.js');
 
 class UserDisconnectingState extends UserBaseState {
 	constructor(user) {
@@ -8,7 +9,7 @@ class UserDisconnectingState extends UserBaseState {
 	}
 
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 
 		super.enter(dt);
@@ -21,7 +22,7 @@ class UserDisconnectingState extends UserBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 
 		//clean up any relationships the user may have had
 		//this.gs.gameState.deactivateSLOs(this.user.characterId);

@@ -1,6 +1,6 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const GameServerStopped = require('./game-server-stopped.js'); //Wierd, If I do the {} on this, GameServerStopped becomes undefined. It has some confliction with game-server.js's require of game-server-stopped.js.
-
+const logger = require('../../logger.js');
 
 //do anything here that involves stopping the game, Like deleting things in memory, saving sessions, anything.
 class GameServerStopping extends GameServerBaseState {
@@ -9,7 +9,7 @@ class GameServerStopping extends GameServerBaseState {
 	}
 
 	enter(dt) {
-		console.log('Game loop stopping.');
+		logger.log("info", 'Game loop stopping.');
 		super.enter(dt);
 	}
 

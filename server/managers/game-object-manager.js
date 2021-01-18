@@ -2,6 +2,7 @@ const {GlobalFuncs} = require('../global-funcs.js');
 const {Character} = require('../characters/character.js');
 const {Bullet} = require("../projectiles/bullet.js");
 const {Castle} = require("../classes/castle.js");
+const logger = require('../../logger.js');
 
 class GameObjectManager {
 	constructor() {
@@ -170,7 +171,7 @@ class GameObjectManager {
 					
 					if(bError)
 					{
-						console.log('Game Object transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						logger.log("info", 'Game Object transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 
 						//call the callback if it exists
 						if(this.transactionQueue[i].cbFail)

@@ -8,5 +8,5 @@
 	"fps": 30,
 	"max_players": 32,
 	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",
-	"log_level": "info"
+	"log_level": "debug"
 }

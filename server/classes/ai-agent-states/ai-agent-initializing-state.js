@@ -2,6 +2,7 @@ const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const {CollisionCategories, CollisionMasks} = require('../../collision-data.js');
+const logger = require("../../../logger.js");
 
 
 //This annoying state is the first state the AI agent ever enters.
@@ -14,13 +15,13 @@ class AIAgentInitializingState extends AIAgentBaseState.AIAgentBaseState {
 	}
 	
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
 		super.enter(dt);
 	}
 
 	update(dt) {
-		//console.log(this.stateName + ' update');
+		//logger.log("info", this.stateName + ' update');
 
 		//wait until the character is active
 		if(this.aiAgent.bCharacterIsActive)
@@ -61,7 +62,7 @@ class AIAgentInitializingState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 	}
 }

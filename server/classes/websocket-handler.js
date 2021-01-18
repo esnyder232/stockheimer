@@ -1,6 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const EventSchema = require('../../shared_files/event-schema.json');
 const serverConfig = require('../server-config.json');
+const logger = require("../../logger.js");
 
 //load in the event schema and build indexes. Do it outside the class so it only does this step once.
 var EventIdIndex = {};
@@ -85,19 +86,19 @@ class WebsocketHandler {
 	onclose(code, reason) {
 		if(code || reason)
 		{
-			console.log("Websocket-handler. websocket is now closed. Id: " + this.id + '. userId: ' + this.userId + ". Code: " + code + ". Reason: " + reason);
+			logger.log("info", "Websocket-handler. websocket is now closed. Id: " + this.id + '. userId: ' + this.userId + ". Code: " + code + ". Reason: " + reason);
 		}
 		
 		this.gs.gameState.websocketClosed(this);
 	}
 
 	onerror(e) {
-		console.log("Websocket Errored for id: " + this.id + ". Error:" + e);
+		logger.log("info", "Websocket Errored for id: " + this.id + ". Error:" + e);
 		this.gs.gameState.websocketErrored(this);
 	}
 
 	onpong(e) {
-		console.log('socket onpong: ' + e);
+		logger.log("info", 'socket onpong: ' + e);
 	}
 
 	onmessage(e) {
@@ -171,19 +172,19 @@ class WebsocketHandler {
 				ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
 			}
 	
-			// console.log('==== ON MESSAGE CALLBACK CALC ====');
-			// console.log(this.ack);
-			// console.log(onMessageAck);
-			// console.log(ackCallbackStart);
-			// console.log(ackCallbackRange);
+			// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
+			// logger.log("info", this.ack);
+			// logger.log("info", onMessageAck);
+			// logger.log("info", ackCallbackStart);
+			// logger.log("info", ackCallbackRange);
 	
 			for(var i = 0; i <= ackCallbackRange; i++)
 			{
 				var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
-				//console.log('--Actual index: ' + actualIndex);
+				//logger.log("info", '--Actual index: ' + actualIndex);
 				if(this.ackCallbacks[actualIndex].length > 0)
 				{
-					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
 					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
 					{
 						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
@@ -472,12 +473,12 @@ class WebsocketHandler {
 				if(cbAck)
 				{
 					this.ackCallbacks[this.localSequence].push({cbAck: cbAck, cbMiscData: cbMiscData});
-					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
+					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
 				}
 				if(cbSend)
 				{
 					this.sendCallbacks[this.localSequence].push({cbSend: cbSend, cbMiscData: cbMiscData});
-					//console.log("WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
+					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
 				}
 			}
 		}
@@ -698,7 +699,7 @@ class WebsocketHandler {
 
 
 	createPacketForUser() {
-		//console.log('creating packet for user: ' + user.username + '    localSequenceNumber: ' + this.localSequence);
+		//logger.log("info", 'creating packet for user: ' + user.username + '    localSequenceNumber: ' + this.localSequence);
 		
 		var user = this.gs.um.getUserByID(this.userId);
 		//var buffer = new ArrayBuffer(this.maxPacketSize);
@@ -748,7 +749,7 @@ class WebsocketHandler {
 						}
 						else
 						{
-							console.log('!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
+							logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
 						}
 
 						//mark the event for deletion (used later when double checking that all events made it through)
@@ -771,16 +772,16 @@ class WebsocketHandler {
 			{
 				for(var j = this.eventQueues[i].length - 1; j >= 0; j--)
 				{
-					//console.log('CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
+					//logger.log("info", 'CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
 					//doublecheck - log the events that were not sent
 					if(!this.eventQueues[i][j].isSent)
 					{
-						console.log('!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
-						console.log(' - User: ' + user.username);
-						console.log(' - event: ' + JSON.stringify(this.eventQueues[i][j]));
+						logger.log("info", '!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
+						logger.log("info", ' - User: ' + user.username);
+						logger.log("info", ' - event: ' + JSON.stringify(this.eventQueues[i][j]));
 					}
 
-					//console.log('Splicing');
+					//logger.log("info", 'Splicing');
 					this.eventQueues[i].splice(j, 1);
 				}
 			}
@@ -789,7 +790,7 @@ class WebsocketHandler {
 		//check to see if a callback was associated with it (mainly for fragments)
 		if(this.sendCallbacks[this.localSequence].length > 0)
 		{
-			//console.log("WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
+			//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
 
 			for(var i = 0; i < this.sendCallbacks[this.localSequence].length; i++)
 			{
@@ -823,7 +824,7 @@ class WebsocketHandler {
 		{
 			//user timed out. Inactivate them.
 			var u = this.gs.um.getUserByID(this.userId);
-			console.log('A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
+			logger.log("info", 'A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
 			this.disconnectClient(1000, "User timed out server side.");
 		}
 		//sequence wrap around case
@@ -831,7 +832,7 @@ class WebsocketHandler {
 		{
 			//user timed out. Inactivate them.
 			var u = this.gs.um.getUserByID(this.userId);
-			console.log('A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
+			logger.log("info", 'A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
 			this.disconnectClient(1000, "User timed out server side.");
 		}
 	}

@@ -1,5 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {AIAgentInitializingState} = require('./ai-agent-states/ai-agent-initializing-state.js');
+const logger = require("../../logger.js");
 
 class AIAgent {
 	constructor() {
@@ -158,13 +159,13 @@ class AIAgent {
 			this.userCharactersInVision.sort((a, b) => {return a.distanceSquared - b.distanceSquared;});
 
 			// //debug
-			// console.log("+++" + this.username + " distances: ");
+			// logger.log("info", "+++" + this.username + " distances: ");
 			// for(var i = 0; i < this.userCharactersInVision.length; i++)
 			// {
 			// 	var u = this.gs.um.getUserByID(this.userCharactersInVision[i].c.ownerId);
 			// 	if(u !== null)
 			// 	{
-			// 		console.log("User: " + u.username + " distance squared is: " + this.userCharactersInVision[i].distanceSquared)
+			// 		logger.log("info", "User: " + u.username + " distance squared is: " + this.userCharactersInVision[i].distanceSquared)
 			// 	}
 			// }
 		}
@@ -187,7 +188,7 @@ class AIAgent {
 		}
 
 		//debugging
-		//console.log('updateing target character distance: ' + this.targetCharacterDistanceSquared);
+		//logger.log("info", 'updateing target character distance: ' + this.targetCharacterDistanceSquared);
 	}
 
 	updateCastleDistance() {
@@ -207,7 +208,7 @@ class AIAgent {
 		}
 
 		//debugging
-		//console.log('updateing castle distance: ' + this.castleDistanceSquared);
+		//logger.log("info", 'updateing castle distance: ' + this.castleDistanceSquared);
 	}
 
 	
@@ -462,7 +463,7 @@ class AIAgent {
 						//turn off shimmy mode
 						if(this.shimmyCurrentTimer <= 0)
 						{
-							//console.log('shimm mode disengaged!');
+							//logger.log("info", 'shimm mode disengaged!');
 							this.shimmyOveride = false;
 							this.findNextLOSNode(this.characterPos);
 						}
@@ -476,7 +477,7 @@ class AIAgent {
 					
 					finalVelVec.x = seekVelVec.x + avoidanceVelVec.x;
 					finalVelVec.y = seekVelVec.y + avoidanceVelVec.y;
-					//console.log("avoidanceVelVec: x: " + avoidanceVelVec.x + ", y: " + avoidanceVelVec.y)
+					//logger.log("info", "avoidanceVelVec: x: " + avoidanceVelVec.x + ", y: " + avoidanceVelVec.y)
 
 					//the *-1 is to flip the y coordinates for planck cooridnate plane
 					var angle = Math.atan((finalVelVec.y) / finalVelVec.x);
@@ -528,7 +529,7 @@ class AIAgent {
 						//engage shimmy mode
 						if(this.shimmyOverrideAccumulationValue >= this.shimmyOverrideAccumulationThreshold)
 						{
-							//console.log('shimm mode engaged!');
+							//logger.log("info", 'shimm mode engaged!');
 							this.shimmyOveride = true;
 							this.shimmyOverrideAccumulationValue = 0;
 
@@ -662,12 +663,12 @@ class AIAgent {
 				nodeInLOS = this.lineOfSightTest(pos, nodePos);
 				if(nodeInLOS)
 				{
-					//console.log('current node in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + '). Skipping the node.')
+					//logger.log("info", 'current node in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + '). Skipping the node.')
 					this.currentNode++
 				}
 				else
 				{
-					//console.log('current node NOT in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + ').')
+					//logger.log("info", 'current node NOT in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + ').')
 				}
 			}
 			//final node is reached

@@ -1,6 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {Tilemap} = require('../classes/tilemap.js');
 const fs = require('fs');
+const logger = require('../../logger.js');
 
 //This is a "manager" class of sorts. It is basically loads in Tiled maps from the Tiled software.
 //The file format is assumed to be in .json format, with the layers being a csv format.
@@ -100,7 +101,7 @@ class TilemapManager {
 									//load the map
 									fs.readFile(this.transactionQueue[i].fullFilepath, this.fileReadComplete.bind(this, this.transactionQueue[i]));
 									this.transactionQueue[i].status = "pending";
-									console.log("Now loading tile map '" + this.transactionQueue[i].fullFilepath + "'.");
+									logger.log("info", "Now loading tile map '" + this.transactionQueue[i].fullFilepath + "'.");
 								}
 								else
 								{
@@ -161,7 +162,7 @@ class TilemapManager {
 					//log the results/call callbacks
 					if(this.transactionQueue[i].status == "failed")
 					{
-						console.log('Tilemap Manager transaction failed: ' + this.transactionQueue[i].statusMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						logger.log("info", 'Tilemap Manager transaction failed: ' + this.transactionQueue[i].statusMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 
 						//call the callback if it exists
 						if(this.transactionQueue[i].cbFail)
@@ -173,7 +174,7 @@ class TilemapManager {
 					{
 						if(this.transactionQueue[i].statusMessage !== "")
 						{
-							console.log("Tilemap Manager transaction finished: " + this.transactionQueue[i].statusMessage)
+							logger.log("info", "Tilemap Manager transaction finished: " + this.transactionQueue[i].statusMessage)
 						}
 						//call the callback if it exists
 						if(this.transactionQueue[i].cbSuccess)

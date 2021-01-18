@@ -2,6 +2,7 @@ const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentAttackPlayerState = require('./ai-agent-attack-player-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
+const logger = require("../../../logger.js");
 
 class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
@@ -13,7 +14,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 	}
 	
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
 		super.enter(dt);
 
@@ -22,7 +23,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	update(dt) {
-		//console.log(this.stateName + ' update');
+		//logger.log("info", this.stateName + ' update');
 		super.update(dt);
 
 		this.checkTimer += dt;
@@ -146,7 +147,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 					//turn off shimmy mode
 					if(this.aiAgent.shimmyCurrentTimer <= 0)
 					{
-						//console.log('shimm mode disengaged!');
+						//logger.log("info", 'shimm mode disengaged!');
 						this.aiAgent.shimmyOveride = false;
 						this.aiAgent.findNextLOSNode(this.aiAgent.characterPos);
 					}
@@ -217,7 +218,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 					//engage shimmy mode
 					if(this.aiAgent.shimmyOverrideAccumulationValue >= this.aiAgent.shimmyOverrideAccumulationThreshold)
 					{
-						//console.log('shimm mode engaged!');
+						//logger.log("info", 'shimm mode engaged!');
 						this.aiAgent.shimmyOveride = true;
 						this.aiAgent.shimmyOverrideAccumulationValue = 0;
 
@@ -299,7 +300,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		//just incase anything goes wrong.
 		if(!this.pathValid)
 		{
-			console.log('Path is invalid. Switching back to idle.');
+			logger.log("info", 'Path is invalid. Switching back to idle.');
 			this.aiAgent.targetCharacter = null;
 			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
 		}
@@ -312,7 +313,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 
 		this.aiAgent.shimmyOveride = false;

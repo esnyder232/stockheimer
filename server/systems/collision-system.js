@@ -1,4 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const logger = require('../../logger.js');
 
 class CollisionSystem {
 	constructor() {
@@ -43,7 +44,7 @@ class CollisionSystem {
 
 	handleBeginCollision(contactObj)
 	{
-		//console.log('beginContact!');
+		//logger.log("info", 'beginContact!');
 
 		//first, we need to get the user data objects from the collision so we know what types of game objects collided
 		var uda = this.getUserData(contactObj.getFixtureA());
@@ -73,7 +74,7 @@ class CollisionSystem {
 
 	handleEndCollision(contactObj)
 	{
-		//console.log('endContact!');
+		//logger.log("info", 'endContact!');
 
 		//first, we need to get the user data objects from the collision so we know what types of game objects collided
 		var uda = this.getUserData(contactObj.getFixtureA());
@@ -121,7 +122,7 @@ class CollisionSystem {
 	///////////////////////////
 	beginAIAgentCharacterCollision(AIAgentUserData, characterUserData, contactObj, isAIAgentA)
 	{
-		//console.log('begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var ai = this.gs.aim.getAIAgentByID(AIAgentUserData.id);
 		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
 
@@ -133,7 +134,7 @@ class CollisionSystem {
 
 	endAIAgentCharacterCollision(AIAgentUserData, characterUserData, contactObj, isAIAgentA)
 	{
-		//console.log('begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var ai = this.gs.aim.getAIAgentByID(AIAgentUserData.id);
 		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
 
@@ -203,18 +204,18 @@ class CollisionSystem {
 	///////////////////////////
 	beginCharacterCharacterCollision(characterUserData1, characterUserData2, contactObj, isCharacterA)
 	{
-		//console.log('begin character character Collision: A: ' + characterUserData1.type + " " + characterUserData1.id + "==== B: " + characterUserData2.type + " " + characterUserData2.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin character character Collision: A: ' + characterUserData1.type + " " + characterUserData1.id + "==== B: " + characterUserData2.type + " " + characterUserData2.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 	endCharacterCharacterCollision(characterUserData1, characterUserData2, contactObj, isCharacterA)
 	{
-		//console.log('end character character Collision: A: ' + characterUserData1.type + " " + characterUserData1.id + "==== B: " + characterUserData2.type + " " + characterUserData2.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end character character Collision: A: ' + characterUserData1.type + " " + characterUserData1.id + "==== B: " + characterUserData2.type + " " + characterUserData2.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 
 	beginCharacterProjectileCollision(characterUserData, projectileUserData, contactObj, isCharacterA)
 	{
-		//console.log('begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
 		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
 
@@ -274,23 +275,23 @@ class CollisionSystem {
 
 	endCharacterProjectileCollision(characterUserData, projectileUserData, contactObj, isCharacterA)
 	{
-		//console.log('end character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 
 	beginCharacterWallCollision(characterUserData, wallUserData, contactObj, isCharacterA)
 	{
-		//console.log('begin character wall Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin character wall Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 	endCharacterWallCollision(characterUserData, wallUserData, contactObj, isCharacterA)
 	{
-		//console.log('end character wall Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end character wall Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 	beginCharacterUserCollision(characterUserData, userUserData, contactObj, isCharacterA)
 	{
-		//console.log('begin character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
@@ -300,7 +301,7 @@ class CollisionSystem {
 
 	endCharacterUserCollision(characterUserData, userUserData, contactObj, isCharacterA)
 	{
-		//console.log('end character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
@@ -315,7 +316,7 @@ class CollisionSystem {
 	////////////////////////////
 	beginProjectileProjectileCollision(projectileUserData1, projectileUserData2, contactObj, isProjectileA)
 	{
-		//console.log('begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var p1 = this.gs.gom.getGameObjectByID(projectileUserData1.id);
 		var p2 = this.gs.gom.getGameObjectByID(projectileUserData2.id);
 
@@ -336,13 +337,13 @@ class CollisionSystem {
 
 	endProjectileProjectileCollision(projectileUserData1, projectileUserData2, contactObj, isProjectileA)
 	{
-		//console.log('end projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 
 	beginProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)
 	{
-		//console.log('begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
 
 		if(p !== null)
@@ -355,12 +356,12 @@ class CollisionSystem {
 
 	endProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)
 	{
-		//console.log('end projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 	}
 
 	beginProjectileUserCollision(projectileUserData, userUserData, contactObj, isProjectileA)
 	{
-		//console.log('begin projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
@@ -370,7 +371,7 @@ class CollisionSystem {
 
 	endProjectileUserCollision(projectileUserData, userUserData, contactObj, isProjectileA)
 	{
-		//console.log('end projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
@@ -383,7 +384,7 @@ class CollisionSystem {
 	//////////////////////
 	beginUserWallCollision(userUserData, wallUserData, contactObj, isWallA)
 	{
-		//console.log('begin user wall Collision: A: ' + userUserData.type + " " + userUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isWallA: " + isWallA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'begin user wall Collision: A: ' + userUserData.type + " " + userUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isWallA: " + isWallA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{
@@ -394,7 +395,7 @@ class CollisionSystem {
 
 	endUserWallCollision(userUserData, wallUserData, contactObj, isWallA)
 	{
-		//console.log('end user wall Collision: A: ' + userUserData.type + " " + userUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isWallA: " + isWallA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		//logger.log("info", 'end user wall Collision: A: ' + userUserData.type + " " + userUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isWallA: " + isWallA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var u = this.gs.um.getUserByID(userUserData.id);
 		if(u !== null)
 		{

@@ -2,6 +2,7 @@ const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
 const GameConstants = require('../../shared_files/game-constants.json');
 const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
+const logger = require("../../logger.js");
 
 class Character {
 	constructor() {
@@ -439,7 +440,7 @@ class Character {
 
 			// if(owner !== null && ownerHitBy !== null)
 			// {
-			// 	console.log(owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);
+			// 	logger.log("info", owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);
 			// }
 		}
 

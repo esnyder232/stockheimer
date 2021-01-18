@@ -3,6 +3,7 @@ const {GameServerRunning} = require('./game-server-running.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../../logger.js');
 
 //do anything here that involves starting the game, Like loading the map, pools, loading saved games, sessions, anything.
 class GameServerStarting extends GameServerBaseState {
@@ -15,7 +16,7 @@ class GameServerStarting extends GameServerBaseState {
 	}
 	
 	enter(dt) {
-		console.log('Game loop starting.');
+		logger.log("info", 'Game loop starting.');
 		super.enter(dt);
 		
 		//read in the tile map

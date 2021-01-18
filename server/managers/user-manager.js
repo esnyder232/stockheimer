@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const {GlobalFuncs} = require('../global-funcs.js');
 const {User} = require('../user/user.js');
 const serverConfig = require('../server-config.json');
+const logger = require('../../logger.js');
 
 class UserManager {
 	constructor() {
@@ -201,7 +202,7 @@ class UserManager {
 								{
 									this.playingUserArray.push(u);
 
-									console.log('User has started playing. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+									logger.log("info", 'User has started playing. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
 								}
 								break;
 							case "stopPlaying":
@@ -218,7 +219,7 @@ class UserManager {
 								{
 									this.playingUserArray.splice(playingIndex, 1);
 
-									console.log('User has stopped playing. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
+									logger.log("info", 'User has stopped playing. username: ' + u.username + '.   id: ' + u.id + ".   activeId: " + u.activeId);
 								}
 								break;
 
@@ -237,7 +238,7 @@ class UserManager {
 					
 					if(bError)
 					{
-						console.log('UserManager transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						logger.log("info", 'UserManager transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 
 						//call the callback if it exists
 						if(this.transactionQueue[i].cbFail)

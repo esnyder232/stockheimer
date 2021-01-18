@@ -10,7 +10,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	enter(dt) {
-		console.log('running server enter');
+		logger.log("info", 'running server enter');
 		super.enter(dt);
 
 		//this.spawnCastle();
@@ -47,7 +47,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	update(dt) {
-		//console.log("gameloop framenum " + this.gs.frameNum);
+		//logger.log("info", "gameloop framenum " + this.gs.frameNum);
 		var activeUsers = this.gs.um.getActiveUsers();
 		var activeGameObjects = this.gs.gom.getActiveGameObjects();
 		var aiAgents = this.gs.aim.getAIAgents();
@@ -97,7 +97,6 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.ngm.update(dt);
 		this.gs.aim.update(dt);
 
-		logger.log("debug", "Framenum:" + this.gs.frameNum);
 		this.gs.frameNum++;
 
 		super.update(dt);
@@ -656,7 +655,7 @@ class GameServerRunning extends GameServerBaseState {
 					killFeedMessage = killerOwner.username + " killed " + victimOwner.username;
 				}
 
-				console.log(killFeedMessage);
+				logger.log("info", killFeedMessage);
 
 				//create event for clients for killfeed
 				var activeUsers = this.gs.um.getActiveUsers();

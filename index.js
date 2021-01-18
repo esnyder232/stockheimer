@@ -60,8 +60,8 @@ expressServer.on('upgrade', (req, socket, head) => {
 	//something bad happened in authentication process. Destroy socket and cancel the connection process.
 	if(authResult.bError)
 	{
-		console.log("Error when authenticating: " + authResult.errorMessage);
-		//console.log('destorying socket now');
+		logger.log("info", "Error when authenticating: " + authResult.errorMessage);
+		//logger.log("info", 'destorying socket now');
 		socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n"); //I don't know how to send "result.userMessage" back. So I'll just send unauthorized for now.
 		return;
 	}
@@ -69,7 +69,7 @@ expressServer.on('upgrade', (req, socket, head) => {
 	else
 	{
 		//let the game server handle the websocket callbacks
-		//console.log('handling updgrade');
+		//logger.log("info", 'handling updgrade');
 		return wss.handleUpgrade(req, socket, head, gs.onopen.bind(gs, authResult.user));
 	}
 })

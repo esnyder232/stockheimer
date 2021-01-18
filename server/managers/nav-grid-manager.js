@@ -1,5 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {NavGrid} = require('../classes/nav-grid.js');
+const logger = require('../../logger.js');
 
 class NavGridManager {
 	constructor() {
@@ -97,7 +98,7 @@ class NavGridManager {
 					
 					if(bError)
 					{
-						console.log('Nav grid transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						logger.log("info", 'Nav grid transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 
 						//call the callback if it exists
 						if(this.transactionQueue[i].cbFail)

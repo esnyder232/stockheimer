@@ -3,6 +3,7 @@ const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentSeekPlayerState = require('./ai-agent-seek-player-state.js');
 const AIAgentAttackCastleState = require('./ai-agent-attack-castle-state.js');
 const AIAgentAttackPlayerState = require('./ai-agent-attack-player-state.js');
+const logger = require("../../../logger.js");
 
 class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
@@ -13,7 +14,7 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 	}
 	
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
 
 		//stop the actor from moving
@@ -23,7 +24,7 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	update(dt) {
-		//console.log(this.stateName + ' update');
+		//logger.log("info", this.stateName + ' update');
 
 		if(!this.aiAgent.bForceIdle)
 		{
@@ -60,13 +61,13 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 				}
 
 				// //debug
-				// console.log("+++" + this.aiAgent.username + " LOS: ");
+				// logger.log("info", "+++" + this.aiAgent.username + " LOS: ");
 				// for(var i = 0; i < this.aiAgent.userCharactersInVision.length; i++)
 				// {
 				// 	var u = this.aiAgent.gs.um.getUserByID(this.aiAgent.userCharactersInVision[i].c.ownerId);
 				// 	if(u !== null)
 				// 	{
-				// 		console.log("User: " + u.username + " LOS is: " + this.aiAgent.userCharactersInVision[i].isLOS);
+				// 		logger.log("info", "User: " + u.username + " LOS is: " + this.aiAgent.userCharactersInVision[i].isLOS);
 				// 	}
 				// }
 
@@ -139,7 +140,7 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 		this.aiAgent.bForceIdle = false;
 	}

@@ -1,6 +1,7 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
+const logger = require("../../../logger.js");
 
 class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
@@ -11,13 +12,13 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 	}
 	
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
 		super.enter(dt);
 	}
 
 	update(dt) {
-		//console.log(this.stateName + ' update');
+		//logger.log("info", this.stateName + ' update');
 		super.update(dt);
 
 		var c = this.aiAgent.gs.castleObject;
@@ -135,7 +136,7 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 	}
 }

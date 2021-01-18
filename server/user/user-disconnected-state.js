@@ -1,4 +1,5 @@
 const {UserBaseState} = require('./user-base-state.js');
+const logger = require('../../logger.js');
 
 class UserDisconnectedState extends UserBaseState {
 	constructor(user) {
@@ -7,7 +8,7 @@ class UserDisconnectedState extends UserBaseState {
 	}
 
 	enter(dt) {
-		//console.log(this.stateName + ' enter');
+		//logger.log("info", this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 		super.enter(dt);
 	}
@@ -17,7 +18,7 @@ class UserDisconnectedState extends UserBaseState {
 	}
 
 	exit(dt) {
-		//console.log(this.stateName + ' exit');
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 	}
 }
