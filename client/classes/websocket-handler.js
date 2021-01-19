@@ -142,6 +142,8 @@ export default class WebsocketHandler {
 
 		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
 
+		console.log('ONMESSAGE ' + this.remoteSequence);
+
 		//start going through the events
 		for(var i = 0; i < m; i++)
 		{

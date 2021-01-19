@@ -40,6 +40,10 @@ class WebsocketHandler {
 
 		this.ackCallbacks = []; //2D array. Callbacks when a local sequence number gets acked. The index is the localSequence number.
 		this.sendCallbacks = []; //2D array. Callbacks when a packet gets snet to the client (not acked, only sent). The index is the localSequence number. This is mainly used when sending fragments.
+		this.RTTHistory = []; //circular buffer. Stores the most recent packet's RTT up to the RTTHistoryLength. Used to calculate ping. I'm trying a circular buffer instead of a huge array to try and save some memory.
+		this.RTTHistoryLength = 60; // # of packets' RTT to store in RTTHistory
+		this.RTTHistoryIndex = 0; //current index for the RTTHistory
+		this.RTTHistoryIndexSequenceNumber = 0; //local sequence number of the RTTHistoryIndex. This corresponds to the localSequence.
 	}
 
 	init(gameServer, userId, ws) {
@@ -69,7 +73,18 @@ class WebsocketHandler {
 			this.ackCallbacks.push([]);
 			this.sendCallbacks.push([]);
 		}
+
+		for(var i = 0; i < this.RTTHistoryLength; i++)
+		{
+			this.RTTHistory.push({
+				timeStart: 0,
+				timeEnd: 0
+			});
+		}
 	}
+
+
+
 
 	//should be called whenever a user joins/leaves the server to adjust max packet size for existing users
 	updateMaxPacketSize() {
@@ -120,6 +135,8 @@ class WebsocketHandler {
 		n++;
 		bytesRead += 1;
 
+		logger.log("info", 'ONMESSAGE ' + this.remoteSequence);
+
 		//start going through the events
 		for(var i = 0; i < m; i++)
 		{
@@ -161,41 +178,44 @@ class WebsocketHandler {
 		// ackCallbackStart would be 65531. Correct.
 		// ackCallbackRange would be: 10. Correct.
 
-		if(onMessageAck != this.ack)
-		{
-			var ackCallbackStart = this.ack + 1; 
-			var ackCallbackRange = onMessageAck - ackCallbackStart;
+		// if(onMessageAck != this.ack)
+		// {
+		// 	var ackCallbackStart = this.ack + 1; 
+		// 	var ackCallbackRange = onMessageAck - ackCallbackStart;
 
-			//deals with sequence wrap around
-			if(ackCallbackRange < 0)
-			{
-				ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
-			}
+		// 	//deals with sequence wrap around
+		// 	if(ackCallbackRange < 0)
+		// 	{
+		// 		ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
+		// 	}
 	
-			// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
-			// logger.log("info", this.ack);
-			// logger.log("info", onMessageAck);
-			// logger.log("info", ackCallbackStart);
-			// logger.log("info", ackCallbackRange);
+		// 	// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
+		// 	// logger.log("info", this.ack);
+		// 	// logger.log("info", onMessageAck);
+		// 	// logger.log("info", ackCallbackStart);
+		// 	// logger.log("info", ackCallbackRange);
 	
-			for(var i = 0; i <= ackCallbackRange; i++)
-			{
-				var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
-				//logger.log("info", '--Actual index: ' + actualIndex);
-				if(this.ackCallbacks[actualIndex].length > 0)
-				{
-					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
-					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
-					{
-						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
-					}
+		// 	for(var i = 0; i <= ackCallbackRange; i++)
+		// 	{
+		// 		var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
+		// 		//logger.log("info", '--Actual index: ' + actualIndex);
+		// 		if(this.ackCallbacks[actualIndex].length > 0)
+		// 		{
+		// 			//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+		// 			for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
+		// 			{
+		// 				this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
+		// 			}
 		
-					this.ackCallbacks[actualIndex].length = 0;
-				}
-			}
+		// 			this.ackCallbacks[actualIndex].length = 0;
+		// 		}
+		// 	}
 	
-			this.ack = onMessageAck;
-		}
+		// 	this.ack = onMessageAck;
+		// }
+
+		//testing acks again
+		this.ack = onMessageAck;
 	}
 
 
@@ -802,12 +822,56 @@ class WebsocketHandler {
 
 		view.setUint8(4, m); //payload event count
 
+		//this.insertRTTEntry();
+
 		this.localSequence++;
 		this.localSequence = this.localSequence % this.localSequenceMaxValue;
 
 		this.ws.send(buffer);
 	}
 
+
+	//inserts an entry into the RTT history based on localSequence
+	insertRTTEntry() {
+		this.RTTHistory[this.RTTHistoryIndex].timeStart = performance.now();
+		this.RTTHistory[this.RTTHistoryIndex].timeEnd = 0;
+
+		//update the index and the indexSequenceNumber
+		this.RTTHistoryIndex++;
+		this.RTTHistoryIndexSequenceNumber = this.localSequence;
+
+		this.RTTHistoryIndex %= this.RTTHistoryLength;
+	}
+
+	//updates an entry in the RTT history based on an acked sequence number
+	updateRTTEntry(ack) {
+		var deltaSequenceNumber = this.RTTHistoryIndexSequenceNumber - ack;
+
+		//deals with sequence wrap around
+		if(deltaSequenceNumber < 0)
+		{
+			deltaSequenceNumber = this.RTTHistoryIndexSequenceNumber - ack + this.localSequenceMaxValue + 1;
+		}
+
+		//only update the rtt entry if the packet number is still there (it may have been overwritten already in RTTHistory because its a circular buffer)
+		if(deltaSequenceNumber >= 0 && deltaSequenceNumber < this.RTTHistoryLength)
+		{
+			//calculate the actual index of the circular buffer
+			var actualIndex = this.RTTHistoryIndex - deltaSequenceNumber;
+
+			//deals with sequence wrap around within the circular buffer
+			if(actualIndex < 0)
+			{
+				actualIndex = this.RTTHistoryIndex - deltaSequenceNumber + this.RTTHistoryLength;
+			}
+
+			//double check
+			if(actualIndex >= 0 && actualIndex < this.RTTHistoryLength)
+			{
+				this.RTTHistory[actualIndex].timeEnd = performance.now();
+			}
+		}
+	}
 
 
 	disconnectClient(code, reason) {
