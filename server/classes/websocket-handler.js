@@ -135,7 +135,7 @@ class WebsocketHandler {
 		n++;
 		bytesRead += 1;
 
-		logger.log("info", 'ONMESSAGE ' + this.remoteSequence);
+		logger.log("info", 'ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
 
 		//start going through the events
 		for(var i = 0; i < m; i++)

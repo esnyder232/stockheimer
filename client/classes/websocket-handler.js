@@ -142,7 +142,7 @@ export default class WebsocketHandler {
 
 		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
 
-		console.log('ONMESSAGE ' + this.remoteSequence);
+		console.log('ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
 
 		//start going through the events
 		for(var i = 0; i < m; i++)
@@ -212,6 +212,7 @@ export default class WebsocketHandler {
 					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
 					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
 					{
+						console.log('--- CALLBACK FOR ' + actualIndex);
 						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
 					}
 		
