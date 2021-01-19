@@ -178,44 +178,45 @@ class WebsocketHandler {
 		// ackCallbackStart would be 65531. Correct.
 		// ackCallbackRange would be: 10. Correct.
 
-		// if(onMessageAck != this.ack)
-		// {
-		// 	var ackCallbackStart = this.ack + 1; 
-		// 	var ackCallbackRange = onMessageAck - ackCallbackStart;
+		if(onMessageAck != this.ack)
+		{
+			var ackCallbackStart = this.ack + 1; 
+			var ackCallbackRange = onMessageAck - ackCallbackStart;
 
-		// 	//deals with sequence wrap around
-		// 	if(ackCallbackRange < 0)
-		// 	{
-		// 		ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
-		// 	}
+			//deals with sequence wrap around
+			if(ackCallbackRange < 0)
+			{
+				ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
+			}
 	
-		// 	// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
-		// 	// logger.log("info", this.ack);
-		// 	// logger.log("info", onMessageAck);
-		// 	// logger.log("info", ackCallbackStart);
-		// 	// logger.log("info", ackCallbackRange);
+			// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
+			// logger.log("info", this.ack);
+			// logger.log("info", onMessageAck);
+			// logger.log("info", ackCallbackStart);
+			// logger.log("info", ackCallbackRange);
 	
-		// 	for(var i = 0; i <= ackCallbackRange; i++)
-		// 	{
-		// 		var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
-		// 		//logger.log("info", '--Actual index: ' + actualIndex);
-		// 		if(this.ackCallbacks[actualIndex].length > 0)
-		// 		{
-		// 			//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
-		// 			for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
-		// 			{
-		// 				this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
-		// 			}
+			for(var i = 0; i <= ackCallbackRange; i++)
+			{
+				var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
+				//logger.log("info", '--Actual index: ' + actualIndex);
+				if(this.ackCallbacks[actualIndex].length > 0)
+				{
+					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
+					{
+						logger.log("info", '--- CALLBACK FOR ' + actualIndex);
+						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
+					}
 		
-		// 			this.ackCallbacks[actualIndex].length = 0;
-		// 		}
-		// 	}
+					this.ackCallbacks[actualIndex].length = 0;
+				}
+			}
 	
-		// 	this.ack = onMessageAck;
-		// }
+			this.ack = onMessageAck;
+		}
 
 		//testing acks again
-		this.ack = onMessageAck;
+		//this.ack = onMessageAck;
 	}
 
 
