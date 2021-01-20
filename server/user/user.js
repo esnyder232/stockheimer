@@ -46,6 +46,10 @@ class User {
 
 		this.plBody = null; //used for tracking when objects are near the user
 		this.userKillCount = 0;
+
+		this.rtt = 0; //ms
+		this.rttCalcTimer = 0; //ms
+		this.rttCalcThreshold = 1000; //ms
 	}
 
 
@@ -283,9 +287,41 @@ class User {
 			return null;
 		}
 	}
+	
+	updateKillCount(amt) {
+		this.userKillCount += amt;
+		this.userInfoDirty = true;
+	}
 
 	update(dt) {
 		this.state.update();
+
+		//update rtt if its time
+		this.rttCalcTimer += dt;
+		if(this.rttCalcTimer >= this.rttCalcThreshold)
+		{
+			this.rtt = this.wsh.calcRTT();
+			this.userInfoDirty = true;
+			this.rttCalcTimer = 0;
+		}
+
+		//tell all users about the new info if its dirty
+		if(this.userInfoDirty) {
+
+			var activeUsers = this.gs.um.getActiveUsers();
+			for(var i = 0; i < activeUsers.length; i++)
+			{
+				// activeUsers[i].serverToClientEvents.push({
+				// 	"eventName": "updateUserInfo",
+				// 	"userId": killerOwner.id,
+				// 	"userKillCount": killerOwner.userKillCount
+				// })
+
+				activeUsers[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
+			}
+
+			this.userInfoDirty = false;
+		}
 
 		//first, see if there are any fragmented messages that need to go to the client
 		if(this.fragmentedServerToClientEvents.length > 0)
@@ -573,7 +609,8 @@ class User {
 		return {
 			"eventName": "updateUserInfo",
 			"userId": this.id,
-			"userKillCount": this.userKillCount
+			"userKillCount": this.userKillCount,
+			"userRtt": this.rtt
 		};
 	}
 

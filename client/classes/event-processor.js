@@ -463,6 +463,7 @@ export default class EventProcessor {
 						if(u)
 						{
 							u.userKillCount = e.userKillCount;
+							u.userRtt = e.userRtt;
 						}
 						break;
 

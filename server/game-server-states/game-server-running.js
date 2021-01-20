@@ -625,21 +625,11 @@ class GameServerRunning extends GameServerBaseState {
 				{
 					if(killerOwner.id === victimOwner.id && c.ownerType === "user")
 					{
-						killerOwner.userKillCount--;	
+						killerOwner.updateKillCount(-1);
 					}
 					else
 					{
-						killerOwner.userKillCount++;
-					}
-					
-					var activeUsers = this.gs.um.getActiveUsers();
-					for(var i = 0; i < activeUsers.length; i++)
-					{
-						activeUsers[i].serverToClientEvents.push({
-							"eventName": "updateUserInfo",
-							"userId": killerOwner.id,
-							"userKillCount": killerOwner.userKillCount
-						})
+						killerOwner.updateKillCount(1);
 					}
 				}
 

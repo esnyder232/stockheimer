@@ -9,6 +9,7 @@ export default class User {
 		this.activeUserId = null;
 		this.username = null;
 		this.userKillCount = null;
+		this.userRtt = 0;
 	}
 	
 	init(gc, userId, activeUserId, username, userKillCount) {
