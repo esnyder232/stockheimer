@@ -464,6 +464,7 @@ export default class EventProcessor {
 						{
 							u.userKillCount = e.userKillCount;
 							u.userRtt = e.userRtt;
+							u.userPvp = e.userPvp;
 						}
 						break;
 

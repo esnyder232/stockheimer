@@ -50,6 +50,7 @@ class User {
 		this.rtt = 0; //ms
 		this.rttCalcTimer = 0; //ms
 		this.rttCalcThreshold = 1000; //ms
+		this.pvpEnabled = true;
 	}
 
 
@@ -288,6 +289,13 @@ class User {
 		}
 	}
 	
+	updateUserPvpFlag(isEnabled)
+	{
+		this.pvpEnabled = isEnabled;
+		this.userInfoDirty = true;
+		logger.log("info", "updating pvp flag to " + this.pvpEnabled);
+	}
+
 	updateKillCount(amt) {
 		this.userKillCount += amt;
 		this.userInfoDirty = true;
@@ -610,7 +618,8 @@ class User {
 			"eventName": "updateUserInfo",
 			"userId": this.id,
 			"userKillCount": this.userKillCount,
-			"userRtt": this.rtt
+			"userRtt": this.rtt,
+			"userPvp": this.pvpEnabled
 		};
 	}
 

@@ -52,7 +52,6 @@ class GameServer {
 		this.appRoot = path.join(__dirname, "..");
 
 		this.activeNavGrid = null; //temporary
-		this.pvpEnabled = false;
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 3000; //ms until this console logs the amount of game objects in the game

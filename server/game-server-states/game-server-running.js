@@ -182,7 +182,7 @@ class GameServerRunning extends GameServerBaseState {
 							}
 
 							var z = tm.playerSpawnZones[zIndex];
-							
+
 							var c = this.gs.gom.createGameObject('character');
 							c.characterInit(this.gs);
 							c.ownerId = user.id;
@@ -395,23 +395,15 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 
 					case "fromClientTogglePvp":
-						this.gs.pvpEnabled = !this.gs.pvpEnabled;
+						user.updateUserPvpFlag(!user.pvpEnabled);
+						var broadcastMessage = "Player '" + user.username + "' updated his pvp to " + user.pvpEnabled;
+						var logEventMessage = "Player: " + user.username + ", event: fromClientTogglePvp: ";
 
-						//send a message to each active player to tell them about pvp
-						var killFeedMessage = "====== PVP DISABLED ======";
-						if(this.gs.pvpEnabled)
+						//send out usermessage and/or broadcast message
+						if(broadcastMessage !== "")
 						{
-							killFeedMessage = "====== PVP ENABLED ======";
+							this.broadcastResponseMessage(broadcastMessage, logEventMessage);
 						}
-						var activeUsers = this.gs.um.getActiveUsers();
-						for(var j = 0; j < activeUsers.length; j++)
-						{
-							activeUsers[j].serverToClientEvents.push({
-								"eventName": "killfeedMsg",
-								"killfeedMsg": killFeedMessage
-							});
-						}
-					
 						break;
 
 					case "fragmentStart":

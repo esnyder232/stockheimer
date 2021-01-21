@@ -552,7 +552,7 @@ export default class MainScene extends Phaser.Scene {
 
 		if(ude && u)
 		{
-			var myText = "(kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username;
+			var myText = "(kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " pvp enabled: " + u.userPvp;
 			ude.userListItem.text(myText);
 		}
 	}
