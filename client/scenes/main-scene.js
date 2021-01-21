@@ -61,7 +61,6 @@ export default class MainScene extends Phaser.Scene {
 		this.debugAngle = null;
 
 		this.frameNum = 0;
-
 	}
 
 	init(data) {

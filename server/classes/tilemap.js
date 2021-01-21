@@ -18,6 +18,8 @@ class Tilemap {
 		this.navGridLayer = null;
 		this.enemySpawnLayer = null;
 		this.enemySpawnZones = [];
+		this.playerSpawnLayer = null;
+		this.playerSpawnZones = [];
 	}
 
 	init(gameServer, id, fullFilepath, rawData) {
@@ -92,6 +94,14 @@ class Tilemap {
 						{
 							this.enemySpawnLayer = currentLayer;
 						}
+
+						//a property with "playerSpawns = true" on it will be used for the enemy spawning locations
+						if(currentProperty.name.toLowerCase() === "playerspawns" 
+						&& currentProperty.type === "bool"
+						&& currentProperty.value === true)
+						{
+							this.playerSpawnLayer = currentLayer;
+						}
 					}
 				}
 			}
@@ -115,36 +125,25 @@ class Tilemap {
 			}
 		}
 
-		var stophere = true;
-	}
-
-	
-	createEnemySpawnZone(tiledObject) {
-		var t = {
-			gid: gid
-		}
-
-		for(var i = 0; i < properties.length; i++)
+		//create player spawn zones
+		if(this.playerSpawnLayer !== null && this.playerSpawnLayer.objects)
 		{
-			var key = properties[i].name;
-			var type = properties[i].type;
-			var val = properties[i].value;
-			var parsedVal = null;
-
-			switch(type)
+			var xOffset = -this.tilewidth/2;
+			var yOffset = -this.tileheight/2;
+			for(var i = 0; i < this.playerSpawnLayer.objects.length; i++)
 			{
-				case "bool":
-					parsedVal = val;
-					break;
-				case "string":
-				default:
-					parsedVal = val;
-					break;
+				var z = this.playerSpawnLayer.objects[i];
+
+				z.xPlanck = (z.x + xOffset) / this.tilewidth;
+				z.yPlanck = ((z.y + yOffset) / this.tileheight) * -1;
+				z.widthPlanck = z.height / this.tilewidth;
+				z.heightPlanck = z.height / this.tileheight;
+
+				this.playerSpawnZones.push(z);
 			}
-			t[key] = parsedVal;
 		}
 
-		return t;
+		var stophere = true;
 	}
 
 	createTileForTileset(gid, properties) {

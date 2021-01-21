@@ -128,17 +128,89 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 	
 					case "fromClientSpawnCharacter":
+						var bFail = false;
+						var userMessage = "";
+						var broadcastMessage = "";
+						var logEventMessage = "";
+						var tm = null;
+						logEventMessage = "Player: " + user.username + ", event: fromClientSpawnCharacter: ";
+
 						//as long as they don't already have a character controlled, create one for the user.
-						if(user.characterId === null)
+						if(user.characterId !== null)
 						{
+							bFail = true;
+							userMessage = "You already have a character spawned.";
+						}
+
+						//check if the navgrid exists (to be safe)
+						if(!bFail && this.gs.activeNavGrid === null)
+						{
+							bFail = true;
+							userMessage = "Player spawn failed. No active nav grid.";
+						}
+
+						//get the tilemap
+						if(!bFail)
+						{
+							tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
+							if(tm === null)
+							{
+								bFail = true;
+								userMessage = "Player spawn failed. Could not get the tilemap.";
+							}
+						}
+						
+						if(!bFail)
+						{
+							if(tm.playerSpawnZones.length === 0)
+							{
+								bFail = true;
+								userMessage = "Player spawn failed. There are no spawn zones set for players.";
+							}
+						}
+
+						//spawn the player
+						if(!bFail)
+						{
+							//pick a random spawn zone
+							var zIndex = 0;
+
+							zIndex = Math.floor(Math.random() * tm.playerSpawnZones.length);
+							if(zIndex === tm.playerSpawnZones.length)
+							{
+								zIndex = tm.playerSpawnZones.length-1
+							}
+
+							var z = tm.playerSpawnZones[zIndex];
+							
 							var c = this.gs.gom.createGameObject('character');
 							c.characterInit(this.gs);
 							c.ownerId = user.id;
 							c.ownerType = "user";
 							user.characterId = c.id;
 
+							
+							var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
+							var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
+
+							c.xStarting = xStarting;
+							c.yStarting = yStarting;
+
 							this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+
+							broadcastMessage = "Player '" + user.username + "' has spawned.";
 						}
+						
+						//send out usermessage and/or broadcast message
+						if(userMessage !== "")
+						{
+							this.userResponseMessage(user, userMessage, logEventMessage);
+						}
+						if(broadcastMessage !== "")
+						{
+							this.broadcastResponseMessage(broadcastMessage, logEventMessage);
+						}
+						
 						break;
 	
 					case "fromClientKillCharacter":
@@ -313,24 +385,11 @@ class GameServerRunning extends GameServerBaseState {
 						//send out usermessage and/or broadcast message
 						if(userMessage !== "")
 						{
-							logger.log("info", logEventMessage + userMessage);
-							user.serverToClientEvents.push({
-								"eventName": "killfeedMsg",
-								"killfeedMsg": userMessage
-							});
+							this.userResponseMessage(user, userMessage, logEventMessage);
 						}
-
 						if(broadcastMessage !== "")
 						{
-							logger.log("info", logEventMessage + broadcastMessage);
-							var activeUsers = this.gs.um.getActiveUsers();
-							for(var j = 0; j < activeUsers.length; j++)
-							{
-								activeUsers[j].serverToClientEvents.push({
-									"eventName": "killfeedMsg",
-									"killfeedMsg": broadcastMessage
-								});
-							}
+							this.broadcastResponseMessage(broadcastMessage, logEventMessage);
 						}
 
 						break;
@@ -371,6 +430,28 @@ class GameServerRunning extends GameServerBaseState {
 			user.clientToServerEvents.length = 0;
 		}
 	}
+
+	userResponseMessage(user, userMessage, logEventMessage) {
+		logger.log("info", logEventMessage + userMessage);
+		user.serverToClientEvents.push({
+			"eventName": "killfeedMsg",
+			"killfeedMsg": userMessage
+		});
+	}
+
+	broadcastResponseMessage(broadcastMessage, logEventMessage) {
+		logger.log("info", logEventMessage + broadcastMessage);
+		var activeUsers = this.gs.um.getActiveUsers();
+		for(var j = 0; j < activeUsers.length; j++)
+		{
+			activeUsers[j].serverToClientEvents.push({
+				"eventName": "killfeedMsg",
+				"killfeedMsg": broadcastMessage
+			});
+		}
+	}
+	
+
 
 	checkEnemyCap() {
 		var bFail = false;
