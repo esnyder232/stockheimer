@@ -58,6 +58,7 @@ class GameServer {
 		this.reportTimerInterval = 3000; //ms until this console logs the amount of game objects in the game
 
 		this.castleObject = null;
+		this.enemyCap = 100;
 	}
 
 	init() {
@@ -283,7 +284,7 @@ class GameServer {
 				this.reportTimer += this.frameTimeStep;
 				if(this.reportTimer >= this.reportTimerInterval)
 				{
-					logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". Gameobjects: " + this.gom.gameObjectArray.length);
+					logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
 					this.reportTimer = 0;
 				}
 			}

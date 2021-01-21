@@ -51,7 +51,7 @@ class AIAgent {
 		this.nextState = null;
 		this.stateName = "";
 
-		this.bForceIdle = true;	//used to force the ai-agent to go to the "forced idle" state. Mainly for debugging.
+		this.bForceIdle = false;	//used to force the ai-agent to go to the "forced idle" state. Mainly for debugging.
 
 		this.character = null; 		//direct reference to the character the ai agent is controlling
 		this.characterPos = null;	//direct reference to the character's planck position vector

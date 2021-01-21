@@ -12,38 +12,6 @@ class GameServerRunning extends GameServerBaseState {
 	enter(dt) {
 		logger.log("info", 'running server enter');
 		super.enter(dt);
-
-		//this.spawnCastle();
-
-		//testing for cpu usage on server
-		//var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
-		// for(var j = 0; j < 20; j++)
-		// {
-		// 	var z = tm.enemySpawnZones[0];
-
-		// 	var ai = this.gs.aim.createAIAgent();
-		// 	var c = this.gs.gom.createGameObject('character');
-			
-		// 	ai.aiAgentInit(this.gs, c.id);
-			
-		// 	c.ownerId = ai.id;
-		// 	c.ownerType = "ai";
-		// 	c.characterInit(this.gs);
-
-		// 	var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
-		// 	var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
-
-		// 	c.xStarting = xStarting;
-		// 	c.yStarting = yStarting;
-		// 	c.hpCur = 25;
-		// 	c.hpMax = 25;
-		// 	c.walkingVelMagMax = 3;
-
-		// 	ai.bForceIdle = true;
-
-		// 	this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
-		// }
-
 	}
 
 	update(dt) {
@@ -195,10 +163,34 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 
 					case "fromClientSpawnEnemy":
-						if(this.checkEnemyPasscode(e.enemyControlPass))
+						var bFail = false;
+						var broadcastMessage = "";
+						var userMessage = "";
+						var logEventMessage = "";
+						logEventMessage = "Player: " + user.username + ", event: fromClientSpawnEnemy " + e.spawnLocation + ": ";
+
+						//spawn 1 enemy at the player's location
+						if(e.spawnLocation === "player")
 						{
-							//spawn 1 enemy at the player's location
-							if(e.spawnLocation === "player")
+							//check if the user has a character
+							var userChar = this.gs.gom.getGameObjectByID(user.characterId);
+							if(userChar === null)
+							{
+								bFail = true;
+								userMessage = "You must have a character spawned to spawn enemies around you.";
+							}
+
+							//check enemy cap
+							if(!bFail)
+							{
+								bFail = this.checkEnemyCap();
+								if(bFail)
+								{
+									userMessage = "Only " + this.gs.enemyCap + " enemies are allowed to spawn with this tech demo. Kill some enemies to spawn more."
+								}
+							}
+							
+							if(!bFail)
 							{
 								var ai = this.gs.aim.createAIAgent();
 								var c = this.gs.gom.createGameObject('character');
@@ -208,213 +200,159 @@ class GameServerRunning extends GameServerBaseState {
 								c.ownerId = ai.id;
 								c.ownerType = "ai";
 								c.characterInit(this.gs);
-		
-								//north of castle
-								var xStarting = 15;
-								var yStarting = -10;
-		
-								//south of castle
-								// var xStarting = 15;
-								// var yStarting = -20;
-		
-								//west of castle
-								// var xStarting = 10;
-								// var yStarting = -15;
-		
-								//east of castle
-								// var xStarting = 20;
-								// var yStarting = -15;
 
-								var userChar = this.gs.gom.getGameObjectByID(user.characterId);
-								if(userChar !== null)
-								{
-									var pos = userChar.plBody.getPosition();
-									if(pos !== null)
-									{
-										xStarting = pos.x;
-										yStarting = pos.y;
-									}
-								}
+								var pos = userChar.getPlanckPosition();
+								var xStarting = (pos.x - 1) + (2 * Math.random());
+								var yStarting = (pos.y + 1) - (2 * Math.random());
 	
 								c.xStarting = xStarting;
 								c.yStarting = yStarting;
-								c.hpCur = 25;
-								c.hpMax = 25;
-								c.walkingVelMagMax = 1;
-								
-								ai.bForceIdle = false;
+								c.hpCur = 5;
+								c.hpMax = 5;
+								c.walkingVelMagMax = 1.5;
 	
 								this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+
+								broadcastMessage = "Player '" + user.username + "' spawned 1 enemy at player's location.";
 							}
-							//spawn 1 enemy at each red zone (enemy spawn)
-							else if(e.spawnLocation === "red")
+						}
+						//spawn 1 enemy at each red zone (enemy spawn)
+						else if(e.spawnLocation === "red")
+						{
+							var tm = null;
+
+							//check enemy cap
+							if(!bFail)
 							{
-								if(this.gs.activeNavGrid !== null)
+								bFail = this.checkEnemyCap();
+								if(bFail)
 								{
-									var tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
-									if(tm !== null)
-									{
-										// //create 2 for congestion testing
-										// var z = tm.enemySpawnZones[0];
-
-										// //ai 1
-										// var ai1 = this.gs.aim.createAIAgent();
-										// var c1 = this.gs.gom.createGameObject('character');
-										
-										// ai1.aiAgentInit(this.gs, c1.id);
-										
-										// c1.ownerId = ai1.id;
-										// c1.ownerType = "ai";
-										// c1.characterInit(this.gs);
-
-										// var xStarting = z.xPlanck + 1.1;
-										// var yStarting = z.yPlanck - 0.5;
-
-										// c1.xStarting = xStarting;
-										// c1.yStarting = yStarting;
-										// c1.hpCur = 25;
-										// c1.hpMax = 25;
-										// c1.walkingVelMagMax = 3;
-
-										// this.gs.gom.activateGameObjectId(c1.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
-
-
-
-										// //ai 2
-										// var ai2 = this.gs.aim.createAIAgent();
-										// var c2 = this.gs.gom.createGameObject('character');
-										
-										// ai2.aiAgentInit(this.gs, c2.id);
-										
-										// c2.ownerId = ai2.id;
-										// c2.ownerType = "ai";
-										// c2.characterInit(this.gs);
-
-										// var xStarting = z.xPlanck + 1.9;
-										// var yStarting = z.yPlanck - 0.5;
-			
-										// c2.xStarting = xStarting;
-										// c2.yStarting = yStarting;
-										// c2.hpCur = 25;
-										// c2.hpMax = 25;
-										// c2.walkingVelMagMax = 1;
-
-										// this.gs.gom.activateGameObjectId(c2.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
-
-
-										//create one for each red zone
-										for(var j = 0; j < tm.enemySpawnZones.length; j++)
-										{
-											var z = tm.enemySpawnZones[j];
-
-											var ai = this.gs.aim.createAIAgent();
-											var c = this.gs.gom.createGameObject('character');
-											
-											ai.aiAgentInit(this.gs, c.id);
-											
-											c.ownerId = ai.id;
-											c.ownerType = "ai";
-											c.characterInit(this.gs);
-
-											var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
-											var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
-				
-											c.xStarting = xStarting;
-											c.yStarting = yStarting;
-											c.hpCur = 25;
-											c.hpMax = 25;
-											c.walkingVelMagMax = 1.8;
-
-											this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
-										}
-									}
+									userMessage = "Only " + this.gs.enemyCap + " enemies are allowed to spawn with this tech demo. Kill some enemies to spawn more."
 								}
 							}
-							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
-							else if (e.spawnLocation === "respawnCastle")
+
+							//check if the navgrid exists (to be safe)
+							if(!bFail && this.gs.activeNavGrid === null)
 							{
-								this.spawnCastle();
+								bFail = true;
+								userMessage = "Enemy spawn failed. No active nav grid.";
 							}
-							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
-							else if (e.spawnLocation === "destroyCastle")
+
+							//get the tilemap
+							if(!bFail)
 							{
-								if(this.gs.castleObject !== null)
+								tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
+								if(tm === null)
 								{
-									this.gs.castleObject.hpCur = 0;
+									bFail = true;
+									userMessage = "Enemy spawn failed. Could not get the tilemap.";
+								}
+							}
+							
+							//spawn enemies at each red zone.
+							if(!bFail)
+							{
+								for(var j = 0; j < tm.enemySpawnZones.length; j++)
+								{
+									var z = tm.enemySpawnZones[j];
+
+									var ai = this.gs.aim.createAIAgent();
+									var c = this.gs.gom.createGameObject('character');
+									
+									ai.aiAgentInit(this.gs, c.id);
+									
+									c.ownerId = ai.id;
+									c.ownerType = "ai";
+									c.characterInit(this.gs);
+
+									var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
+									var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
+
+									c.xStarting = xStarting;
+									c.yStarting = yStarting;
+									c.hpCur = 5;
+									c.hpMax = 5;
+									c.walkingVelMagMax = 1.5;
+
+									this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+
+									broadcastMessage = "Player '" + user.username + "' spawned 1 enemy on each red zone.";
 								}
 							}
 						}
-
-						break;
-
-					case "fromClientEnemyBehavior":
-						if(this.checkEnemyPasscode(e.enemyControlPass))
+						//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
+						else if (e.spawnLocation === "respawnCastle")
 						{
-							if(e.enemyBehavior === "seek-castle")
+							if(this.gs.castleObject !== null)
 							{
-								var aiAgents = this.gs.aim.getAIAgents();
-
-								for(var j = 0 ; j < aiAgents.length; j++)
-								{
-									aiAgents[j].bForceIdle = false;
-								}
+								bFail = true;
+								userMessage = "Only one castle can exist at a time."
 							}
-							// else if(e.enemyBehavior === "seek-player")
-							// {
-							// 	var aiAgents = this.gs.aim.getAIAgents();
 
-							// 	for(var j = 0 ; j < aiAgents.length; j++)
-							// 	{
-							// 		aiAgents[j].seekPlayer(user);
-							// 	}
-							// }
-							else if(e.enemyBehavior === "stop")
+							if(!bFail)
 							{
-								var aiAgents = this.gs.aim.getAIAgents();
+								//create castle object 
+								var castle = this.gs.gom.createGameObject("castle");
+								this.gs.castleObject = castle; //temporary location for it
 
-								for(var j = 0 ; j < aiAgents.length; j++)
-								{
-									//aiAgents[j].stop();
-									aiAgents[j].bForceIdle = true;
-								}
+								var xc = this.gs.activeNavGrid.castleNode.x;
+								var yc = -this.gs.activeNavGrid.castleNode.y;
+								
+								var castleName = user.username + "'s Castle";
+
+								castle.castleInit(this.gs, xc, yc, castleName);
+
+								//just activate here, fuckin whatever
+								this.gs.gom.activateGameObjectId(castle.id, castle.castlePostActivated.bind(castle), castle.cbCastleActivatedFailed.bind(castle));
+
+								broadcastMessage = "Player '" + user.username + "' spawned '" + castleName + "'";
 							}
 						}
 
-						break;
 
-					case "fromClientKillAllEnemies":
-						if(this.checkEnemyPasscode(e.enemyControlPass))
+						//send out usermessage and/or broadcast message
+						if(userMessage !== "")
 						{
-							var allAiAgents = this.gs.aim.getAIAgents();
-							for(var j = 0 ; j < allAiAgents.length; j++)
+							logger.log("info", logEventMessage + userMessage);
+							user.serverToClientEvents.push({
+								"eventName": "killfeedMsg",
+								"killfeedMsg": userMessage
+							});
+						}
+
+						if(broadcastMessage !== "")
+						{
+							logger.log("info", logEventMessage + broadcastMessage);
+							var activeUsers = this.gs.um.getActiveUsers();
+							for(var j = 0; j < activeUsers.length; j++)
 							{
-								this.gs.aim.destroyAIAgent(allAiAgents[j].id);
-								this.destroyOwnersCharacter(allAiAgents[j].id, "ai");
+								activeUsers[j].serverToClientEvents.push({
+									"eventName": "killfeedMsg",
+									"killfeedMsg": broadcastMessage
+								});
 							}
 						}
 
 						break;
 
 					case "fromClientTogglePvp":
-						if(this.checkEnemyPasscode(e.enemyControlPass))
-						{
-							this.gs.pvpEnabled = !this.gs.pvpEnabled;
+						this.gs.pvpEnabled = !this.gs.pvpEnabled;
 
-							//send a message to each active player to tell them about pvp
-							var killFeedMessage = "====== PVP DISABLED ======";
-							if(this.gs.pvpEnabled)
-							{
-								killFeedMessage = "====== PVP ENABLED ======";
-							}
-							var activeUsers = this.gs.um.getActiveUsers();
-							for(var j = 0; j < activeUsers.length; j++)
-							{
-								activeUsers[j].serverToClientEvents.push({
-									"eventName": "killfeedMsg",
-									"killfeedMsg": killFeedMessage
-								});
-							}
+						//send a message to each active player to tell them about pvp
+						var killFeedMessage = "====== PVP DISABLED ======";
+						if(this.gs.pvpEnabled)
+						{
+							killFeedMessage = "====== PVP ENABLED ======";
 						}
+						var activeUsers = this.gs.um.getActiveUsers();
+						for(var j = 0; j < activeUsers.length; j++)
+						{
+							activeUsers[j].serverToClientEvents.push({
+								"eventName": "killfeedMsg",
+								"killfeedMsg": killFeedMessage
+							});
+						}
+					
 						break;
 
 					case "fragmentStart":
@@ -434,55 +372,16 @@ class GameServerRunning extends GameServerBaseState {
 		}
 	}
 
-	spawnCastle() {
-		if(this.gs.castleObject === null)
+	checkEnemyCap() {
+		var bFail = false;
+		var enemyNum = this.gs.aim.getAIAgents().length;
+		if(enemyNum >= this.gs.enemyCap)
 		{
-			//create castle object 
-			var castle = this.gs.gom.createGameObject("castle");
-			this.gs.castleObject = castle; //temporary location for it
-
-			var xc = this.gs.activeNavGrid.castleNode.x;
-			var yc = -this.gs.activeNavGrid.castleNode.y;
-
-			//get a random user for the name of the castle for now
-			var castleName = "Castle";
-			var activeUsers = this.gs.um.getActiveUsers();
-
-			var randIndex = Math.floor(Math.random() * activeUsers.length);
-			if(randIndex === activeUsers.length)
-			{
-				randIndex = activeUsers.length-1;
-			}
-
-			if(randIndex >= 0)
-			{
-				castleName = activeUsers[randIndex].username + "'s Castle";
-			}
-
-			castle.castleInit(this.gs, xc, yc, castleName);
-
-			//just activate here, fuckin whatever
-			this.gs.gom.activateGameObjectId(castle.id, castle.castlePostActivated.bind(castle), castle.cbCastleActivatedFailed.bind(castle));
-		}
-	}
-
-	//quick and dirty check for enemy control password
-	checkEnemyPasscode(input)
-	{
-		var result = false;
-
-		//quick and dirty hash
-		var hash = crypto.createHash('md5').update(input).digest('hex');
-		
-		//yup
-		if(hash === "dae730c0502583c56927fe31c600536d")
-		{
-			result = true;
+			bFail = true;
 		}
 
-		return result;
+		return bFail;
 	}
-
 
 	cbCharacterActivatedSuccess(characterId) {
 		var c = this.gs.gom.getGameObjectByID(characterId);

@@ -79,20 +79,11 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-			
-			// {event: 'spawn-stationary-enemy', func: this.spawnStationaryEnemy.bind(this)},
-			// {event: 'spawn-patrol-enemy', func: this.spawnPatrolEnemy.bind(this)},
-			// {event: 'spawn-castle-seek-enemy', func: this.spawnCastleSeekEnemy.bind(this)},
 
 			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
 			{event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
-			{event: 'make-enemies-seek-castle', func: this.makeEnemiesSeekCastle.bind(this)},
-			{event: 'make-enemies-seek-player', func: this.makeEnemiesSeekPlayer.bind(this)},
-			{event: 'make-enemies-stop', func: this.makeEnemiesStop.bind(this)},
-			{event: 'kill-all-enemies', func: this.killAllEnemies.bind(this)},
 			{event: 'toggle-pvp', func: this.togglePvp.bind(this)},
-			{event: 'respawn-castle', func: this.respawnCastle.bind(this)},
-			{event: 'destroy-castle', func: this.destroyCastle.bind(this)}
+			{event: 'respawn-castle', func: this.respawnCastle.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -1020,100 +1011,30 @@ export default class MainScene extends Phaser.Scene {
 
 
 	spawnEnemyPlayer() {
-		console.log('spawning enemy at player');
 		this.fromClientSpawnEnemy("player");
 	}
 
 	spawnEnemyRed() {
-		console.log('spawning enemy at red');
 		this.fromClientSpawnEnemy("red");
 	}
 
-	makeEnemiesSeekCastle() {
-		console.log('making enemies seek castle');
-		this.fromClientMakeEnemyBehavior("seek-castle");
-	}
-
-	makeEnemiesSeekPlayer() {
-		console.log('making enemies seek player');
-		this.fromClientMakeEnemyBehavior("seek-player");
-	}
-
-	makeEnemiesStop() {
-		console.log('making enemies stop');
-		this.fromClientMakeEnemyBehavior("stop");
-	}
-
-	killAllEnemies() {
-		console.log('kill all enemies');
-		this.fromClientKillAllEnemies();
-	}
-
 	fromClientSpawnEnemy(spawnLocation) {
-		var pass = $("#tb-enemy-password").val();
-		
 		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientSpawnEnemy",
-			"spawnLocation": spawnLocation,
-			"enemyControlPass": pass
-		});
-	}
-
-	fromClientMakeEnemyBehavior(enemyBehavior) {
-		var pass = $("#tb-enemy-password").val();
-		if(!pass)
-			pass = "";
-		
-		this.gc.ep.clientToServerEvents.push({
-			"eventName": "fromClientEnemyBehavior",
-			"enemyBehavior": enemyBehavior,
-			"enemyControlPass": pass
-		});
-	}
-
-	fromClientKillAllEnemies() {
-		var pass = $("#tb-enemy-password").val();
-		if(!pass)
-			pass = "";
-
-		this.gc.ep.clientToServerEvents.push({
-			"eventName": "fromClientKillAllEnemies",
-			"enemyControlPass": pass
+			"spawnLocation": spawnLocation
 		});
 	}
 
 	togglePvp() {
-		var pass = $("#tb-enemy-password").val();
-		if(!pass)
-			pass = "";
-
 		this.gc.ep.clientToServerEvents.push({
-			"eventName": "fromClientTogglePvp",
-			"enemyControlPass": pass
+			"eventName": "fromClientTogglePvp"
 		});
 	}
 
 	respawnCastle() {
-		var pass = $("#tb-enemy-password").val();
-		if(!pass)
-			pass = "";
-
 		this.gc.ep.clientToServerEvents.push({
 			"eventName": "fromClientSpawnEnemy",
-			"spawnLocation": "respawnCastle",
-			"enemyControlPass": pass
-		});
-	}
-
-	destroyCastle() {
-		var pass = $("#tb-enemy-password").val();
-		if(!pass)
-			pass = "";
-
-		this.gc.ep.clientToServerEvents.push({
-			"eventName": "fromClientSpawnEnemy",
-			"spawnLocation": "destroyCastle",
-			"enemyControlPass": pass
+			"spawnLocation": "respawnCastle"
 		});
 	}
 }
