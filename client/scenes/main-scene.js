@@ -61,6 +61,33 @@ export default class MainScene extends Phaser.Scene {
 		this.debugAngle = null;
 
 		this.frameNum = 0;
+
+		this.pvpEmoji = String.fromCharCode(0x2694, 0xFE0F);
+		this.aiColor = 0xff0000;
+		this.aiFillColor = 0xff6600;
+		this.aiTextColor = "#000000";
+		this.aiStrokeColor = "#ff0000";
+		this.aiStrokeThickness = 3;
+
+		this.userColor = 0x0000ff;
+		this.userFillColor = 0x00ffff;
+		this.userTextColor = "#0000ff";
+		this.userStrokeColor = "#000000";
+		this.userStrokeThickness = 1;
+
+		this.damageTextColor = "#000000";
+		this.damageStrokeColor = "#ff0000";
+		this.damageStrokeThickness = 2;
+
+		this.projectileColor = 0xff0000;
+				
+		this.castleColor = 0x000000;
+		this.castleFillColor = 0xffffff;
+		this.castleTextColor = "#ffffff";
+		this.castleStrokeColor = "#000000";
+		this.castleStrokeThickness = 5;
+
+		this.characterBorderThickness = 3;
 	}
 
 	init(data) {
@@ -366,32 +393,49 @@ export default class MainScene extends Phaser.Scene {
 		var c = this.gc.characters.find((x) => {return x.id === characterId;});
 		if(c)
 		{
-			var halfSize = this.characterSize/2;
-			var boxGraphics = this.add.graphics();
-			boxGraphics.lineStyle(1, 0x0000ff, 1);
+			var boxGraphicsColor = this.userColor;
+			var boxGraphicsFillColor = this.userFillColor;
 
-			//box
-			// boxGraphics.moveTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
-			// boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top right
-			// boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom right
-			// boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom left
-			// boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
+			if(c.ownerType === "ai")
+			{
+				boxGraphicsColor = this.aiColor;
+				boxGraphicsFillColor = this.aiFillColor;
+			}
 
-			//circle
-			boxGraphics.beginPath();
-			boxGraphics.arc(0, 0, this.planckUnitsToPhaserUnitsRatio * 0.375, 0, Math.PI*2, false, 0.01);
+			var circleShape = new Phaser.Geom.Circle(0, 0, this.planckUnitsToPhaserUnitsRatio * 0.375);
 
-			boxGraphics.closePath();
-			boxGraphics.strokePath();
-			
+			var boxGraphics = this.add.graphics({ 
+				fillStyle: { color: boxGraphicsFillColor }, 
+				lineStyle: {
+					width: this.characterBorderThickness,
+					color: boxGraphicsColor}
+			});
+			boxGraphics.fillCircleShape(circleShape);
+			boxGraphics.strokeCircleShape(circleShape);
+
 			boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
 			boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
 
 			var usernameText = "???";
+			var u = this.gc.users.find((x) => {return x.userId === c.ownerId;});
+			
+			var textStyle = {
+				color: this.userTextColor,
+				fontSize: "18px",
+				strokeThickness: this.userStrokeThickness,
+				stroke: this.userStrokeColor
+			}
+
+			var pvpTextStyle = {
+				color: this.userTextColor, 
+				fontSize: "14px",
+				strokeThickness: 0,
+				stroke: this.userStrokeColor
+			}
+
+			//add username text
 			if(c.ownerType === "user")
 			{
-				var u = this.gc.users.find((x) => {return x.userId === c.ownerId;});
-				
 				if(u)
 				{
 					usernameText = u.username;
@@ -400,27 +444,37 @@ export default class MainScene extends Phaser.Scene {
 			else if(c.ownerType === "ai")
 			{
 				usernameText = "AI " + c.ownerId
+				textStyle.color = this.aiTextColor;
+				textStyle.stroke = this.aiStrokeColor;
+				textStyle.strokeThickness = this.aiStrokeThickness;
 			}
 			
-			var textStyle = {
-				color: '#0000ff', 
-				fontSize: "18px",
-				strokeThickness: 1,
-				stroke: '#0000ff'
+
+
+			//add pvp emoji
+			var pvpText = "";
+			if(u && c.ownerType === "user")
+			{
+				pvpText = u.userPvp ? this.pvpEmoji : "";
 			}
 
 			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
 			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.hpCur + "/" + c.hpMax, textStyle);
+			var pvpGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-10, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) - 36 , pvpText, pvpTextStyle);
 
 			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 			textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 			hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			pvpGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
 			this.userPhaserElements.push({
+				ownerId: c.ownerId,
+				ownerType: c.ownerType,
 				id: c.id,
 				boxGraphics: boxGraphics,
 				textGraphics: textGraphics,
-				hpTextGraphics: hpTextGraphics
+				hpTextGraphics: hpTextGraphics,
+				pvpGraphics: pvpGraphics
 			});
 
 			//check if this is your character your controlling. If it is, then switch pointer modes
@@ -477,6 +531,7 @@ export default class MainScene extends Phaser.Scene {
 				this.userPhaserElements[upeIndex].boxGraphics.destroy();
 				this.userPhaserElements[upeIndex].textGraphics.destroy();
 				this.userPhaserElements[upeIndex].hpTextGraphics.destroy();
+				this.userPhaserElements[upeIndex].pvpGraphics.destroy();
 				
 				this.userPhaserElements.splice(upeIndex, 1);
 
@@ -515,6 +570,9 @@ export default class MainScene extends Phaser.Scene {
 			upe.textGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
 			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
 
+			upe.pvpGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-10)
+			upe.pvpGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) - 36)
+
 			upe.hpTextGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
 			upe.hpTextGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 34)
 			upe.hpTextGraphics.setText(c.hpCur + "/" + c.hpMax);
@@ -534,10 +592,10 @@ export default class MainScene extends Phaser.Scene {
 			};
 
 			var textStyle = {
-				color: '#ff0000', 
+				color: this.damageTextColor, 
 				fontSize: "18px",
-				strokeThickness: 1,
-				stroke: '#ff0000'
+				strokeThickness: this.damageStrokeThickness,
+				stroke: this.damageStrokeColor
 			}
 
 			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);
@@ -549,11 +607,21 @@ export default class MainScene extends Phaser.Scene {
 	updateUserInfo(e) {
 		var u = this.gc.users.find((x) => {return x.userId === e.userId});
 		var ude = this.userDomElements.find((x) => {return x.userId === e.userId;});
+		var upe = this.userPhaserElements.find((x) => {return x.ownerType === "user" && x.ownerId === e.userId;});
 
 		if(ude && u)
 		{
-			var myText = "(kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " pvp enabled: " + u.userPvp;
+			var pvpPart = u.userPvp ? this.pvpEmoji : "\xa0\xa0\xa0\xa0\xa0";
+			var myText = pvpPart + " (kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username;
 			ude.userListItem.text(myText);
+		}
+
+		if(upe && u)
+		{
+			var pvpText = "";
+			pvpText = u.userPvp ? this.pvpEmoji : "";
+
+			upe.pvpGraphics.setText(pvpText);
 		}
 	}
 
@@ -851,7 +919,7 @@ export default class MainScene extends Phaser.Scene {
 		{
 			var boxGraphics = this.add.graphics();
 
-			boxGraphics.lineStyle(1, 0xff0000, 1);
+			boxGraphics.lineStyle(1, this.projectileColor, 1);
 			boxGraphics.moveTo(-p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top left
 			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top right
 			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, p.size * this.planckUnitsToPhaserUnitsRatio); //bottom right
@@ -917,7 +985,7 @@ export default class MainScene extends Phaser.Scene {
 		{
 			var halfSize = c.size/2;
 			var boxGraphics = this.add.graphics();
-			boxGraphics.lineStyle(1, 0x0000ff, 1);
+			boxGraphics.lineStyle(1, this.castleColor, 1);
 
 			//box
 			boxGraphics.moveTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
@@ -935,10 +1003,10 @@ export default class MainScene extends Phaser.Scene {
 			var usernameText = c.castleName;
 
 			var textStyle = {
-				color: '#0000ff', 
+				color: this.castleTextColor, 
 				fontSize: "18px",
-				strokeThickness: 1,
-				stroke: '#0000ff'
+				strokeThickness: this.castleStrokeThickness,
+				stroke: this.castleStrokeColor
 			}
 
 			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
@@ -996,10 +1064,10 @@ export default class MainScene extends Phaser.Scene {
 			};
 
 			var textStyle = {
-				color: '#ff0000', 
+				color: this.damageTextColor, 
 				fontSize: "18px",
 				strokeThickness: 1,
-				stroke: '#ff0000'
+				stroke: this.damageTextColor
 			}
 
 			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);

@@ -223,8 +223,13 @@ class CollisionSystem {
 		{
 			var processDamage = true;
 
-			//check for pvp flags
-			if(p.ownerType === c.ownerType && p.ownerType === "user")
+			//let ai shoot through eachother
+			if(p.ownerType === c.ownerType && p.ownerType === "ai" && c.ownerType === "ai")
+			{
+				processDamage = false;
+			}
+			//check for pvp flags if the character is owned by a player and the projectile is owned by a player
+			else if(p.ownerType === c.ownerType && p.ownerType === "user")
 			{
 				var sourceOwner = this.gs.um.getUserByID(p.ownerId);
 				var targetOwner = this.gs.um.getUserByID(c.ownerId);
