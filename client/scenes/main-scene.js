@@ -428,8 +428,8 @@ export default class MainScene extends Phaser.Scene {
 
 			var pvpTextStyle = {
 				color: this.userTextColor, 
-				fontSize: "14px",
-				strokeThickness: 0,
+				fontSize: "12px",
+				strokeThickness: 4,
 				stroke: this.userStrokeColor
 			}
 

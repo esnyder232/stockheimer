@@ -117,6 +117,7 @@ class GameServerRunning extends GameServerBaseState {
 				switch(e.eventName)
 				{
 					case "fromClientChatMessage":
+						logger.log("info", "Player: " + user.username + ", event: fromClientChatMessage: " + e.chatMsg);
 						for(var j = 0; j < activeUsers.length; j++)
 						{
 							activeUsers[j].insertTrackedEntityEvent('user', user.id, {
@@ -125,6 +126,7 @@ class GameServerRunning extends GameServerBaseState {
 								"chatMsg": e.chatMsg
 							})
 						}
+						
 						break;
 	
 					case "fromClientSpawnCharacter":
@@ -214,6 +216,7 @@ class GameServerRunning extends GameServerBaseState {
 						break;
 	
 					case "fromClientKillCharacter":
+						logger.log("info", "Player: " + user.username + ", event: fromClientKillCharacter: ");
 						//as long as they have an existing character, kill it.
 						if(user.characterId !== null)
 						{

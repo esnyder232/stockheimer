@@ -1,6 +1,7 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
 const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
+const logger = require('../../logger.js');
 
 class Castle {
 	constructor() {
@@ -103,6 +104,18 @@ class Castle {
 			{
 				this.gs.gom.deactivateGameObjectId(this.id, this.cbDeactivateCastleSuccess.bind(this));
 				this.castlePredeactivated();
+
+				//announce the castle has been killed.
+				var broadcastMessage = this.castleName + " has been destroyed!";
+				logger.log("info", broadcastMessage);
+				var activeUsers = this.gs.um.getActiveUsers();
+				for(var j = 0; j < activeUsers.length; j++)
+				{
+					activeUsers[j].serverToClientEvents.push({
+						"eventName": "killfeedMsg",
+						"killfeedMsg": broadcastMessage
+					});
+				}
 			}
 		}
 
