@@ -8,6 +8,7 @@ export default class PlayerController {
 		this.inputKeyboardMap = {};
 		this.isDirty = false;
 		this.keyCodeIndex = {};
+		this.anyInput = false;
 	}
 	
 	init(inputKeyboardMap) {
@@ -95,14 +96,19 @@ export default class PlayerController {
 		}
 	}
 	
-
 	update(timeElapsed, dt) {
 		//update the prevState on the virtual controller for the player
 		if(this.isDirty)
 		{
+			this.anyInput = false;
 			for(var key in this.inputKeyboardMap)
 			{
+				if(this[key].state)
+				{
+					this.anyInput = true;
+				}
 				this[key].prevState = this[key].state;
+				
 			}
 			this.isDirty = false;
 		}

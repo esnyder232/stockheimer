@@ -285,11 +285,8 @@ input[type="text"]:disabled {
 }
 
 #create-character {
-	margin: 0px auto;
-	margin-top: 22%;
-	display: block;
-	padding: 16px;
-	font-size: 20px;
+	margin-right: 12px;
+	color:green
 }
 
 #kill-character {

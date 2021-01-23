@@ -39,7 +39,7 @@ export default class MainScene extends Phaser.Scene {
 		this.angleSmallestDelta = 0.001;
 
 		this.damageTexts = []; //little array of damage texts to popup when someone gets hurt
-		this.characterSize = 0.75;
+		this.gravestones = []; //array of gravestones to put on the game when characters die
 
 		this.cameraTarget = {
 			x: 0,
@@ -51,9 +51,22 @@ export default class MainScene extends Phaser.Scene {
 		this.cameraZoomMin = 0.4;
 
 		this.defaultCenter = {
-			x: 15 ,
-			y: -15
+			x: 32,
+			y: -32
 		}
+
+		this.spectatorCamera = {
+			x: 32,
+			y: -32
+		}
+
+		// cameraMode = 0 means spectator mode
+		// cameraMode = 1 means follow character
+		// cameraMode = 2 means deathcam for 3 seconds
+		this.cameraMode = 0; 
+		this.deathCamTimer = 0;	//in ms, the amount of time stayed in death cam mode
+		this.deathCamTimerInterval = 1500; //in ms, the amount of time to stay in death cam mode until you switch to spectator
+
 
 		this.debugX = null;
 		this.debugY = null;
@@ -86,6 +99,10 @@ export default class MainScene extends Phaser.Scene {
 		this.castleTextColor = "#ffffff";
 		this.castleStrokeColor = "#000000";
 		this.castleStrokeThickness = 5;
+
+		this.gravestoneTextColor = "#ffffff";
+		this.gravestoneStrokeColor = "#000000";
+		this.gravestoneStrokeThickness = 2;
 
 		this.characterBorderThickness = 3;
 	}
@@ -173,14 +190,36 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	documentScroll(e) {
-		//browser mode
-		if(this.currentPointerMode === 0)
+
+		if(this.gc.myCharacter !== null)
 		{
-			//console.log('browser mode scroll');
-			//do nothing
+			//browser mode
+			if(this.currentPointerMode === 0)
+			{
+				//console.log('browser mode scroll');
+				//do nothing
+			}
+			//phaser mode
+			else if(this.currentPointerMode === 1)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+	
+				//scrolled down
+				if(e.originalEvent.deltaY > 0)
+				{
+					this.cameraZoom -= 0.2;
+					this.setCameraZoom();
+				}
+				//scrolled up
+				else if(e.originalEvent.deltaY < 0)
+				{
+					this.cameraZoom += 0.2;
+					this.setCameraZoom();
+				}
+			}
 		}
-		//phaser mode
-		else if(this.currentPointerMode === 1)
+		else
 		{
 			e.stopPropagation();
 			e.preventDefault();
@@ -226,12 +265,16 @@ export default class MainScene extends Phaser.Scene {
 		//"new" tech demo map
 		this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
 		this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
+
+		//other assets
+		this.load.image("gravestone", "assets/sprites/gravestone.png");
 	}
 
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
 		$("#main-scene-root").removeClass("hide");
 		$(".main-scene-buttons").removeClass("hide");
+
 
 		//old path testing map
 		// //load tilemap
@@ -338,7 +381,6 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		//clear out damage texts
-		//update any dmg texts
 		for(var i = this.damageTexts.length - 1; i >= 0; i--)
 		{
 			if(this.damageTexts[i].textGraphics !== null)
@@ -347,6 +389,21 @@ export default class MainScene extends Phaser.Scene {
 			}
 			this.damageTexts.splice(i, 1);
 		}
+
+		//clear gravestones
+		for(var i = this.gravestones.length - 1; i >= 0; i--)
+		{
+			if(this.gravestones[i].gravestoneImage !== null)
+			{
+				this.gravestones[i].gravestoneImage.destroy();
+			}
+			if(this.gravestones[i].gravestoneText !== null)
+			{
+				this.gravestones[i].gravestoneText.destroy();
+			}
+			this.gravestones.splice(i, 1);
+		}
+
 
 		$("#tb-chat-input").off("keyup");
 		$("#tb-chat-input").off("click");
@@ -498,6 +555,7 @@ export default class MainScene extends Phaser.Scene {
 			//check if this is your character your controlling. If it is, then switch pointer modes
 			if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
 			{
+				this.switchCameraMode(1);
 				this.switchPointerMode(1); //switch to phaser mode
 				var createCharacterBtn = $("#create-character");
 				var killCharacterBtn = $("#kill-character");
@@ -536,6 +594,28 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
+	switchCameraMode(mode)
+	{
+		console.log('switching camera mode');
+
+		if(mode === 0) //0 - spectator mode
+		{
+			this.cameraMode = 0;
+			this.spectatorCamera.x = this.defaultCenter.x;
+			this.spectatorCamera.y = this.defaultCenter.y;
+		}
+		else if(mode === 1) //1 - follow character
+		{
+			this.cameraMode = 1;
+		}
+		else if (mode === 2) //2 - death cam
+		{
+			this.cameraMode = 2;
+			this.deathCamTimer = 0;
+		}
+	}
+
+
 
 
 	removeActiveCharacter(characterId) {
@@ -553,9 +633,48 @@ export default class MainScene extends Phaser.Scene {
 				
 				this.userPhaserElements.splice(upeIndex, 1);
 
+				//put gravestone where the character was removed
+				
+					var gravestone = {
+						gravestoneImage: null,
+						gravestoneText: null,
+						countdownTimer: 15000 //ms
+					};
+		
+					gravestone.gravestoneImage = this.add.image((c.x * this.planckUnitsToPhaserUnitsRatio), (c.y * this.planckUnitsToPhaserUnitsRatio * -1), "gravestone");
+					gravestone.gravestoneImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+					gravestone.gravestoneImage.setScale(2, 2);
+	
+					if(c.ownerType === "ai")
+					{
+						gravestone.countdownTimer = 5000;
+					}
+					else if(c.ownerType === "user")
+					{
+						var u = this.gc.users.find((x) => {return x.userId === c.ownerId;});
+						var usernameText = "???";
+
+						if(u)
+						{
+							usernameText = u.username;	
+						}
+						var textStyle = {
+							color: this.gravestoneTextColor, 
+							fontSize: "18px",
+							strokeThickness: this.gravestoneStrokeThickness,
+							stroke: this.gravestoneStrokeColor
+						}
+			
+						gravestone.gravestoneText = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-16, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
+					}
+
+					this.gravestones.push(gravestone);
+				
+
 				//check if this is your character your controlling. If it is, then switch pointer modes
 				if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
 				{
+					this.switchCameraMode(2);
 					this.switchPointerMode(0); //switch to browser mode
 
 					//also destroy the target line
@@ -680,6 +799,25 @@ export default class MainScene extends Phaser.Scene {
 			}
 		}
 
+		//update any gravestone timers
+		for(var i = this.gravestones.length - 1; i >= 0; i--)
+		{
+			this.gravestones[i].countdownTimer -= dt;
+			if(this.gravestones[i].countdownTimer <= 0)
+			{
+				if(this.gravestones[i].gravestoneImage !== null)
+				{
+					this.gravestones[i].gravestoneImage.destroy();
+				}
+				if(this.gravestones[i].gravestoneText !== null)
+				{
+					this.gravestones[i].gravestoneText.destroy();
+				}
+				this.gravestones.splice(i, 1);
+			}
+		}
+
+
 		//update any projectiles on the client side (no longer update driven from server side)
 		for(var i = 0; i < this.projectilePhaserElements.length; i++)
 		{
@@ -692,116 +830,173 @@ export default class MainScene extends Phaser.Scene {
 			ppu.boxGraphics.setY(ppu.y);
 		}
 
-
-		//if pointer mode is "phaser", capture the mouse position and update turret drawing
-		if(this.currentPointerMode === 1) //phaser mode
+		//if you control your character, read input and send it to the server if its dirty.
+		if(this.gc.myCharacter !== null)
 		{
-			var pointer = this.input.activePointer;
-
-			this.targetLineGraphic.clear();
-
-			pointer.updateWorldPoint(this.cameras.main);
-
-			//redraw the target line
-			var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
-			var y1 = this.gc.myCharacter.y * this.planckUnitsToPhaserUnitsRatio * -1;
-			var x2 = pointer.worldX;
-			var y2 = pointer.worldY;
-
-			this.targetLine.x1 = x1;
-			this.targetLine.y1 = y1;
-
-			this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
-			this.angle = (Math.round((this.angle*1000))/1000)
-			
-			Phaser.Geom.Line.SetToAngle(this.targetLine, x1, y1, this.angle, 100);
-
-			this.targetLineGraphic.strokeLineShape(this.targetLine);
-
-			//debugging text
-			this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
-			this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
-			this.debugIsDown.text('isDown: ' + pointer.isDown);
-			this.debugAngle.text('angle: ' + this.angle);
-
-			//check to see if the user wants to fire a bullet
-			if(pointer.leftButtonDown())
+			//if pointer mode is "phaser", capture the mouse position and update turret drawing
+			if(this.currentPointerMode === 1) //phaser mode
 			{
-				this.isFiring = true;
+				var pointer = this.input.activePointer;
+
+				this.targetLineGraphic.clear();
+
+				pointer.updateWorldPoint(this.cameras.main);
+
+				//redraw the target line
+				var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
+				var y1 = this.gc.myCharacter.y * this.planckUnitsToPhaserUnitsRatio * -1;
+				var x2 = pointer.worldX;
+				var y2 = pointer.worldY;
+
+				this.targetLine.x1 = x1;
+				this.targetLine.y1 = y1;
+
+				this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
+				this.angle = (Math.round((this.angle*1000))/1000)
+				
+				Phaser.Geom.Line.SetToAngle(this.targetLine, x1, y1, this.angle, 100);
+
+				this.targetLineGraphic.strokeLineShape(this.targetLine);
+
+				//debugging text
+				this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
+				this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
+				this.debugIsDown.text('isDown: ' + pointer.isDown);
+				this.debugAngle.text('angle: ' + this.angle);
+
+				//check to see if the user wants to fire a bullet
+				if(pointer.leftButtonDown())
+				{
+					this.isFiring = true;
+				}
+				else
+				{
+					this.isFiring = false;
+				}
+
+				//firing alt
+				if(pointer.rightButtonDown())
+				{
+					this.isFiringAlt = true;
+				}
+				else
+				{
+					this.isFiringAlt = false;
+				}
+
 			}
-			else
+		
+			//if input changes, send the input event
+			if(this.playerController.isDirty)
 			{
-				this.isFiring = false;
+				//debugging
+				// var inputText = "";
+				// for(var key in this.playerInputKeyboardMap)
+				// {
+				// 	inputText += this.playerController[key].state ? '1' : '0';
+				// }
+				// console.log(inputText);
+
+				sendInputEvent = true;
 			}
 
-			//firing alt
-			if(pointer.rightButtonDown())
+			//if the user fires/stops firing. send the input event
+			if(this.prevIsFiring != this.isFiring)
 			{
-				this.isFiringAlt = true;
-			}
-			else
-			{
-				this.isFiringAlt = false;
+				sendInputEvent = true;
 			}
 
+			if(this.prevIsFiringAlt != this.isFiringAlt)
+			{
+				sendInputEvent = true;
+			}
+
+			//if the user is currently firing, and the angle changes, send the input event
+			if((this.isFiring || this.isFiringAlt) && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
+			{
+				sendInputEvent = true;
+			}
+
+			//send the input event this frame if needed
+			if(sendInputEvent)
+			{
+				//console.log('sending input event');
+				this.gc.ep.clientToServerEvents.push({
+					"eventName": "fromClientInputs",
+					"up": this.playerController.up.state,
+					"down": this.playerController.down.state,
+					"left": this.playerController.left.state,
+					"right": this.playerController.right.state,
+					"isFiring": this.isFiring,
+					"isFiringAlt": this.isFiringAlt,
+					"characterDirection": this.angle
+				});
+			}
 		}
-	
-		//if input changes, send the input event
-		if(this.playerController.isDirty)
+		//if you DON'T control your character yet (hasn't spawned or is dead), read the input to control the spectator/death camera
+		else
 		{
 			//debugging
-			// var inputText = "";
-			// for(var key in this.playerInputKeyboardMap)
-			// {
-			// 	inputText += this.playerController[key].state ? '1' : '0';
-			// }
-			// console.log(inputText);
+			var inputText = "";
+			for(var key in this.playerInputKeyboardMap)
+			{
+				inputText += this.playerController[key].state ? '1' : '0';
+			}
+			//console.log(inputText + " " + this.playerController.anyInput);
 
-			sendInputEvent = true;
-		}
+			if(this.playerController.anyInput)
+			{
 
-		//if the user fires/stops firing. send the input event
-		if(this.prevIsFiring != this.isFiring)
-		{
-			sendInputEvent = true;
-		}
+				var vx = 0;
+				var vy = 0;
 
-		if(this.prevIsFiringAlt != this.isFiringAlt)
-		{
-			sendInputEvent = true;
-		}
+				if(this.playerController.up.state)
+				{
+					vy += 0.20;
+				}
+				if(this.playerController.down.state)
+				{
+					vy -= 0.20;
+				}
+				if(this.playerController.right.state)
+				{
+					vx += 0.20;
+				}
+				if(this.playerController.left.state)
+				{
+					vx -= 0.20;
+				}
 
-		//if the user is currently firing, and the angle changes, send the input event
-		if((this.isFiring || this.isFiringAlt) && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
-		{
-			sendInputEvent = true;
-		}
-
-		//send the input event this frame if needed
-		if(sendInputEvent)
-		{
-			this.gc.ep.clientToServerEvents.push({
-				"eventName": "fromClientInputs",
-				"up": this.playerController.up.state,
-				"down": this.playerController.down.state,
-				"left": this.playerController.left.state,
-				"right": this.playerController.right.state,
-				"isFiring": this.isFiring,
-				"isFiringAlt": this.isFiringAlt,
-				"characterDirection": this.angle
-			});
+				if(vx !== 0 || vy !== 0)
+				{
+					this.spectatorCamera.x += vx;
+					this.spectatorCamera.y += vy;
+				}
+			}
 		}
 
 		//update camera position
-		if(this.gc.myCharacter !== null)
+		if(this.cameraMode === 0 && this.gc.myCharacter === null)
+		{
+			this.cameraTarget.x = this.spectatorCamera.x;
+			this.cameraTarget.y = this.spectatorCamera.y;
+		}
+		else if(this.cameraMode === 1 && this.gc.myCharacter !== null)
 		{
 			this.cameraTarget.x = this.gc.myCharacter.x;
 			this.cameraTarget.y = this.gc.myCharacter.y;
 		}
-		else
+		else if(this.cameraMode === 2)
 		{
-			this.cameraTarget.x = this.defaultCenter.x;
-			this.cameraTarget.y = this.defaultCenter.y;
+			this.deathCamTimer += dt;
+			// this.cameraTarget.x = this.defaultCenter.x;
+			// this.cameraTarget.y = this.defaultCenter.y;
+
+			if(this.deathCamTimer >= this.deathCamTimerInterval)
+			{
+				this.deathCamTimer = 0;
+				this.switchCameraMode(0);
+			}
 		}
 
 		this.cameras.main.scrollX = (this.cameraTarget.x * this.planckUnitsToPhaserUnitsRatio) - (this.scale.width/2);
