@@ -4,6 +4,7 @@ import GlobalFuncs from "./global-funcs.js"
 import GameClientLobby from "./game-client-states/game-client-lobby.js"
 import WebsocketHandler from "./classes/websocket-handler.js"
 import EventProcessor from "./classes/event-processor.js"
+import Marked from "marked";
 
 export default class GameClient {
 	constructor() {
@@ -37,7 +38,9 @@ export default class GameClient {
 		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
 
 		this.isContextMenuOn = true;
-		
+
+		this.changelogRaw = "";
+		this.changelogFinal = null;
 	}
 
 	init() {
@@ -103,6 +106,19 @@ export default class GameClient {
 		.fail((xhr) => {
 			this.globalfuncs.appendToLog('VERY BAD ERROR: Failed to get game-constants.');
 		})
+
+		//get the change log
+		$.ajax({url: "./CHANGELOG", method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.changelogRaw = responseData;
+			this.changelogFinal = Marked(this.changelogRaw);
+			$("#change-log").html(this.changelogFinal);
+		})
+		.fail((xhr) => {
+			this.globalfuncs.appendToLog('Failed to get change log.');
+		})
+
+
 
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
