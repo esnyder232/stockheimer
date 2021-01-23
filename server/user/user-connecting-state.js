@@ -27,7 +27,14 @@ class UserConnectingState extends UserBaseState {
 			playingUsers[i].insertTrackedEntity("user", this.user.id);
 		}
 
-
+		//send a message to existing users about the person that joined
+		for(var j = 0; j < activeUsers.length; j++)
+		{
+			activeUsers[j].serverToClientEvents.push({
+				"eventName": "killfeedMsg",
+				"killfeedMsg": "Player '" + this.user.username + "' has connected."
+			});
+		}
 
 		/////////////////////////////////////
 		// SENDING WORLD STATE TO NEW USER //

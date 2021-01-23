@@ -266,8 +266,6 @@ export default class EventProcessor {
 
 					this.gc.users.push(u);
 
-					console.log(e);
-
 					//try to find your own user if you can
 					if(!this.gc.foundMyUser && this.gc.myUserId !== null)
 					{
@@ -290,14 +288,6 @@ export default class EventProcessor {
 						this.gc.users.splice(userIndex, 1);
 					}
 
-					break;
-
-				case "existingUser":
-					this.gc.users.push({
-						userId: e.userId,
-						activeUserId: e.activeUserId,
-						username: e.username
-					});
 					break;
 
 				case "fromServerChatMessage":

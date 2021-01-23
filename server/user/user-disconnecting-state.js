@@ -25,13 +25,18 @@ class UserDisconnectingState extends UserBaseState {
 		//logger.log("info", this.stateName + ' exit');
 
 		//clean up any relationships the user may have had
-		//this.gs.gameState.deactivateSLOs(this.user.characterId);
 		this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
 		this.user.gs.gameState.deactivateUserId(this.user.id);
 
-
-		//delete SLOs
-		//this.gs.slom.deleteSLO(sloID);
+		//send a message to existing users about the person that left
+		var activeUsers = this.user.gs.um.getActiveUsers();
+		for(var j = 0; j < activeUsers.length; j++)
+		{
+			activeUsers[j].serverToClientEvents.push({
+				"eventName": "killfeedMsg",
+				"killfeedMsg": "Player '" + this.user.username + "' has disconnected."
+			});
+		}
 		
 		//reset the user
 		this.user.userDeinit();

@@ -604,15 +604,6 @@ class User {
 		};
 	}
 
-	serializeExistingUserEvent() {
-		return {
-			"eventName": "existingUser",
-			"userId": this.id,
-			"activeUserId": this.activeId,
-			"username": this.username
-		};
-	}
-
 	serializeUpdateUserInfoEvent() {
 		return {
 			"eventName": "updateUserInfo",

@@ -90,11 +90,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 				case "userConnected":
 					this.ms.userConnected(e.userId);
-					break;
-			
-				case "existingUser":
-					this.ms.existingUser(e.userId);
-					break;
+					break;			
 
 				case "fromServerChatMessage":
 					this.ms.fromServerChatMessage(e);

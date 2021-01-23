@@ -359,10 +359,6 @@ export default class MainScene extends Phaser.Scene {
 		this.removeUser(userId);
 	}
 
-	existingUser(userId) {
-		this.addUser(userId);
-	}
-
 	addUser(userId)
 	{
 		var u = this.gc.users.find((x) => {return x.userId == userId;});

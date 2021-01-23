@@ -43,6 +43,8 @@ app.use('/client-dist', express.static(path.join(__dirname, "client-dist")));
 app.use('/css', express.static(path.join(__dirname, "css")));
 app.use('/shared_files', express.static(path.join(__dirname, "shared_files")));
 app.use('/assets', express.static(path.join(__dirname, "assets")));
+app.use('/changelog', express.static(path.join(__dirname, "changelog.md")));
+app.use('/changelog.md', express.static(path.join(__dirname, "changelog.md")));
 
 
 //other apis
