@@ -217,9 +217,15 @@ export default class MainScene extends Phaser.Scene {
 
 	preload() {
 		console.log('preload on ' + this.scene.key + ' start');
-		this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-path-testing.json");
+
+		//old path testing map
+		// this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-path-testing.json");
+		// this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
+		// this.load.image("stockheimer-test-tileset-extra-extruded", "assets/tilesets/stockheimer-test-tileset-extra-extruded.png");
+
+		//"new" tech demo map
+		this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
 		this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
-		this.load.image("stockheimer-test-tileset-extra-extruded", "assets/tilesets/stockheimer-test-tileset-extra-extruded.png");
 	}
 
 	create() {
@@ -227,17 +233,33 @@ export default class MainScene extends Phaser.Scene {
 		$("#main-scene-root").removeClass("hide");
 		$(".main-scene-buttons").removeClass("hide");
 
+		//old path testing map
+		// //load tilemap
+		// this.map = this.make.tilemap({key: "my-tilemap"});
+
+		// //load tileset
+		// this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 10, 20);
+		// this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 10, 20);
+		
+		// //create layers
+		// var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+		// var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+		// this.layer1 = this.map.createLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
+
+
+		//new tech demo map
 		//load tilemap
 		this.map = this.make.tilemap({key: "my-tilemap"});
 
 		//load tileset
 		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 10, 20);
-		this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 10, 20);
 		
 		//create layers
 		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
 		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		this.layer1 = this.map.createLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
+		this.layer1 = this.map.createLayer("Tile Layer 1", this.tileset, xOffset, yOffset).setScale(2);
+
+
 
 		this.layer1.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
 
