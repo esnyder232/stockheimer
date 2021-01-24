@@ -274,7 +274,7 @@ class CollisionSystem {
 				}
 				else if(p.bulletType == "bigBullet")
 				{
-					c.isHit(20, p.ownerId, p.ownerType);
+					c.isHit(8, p.ownerId, p.ownerType);
 					const Vec2 = this.pl.Vec2;
 					var cPos = c.plBody.getPosition();
 					var pPos = p.plBody.getPosition();

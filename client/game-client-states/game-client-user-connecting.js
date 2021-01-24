@@ -13,12 +13,14 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		//2 - game server state complete. Now retrieving resources to load into the client
 		//3 - came client 
 		this.connectionState = 0;
+
+		this.ucs = null;
 	}
 	
 	enter(dt) {
 		super.enter(dt);
 		this.globalfuncs.appendToLog("Connecting...");
-		this.gc.phaserGame.scene.add("user-connecting-scene", UserConnectingScene, true, {
+		this.ucs = this.gc.phaserGame.scene.add("user-connecting-scene", UserConnectingScene, true, {
 			gc: this.gc
 		});
 		
@@ -45,12 +47,15 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 
 				break;
 			case 2:
-				console.log('User connection complete. Letting the user play now.');
+
+				if(this.ucs.preloadComplete)
+				{
+					console.log('UserConnectingScene.preload complete.');
+					this.gc.nextGameState = new GameClientUserPlaying(this.gc);
+				}
 
 				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
-
-				this.gc.nextGameState = new GameClientUserPlaying(this.gc);
 				break;
 		}
 		

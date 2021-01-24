@@ -105,6 +105,8 @@ export default class MainScene extends Phaser.Scene {
 		this.gravestoneStrokeThickness = 2;
 
 		this.characterBorderThickness = 3;
+
+		this.castleGraphics = null;
 	}
 
 	init(data) {
@@ -262,12 +264,13 @@ export default class MainScene extends Phaser.Scene {
 		// this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
 		// this.load.image("stockheimer-test-tileset-extra-extruded", "assets/tilesets/stockheimer-test-tileset-extra-extruded.png");
 
-		//"new" tech demo map
-		this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
-		this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
-
-		//other assets
-		this.load.image("gravestone", "assets/sprites/gravestone.png");
+		// //"new" tech demo map
+		// this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
+		// this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
+		
+		// //other assets
+		// this.load.image("gravestone", "assets/sprites/gravestone.png");
+		// this.load.image("castle", "assets/sprites/castle.png");
 	}
 
 	create() {
@@ -295,7 +298,7 @@ export default class MainScene extends Phaser.Scene {
 		this.map = this.make.tilemap({key: "my-tilemap"});
 
 		//load tileset
-		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 10, 20);
+		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 2, 4);
 		
 		//create layers
 		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
@@ -410,9 +413,7 @@ export default class MainScene extends Phaser.Scene {
 		$("#tb-enemy-password").off("click");
 		$("#ui-div").off("click");
 		$(document).off("keyup");
-		$("#game-div").off("mousewheel");
-
-		
+		$("#game-div").off("wheel");
 
 		$("#main-scene-root").addClass("hide");
 		$(".main-scene-buttons").addClass("hide");
@@ -1015,7 +1016,7 @@ export default class MainScene extends Phaser.Scene {
 	//use this to enter "browser" pointer mode and focus on the chat input box
 	documentEnterClicked(e) {
 		//If the user clicks enter, focus on the chat input box, and turn the pointer mode into phaser mode
-		if(this.currentPointerMode === 1 && (e.code == "NumpadEnter" || e.code == "Enter")) {
+		if((e.code == "NumpadEnter" || e.code == "Enter")) {
 			$("#tb-chat-input").focus();
 			this.switchPointerMode(0); //switch to browser mode
 		}
@@ -1196,22 +1197,22 @@ export default class MainScene extends Phaser.Scene {
 		var c = this.gc.castles.find((x) => {return x.id === id;});
 		if(c)
 		{
-			var halfSize = c.size/2;
-			var boxGraphics = this.add.graphics();
-			boxGraphics.lineStyle(1, this.castleColor, 1);
+			// var halfSize = c.size/2;
+			// var boxGraphics = this.add.graphics();
+			// boxGraphics.lineStyle(1, this.castleColor, 1);
 
 			//box
-			boxGraphics.moveTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
-			boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top right
-			boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom right
-			boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom left
-			boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
+			// boxGraphics.moveTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
+			// boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top right
+			// boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom right
+			// boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom left
+			// boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
 
-			boxGraphics.closePath();
-			boxGraphics.strokePath();
+			// boxGraphics.closePath();
+			// boxGraphics.strokePath();
 			
-			boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
-			boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
+			// boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
+			// boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
 
 			var usernameText = c.castleName;
 
@@ -1225,15 +1226,21 @@ export default class MainScene extends Phaser.Scene {
 			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
 			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.castleHpCur + "/" + c.castleHpMax, textStyle);
 
-			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+//			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 			textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 			hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
+			//add castle image
+			var castleImage = this.add.image((32 * this.planckUnitsToPhaserUnitsRatio), (-32 * this.planckUnitsToPhaserUnitsRatio * -1), "castle");
+			castleImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			castleImage.setScale(2, 2);
+
 			this.userPhaserElements.push({
 				id: c.id,
-				boxGraphics: boxGraphics,
+//				boxGraphics: boxGraphics,
 				textGraphics: textGraphics,
-				hpTextGraphics: hpTextGraphics
+				hpTextGraphics: hpTextGraphics,
+				castleImage: castleImage
 			});
 		}
 	}
@@ -1246,9 +1253,10 @@ export default class MainScene extends Phaser.Scene {
 			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.id === c.id;});
 			if(upeIndex >= 0)
 			{
-				this.userPhaserElements[upeIndex].boxGraphics.destroy();
+				//this.userPhaserElements[upeIndex].boxGraphics.destroy();
 				this.userPhaserElements[upeIndex].textGraphics.destroy();
 				this.userPhaserElements[upeIndex].hpTextGraphics.destroy();
+				this.userPhaserElements[upeIndex].castleImage.destroy();
 				
 				this.userPhaserElements.splice(upeIndex, 1);
 			}
@@ -1283,7 +1291,7 @@ export default class MainScene extends Phaser.Scene {
 				stroke: this.damageTextColor
 			}
 
-			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);
+			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-10, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-28, "-" + e.damage, textStyle);
 
 			this.damageTexts.push(dmgText)
 		}

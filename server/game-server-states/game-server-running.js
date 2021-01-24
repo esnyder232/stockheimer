@@ -190,6 +190,8 @@ class GameServerRunning extends GameServerBaseState {
 							c.ownerId = user.id;
 							c.ownerType = "user";
 							user.characterId = c.id;
+							c.hpMax = 25;
+							c.hpCur = 25;
 
 							
 							var xStarting = z.xPlanck + (z.widthPlanck * Math.random());

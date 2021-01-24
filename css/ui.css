@@ -312,13 +312,27 @@ input[type="text"]:disabled {
 }
 
 .lobby-panel {
-	width: 39%;
-	padding: 0% 5% 0% 5%;
-	display: inline-block;
+	width: 50%;
+	float:left;
 	vertical-align: top;
-	overflow-y: auto;
-	height: 40%;
+	height: 39%;
 }
+
+.info-container {
+	width: 80%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	overflow-y: auto;
+	border-color:#cccccc;
+	border-radius: 20px;
+	border-width: 16px;
+	border-style: solid;
+	padding: 0px 12px 0px 12px;
+	color: #cccccc;
+	margin: 0px auto;
+}
+
+
 
 .lobby-panel-section {
 	margin-bottom: 26px;
