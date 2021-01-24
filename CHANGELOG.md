@@ -1,5 +1,10 @@
 # Change log
 
+## Version - 2021.1.24
+* Fixed ??? character name bug on client end
+* Optimized physics iterations (just changed it down to 1)
+* Optimized ai agent sensor. Changed it so ai's can no longer detect other ai agents.
+
 ## Version - 2021.1.23
 **Techdemo finished! (FINALLY)**
 * Added bigger map
