@@ -83,13 +83,22 @@ class Character {
 			fixedRotation: true,
 			userData: {type:"character", id: this.id}
 		});
+
+		var collisionCategory = CollisionCategories["character_body"];
+		var collisionMask = CollisionMasks["character_body"];
+
+		if(this.ownerType === "ai")
+		{
+			collisionCategory = CollisionCategories["ai_body"];
+			collisionMask = CollisionMasks["ai_body"];
+		}
 		
 		this.plBody.createFixture({
 			shape: circleShape,
 			density: 2.0,
 			friction: 0.0,
-			filterCategoryBits: CollisionCategories["character_body"],
-			filterMaskBits: CollisionMasks["character_body"]
+			filterCategoryBits: collisionCategory,
+			filterMaskBits: collisionMask
 		});
 	}
 
