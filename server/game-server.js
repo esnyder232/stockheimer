@@ -31,8 +31,8 @@ class GameServer {
 		
 		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
-		this.velocityIterations = 6;
-		this.positionIterations = 2;
+		this.velocityIterations = 1;
+		this.positionIterations = 1;
 
 		this.previousTick = 0;
 
