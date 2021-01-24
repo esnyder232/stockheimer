@@ -7,6 +7,7 @@ class UserConnectingState extends UserBaseState {
 	constructor(user) {
 		super(user);
 		this.stateName = "user-connecting-state";
+		this.worldStateDoneEventSent = false;
 	}
 
 	enter(dt) {
@@ -49,25 +50,46 @@ class UserConnectingState extends UserBaseState {
 		//send a worldDone signal at the end
 		//how the fuck do we send this now?!?!?
 		//for now, just send this out. Its not gonna ACTUALLY wait for the world state to be acknowledged by the user, but whatever.
-		this.user.serverToClientEvents.push({
-			"eventName": "worldStateDone"
-		});
+		
+		// this.user.serverToClientEvents.push({
+		// 	"eventName": "worldStateDone"
+		// });
+	
+		
 
 		super.enter(dt);
 	}
 
 	update(dt) {
+		
+		//go through each worldState and check and MAKE SURE the client got them before sending the "worldStateDone" event
+		//quite a bit hacky here, but it DOES work		
+		if(!this.worldStateDoneEventSent)
+		{
+			var worldStateGood = true;
+			for(var i = 0; i < this.user.trackedEntities.length; i++)
+			{
+				if(this.user.trackedEntities[i].stateName !== "tracked-entity-created-state") {
+					worldStateGood = false;
+					break;
+				}
+			}
+
+			if(worldStateGood && !this.worldStateDoneEventSent)
+			{
+				this.worldStateDoneEventSent = true;
+				this.user.serverToClientEvents.push({
+					"eventName": "worldStateDone"
+				});
+			}
+		}
+		
 		//wait for the "readyToPlay" signal from the client
-
-		//stopped here - if you refresh EXACTLY on the frame that the user is "ready to play", then the user is stuck in "user-playing-state" with their web socket handler deleted. So they are "playing" on the server,
-		// but not playing in the browser. And because their websocket handler is deleted, I can't detect a disconnect. Wierd shit.
-
-		//I think we just need a better way to handle this corner case (IOW, go from user-connecting-state to user-disconnecting-state directly, instead of only going to UserPlayingState)
 		if(this.user.bDisconnected)
 		{
 			this.user.nextState = new UserDisconnectingState(this.user);
 		}
-		else if(this.user.bReadyToPlay)
+		else if(this.worldStateDoneEventSent && this.user.bReadyToPlay)
 		{
 			this.user.nextState = new UserPlayingState(this.user);
 		}
