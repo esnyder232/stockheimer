@@ -46,7 +46,7 @@ export default class EventProcessor {
 				var info = this.wsh.canEventFit(this.clientToServerEvents[i]);
 
 				//insert the event, and reset the priority accumulator
-				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.fragmentationLimit)
+				if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.fragmentationLimit)
 				{
 					this.insertFragmentEvent(this.clientToServerEvents[i], info);
 
@@ -73,6 +73,8 @@ export default class EventProcessor {
 		//second, see if there are any fragmented messages that need to go to the server
 		if(this.fragmentedClientToServerEvents.length > 0)
 		{
+			var processedFragementedEvents = [];
+
 			for(var i = 0; i < this.fragmentedClientToServerEvents.length; i++)
 			{
 				var fragmentInfo = this.fragmentedClientToServerEvents[i];
@@ -155,7 +157,7 @@ export default class EventProcessor {
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
 							// console.log("FRAGMENT END SENT");
 							// console.log(fragmentInfo);
-							this.fragmentedClientToServerEvents.splice(0, 1);
+							processedFragementedEvents.push(i);
 						}
 						else
 						{
@@ -163,6 +165,12 @@ export default class EventProcessor {
 						}
 					}
 				}
+			}
+
+			//splice off fragmented messages if we're done with them
+			for(var i = processedFragementedEvents.length - 1; i >= 0; i--)
+			{
+				this.fragmentedServerToClientEvents.splice(processedFragementedEvents[i], 1);
 			}
 		}
 	}

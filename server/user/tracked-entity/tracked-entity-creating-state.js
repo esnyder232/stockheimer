@@ -48,7 +48,7 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 
 			//insert the event
 			//fragment
-			if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.trackedEntity.user.fragmentationLimit)
+			if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.trackedEntity.user.fragmentationLimit)
 			{
 				this.trackedEntity.user.insertFragmentEvent(event, info, this.trackedEntity.cbCreateAck.bind(this.trackedEntity));
 				

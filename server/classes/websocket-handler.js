@@ -204,7 +204,8 @@ class WebsocketHandler {
 					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
 					for(var j = 0; j < this.sentPacketHistory[actualIndex].ackCallbacks.length; j++)
 					{
-						//logger.log("info", '--- CALLBACK FOR ' + actualIndex);
+						//logger.log("info", '--- CALLBACK FOR ' + actualIndex + ". MiscData: " + JSON.stringify(this.sentPacketHistory[actualIndex].ackCallbacks[j].cbMiscData));
+						
 						this.sentPacketHistory[actualIndex].ackCallbacks[j].cbAck(this.sentPacketHistory[actualIndex].ackCallbacks[j].cbMiscData)
 					}
 		

@@ -334,6 +334,7 @@ class User {
 		//first, see if there are any fragmented messages that need to go to the client
 		if(this.fragmentedServerToClientEvents.length > 0)
 		{
+			var processedFragementedEvents = [];
 			for(var i = 0; i < this.fragmentedServerToClientEvents.length; i++)
 			{
 				var fragmentInfo = this.fragmentedServerToClientEvents[i];
@@ -357,7 +358,7 @@ class User {
 	
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId});
+							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 							fragmentInfo.n += nextBytes;
 							fragmentInfo.currentFragmentNumber++;
 						}
@@ -384,7 +385,7 @@ class User {
 	
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId});
+							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 							fragmentInfo.n += nextBytes;
 							fragmentInfo.currentFragmentNumber++;
 						}
@@ -411,10 +412,10 @@ class User {
 	
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck);
+							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, null, {fragmentId: fragmentInfo.fragmentId, "eventjsonFINAL": JSON.stringify(fragmentInfo.eventData)});
 	
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
-							this.fragmentedServerToClientEvents.splice(0, 1);
+							processedFragementedEvents.push(i);
 						}
 						else
 						{
@@ -423,6 +424,13 @@ class User {
 					}
 				}
 			}
+
+			//splice off fragmented messages if we're done with them
+			for(var i = processedFragementedEvents.length - 1; i >= 0; i--)
+			{
+				this.fragmentedServerToClientEvents.splice(processedFragementedEvents[i], 1);
+			}
+
 		}
 
 
