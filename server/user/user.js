@@ -345,7 +345,7 @@ class User {
 					if(fragmentInfo.currentFragmentNumber == 0)
 					{
 						var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
-	
+						
 						var fragmentEvent = {
 							eventName: "fragmentStart",
 							fragmentLength: fragmentInfo.eventDataView.byteLength,
@@ -358,6 +358,9 @@ class User {
 	
 						if(info.canEventFit)
 						{
+							// console.log('SENDING FRAGMENT START');
+							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
+
 							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 							fragmentInfo.n += nextBytes;
 							fragmentInfo.currentFragmentNumber++;
@@ -385,6 +388,9 @@ class User {
 	
 						if(info.canEventFit)
 						{
+							// console.log('SENDING FRAGMENT CONTINUE');
+							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
+							
 							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 							fragmentInfo.n += nextBytes;
 							fragmentInfo.currentFragmentNumber++;
@@ -412,6 +418,9 @@ class User {
 	
 						if(info.canEventFit)
 						{
+							// console.log('SENDING FRAGMENT END');
+							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
+
 							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, null, {fragmentId: fragmentInfo.fragmentId, "eventjsonFINAL": JSON.stringify(fragmentInfo.eventData)});
 	
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
@@ -446,7 +455,7 @@ class User {
 				var info = this.wsh.canEventFit(this.serverToClientEvents[i]);
 
 				//insert the event, and reset the priority accumulator
-				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.fragmentationLimit)
+				if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.fragmentationLimit)
 				{
 					this.insertFragmentEvent(this.serverToClientEvents[i], info);
 
@@ -545,9 +554,12 @@ class User {
 		};
 
 		//calculate the max fragments required and create the buffer
-		fragmentInfo.maxFragmentNumber = Math.ceil(fragmentInfo.bytesRequired / this.fragmentationLimit);
+		fragmentInfo.maxFragmentNumber = Math.floor(fragmentInfo.bytesRequired / this.fragmentationLimit);
 		fragmentInfo.eventDataBuffer = new ArrayBuffer(fragmentInfo.bytesRequired);
 		fragmentInfo.eventDataView = new DataView(fragmentInfo.eventDataBuffer);
+
+		// console.log('INSERTING FRAGMENT EVENT NOW');
+		// console.log(fragmentInfo);
 
 		//encode the entire event in the eventDataBuffer
 		this.wsh.encodeEventInBuffer(fragmentInfo.eventData, fragmentInfo.eventDataView, 0);
@@ -563,11 +575,12 @@ class User {
 
 	cbFragmentSendAck(miscData) {
 		// logger.log("info", 'ACK FRAGMENT CALLED');
-		// logger.log("info", miscData);
+		// console.log("info", miscData);
 
 		var index = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === miscData.fragmentId;});
 		if(index >= 0)
 		{
+			// console.log('ACKING FRAGMENT NUMBNER NOW');
 			this.fragmentedServerToClientEvents[index].ackedFragmentNumber++;
 		}
 	}

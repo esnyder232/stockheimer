@@ -170,7 +170,7 @@ export default class EventProcessor {
 			//splice off fragmented messages if we're done with them
 			for(var i = processedFragementedEvents.length - 1; i >= 0; i--)
 			{
-				this.fragmentedServerToClientEvents.splice(processedFragementedEvents[i], 1);
+				this.fragmentedClientToServerEvents.splice(processedFragementedEvents[i], 1);
 			}
 		}
 	}
@@ -191,7 +191,7 @@ export default class EventProcessor {
 		};
 
 		//calculate the max fragments required and create the buffer
-		fragmentInfo.maxFragmentNumber = Math.ceil(fragmentInfo.bytesRequired / this.fragmentationLimit);
+		fragmentInfo.maxFragmentNumber = Math.floor(fragmentInfo.bytesRequired / this.fragmentationLimit);
 		fragmentInfo.eventDataBuffer = new ArrayBuffer(fragmentInfo.bytesRequired);
 		fragmentInfo.eventDataView = new DataView(fragmentInfo.eventDataBuffer);
 
@@ -420,7 +420,7 @@ export default class EventProcessor {
 						break;
 					case "fragmentContinue":
 						var fragmentInfo = this.fragmentedServerToClientEvents.find((x) => {return x.fragmentId === e.fragmentId;});
-						
+
 						if(fragmentInfo)
 						{
 							//copy the fragment in this message to the fragmentedServeRtoClientEvents
@@ -434,9 +434,9 @@ export default class EventProcessor {
 						break;
 					case "fragmentEnd":
 						var fragmentInfoIndex = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === e.fragmentId;});
-						
+
 						if(fragmentInfoIndex >= 0)
-						{
+						{							
 							var fragmentInfo = this.fragmentedServerToClientEvents[fragmentInfoIndex];
 
 							//copy the fragment in this message to the fragmentedServeRtoClientEvents
