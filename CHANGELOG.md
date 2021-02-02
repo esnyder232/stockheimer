@@ -1,5 +1,8 @@
 # Change log
 
+## Version - 2021.1.24.1
+* Hotfix: fixed the bug that caused chat messages to not send if they were too long.
+
 ## Version - 2021.1.24
 * Fixed ??? character name bug on client end
 * Optimized physics iterations (just changed it down to 1)
