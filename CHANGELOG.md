@@ -1,5 +1,8 @@
 # Change log
 
+## Version - 2021.2.7
+* Nothing new...a waste of a release.
+
 ## Version - 2021.1.24.1
 * Hotfix: fixed the bug that caused chat messages to not send if they were too long.
 
