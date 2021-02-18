@@ -152,7 +152,7 @@ export default class EventProcessor {
 
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, fragmentEvent.cbFinalFragmentSend, fragmentEvent.cbFinalFragmentMiscData);
+							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, fragmentInfo.cbFinalFragmentSend, fragmentInfo.cbFinalFragmentMiscData);
 
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
 							// console.log("FRAGMENT END SENT");

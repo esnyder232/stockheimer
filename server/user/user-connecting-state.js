@@ -8,6 +8,7 @@ class UserConnectingState extends UserBaseState {
 		super(user);
 		this.stateName = "user-connecting-state";
 		this.worldStateDoneEventSent = false;
+		this.teamAcks = [];
 	}
 
 	enter(dt) {
@@ -15,6 +16,7 @@ class UserConnectingState extends UserBaseState {
 		this.user.stateName = this.stateName;
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		var playingUsers = this.user.gs.um.getPlayingUsers();
+		var teams = this.user.gs.tm.getTeams();
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
 		this.user.insertServerToClientEvent({
@@ -48,15 +50,19 @@ class UserConnectingState extends UserBaseState {
 		}
 
 		//send the user who just joined a list of the existing teams
-		for(var i = 0; i < this.user.gs.tm.teamArray.length; i++)
+		for(var i = 0; i < teams.length; i++)
 		{
-			var t = this.user.gs.tm.teamArray[i];
+			this.teamAcks.push({
+				id: teams[i].id,
+				acked: false
+			});
+
 			this.user.insertServerToClientEvent({
 				"eventName": "addTeam",
-				"id": t.id,
+				"id": teams[i].id,
 				"slotNum": 0,
-				"name": t.name,
-			});
+				"name": teams[i].name
+			}, this.cbAddTeam.bind(this), null, {id: teams[i].id});
 		}
 
 		super.enter(dt);
@@ -65,13 +71,25 @@ class UserConnectingState extends UserBaseState {
 	update(dt) {
 		
 		//go through each worldState and check and MAKE SURE the client got them before sending the "worldStateDone" event
-		//quite a bit hacky here, but it DOES work		
+		//quite a bit hacky here, but it DOES work
 		if(!this.worldStateDoneEventSent)
 		{
 			var worldStateGood = true;
+
+			//check if the tracked entities have all been created on the client side
 			for(var i = 0; i < this.user.trackedEntities.length; i++)
 			{
 				if(this.user.trackedEntities[i].stateName !== "tracked-entity-created-state") {
+					worldStateGood = false;
+					break;
+				}
+			}
+
+			//check if the teams have all been created on the client side
+			for(var i = 0 ; i < this.teamAcks.length; i++)
+			{
+				if(!this.teamAcks[i].acked)
+				{
 					worldStateGood = false;
 					break;
 				}
@@ -99,8 +117,11 @@ class UserConnectingState extends UserBaseState {
 		super.update(dt);
 	}
 
-	cbAddTeam() {
-
+	cbAddTeam(miscData) {
+		var t = this.teamAcks.find((x) => {return x.id === miscData.id;});
+		if(t) {
+			t.acked = true;
+		}
 	}
 
 	exit(dt) {

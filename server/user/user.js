@@ -425,7 +425,7 @@ class User {
 							// console.log('SENDING FRAGMENT END');
 							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 
-							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, fragmentEvent.cbFinalFragmentSend, fragmentEvent.cbFinalFragmentMiscData);
+							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, fragmentInfo.cbFinalFragmentSend, fragmentInfo.cbFinalFragmentMiscData);
 	
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
 							processedFragementedEvents.push(i);

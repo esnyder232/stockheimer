@@ -63,6 +63,10 @@ class TeamManager {
 		}
 	}
 
+	getTeams() {
+		return this.teamArray;
+	}
+
 	getTeamByID(id) {
 		if(this.idIndex[id])
 		{
