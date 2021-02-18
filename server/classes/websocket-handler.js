@@ -204,9 +204,9 @@ class WebsocketHandler {
 					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
 					for(var j = 0; j < this.sentPacketHistory[actualIndex].ackCallbacks.length; j++)
 					{
-						//logger.log("info", '--- CALLBACK FOR ' + actualIndex + ". MiscData: " + JSON.stringify(this.sentPacketHistory[actualIndex].ackCallbacks[j].cbMiscData));
+						//logger.log("info", '--- CALLBACK FOR ' + actualIndex + ". MiscData: " + JSON.stringify(this.sentPacketHistory[actualIndex].ackCallbacks[j].miscData));
 						
-						this.sentPacketHistory[actualIndex].ackCallbacks[j].cbAck(this.sentPacketHistory[actualIndex].ackCallbacks[j].cbMiscData)
+						this.sentPacketHistory[actualIndex].ackCallbacks[j].cbAck(this.sentPacketHistory[actualIndex].ackCallbacks[j].miscData)
 					}
 		
 					this.sentPacketHistory[actualIndex].ackCallbacks.length = 0;
@@ -415,7 +415,6 @@ class WebsocketHandler {
 				eventData[schema.parameters[p].txt_param_name] = value;
 			}
 
-			//this.ep.serverToClientEvents.push(eventData);
 			user.clientToServerEvents.push(eventData);
 		}
 
@@ -507,7 +506,7 @@ class WebsocketHandler {
 	}
 
 	//insert the event into the eventQueues
-	insertEvent(eventData, cbAck, cbSend, cbMiscData) {
+	insertEvent(eventData, cbAck, cbSend, miscData) {
 		var schema = EventNameIndex[eventData.eventName];
 		if(schema !== undefined)
 		{
@@ -522,12 +521,12 @@ class WebsocketHandler {
 				//also insert the ack callback if there is any
 				if(cbAck)
 				{
-					this.sentPacketHistory[this.localSequence].ackCallbacks.push({cbAck: cbAck, cbMiscData: cbMiscData});
+					this.sentPacketHistory[this.localSequence].ackCallbacks.push({cbAck: cbAck, miscData: miscData});
 					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
 				}
 				if(cbSend)
 				{
-					this.sentPacketHistory[this.localSequence].sendCallbacks.push({cbSend: cbSend, cbMiscData: cbMiscData});
+					this.sentPacketHistory[this.localSequence].sendCallbacks.push({cbSend: cbSend, miscData: miscData});
 					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
 				}
 			}
@@ -844,7 +843,7 @@ class WebsocketHandler {
 
 			for(var i = 0; i < this.sentPacketHistory[this.localSequence].sendCallbacks.length; i++)
 			{
-				this.sentPacketHistory[this.localSequence].sendCallbacks[i].cbSend(this.sentPacketHistory[this.localSequence].sendCallbacks[i].cbMiscData);
+				this.sentPacketHistory[this.localSequence].sendCallbacks[i].cbSend(this.sentPacketHistory[this.localSequence].sendCallbacks[i].miscData);
 			}
 
 			this.sentPacketHistory[this.localSequence].sendCallbacks.length = 0;

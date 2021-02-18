@@ -43,18 +43,18 @@ export default class EventProcessor {
 			for(var i = 0; i < this.clientToServerEvents.length; i++)
 			{
 				//check if the websocket handler can fit the event
-				var info = this.wsh.canEventFit(this.clientToServerEvents[i]);
+				var info = this.wsh.canEventFit(this.clientToServerEvents[i].eventData);
 
 				//insert the event, and reset the priority accumulator
 				if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.fragmentationLimit)
 				{
-					this.insertFragmentEvent(this.clientToServerEvents[i], info);
+					this.insertFragmentEvent(this.clientToServerEvents[i].eventData, info, this.clientToServerEvents[i].cbAck, this.clientToServerEvents[i].cbSend, this.clientToServerEvents[i].miscData);
 
 					processedIndexes.push(i); //just push it in this queue so it gets spliced off at the end
 				}
 				else if(info.canEventFit)
 				{
-					this.wsh.insertEvent(this.clientToServerEvents[i]);
+					this.wsh.insertEvent(this.clientToServerEvents[i].eventData, this.clientToServerEvents[i].cbAck, this.clientToServerEvents[i].cbSend, this.clientToServerEvents[i].miscData);
 					processedIndexes.push(i);
 				}
 				else
@@ -152,7 +152,7 @@ export default class EventProcessor {
 
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck);
+							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, fragmentEvent.cbFinalFragmentSend, fragmentEvent.cbFinalFragmentMiscData);
 
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
 							// console.log("FRAGMENT END SENT");
@@ -175,8 +175,17 @@ export default class EventProcessor {
 		}
 	}
 
-
-	insertFragmentEvent(event, info, cbFinalFragmentAck) {
+	//inserts the event into the serverToclient array so it can be processed later in the update loop
+	insertClientToServerEvent(eventData, cbAck, cbSend, miscData) {
+		this.clientToServerEvents.push({
+			eventData: eventData,
+			cbAck: cbAck,
+			cbSend: cbSend,
+			miscData: miscData
+		});
+	}
+	
+	insertFragmentEvent(event, info, cbFinalFragmentAck, cbFinalFragmentSend, cbFinalFragmentMiscData) {
 		var fragmentInfo = {
 			bytesRequired: info.bytesRequired,
 			eventData: event,
@@ -187,7 +196,10 @@ export default class EventProcessor {
 			currentFragmentNumber: 0, 	//the current fragment number we are trying to send in the "trackedEvents"
 			ackedFragmentNumber: -1,  	//the most recent acked fragment number that was sent to the client
 			maxFragmentNumber: 0,		//the max number of fragments we need to send
-			cbFinalFragmentAck: cbFinalFragmentAck	//the callback for when the final fragment gets acknowledged out
+			cbFinalFragmentAck: cbFinalFragmentAck, //the callback for when the final fragment gets acknowledged out
+			cbFinalFragmentSend: cbFinalFragmentSend, //the callback for when the final framgnets gets sent out
+			cbFinalFragmentMiscData: cbFinalFragmentMiscData //the misc data to be passed back into the cbFinalFragmentAck and cbFinalFragmentSend callbacks
+
 		};
 
 		//calculate the max fragments required and create the buffer
@@ -486,7 +498,32 @@ export default class EventProcessor {
 							this.gc.castles.splice(c, 1);
 						}
 						break;
-		
+
+					case "addTeam":
+						console.log("ADD TEAM");
+						console.log(e);
+						break;
+
+					case "updateTeam":
+						console.log("UPDATE TEAM");
+						console.log(e);
+						break;
+
+					case "removeTeam":
+						console.log("REMOVE TEAM");
+						console.log(e);
+						break;
+
+					case "addUserTeam":
+						console.log("ADD USER TEAM");
+						console.log(e);
+						break;
+
+					case "removeUserTeam":
+						console.log("REMOVE USER TEAM");
+						console.log(e);
+						break;
+	
 				default:
 					//intentionally blank
 					break;

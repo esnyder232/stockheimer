@@ -82,13 +82,13 @@ class TrackedEntity {
 		this.state.createUpdateEvent(dt);
 	}
 
-	cbCreateAck() {
+	cbCreateAck(miscData) {
 		this.eventQueue.push({
 			"eventName": "createTrackedEntityAck"
 		});
 	}
 
-	cbDestroyAck() {
+	cbDestroyAck(miscData) {
 		this.eventQueue.push({
 			"eventName": "destroyTrackedEntityAck"
 		});

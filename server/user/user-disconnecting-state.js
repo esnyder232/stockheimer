@@ -32,7 +32,7 @@ class UserDisconnectingState extends UserBaseState {
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		for(var j = 0; j < activeUsers.length; j++)
 		{
-			activeUsers[j].serverToClientEvents.push({
+			activeUsers[j].insertServerToClientEvent({
 				"eventName": "killfeedMsg",
 				"killfeedMsg": "Player '" + this.user.username + "' has disconnected."
 			});

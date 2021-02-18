@@ -17,7 +17,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		});
 
 		//tell the server you are ready to play
-		this.gc.ep.clientToServerEvents.push({
+		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientReadyToPlay"
 		});
 	}

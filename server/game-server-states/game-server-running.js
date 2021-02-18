@@ -64,6 +64,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.tmm.update(dt);
 		this.gs.ngm.update(dt);
 		this.gs.aim.update(dt);
+		this.gs.tm.update(dt);
 
 		this.gs.frameNum++;
 
@@ -430,7 +431,7 @@ class GameServerRunning extends GameServerBaseState {
 
 	userResponseMessage(user, userMessage, logEventMessage) {
 		logger.log("info", logEventMessage + userMessage);
-		user.serverToClientEvents.push({
+		user.insertServerToClientEvent({
 			"eventName": "killfeedMsg",
 			"killfeedMsg": userMessage
 		});
@@ -441,7 +442,7 @@ class GameServerRunning extends GameServerBaseState {
 		var activeUsers = this.gs.um.getActiveUsers();
 		for(var j = 0; j < activeUsers.length; j++)
 		{
-			activeUsers[j].serverToClientEvents.push({
+			activeUsers[j].insertServerToClientEvent({
 				"eventName": "killfeedMsg",
 				"killfeedMsg": broadcastMessage
 			});
@@ -628,7 +629,7 @@ class GameServerRunning extends GameServerBaseState {
 				var activeUsers = this.gs.um.getActiveUsers();
 				for(var i = 0; i < activeUsers.length; i++)
 				{
-					activeUsers[i].serverToClientEvents.push({
+					activeUsers[i].insertServerToClientEvent({
 						"eventName": "killfeedMsg",
 						"killfeedMsg": killFeedMessage
 					});

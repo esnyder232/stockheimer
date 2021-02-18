@@ -13,6 +13,7 @@ const {TilemapManager} = require ('./managers/tilemap-manager.js');
 const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const serverConfig = require('./server-config.json');
+const {TeamManager} = require('./managers/team-manager.js');
 const path = require('path');
 const logger = require("../logger.js");
 
@@ -49,6 +50,7 @@ class GameServer {
 		this.tmm = null;
 		this.ngm = null;
 		this.aim = null;
+		this.tm = null;
 		this.appRoot = path.join(__dirname, "..");
 
 		this.activeNavGrid = null; //temporary
@@ -70,6 +72,7 @@ class GameServer {
 		this.cs = new CollisionSystem();
 		this.ngm = new NavGridManager();
 		this.aim = new AIAgentManager();
+		this.tm = new TeamManager();
 		
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -87,6 +90,7 @@ class GameServer {
 		this.tmm.init(this);
 		this.ngm.init(this);
 		this.aim.init(this);
+		this.tm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 	}

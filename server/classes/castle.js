@@ -111,7 +111,7 @@ class Castle {
 				var activeUsers = this.gs.um.getActiveUsers();
 				for(var j = 0; j < activeUsers.length; j++)
 				{
-					activeUsers[j].serverToClientEvents.push({
+					activeUsers[j].insertServerToClientEvent({
 						"eventName": "killfeedMsg",
 						"killfeedMsg": broadcastMessage
 					});

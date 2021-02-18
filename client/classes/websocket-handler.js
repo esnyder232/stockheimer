@@ -213,7 +213,7 @@ export default class WebsocketHandler {
 					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
 					{
 						//console.log('--- CALLBACK FOR ' + actualIndex);
-						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].cbMiscData)
+						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].miscData)
 					}
 		
 					this.ackCallbacks[actualIndex].length = 0;
@@ -480,7 +480,7 @@ export default class WebsocketHandler {
 
 	
 	//insert the event into the eventQueues
-	insertEvent(eventData, cbAck, cbSend, cbMiscData) {
+	insertEvent(eventData, cbAck, cbSend, miscData) {
 		var schema = EventNameIndex[eventData.eventName];
 		if(schema !== undefined)
 		{
@@ -495,12 +495,12 @@ export default class WebsocketHandler {
 				//also insert the ack callback if there is any
 				if(cbAck)
 				{
-					this.ackCallbacks[this.localSequence].push({cbAck: cbAck, cbMiscData: cbMiscData});
+					this.ackCallbacks[this.localSequence].push({cbAck: cbAck, miscData: miscData});
 					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks created for sequence # ' + this.localSequence);
 				}
 				if(cbSend)
 				{
-					this.sendCallbacks[this.localSequence].push({cbSend: cbSend, cbMiscData: cbMiscData});
+					this.sendCallbacks[this.localSequence].push({cbSend: cbSend, miscData: miscData});
 					//console.log("WebSocketHandler for Userid: " + this.userId + '. SEND callbacks created for sequence # ' + this.localSequence);
 				}
 			}
@@ -666,7 +666,7 @@ export default class WebsocketHandler {
 			//console.log("WebSocketHandler client: SEND Callbacks found for ack #" + this.localSequence);
 			for(var i = 0; i < this.sendCallbacks[this.localSequence].length; i++)
 			{
-				this.sendCallbacks[this.localSequence][i].cbSend(this.sendCallbacks[this.localSequence][i].cbMiscData);
+				this.sendCallbacks[this.localSequence][i].cbSend(this.sendCallbacks[this.localSequence][i].miscData);
 			}
 
 			this.sendCallbacks[this.localSequence].length = 0;

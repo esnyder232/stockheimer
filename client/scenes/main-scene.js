@@ -922,7 +922,7 @@ export default class MainScene extends Phaser.Scene {
 			if(sendInputEvent)
 			{
 				//console.log('sending input event');
-				this.gc.ep.clientToServerEvents.push({
+				this.gc.ep.insertClientToServerEvent({
 					"eventName": "fromClientInputs",
 					"up": this.playerController.up.state,
 					"down": this.playerController.down.state,
@@ -1046,7 +1046,7 @@ export default class MainScene extends Phaser.Scene {
 		{
 			tbChatInput.val("");
 
-			this.gc.ep.clientToServerEvents.push({
+			this.gc.ep.insertClientToServerEvent({
 				"eventName": "fromClientChatMessage",
 				"chatMsg": chatMsg
 			});
@@ -1109,7 +1109,7 @@ export default class MainScene extends Phaser.Scene {
 	createCharacterClick() {
 		if(this.gc.myCharacter === null)
 		{
-			this.gc.ep.clientToServerEvents.push({
+			this.gc.ep.insertClientToServerEvent({
 				"eventName": "fromClientSpawnCharacter"
 			});
 		}
@@ -1119,7 +1119,7 @@ export default class MainScene extends Phaser.Scene {
 	killCharacterClick() {
 		if(this.gc.myCharacter !== null)
 		{
-			this.gc.ep.clientToServerEvents.push({
+			this.gc.ep.insertClientToServerEvent({
 				"eventName": "fromClientKillCharacter"
 			});
 		}
@@ -1307,20 +1307,20 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	fromClientSpawnEnemy(spawnLocation) {
-		this.gc.ep.clientToServerEvents.push({
+		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": spawnLocation
 		});
 	}
 
 	togglePvp() {
-		this.gc.ep.clientToServerEvents.push({
+		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientTogglePvp"
 		});
 	}
 
 	respawnCastle() {
-		this.gc.ep.clientToServerEvents.push({
+		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": "respawnCastle"
 		});

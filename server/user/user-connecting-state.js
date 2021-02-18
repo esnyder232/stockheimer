@@ -17,7 +17,7 @@ class UserConnectingState extends UserBaseState {
 		var playingUsers = this.user.gs.um.getPlayingUsers();
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
-		this.user.serverToClientEvents.push({
+		this.user.insertServerToClientEvent({
 			"eventName": "yourUser",
 			"userId": this.user.id
 		})
@@ -31,7 +31,7 @@ class UserConnectingState extends UserBaseState {
 		//send a message to existing users about the person that joined
 		for(var j = 0; j < activeUsers.length; j++)
 		{
-			activeUsers[j].serverToClientEvents.push({
+			activeUsers[j].insertServerToClientEvent({
 				"eventName": "killfeedMsg",
 				"killfeedMsg": "Player '" + this.user.username + "' has connected."
 			});
@@ -47,15 +47,17 @@ class UserConnectingState extends UserBaseState {
 			this.user.insertTrackedEntity("user", activeUsers[i].id);
 		}
 
-		//send a worldDone signal at the end
-		//how the fuck do we send this now?!?!?
-		//for now, just send this out. Its not gonna ACTUALLY wait for the world state to be acknowledged by the user, but whatever.
-		
-		// this.user.serverToClientEvents.push({
-		// 	"eventName": "worldStateDone"
-		// });
-	
-		
+		//send the user who just joined a list of the existing teams
+		for(var i = 0; i < this.user.gs.tm.teamArray.length; i++)
+		{
+			var t = this.user.gs.tm.teamArray[i];
+			this.user.insertServerToClientEvent({
+				"eventName": "addTeam",
+				"id": t.id,
+				"slotNum": 0,
+				"name": t.name,
+			});
+		}
 
 		super.enter(dt);
 	}
@@ -78,7 +80,7 @@ class UserConnectingState extends UserBaseState {
 			if(worldStateGood && !this.worldStateDoneEventSent)
 			{
 				this.worldStateDoneEventSent = true;
-				this.user.serverToClientEvents.push({
+				this.user.insertServerToClientEvent({
 					"eventName": "worldStateDone"
 				});
 			}
@@ -95,6 +97,10 @@ class UserConnectingState extends UserBaseState {
 		}
 
 		super.update(dt);
+	}
+
+	cbAddTeam() {
+
 	}
 
 	exit(dt) {

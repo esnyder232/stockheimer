@@ -124,6 +124,16 @@ class User {
 			"gameobject": {}
 		}
 	}
+
+	//inserts the event into the serverToclient array so it can be processed later in the update loop
+	insertServerToClientEvent(eventData, cbAck, cbSend, miscData) {
+		this.serverToClientEvents.push({
+			eventData: eventData,
+			cbAck: cbAck,
+			cbSend: cbSend,
+			miscData: miscData
+		});
+	}
 	
 	insertTrackedEntity(type, id) {
 		var e = this.findTrackedEntity(type, id);
@@ -319,12 +329,6 @@ class User {
 			var activeUsers = this.gs.um.getActiveUsers();
 			for(var i = 0; i < activeUsers.length; i++)
 			{
-				// activeUsers[i].serverToClientEvents.push({
-				// 	"eventName": "updateUserInfo",
-				// 	"userId": killerOwner.id,
-				// 	"userKillCount": killerOwner.userKillCount
-				// })
-
 				activeUsers[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
 			}
 
@@ -361,7 +365,7 @@ class User {
 							// console.log('SENDING FRAGMENT START');
 							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 
-							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
+							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId});
 							fragmentInfo.n += nextBytes;
 							fragmentInfo.currentFragmentNumber++;
 						}
@@ -391,7 +395,7 @@ class User {
 							// console.log('SENDING FRAGMENT CONTINUE');
 							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 							
-							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
+							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId});
 							fragmentInfo.n += nextBytes;
 							fragmentInfo.currentFragmentNumber++;
 						}
@@ -421,7 +425,7 @@ class User {
 							// console.log('SENDING FRAGMENT END');
 							// console.log({fragmentId: fragmentInfo.fragmentId, "eventjson": JSON.stringify(fragmentInfo.eventData)});
 
-							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, null, {fragmentId: fragmentInfo.fragmentId, "eventjsonFINAL": JSON.stringify(fragmentInfo.eventData)});
+							this.wsh.insertEvent(fragmentEvent, fragmentInfo.cbFinalFragmentAck, fragmentEvent.cbFinalFragmentSend, fragmentEvent.cbFinalFragmentMiscData);
 	
 							//the entire fragment has been sent. Splice it off the array.(the internet told me splice was faster)
 							processedFragementedEvents.push(i);
@@ -452,18 +456,18 @@ class User {
 			for(var i = 0; i < this.serverToClientEvents.length; i++)
 			{
 				//check if the websocket handler can fit the event
-				var info = this.wsh.canEventFit(this.serverToClientEvents[i]);
+				var info = this.wsh.canEventFit(this.serverToClientEvents[i].eventData);
 
 				//insert the event, and reset the priority accumulator
 				if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.fragmentationLimit)
 				{
-					this.insertFragmentEvent(this.serverToClientEvents[i], info);
+					this.insertFragmentEvent(this.serverToClientEvents[i].eventData, info, this.serverToClientEvents[i].cbAck, this.serverToClientEvents[i].cbSend, this.serverToClientEvents[i].miscData);
 
 					processedIndexes.push(i); //just push it in this queue so it gets spliced off at the end
 				}
 				else if(info.canEventFit)
 				{
-					this.wsh.insertEvent(this.serverToClientEvents[i]);
+					this.wsh.insertEvent(this.serverToClientEvents[i].eventData, this.serverToClientEvents[i].cbAck, this.serverToClientEvents[i].cbSend, this.serverToClientEvents[i].miscData);
 					processedIndexes.push(i);
 				}
 				else
@@ -539,7 +543,7 @@ class User {
 		}
 	}
 
-	insertFragmentEvent(event, info, cbFinalFragmentAck) {
+	insertFragmentEvent(event, info, cbFinalFragmentAck, cbFinalFragmentSend, cbFinalFragmentMiscData) {
 		var fragmentInfo = {
 			bytesRequired: info.bytesRequired,
 			eventData: event,
@@ -550,7 +554,9 @@ class User {
 			currentFragmentNumber: 0, 	//the current fragment number we are trying to send in the "serverToClientEvents"
 			ackedFragmentNumber: -1,  	//the most recent acked fragment number that was sent to the client
 			maxFragmentNumber: 0,		//the max number of fragments we need to send
-			cbFinalFragmentAck: cbFinalFragmentAck	//the callback for when the final fragment gets acknowledged out
+			cbFinalFragmentAck: cbFinalFragmentAck, //the callback for when the final fragment gets acknowledged out
+			cbFinalFragmentSend: cbFinalFragmentSend, //the callback for when the final framgnets gets sent out
+			cbFinalFragmentMiscData: cbFinalFragmentMiscData //the misc data to be passed back into the cbFinalFragmentAck and cbFinalFragmentSend callbacks
 		};
 
 		//calculate the max fragments required and create the buffer
