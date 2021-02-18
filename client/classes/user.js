@@ -10,14 +10,16 @@ export default class User {
 		this.username = null;
 		this.userKillCount = null;
 		this.userRtt = 0;
+		this.teamId = null;
 	}
 	
-	init(gc, userId, activeUserId, username, userKillCount) {
+	init(gc, userId, activeUserId, username, userKillCount, teamId) {
 		this.gc = gc;
 		this.userId = userId;
 		this.activeUserId = activeUserId;
 		this.username = username;
 		this.userKillCount = userKillCount;
+		this.teamId = teamId;
 	}
 }
 

@@ -412,6 +412,34 @@ class GameServerRunning extends GameServerBaseState {
 						}
 						break;
 
+					case "fromClientJoinTeam":
+						var existingTeamId = user.teamId;
+						var teams = this.gs.tm.getTeams();
+						var newTeamId = null;
+						var newTeam = teams.find((x) => {return x.slotNum === e.slotNum;});
+						var broadcastMessage = "";
+						var logEventMessage = "";
+						if(newTeam) {
+							newTeamId = newTeam.id;
+						}
+
+						//if the new team is different than the existing, change it, and send an event
+						if(newTeamId !== existingTeamId && newTeamId !== null)
+						{
+							user.updateTeamId(newTeamId);
+
+							broadcastMessage = "Player '" + user.username + "' joined " + newTeam.name;
+							logEventMessage = "Player: " + user.username + ", event: fromClientJoinTeam: joined " + newTeam.name + "(" + newTeamId + ")";
+						}
+
+						//send out usermessage and/or broadcast message
+						if(broadcastMessage !== "")
+						{
+							this.broadcastResponseMessage(broadcastMessage, logEventMessage);
+						}
+
+						break;
+
 					case "fragmentStart":
 					case "fragmentContinue":
 					case "fragmentEnd":
@@ -438,7 +466,7 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 	broadcastResponseMessage(broadcastMessage, logEventMessage) {
-		logger.log("info", logEventMessage + broadcastMessage);
+		logger.log("info", logEventMessage + " (broadcastMessage: " + broadcastMessage + ")");
 		var activeUsers = this.gs.um.getActiveUsers();
 		for(var j = 0; j < activeUsers.length; j++)
 		{

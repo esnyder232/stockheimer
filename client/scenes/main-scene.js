@@ -124,7 +124,10 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-
+			{event: 'join-spectator-team', func: this.joinTeamClick.bind(this, 0)},
+			{event: 'join-red-team', func: this.joinTeamClick.bind(this, 1)},
+			{event: 'join-blue-team', func: this.joinTeamClick.bind(this, 2)},
+			
 			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
 			{event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
 			{event: 'toggle-pvp', func: this.togglePvp.bind(this)},
@@ -750,7 +753,7 @@ export default class MainScene extends Phaser.Scene {
 		if(ude && u)
 		{
 			var pvpPart = u.userPvp ? this.pvpEmoji : "\xa0\xa0\xa0\xa0\xa0";
-			var myText = pvpPart + " (kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username;
+			var myText = pvpPart + " (kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
 			ude.userListItem.text(myText);
 		}
 
@@ -1323,6 +1326,13 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": "respawnCastle"
+		});
+	}
+
+	joinTeamClick(slotNum) {
+		this.gc.ep.insertClientToServerEvent({
+			"eventName": "fromClientJoinTeam",
+			"slotNum": slotNum
 		});
 	}
 }

@@ -8,6 +8,7 @@ class TeamManager {
 		this.teamArray = [];
 		this.idIndex = {};
 		this.isDirty = false;
+		this.defaultTeam = null;
 	}
 
 	init(gameServer) {
@@ -61,6 +62,17 @@ class TeamManager {
 			this.updateIndex();
 			this.isDirty = false;
 		}
+	}
+
+	assignDefaultTeamById(id) {
+		var t = this.getTeamByID(id);
+		if(t) {
+			this.defaultTeam = t;
+		}
+	}
+
+	getDefaultTeam() {
+		return this.defaultTeam;
 	}
 
 	getTeams() {

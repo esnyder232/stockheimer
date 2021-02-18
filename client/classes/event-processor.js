@@ -282,7 +282,7 @@ export default class EventProcessor {
 
 				case "userConnected":
 					var u = new User();
-					u.init(this.gc, e.userId, e.activeUserId, e.username, e.userKillCount);
+					u.init(this.gc, e.userId, e.activeUserId, e.username, e.userKillCount, e.teamId);
 
 					this.gc.users.push(u);
 
@@ -475,6 +475,7 @@ export default class EventProcessor {
 							u.userKillCount = e.userKillCount;
 							u.userRtt = e.userRtt;
 							u.userPvp = e.userPvp;
+							u.teamId = e.teamId;
 						}
 						break;
 

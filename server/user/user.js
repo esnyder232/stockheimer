@@ -51,6 +51,7 @@ class User {
 		this.rttCalcTimer = 0; //ms
 		this.rttCalcThreshold = 1000; //ms
 		this.pvpEnabled = true;
+		this.teamId = null;
 	}
 
 
@@ -58,8 +59,9 @@ class User {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
 		this.wsId = wsId;
-		
+		this.teamId = null;
 
+		
 		//get a direct reference to the websocket handler
 		this.wsh = this.gs.wsm.getWebsocketByID(this.wsId);
 
@@ -68,7 +70,19 @@ class User {
 	}
 
 	userPostActivated() {
-		//nothing for now
+		//console.log('userPostActivated for ' + this.username);
+		
+		//assign to default team
+		var defaultTeam = this.gs.tm.getDefaultTeam();
+
+		if(defaultTeam)	{
+			this.teamId = defaultTeam.id;
+		}
+	}
+
+	updateTeamId(newTeamId) {
+		this.teamId = newTeamId;
+		this.userInfoDirty = true;
 	}
 
 	userPostStartPlaying() {
@@ -111,6 +125,7 @@ class User {
 		this.serverToClientEvents = [];
 		this.clientToServerEvents = [];
 		this.characterId = null;
+		this.teamId = null;
 		this.bReadyToPlay = false;
 		this.bDisconnected = false;
 		this.inputQueue = [];
@@ -620,7 +635,8 @@ class User {
 			"userId": this.id,
 			"activeUserId": this.activeId,
 			"username": this.username,
-			"userKillCount": this.userKillCount
+			"userKillCount": this.userKillCount,
+			"teamId": this.teamId
 		};
 	}
 
@@ -637,7 +653,8 @@ class User {
 			"userId": this.id,
 			"userKillCount": this.userKillCount,
 			"userRtt": this.rtt,
-			"userPvp": this.pvpEnabled
+			"userPvp": this.pvpEnabled,
+			"teamId": this.teamId
 		};
 	}
 

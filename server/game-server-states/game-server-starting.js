@@ -43,9 +43,18 @@ class GameServerStarting extends GameServerBaseState {
 			//create teams (probably temporary place for it)
 			var t1 = this.gs.tm.createTeam();
 			var t2 = this.gs.tm.createTeam();
-	
-			t1.name = "Red Team askeujrghnluisehrng lsiuhergl i78shaerog8li7huseor8g7hbselirtughnlsieu5h4ng liasuerhgliuaeshrbvl98s7aeyh45l iguo38e7hgbv5oli9s78ehrno8vbhauseli78rbhskliertuhbks7uiretghlbw4t";
-			t2.name = "Blue Team iuehrg897her897yhoe38974yg938o74 hgo3874 yho8347y9873hyo847 h34oi 7uh3og48i huo34897 hl34io u8hl3 k4jnliukjbnklyivgbwkliurhoe847hg3oli4ughl3ier78yhgvliweurhgiow8736g4huierghuioergbujnilsertghuljniko";
+			var t3 = this.gs.tm.createTeam();
+
+			t1.name = "Spectators";
+			t1.slotNum = 0;
+
+			t2.name = "Red Team";
+			t2.slotNum = 1;
+
+			t3.name = "Blue Team";
+			t3.slotNum = 2;
+
+			this.gs.tm.assignDefaultTeamById(t1.id);
 
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}
