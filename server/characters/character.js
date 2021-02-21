@@ -66,8 +66,8 @@ class Character {
 		this.inputController.characterDirection = {value: 0.0, prevValue: 0.0};
 	}
 
-	//called only after the character is activated. Put things in here that other systems will depend on.
-	characterPostActivated() {
+	//called after the character is activated. Put things in here that other systems will depend on.
+	activated() {
 		const pl = this.gs.pl;
 		const Vec2 = pl.Vec2;
 		const world = this.gs.world;
@@ -100,25 +100,55 @@ class Character {
 			filterCategoryBits: collisionCategory,
 			filterMaskBits: collisionMask
 		});
+
+		//if an ai is controlling this, we need to tell it the character its controlling is activated
+		//eh, just put it in here. Probably gonna be moved later.
+		if(this.ownerType === "ai")
+		{
+			var ai = this.gs.aim.getAIAgentByID(this.ownerId);
+			if(ai !== null)
+			{
+				ai.postCharacterActivate(this.id);
+			}
+		}
 	}
 
-	//called before the character is officially deactivated with the characterManager.
-	characterPredeactivated() {
+	//called right before the character is officially deactivated with the characterManager.
+	deactivated() {
 		if(this.plBody !== null)
 		{
 			this.gs.world.destroyBody(this.plBody);
 			this.plBody = null;
 		}
+
+		///////////////////
+		//all the stuff below came from game-server-running from the semi-old flow of gameobjectManager (manually activating/deactivation/deinit of game objects with bunch of callbacks).
+		//its kind of hacky that it is HERE inside character.
+		var owner = null;
+		owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
+		
+		//hacky as shit, but delete the ai agent as well if the character was controlled by an ai
+		if(owner !== null && this.ownerType === "ai")
+		{
+			owner.aiAgentDeinit();
+			this.gs.aim.destroyAIAgent(this.ownerId);
+		}
+
+		//disassociate the owner from the character
+		if(owner !== null)
+		{
+			owner.characterId = null;
+		}
+		/////////////////////
 	}
 
 	//called right before the character is officially deleted by the characterManager.
-	characterDeinit() {
+	deinit() {
 		this.gs = null;
 		this.inputController = null;
 		this.forceImpulses.length = 0;
 		this.ownerId = null;
 		this.ownerType = null;
-
 	}
 
 	update(dt) {
@@ -365,7 +395,7 @@ class Character {
 					}
 
 					//just activate it here...whatever
-					this.gs.gom.activateGameObjectId(o.id, o.bulletPostActivated.bind(o), o.cbBulletActivatedFailed.bind(this));
+					//this.gs.gom.activateGameObjectId(o.id, o.bulletPostActivated.bind(o), o.cbBulletActivatedFailed.bind(this));
 				}
 			}
 
@@ -392,18 +422,6 @@ class Character {
 		if(this.hpCur == 0)
 		{
 			//tell the user he has killed a character if applicable
-			//whatever
-			// var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
-
-			// if(this.ownerType === "user" && owner !== null)
-			// {
-			// 	owner.userCharacterDied(this.id);
-			// }
-			// else if(this.ownerType === "ai" && owner !== null)
-			// {
-			// 	owner.userCharacterDied(this.id);
-			// }
-
 			this.gs.gameState.characterDied(this.id);
 			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
 		}

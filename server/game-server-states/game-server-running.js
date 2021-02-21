@@ -200,8 +200,7 @@ class GameServerRunning extends GameServerBaseState {
 
 							c.xStarting = xStarting;
 							c.yStarting = yStarting;
-
-							this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
+							
 
 							broadcastMessage = "Player '" + user.username + "' has spawned.";
 						}
@@ -289,7 +288,6 @@ class GameServerRunning extends GameServerBaseState {
 								c.hpMax = 5;
 								c.walkingVelMagMax = 1.5;
 	
-								this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 
 								broadcastMessage = "Player '" + user.username + "' spawned 1 enemy at player's location.";
 							}
@@ -352,7 +350,6 @@ class GameServerRunning extends GameServerBaseState {
 									c.hpMax = 5;
 									c.walkingVelMagMax = 1.5;
 
-									this.gs.gom.activateGameObjectId(c.id, this.cbCharacterActivatedSuccess.bind(this), this.cbCharacterActivatedFailed.bind(this));
 
 									broadcastMessage = "Player '" + user.username + "' spawned 1 enemy on each red zone.";
 								}
@@ -380,8 +377,6 @@ class GameServerRunning extends GameServerBaseState {
 
 								castle.castleInit(this.gs, xc, yc, castleName);
 
-								//just activate here, fuckin whatever
-								this.gs.gom.activateGameObjectId(castle.id, castle.castlePostActivated.bind(castle), castle.cbCastleActivatedFailed.bind(castle));
 
 								broadcastMessage = "Player '" + user.username + "' spawned '" + castleName + "'";
 							}
@@ -490,54 +485,6 @@ class GameServerRunning extends GameServerBaseState {
 		return bFail;
 	}
 
-	cbCharacterActivatedSuccess(characterId) {
-		var c = this.gs.gom.getGameObjectByID(characterId);
-
-		//just to be safe
-		if(c && c.isActive)
-		{
-			c.characterPostActivated();
-
-			//eh, just put it in here. Probably gonna be moved later.
-			if(c.ownerType === "ai")
-			{
-				var ai = this.gs.aim.getAIAgentByID(c.ownerId);
-				ai.postCharacterActivate(c.id);
-			}
-		}
-
-		
-	}
-
-	cbCharacterActivatedFailed(characterId, errorMessage) {
-		//character creation failed for some reason. So undo all the stuff you did on character creation
-		var c = this.gs.gom.getGameObjectByID(characterId);
-		if(c)
-		{
-			var owner = this.globalfuncs.getOwner(this.gs, c.ownerId, c.ownerType);
-		}
-
-		//reset the user's characterId to null;
-		if(owner)
-		{
-			owner.characterId = null;	
-		}
-
-		//reset character's ownerId
-		if(c)
-		{
-			c.ownerId = null
-			c.ownerType = "";
-			c.characterDeinit();
-		}	
-
-		//it should already be deactivated, but do it anyway
-		this.gs.gom.deactivateGameObjectId(characterId);
-
-		//destroy character
-		this.gs.gom.destroyGameObject(characterId);
-	}
-
 
 	destroyOwnersCharacter(ownerId, ownerType)
 	{
@@ -550,45 +497,9 @@ class GameServerRunning extends GameServerBaseState {
 
 			if(c && c.ownerId === owner.id)
 			{
-				c.characterPredeactivated();
-				this.gs.gom.deactivateGameObjectId(c.id, this.cbDeactivateCharacterSuccess.bind(this));
-
+				
+				this.gs.gom.destroyGameObject(c.id);
 			}
-		}
-	}
-
-	cbDeactivateCharacterSuccess(characterId)
-	{
-		var c = this.gs.gom.getGameObjectByID(characterId);
-		var owner = null;
-		var ownerType = "";
-		var ownerId = null;
-		
-		if(c !== null)
-		{
-			ownerType = c.ownerType;
-			ownerId = c.ownerId;
-			owner = this.globalfuncs.getOwner(this.gs, ownerId, ownerType);
-		}
-		
-		//hacky as shit, but delete the ai agent as well if the character was controlled by an ai
-		if(owner !== null && ownerType === "ai")
-		{
-			owner.aiAgentDeinit();
-			this.gs.aim.destroyAIAgent(ownerId);
-		}
-
-		//destroy the character game object
-		if(c !== null)
-		{
-			c.characterDeinit();
-			this.gs.gom.destroyGameObject(c.id);
-		}
-
-		//disassociate the owner from the character
-		if(owner !== null)
-		{
-			owner.characterId = null;
 		}
 	}
 

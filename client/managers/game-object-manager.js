@@ -1,31 +1,30 @@
-const {GlobalFuncs} = require('../global-funcs.js');
-const {Character} = require('../characters/character.js');
-const {Bullet} = require("../projectiles/bullet.js");
-const {Castle} = require("../classes/castle.js");
-const logger = require('../../logger.js');
+import GlobalFuncs from '../global-funcs.js';
+import Character from '../game-objects/character.js';
+// const {Bullet} = require("../projectiles/bullet.js");
+// const {Castle} = require("../classes/castle.js");
 
-class GameObjectManager {
+export default class GameObjectManager {
 	constructor() {
 		this.gc = null;
 		
 		this.gameObjectArray = [];
 		this.idIndex = {};
-		this.serverIdIndex = {};
 
 		this.activeGameObjectArray = [];
 		this.activeIdIndex = {};
+		this.serverIdClientIdMap = {};
 		
 		this.isDirty = false;
 		this.transactionQueue = [];
+		this.idCounter = 0;
 	}
 
-	init(gameServer) {
-		this.gs = gameServer;
+	init(gameClient) {
+		this.gc = gameClient;
 		this.globalfuncs = new GlobalFuncs();
 	}
 
-	//this creates an "inactive" Game Object
-	createGameObject(type) {
+	createGameObject(type, serverId) {
 		var o = null;
 
 		switch(type)
@@ -33,32 +32,45 @@ class GameObjectManager {
 			case "character":
 				o = new Character();
 				break;
-			case "projectile":
-				o = new Bullet();
-				break;
-			case "castle":
-				o = new Castle();
-				break;
+			// case "projectile":
+			// 	o = new Bullet();
+			// 	break;
+			// case "castle":
+			// 	o = new Castle();
+			// 	break;
 		}
 
-		o.id = this.gs.getGlobalGameObjectID();
-		o.isActive = false;
+		o.id = this.idCounter++;
 		o.type = type;
 
 		this.gameObjectArray.push(o);
-		this.updateIndex(o.id, o, 'create');
+
+		if(serverId !== undefined)
+		{
+			this.serverIdClientIdMap[serverId] = o.id;
+		}
+		
+		this.updateIndex(o, 'create');
+
+		//go ahead and put in the activate transaction as well
+		this.activateGameObjectId(o.id);
 		
 		return o;
 	}
 
-	
+
+	destroyGameObjectServerId(serverId) {
+		if(this.serverIdClientIdMap[serverId] !== undefined)
+		{
+			this.destroyGameObject(this.serverIdClientIdMap[serverId]);
+		}
+	}
+
 	//this just marks the inactive object for deletion
-	destroyGameObject(id, cbSuccess, cbFail) {
+	destroyGameObject(id) {
 		this.transactionQueue.push({
-			"transaction": "delete",
-			"id": id,
-			"cbSuccess": cbSuccess,
-			"cbFail": cbFail
+			"transaction": "deactivateDelete",
+			"id": id
 		})
 
 		this.isDirty = true;
@@ -90,136 +102,221 @@ class GameObjectManager {
 		}
 	}
 
+
+	//For objectDestruction:
+	//if an object is activated...
+	// end of frame 0 - call deactivate
+	// end of frame 1 - call deinit, splice
+
+	//if an object is deactivated already...
+	// end of frame 0 - call deinit, splice
 	update() {
 		if(this.isDirty)
 		{
+			//temp array for follow up transactions to be processed on the next frame (usually for objectDestruction)
+			var followUpTransactions = [];
+
 			//process any transactions that occured this frame
 			if(this.transactionQueue.length > 0)
 			{
 				for(var i = 0; i < this.transactionQueue.length; i++)
 				{
-					var bError = false;
-					var errorMessage = "";
-
-					var o = this.getGameObjectByID(this.transactionQueue[i].id);
-					if(o)
+					try 
 					{
-						switch(this.transactionQueue[i].transaction)
+						var bError = false;
+						var errorMessage = "";
+
+						var o = this.getGameObjectByID(this.transactionQueue[i].id);
+
+						if(o)
 						{
-							//delete the inactive game object
-							case "delete":
-								if(!o.isActive)
-								{
-									var oi = this.gameObjectArray.findIndex((x) => {return x.id == o.id;});
-									if(oi >= 0)
+							switch(this.transactionQueue[i].transaction)
+							{
+								//delete the game object (deinit, splice)
+								case "delete":
+									if(!o.isActive)
 									{
-										this.updateIndex(this.gameObjectArray[oi].id, null, "delete");
-										this.gameObjectArray.splice(oi, 1);
+										var oi = this.gameObjectArray.findIndex((x) => {return x.id == o.id;});
+										if(oi >= 0)
+										{
+											//call deinit function if it exists
+											if(typeof this.gameObjectArray[oi].deinit === "function")
+											{
+												this.gameObjectArray[oi].deinit();
+											}
+											this.updateIndex(this.gameObjectArray[oi].id, null, "delete");
+											this.gameObjectArray.splice(oi, 1);
+										}
 									}
-								}
-								else
-								{
-									bError = true;
-									errorMessage = "Game Object is still active.";
-								}
-								break;
-							//deactivate the active game object
-							case "deactivate":
-								if(o.isActive)
-								{
-									var oi = this.activeGameObjectArray.findIndex((x) => {return x.id == o.id;})
-
-									if(oi >= 0)
+									else
 									{
-										this.activeGameObjectArray[oi].isActive = false;
-										this.activeGameObjectArray.splice(oi, 1);
-										this.updateIndex(o.id, o, "deactivate");
+										bError = true;
+										errorMessage = "Game Object is still active.";
 									}
-								}
-								else 
-								{
-									bError = true;
-									errorMessage = "Game Object is already deactivated.";
-								}
-								break;
+									break;
+								//deactivate the game object (deactivate)
+								case "deactivate":
+									if(o.isActive)
+									{
+										var oi = this.activeGameObjectArray.findIndex((x) => {return x.id == o.id;})
+	
+										if(oi >= 0)
+										{
+											//call deactivate function if it exists
+											if(typeof o.deactivated === "function")
+											{
+												o.deactivated();
+											}
 
-							//activate the inactive game object
-							case "activate":
-								if(o.isActive)
-								{
-									bError = true;
-									errorMessage = "Game object is already activated.";
-								}
+											this.activeGameObjectArray[oi].isActive = false;
+											this.activeGameObjectArray.splice(oi, 1);
+											this.updateIndex(o.id, o, "deactivate");
+										}
+									}
+									else 
+									{
+										bError = true;
+										errorMessage = "Game Object is already deactivated.";
+									}
+									break;
+								
+								//deactivate, then follow up transaction for delete
+								case "deactivateDelete":
+									if(o.isActive)
+									{
+										var oi = this.activeGameObjectArray.findIndex((x) => {return x.id == o.id;})
+	
+										if(oi >= 0)
+										{
+											//call deactivate function if it exists
+											if(typeof o.deactivated === "function")
+											{
+												o.deactivated();
+											}
 
-								if(!bError)
-								{
-									this.activeGameObjectArray.push(o);
-									o.isActive = true;
-									this.updateIndex(o.id, o, "activate");
-								}
-								break;
-							default:
-								//intentionally blank
-								break;
+											this.activeGameObjectArray[oi].isActive = false;
+											this.activeGameObjectArray.splice(oi, 1);
+											this.updateIndex(o.id, o, "deactivate");
+										}
+									}
+
+									//follup transaction
+									followUpTransactions.push({
+										"transaction": "delete",
+										"id": o.id
+									});
+									break;
+	
+								//activate the inactive game object
+								case "activate":
+									if(o.isActive)
+									{
+										bError = true;
+										errorMessage = "Game object is already activated.";
+									}
+	
+									if(!bError)
+									{
+										this.activeGameObjectArray.push(o);
+										o.isActive = true;
+										this.updateIndex(o.id, o, "activate");
+
+										//call activate function if it exists
+										if(typeof o.activated === "function")
+										{
+											o.activated();
+										}
+									}
+									break;
+								default:
+									//intentionally blank
+									break;
+							}
+						}
+						else
+						{
+							bError = true;
+							errorMessage = "Game object does not exist.";
 						}
 					}
-					else
-					{
-						bError = false;
-						errorMessage = "Game object does not exist.";
+					catch(ex) {
+						bError = true;
+						errorMessage = "Exception caught: " + ex + ". Stack: " + ex.stack;
 					}
 
-					
 					if(bError)
 					{
-						logger.log("info", 'Game Object transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
-
-						//call the callback if it exists
-						if(this.transactionQueue[i].cbFail)
-						{
-							this.transactionQueue[i].cbFail(this.transactionQueue[i].id, errorMessage);
-						}
-					}
-					else
-					{
-						//call the callback if it exists
-						if(this.transactionQueue[i].cbSuccess)
-						{
-							this.transactionQueue[i].cbSuccess(this.transactionQueue[i].id);
-						}
+						console.log('Game Object transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 					}
 				}
 
 				//delete all transactions when done with processing them
 				this.transactionQueue.length = 0;
 			}
-			
-			this.isDirty = false;
+
+			//add any follow up transactions to the main transaction queue
+			if(followUpTransactions.length > 0)
+			{
+				for(var i = 0; i < followUpTransactions.length; i++)
+				{
+					this.transactionQueue.push(followUpTransactions[i]);
+				}
+
+				followUpTransactions.length = 0;
+				
+				//important to dirty the game object manager here, so the follow up transactions next frame will be processed
+				this.isDirty = true;
+			}
+			else
+			{
+				this.isDirty = false;
+			}
 		}
 	}
 
-	activateGameObjectId(id, cbSuccess, cbFail) {
+	activateGameObjectServerId(serverId) {
+		if(this.serverIdClientIdMap[serverId] !== undefined)
+		{
+			this.activateGameObjectId(this.serverIdClientIdMap[serverId]);
+		}
+	}
+
+	activateGameObjectId(id) {
 		this.transactionQueue.push({
 			"transaction": "activate",
-			"id": id,
-			"cbSuccess": cbSuccess,
-			"cbFail": cbFail
+			"id": id
 		});
 		this.isDirty = true;
 	}
 
-	deactivateGameObjectId(id, cbSuccess, cbFail) {
+	deactivateGameObjectServerId(serverId) {
+		if(this.serverIdClientIdMap[serverId] !== undefined)
+		{
+			this.deactivateGameObjectId(this.serverIdClientIdMap[serverId]);
+		}
+	}
+
+	deactivateGameObjectId(id) {
 		this.transactionQueue.push({
 			"transaction": "deactivate",
-			"id": id,
-			"cbSuccess": cbSuccess,
-			"cbFail": cbFail
+			"id": id
 		});
 		this.isDirty = true;
 	}
 
 
-	getGameObjectByClientID(id) {
+	getGameObjectByServerID(serverId) {
+		if(this.serverIdClientIdMap[serverId] !== undefined)
+		{
+			return this.deactivateGameObjectId(this.serverIdClientIdMap[serverId]);
+		}
+		else 
+		{
+			return null;
+		}
+	}
+
+	getGameObjectByID(id) {
 		if(this.idIndex[id])
 		{
 			return this.idIndex[id];
@@ -229,7 +326,6 @@ class GameObjectManager {
 			return null;
 		}
 	}
-
 	
 	getActiveGameObjects() {
 		return this.activeGameObjectArray;

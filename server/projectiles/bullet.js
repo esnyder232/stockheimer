@@ -35,7 +35,7 @@ class Bullet {
 	}
 
 	//called only after the bullet is activated. Put things in here that other systems will depend on.
-	bulletPostActivated() {
+	activated() {
 		const pl = this.gs.pl;
 		const Vec2 = pl.Vec2;
 		const world = this.gs.world;
@@ -67,13 +67,8 @@ class Bullet {
 		this.plBody.setLinearVelocity(vel);
 	}
 
-	cbBulletActivatedFailed(id, errorMessage) {
-		//just destroy the bullet
-		this.gs.destroyGameObject(this.id);
-	}
-
 	//called before the bullet is officially deactivated with the game object manager.
-	bulletPredeactivated() {
+	deactivated() {
 		if(this.plBody)
 		{
 			this.gs.world.destroyBody(this.plBody);
@@ -81,14 +76,8 @@ class Bullet {
 		}
 	}
 
-	//callback for successful deactivation...ugh
-	cbDeactivateBulletSuccess() {
-		this.gs.gom.destroyGameObject(this.id);
-		this.bulletDeinit();
-	}
-
 	//called right before the bullet is officially deleted by the game object manager.
-	bulletDeinit() {
+	deinit() {
 		this.gs = null;
 	}
 
@@ -107,8 +96,7 @@ class Bullet {
 		{
 			if(this.lifespan <= 0)
 			{
-				this.gs.gom.deactivateGameObjectId(this.id, this.cbDeactivateBulletSuccess.bind(this));
-				this.bulletPredeactivated();
+				this.gs.gom.destroyGameObject(this.id);
 			}
 		}
 	}

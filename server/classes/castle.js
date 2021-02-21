@@ -30,7 +30,7 @@ class Castle {
 	}
 
 	//called only after the castle is activated
-	castlePostActivated() {
+	activated() {
 		const pl = this.gs.pl;
 		const Vec2 = pl.Vec2;
 		const world = this.gs.world;
@@ -54,13 +54,8 @@ class Castle {
 		});
 	}
 
-	cbCastleActivatedFailed(id, errorMessage) {
-		//just destroy the castle
-		this.gs.destroyGameObject(this.id);
-	}
-
 	//called before the castle is officially deactivated with the game object manager.
-	castlePredeactivated() {
+	deactivated() {
 		if(this.plBody)
 		{
 			this.gs.world.destroyBody(this.plBody);
@@ -68,14 +63,8 @@ class Castle {
 		}
 	}
 
-	//callback for successful deactivation...ugh
-	cbDeactivateCastleSuccess() {
-		this.gs.gom.destroyGameObject(this.id);
-		this.castleDeinit();
-	}
-
 	//called right before the castle is officially deleted by the game object manager.
-	castleDeinit() {
+	deinit() {
 		//lol, whatever
 		this.gs.castleObject = null;
 		this.gs = null;
@@ -102,8 +91,7 @@ class Castle {
 		{
 			if(this.hpCur <= 0)
 			{
-				this.gs.gom.deactivateGameObjectId(this.id, this.cbDeactivateCastleSuccess.bind(this));
-				this.castlePredeactivated();
+				this.gs.gom.destroyGameObject(this.id);
 
 				//announce the castle has been killed.
 				var broadcastMessage = this.castleName + " has been destroyed!";
