@@ -433,15 +433,28 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.gameState.exitGameClick();
 	}
 
+	//READS:
+	//UM
+	//jquery
+
+	//WRITES:
+	//jquery or DOM element manager
 	userConnected(userId) {
 		this.addUser(userId);
 	}
 
-	
+	//DOM element manager
 	userDisconnected(userId) {
 		this.removeUser(userId);
 	}
 
+
+	//READS:
+	//UM
+	//jquery
+
+	//WRITES:
+	//jquery or DOM element manager
 	addUser(userId)
 	{
 		var u = this.gc.users.find((x) => {return x.userId == userId;});
@@ -468,6 +481,16 @@ export default class MainScene extends Phaser.Scene {
 		userCountDiv.text("Players: " + this.gc.users.length + "/32");
 	}
 
+
+	//READS:
+	//GOM
+	//UM
+
+	//WRITES:
+	//sprite manager
+	//text manager
+	//main scene
+	//camera manager
 	addActiveCharacter(characterId) {
 		var c = this.gc.characters.find((x) => {return x.id === characterId;});
 		if(c)
@@ -620,8 +643,18 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
+	//READS:
+	//GOM
+	//sprite manager
 
-
+	//WRITES:
+	//sprite manager
+	//images manager
+	//text manager
+	//main scene
+	//camera manager
+	//DOM element manager
+	//maybe jquery
 	removeActiveCharacter(characterId) {
 		var c = this.gc.characters.find((x) => {return x.id === characterId});
 
@@ -673,7 +706,7 @@ export default class MainScene extends Phaser.Scene {
 					}
 
 					this.gravestones.push(gravestone);
-				
+
 
 				//check if this is your character your controlling. If it is, then switch pointer modes
 				if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
@@ -700,6 +733,15 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+
+	//READS:
+	//GOM
+	//sprite manager
+	//text manager
+
+	//WRITES:
+	//sprite manager
+	//text manager
 	activeCharacterUpdate(e) {
 		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
 		var c = this.gc.characters.find((x) => {return x.id === e.id});
@@ -721,6 +763,12 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+
+	//READS:
+	//GOM (or sprite manager if needed)
+
+	//WRITES
+	//text manager
 	characterDamage(e) {
 		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
 		var c = this.gc.characters.find((x) => {return x.id === e.id});
@@ -745,6 +793,15 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+	//READS:
+	//UM
+	//dom element manager
+	//text manager
+	//sprite manager (maybe? if text references are stored in sprite object)
+
+	//WRITES:
+	//dom element manager or jquery
+	//text manager
 	updateUserInfo(e) {
 		var u = this.gc.users.find((x) => {return x.userId === e.userId});
 		var ude = this.userDomElements.find((x) => {return x.userId === e.userId;});
@@ -766,6 +823,7 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+	//DOM element manager
 	removeUser(userId) {
 		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
 		
@@ -780,6 +838,11 @@ export default class MainScene extends Phaser.Scene {
 	
 	}
 
+	//READS:
+	//jquery
+
+	//WRITES:
+	//jquery or dom element manager
 	userDisconnectedPost() {
 		var userCountDiv = $("#user-list-player-count");
 		userCountDiv.text("Players: " + this.gc.users.length + "/32");
@@ -1064,6 +1127,12 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
+	//READS:
+	//UM
+	//jquery
+
+	//WRITES:
+	//jquery or DOM element manager
 	fromServerChatMessage(e) {
 		var chatHistory = $("#chat-history");
 		var chatHistoryItemTemplate = $("#chat-history-item-template");
@@ -1130,6 +1199,12 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
+	//READS:
+	//images manager
+
+	//WRITES:
+	//images manager
+	//maybe main scene
 	addProjectile(e) {
 		var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
 		if(p)
@@ -1170,6 +1245,11 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+	//READS:
+	//none
+
+	//WRITES:
+	//images manager
 	removeProjectile(e) {
 		var p = this.gc.projectiles.find((x) => {return x.id === e.id});
 
@@ -1196,6 +1276,14 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+
+	//READS:
+	//GOM
+	//UM
+
+	//WRITES:
+	//image manager
+	//text manager
 	addCastle(id) {
 		var c = this.gc.castles.find((x) => {return x.id === id;});
 		if(c)
@@ -1248,6 +1336,11 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+	//READS:	
+	//images manager
+
+	//WRITES:
+	//images manager
 	removeCastle(id) {		
 		var c = this.gc.castles.find((x) => {return x.id === id});
 
@@ -1266,6 +1359,12 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 	
+	//READS:
+	//sprite manager
+	//GOM
+
+	//WRITES:
+	//text manager
 	castleUpdate(e) {
 		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
 		var c = this.gc.castles.find((x) => {return x.id === e.id});
@@ -1276,6 +1375,13 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
+
+	//READS:
+	//sprite manager
+	//GOM
+	
+	//WRITES:
+	//text manager
 	castleDamage(e) {
 		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
 		var c = this.gc.castles.find((x) => {return x.id === e.id});
