@@ -1,5 +1,10 @@
 # Change log
 
+## Version - 2021.2.21
+* Added very basic framework for teams.
+* New life cycle implemented for game objects.
+* Started client side architecture.
+
 ## Version - 2021.2.7
 * Nothing new...a waste of a release.
 
