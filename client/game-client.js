@@ -4,6 +4,7 @@ import GlobalFuncs from "./global-funcs.js"
 import GameClientLobby from "./game-client-states/game-client-lobby.js"
 import WebsocketHandler from "./classes/websocket-handler.js"
 import EventProcessor from "./classes/event-processor.js"
+import GameObjectManager from "./managers/game-object-manager.js"
 import Marked from "marked";
 
 export default class GameClient {
@@ -17,6 +18,7 @@ export default class GameClient {
 
 		this.wsh = null;
 		this.ep = null;
+		this.gom = null;
 
 		this.users = []; //temp living location for users
 		this.characters = [];
@@ -41,6 +43,12 @@ export default class GameClient {
 
 		this.changelogRaw = "";
 		this.changelogFinal = null;
+		
+		//scenes
+		this.lobbyScene = null;
+		this.mainScene = null;
+		this.userConnectingScene = null;
+		this.userDisconnectingScene = null;
 	}
 
 	init() {
@@ -48,9 +56,11 @@ export default class GameClient {
 		this.globalfuncs = new GlobalFuncs();
 		this.wsh = new WebsocketHandler();
 		this.ep = new EventProcessor();
+		this.gom = new GameObjectManager();
 
 		this.wsh.init(this, this.ep);
 		this.ep.init(this, this.wsh);
+		this.gom.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -129,6 +139,34 @@ export default class GameClient {
 
 		//hide loading text
 		$(".loading-text").addClass("hide");
+
+		//debugging / testing
+		// var a1 = this.gom.createGameObject("character", 1);
+		// var a2 = this.gom.createGameObject("character", 2);
+		// var a3 = this.gom.createGameObject("character", 3);
+		// a1.characterInit(this);
+		// a2.characterInit(this);
+		// a3.characterInit(this);
+
+		// this.debugPrintFunc();
+
+		// this.gom.update(0);
+
+		// this.debugPrintFunc();
+		// this.gom.destroyGameObject(a1.id);
+		
+		// this.gom.update(0);
+		
+		// this.debugPrintFunc();
+		
+		// this.gom.update(0);
+
+		// this.debugPrintFunc();
+
+	}
+
+	debugPrintFunc() {
+		console.log('active character length: ' + this.gom.getActiveGameObjects().length);
 	}
 
 	turnOffContextMenu() {

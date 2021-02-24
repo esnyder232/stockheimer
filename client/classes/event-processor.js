@@ -1,6 +1,12 @@
 import GlobalFuncs from "../global-funcs.js"
 import User from "./user.js";
 import ClientConfig from '../client-config.json';
+import AddActiveCharacterEvent from "../event-classes/add-active-character-event.js"
+import RemoveActiveCharacterEvent from "../event-classes/remove-active-character-event.js"
+import ActiveCharacterUpdateEvent from "../event-classes/active-character-update-event.js"
+import CharacterDamageEvent from "../event-classes/character-damage-event.js"
+import UpdateUserInfoEvent from "../event-classes/update-user-info-event.js"
+
 
 export default class EventProcessor {
 	constructor() {
@@ -17,11 +23,41 @@ export default class EventProcessor {
 		this.fragmentIdCounter = 0;
 		this.fragmentationLimit = Math.round(ClientConfig.max_packet_event_bytes_until_fragmentation);
 
+		this.eventClassesMapping = []; //mapping of eventNames to eventClasses
+		this.eventClasses = {}; //Actual event functions to be called. keys are event_ids from event schema, and values are the eventClasses.processEvent (built from event schema and eventClassesMapping). 
+								  //This is ultimately to make event function lookups more efficient by looking up the event_id instead of the eventName
 	}
 	
 	init(gc, wsh) {
 		this.gc = gc;
 		this.wsh = wsh;
+
+		this.eventClassesMapping = [
+			{eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent()},
+			{eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent()},
+			{eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent()},
+			{eventName: "characterDamage", eventClass: new CharacterDamageEvent()},
+			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()}
+		];
+
+	}
+
+	eventSchemaReady() {
+		console.log('building eventClasses mapping...');
+		console.log(this.wsh.eventNameIndex);
+		//build the eventClasses (map the event id to an event function)
+		for(var i = 0; i < this.eventClassesMapping.length; i++)
+		{
+			var e = this.wsh.eventNameIndex[this.eventClassesMapping[i].eventName];
+			if(e !== undefined)
+			{
+				this.eventClasses[e.event_id] = this.eventClassesMapping[i].eventClass;
+				this.eventClasses[e.event_id].init(this.gc); //just init it here, whatever
+			}
+		}
+
+		console.log('eventClasses built successfully');
+		console.log(this.eventClasses);
 	}
 
 	reset() {
@@ -257,6 +293,12 @@ export default class EventProcessor {
 		for(var i = 0; i < this.serverToClientEvents.length; i++)
 		{
 			var e = this.serverToClientEvents[i];
+
+			if(this.eventClasses[e.eventId] !== undefined)
+			{
+				this.eventClasses[e.eventId].processEvent(e);
+			}
+			
 			//call preevent callback. This is mostly just called when things get deleted and the scenes have a chance to update their view accordingly
 			if(cbPreEvent)
 			{
@@ -313,70 +355,6 @@ export default class EventProcessor {
 				case "fromServerChatMessage":
 					break;
 				
-				case "addActiveCharacter":
-					var c = {
-						id: e.id,
-						ownerId: e.ownerId,
-						ownerType: e.ownerType,
-						x: e.characterPosX,
-						y: e.characterPosY,
-						hpMax: e.characterHpMax,
-						hpCur: e.characterHpCur
-					};
-
-					//translate the owner type to a string again
-					//DONT CARE!!!
-					for (const key in this.gc.gameConstants.owner_types) {
-						var val = this.gc.gameConstants.owner_types[key];
-						if(val === c.ownerType)
-						{
-							c.ownerType = key;
-						}
-					}
-
-					this.gc.characters.push(c)
-
-					//check if this is your character
-					if(this.gc.foundMyUser && !this.gc.foundMyCharacter)
-					{
-						if(c.ownerType === "user" && c.ownerId === this.gc.myUser.userId)
-						{
-							this.gc.foundMyCharacter = true;
-							this.gc.myCharacter = c;
-						}
-					}
-					break;
-
-
-				case "removeActiveCharacter":
-					var ci = this.gc.characters.findIndex((x) => {return x.id == e.id});
-
-					//if the character was found, splice it off the array
-					if(ci >= 0)
-					{
-						var temp = this.gc.characters.splice(ci, 1)[0];
-
-						//check if this is your character
-						if(this.gc.foundMyUser && this.gc.foundMyCharacter)
-						{
-							if(temp.ownerType === "user" && temp.ownerId === this.gc.myUser.userId)
-							{
-								this.gc.foundMyCharacter = false;
-								this.gc.myCharacter = null;
-							}
-						}
-					}
-					break;
-
-					case "activeCharacterUpdate":
-						var c = this.gc.characters.find((x) => {return x.id === e.id});
-						if(c)
-						{
-							c.x = e.characterPosX;
-							c.y = e.characterPosY;
-							c.hpCur = e.characterHpCur;
-						}
-						break;
 
 					case "addProjectile":
 						this.gc.projectiles.push({
@@ -468,16 +446,6 @@ export default class EventProcessor {
 						this.globalfuncs.appendToLog(e.killfeedMsg);
 						break;
 
-					case "updateUserInfo":
-						var u = this.gc.users.find((x) => {return x.userId === e.userId;});
-						if(u)
-						{
-							u.userKillCount = e.userKillCount;
-							u.userRtt = e.userRtt;
-							u.userPvp = e.userPvp;
-							u.teamId = e.teamId;
-						}
-						break;
 
 					case "addCastle":
 						this.gc.castles.push(e);

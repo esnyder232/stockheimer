@@ -482,122 +482,6 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
-	//READS:
-	//GOM
-	//UM
-
-	//WRITES:
-	//sprite manager
-	//text manager
-	//main scene
-	//camera manager
-	addActiveCharacter(characterId) {
-		var c = this.gc.characters.find((x) => {return x.id === characterId;});
-		if(c)
-		{
-			var boxGraphicsColor = this.userColor;
-			var boxGraphicsFillColor = this.userFillColor;
-
-			if(c.ownerType === "ai")
-			{
-				boxGraphicsColor = this.aiColor;
-				boxGraphicsFillColor = this.aiFillColor;
-			}
-
-			var circleShape = new Phaser.Geom.Circle(0, 0, this.planckUnitsToPhaserUnitsRatio * 0.375);
-
-			var boxGraphics = this.add.graphics({ 
-				fillStyle: { color: boxGraphicsFillColor }, 
-				lineStyle: {
-					width: this.characterBorderThickness,
-					color: boxGraphicsColor}
-			});
-			boxGraphics.fillCircleShape(circleShape);
-			boxGraphics.strokeCircleShape(circleShape);
-
-			boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
-			boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
-
-			var usernameText = "???";
-			var u = this.gc.users.find((x) => {return x.userId === c.ownerId;});
-			
-			var textStyle = {
-				color: this.userTextColor,
-				fontSize: "18px",
-				strokeThickness: this.userStrokeThickness,
-				stroke: this.userStrokeColor
-			}
-
-			var pvpTextStyle = {
-				color: this.userTextColor, 
-				fontSize: "12px",
-				strokeThickness: 4,
-				stroke: this.userStrokeColor
-			}
-
-			//add username text
-			if(c.ownerType === "user")
-			{
-				if(u)
-				{
-					usernameText = u.username;
-				}
-			}
-			else if(c.ownerType === "ai")
-			{
-				usernameText = "AI " + c.ownerId
-				textStyle.color = this.aiTextColor;
-				textStyle.stroke = this.aiStrokeColor;
-				textStyle.strokeThickness = this.aiStrokeThickness;
-			}
-			
-
-
-			//add pvp emoji
-			var pvpText = "";
-			if(u && c.ownerType === "user")
-			{
-				pvpText = u.userPvp ? this.pvpEmoji : "";
-			}
-
-			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
-			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.hpCur + "/" + c.hpMax, textStyle);
-			var pvpGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-10, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) - 36 , pvpText, pvpTextStyle);
-
-			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-			textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-			hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-			pvpGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-
-			this.userPhaserElements.push({
-				ownerId: c.ownerId,
-				ownerType: c.ownerType,
-				id: c.id,
-				boxGraphics: boxGraphics,
-				textGraphics: textGraphics,
-				hpTextGraphics: hpTextGraphics,
-				pvpGraphics: pvpGraphics
-			});
-
-			//check if this is your character your controlling. If it is, then switch pointer modes
-			if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
-			{
-				this.switchCameraMode(1);
-				this.switchPointerMode(1); //switch to phaser mode
-				var createCharacterBtn = $("#create-character");
-				var killCharacterBtn = $("#kill-character");
-
-				if(createCharacterBtn.length > 0)
-				{
-					createCharacterBtn.addClass("hide");
-				}
-				if(killCharacterBtn.length > 0)
-				{
-					killCharacterBtn.removeClass("hide");
-				}
-			}
-		}
-	}
 
 	switchPointerMode(mode)
 	{
@@ -642,186 +526,6 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
-
-	//READS:
-	//GOM
-	//sprite manager
-
-	//WRITES:
-	//sprite manager
-	//images manager
-	//text manager
-	//main scene
-	//camera manager
-	//DOM element manager
-	//maybe jquery
-	removeActiveCharacter(characterId) {
-		var c = this.gc.characters.find((x) => {return x.id === characterId});
-
-		if(c)
-		{
-			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.id === c.id;});
-			if(upeIndex >= 0)
-			{
-				this.userPhaserElements[upeIndex].boxGraphics.destroy();
-				this.userPhaserElements[upeIndex].textGraphics.destroy();
-				this.userPhaserElements[upeIndex].hpTextGraphics.destroy();
-				this.userPhaserElements[upeIndex].pvpGraphics.destroy();
-				
-				this.userPhaserElements.splice(upeIndex, 1);
-
-				//put gravestone where the character was removed
-				
-					var gravestone = {
-						gravestoneImage: null,
-						gravestoneText: null,
-						countdownTimer: 15000 //ms
-					};
-		
-					gravestone.gravestoneImage = this.add.image((c.x * this.planckUnitsToPhaserUnitsRatio), (c.y * this.planckUnitsToPhaserUnitsRatio * -1), "gravestone");
-					gravestone.gravestoneImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-					gravestone.gravestoneImage.setScale(2, 2);
-	
-					if(c.ownerType === "ai")
-					{
-						gravestone.countdownTimer = 5000;
-					}
-					else if(c.ownerType === "user")
-					{
-						var u = this.gc.users.find((x) => {return x.userId === c.ownerId;});
-						var usernameText = "???";
-
-						if(u)
-						{
-							usernameText = u.username;	
-						}
-						var textStyle = {
-							color: this.gravestoneTextColor, 
-							fontSize: "18px",
-							strokeThickness: this.gravestoneStrokeThickness,
-							stroke: this.gravestoneStrokeColor
-						}
-			
-						gravestone.gravestoneText = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-16, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
-					}
-
-					this.gravestones.push(gravestone);
-
-
-				//check if this is your character your controlling. If it is, then switch pointer modes
-				if(this.gc.c !== null && this.gc.myCharacter !== null && c.id === this.gc.myCharacter.id)
-				{
-					this.switchCameraMode(2);
-					this.switchPointerMode(0); //switch to browser mode
-
-					//also destroy the target line
-					this.targetLineGraphic.clear();
-
-					var createCharacterBtn = $("#create-character");
-					var killCharacterBtn = $("#kill-character");
-					
-					if(createCharacterBtn.length > 0)
-					{
-						createCharacterBtn.removeClass("hide");
-					}
-					if(killCharacterBtn.length > 0)
-					{
-						killCharacterBtn.addClass("hide");
-					}
-				}
-			}
-		}
-	}
-
-
-	//READS:
-	//GOM
-	//sprite manager
-	//text manager
-
-	//WRITES:
-	//sprite manager
-	//text manager
-	activeCharacterUpdate(e) {
-		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
-		var c = this.gc.characters.find((x) => {return x.id === e.id});
-
-		if(upe && c)
-		{
-			upe.boxGraphics.setX(e.characterPosX * this.planckUnitsToPhaserUnitsRatio);
-			upe.boxGraphics.setY(e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1);
-			upe.textGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
-			upe.textGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 18)
-
-			upe.pvpGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-10)
-			upe.pvpGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) - 36)
-
-			upe.hpTextGraphics.setX((e.characterPosX * this.planckUnitsToPhaserUnitsRatio)-18)
-			upe.hpTextGraphics.setY((e.characterPosY * this.planckUnitsToPhaserUnitsRatio * -1) + 34)
-			upe.hpTextGraphics.setText(c.hpCur + "/" + c.hpMax);
-
-		}
-	}
-
-
-	//READS:
-	//GOM (or sprite manager if needed)
-
-	//WRITES
-	//text manager
-	characterDamage(e) {
-		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
-		var c = this.gc.characters.find((x) => {return x.id === e.id});
-
-		if(upe && c)
-		{
-			var dmgText = {
-				textGraphics: null,
-				countdownTimer: 750 //ms
-			};
-
-			var textStyle = {
-				color: this.damageTextColor, 
-				fontSize: "18px",
-				strokeThickness: this.damageStrokeThickness,
-				stroke: this.damageStrokeColor
-			}
-
-			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);
-
-			this.damageTexts.push(dmgText)
-		}
-	}
-
-	//READS:
-	//UM
-	//dom element manager
-	//text manager
-	//sprite manager (maybe? if text references are stored in sprite object)
-
-	//WRITES:
-	//dom element manager or jquery
-	//text manager
-	updateUserInfo(e) {
-		var u = this.gc.users.find((x) => {return x.userId === e.userId});
-		var ude = this.userDomElements.find((x) => {return x.userId === e.userId;});
-		var upe = this.userPhaserElements.find((x) => {return x.ownerType === "user" && x.ownerId === e.userId;});
-
-		if(ude && u)
-		{
-			var pvpPart = u.userPvp ? this.pvpEmoji : "\xa0\xa0\xa0\xa0\xa0";
-			var myText = pvpPart + " (kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
-			ude.userListItem.text(myText);
-		}
-
-		if(upe && u)
-		{
-			var pvpText = "";
-			pvpText = u.userPvp ? this.pvpEmoji : "";
-
-			upe.pvpGraphics.setText(pvpText);
-		}
-	}
 
 	//DOM element manager
 	removeUser(userId) {
@@ -1074,6 +778,9 @@ export default class MainScene extends Phaser.Scene {
 		this.prevAngle = this.angle;
 		this.prevIsFiring = this.isFiring;
 		this.prevIsFiringAlt = this.isFiringAlt;
+
+		//update managers
+		this.gc.gom.update(dt);
 
 		this.frameNum++;
 	}
@@ -1436,6 +1143,8 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	joinTeamClick(slotNum) {
+		console.log('team clicked ' + slotNum);
+
 		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientJoinTeam",
 			"slotNum": slotNum

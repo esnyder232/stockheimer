@@ -7,20 +7,18 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
 
-		//a mini state machine within this state.
+		//a mini state machine within this state machine.
 		//0 - connecting websocket
 		//1 - recieving game server state
 		//2 - game server state complete. Now retrieving resources to load into the client
 		//3 - came client 
 		this.connectionState = 0;
-
-		this.ucs = null;
 	}
 	
 	enter(dt) {
 		super.enter(dt);
 		this.globalfuncs.appendToLog("Connecting...");
-		this.ucs = this.gc.phaserGame.scene.add("user-connecting-scene", UserConnectingScene, true, {
+		this.gc.userConnectingScene = this.gc.phaserGame.scene.add("user-connecting-scene", UserConnectingScene, true, {
 			gc: this.gc
 		});
 		
@@ -48,7 +46,7 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				break;
 			case 2:
 
-				if(this.ucs.preloadComplete)
+				if(this.gc.userConnectingScene.preloadComplete)
 				{
 					console.log('UserConnectingScene.preload complete.');
 					this.gc.nextGameState = new GameClientUserPlaying(this.gc);
@@ -66,6 +64,7 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		super.exit(dt);
 		this.gc.phaserGame.scene.stop("user-connecting-scene");
 		this.gc.phaserGame.scene.remove("user-connecting-scene");
+		this.gc.userConnectingScene = null;
 	}
 
 	websocketOpened() {

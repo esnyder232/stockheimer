@@ -18,7 +18,6 @@ export default class WebsocketHandler {
 
 		this.localSequenceMaxValue = 65535;
 
-
 		this.maxPacketSize = 400; //bytes. Dynamically set based on current number of players and max bandwidth set in server config.
 		this.MTU = 1000; //bytes. following Glenn Fiedler's advice. 1000 bytes for MTU just to be safe from IP fragmentation
 		this.eventQueues = [];	//2d array (each entry in eventQueues is another array). Each array is a queue for events to be sent to the client.
@@ -27,11 +26,10 @@ export default class WebsocketHandler {
 		this.isEventQueuesDirty = true;
 		this.currentBytes = 0; //current bytes that are queued up to be written to the current packet
 
-		// this.serverToClientEvents = []; //event queue to be processed by the main loop
-		// this.clientToServerEvents = []; //event queue to be processed by the main loop for events going from client to server
-		
 		this.ackCallbacks = [];
 		this.sendCallbacks = [];
+
+		this.eventNameIndex = EventNameIndex; //exposed so the event-processor can use it too.
 	}
 	
 	init(gc, ep) {
@@ -42,7 +40,12 @@ export default class WebsocketHandler {
 		$.ajax({url: "./shared_files/event-schema.json", method: "GET"})
 		.done((responseData, textStatus, xhr) => {
 			EventSchema = responseData;
-			this.buildQueuesAndIndex();
+			try {
+				this.buildQueuesAndIndex();
+				this.ep.eventSchemaReady();
+			} catch(ex) {
+				console.log("VERY BAD ERROR: Exception caught when building from event schema: " + ex.stack);
+			}
 		})
 		.fail((xhr) => {
 			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
@@ -237,6 +240,7 @@ export default class WebsocketHandler {
 		{
 			var eventData = {};
 			eventData.eventName = schema.txt_event_name;
+			eventData.eventId = schema.event_id;
 
 			//go through each parameter for the event
 			for(var p = 0; p < schema.parameters.length; p++)

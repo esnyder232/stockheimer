@@ -11,6 +11,7 @@ export default class User {
 		this.userKillCount = null;
 		this.userRtt = 0;
 		this.teamId = null;
+		this.userPvp = true;
 	}
 	
 	init(gc, userId, activeUserId, username, userKillCount, teamId) {

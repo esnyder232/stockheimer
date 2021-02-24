@@ -6,13 +6,12 @@ import MainScene from "../scenes/main-scene.js"
 export default class GameClientUserPlaying extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
-		this.ms = null;
 	}
 	
 	enter(dt) {
 		super.enter(dt);
 		this.globalfuncs.appendToLog("Now playing.");
-		this.ms = this.gc.phaserGame.scene.add("main-scene", MainScene, true, {
+		this.gc.mainScene = this.gc.phaserGame.scene.add("main-scene", MainScene, true, {
 			gc: this.gc
 		});
 
@@ -41,6 +40,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 		this.gc.phaserGame.scene.stop("main-scene");
 		this.gc.phaserGame.scene.remove("main-scene");
+		this.gc.mainScene = null;
 	}
 
 
@@ -65,26 +65,10 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITE:
 				//DOM element manager
 				case "userDisconnected":
-					this.ms.userDisconnected(e.userId);
+					this.gc.mainScene.userDisconnected(e.userId);
 					break;
 
 
-
-				//READS:
-				//GOM
-				//sprite manager
-
-				//WRITES:
-				//sprite manager
-				//images manager
-				//text manager
-				//main scene
-				//camera manager
-				//DOM element manager
-				//maybe jquery
-				case "removeActiveCharacter":
-					this.ms.removeActiveCharacter(e.id);
-					break;
 
 
 				//READS:
@@ -93,7 +77,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//images manager
 				case "removeProjectile":
-					this.ms.removeProjectile(e);
+					this.gc.mainScene.removeProjectile(e);
 					break;
 
 
@@ -103,7 +87,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//images manager
 				case "removeCastle":
-					this.ms.removeCastle(e.id);
+					this.gc.mainScene.removeCastle(e.id);
 					break;
 
 				default:
@@ -121,7 +105,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//jquery or dom element manager
 				case "userDisconnected":
-					this.ms.userDisconnectedPost();
+					this.gc.mainScene.userDisconnectedPost();
 					break;
 
 
@@ -134,7 +118,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//jquery or DOM element manager
 				case "userConnected":
-					this.ms.userConnected(e.userId);
+					this.gc.mainScene.userConnected(e.userId);
 					break;			
 
 					
@@ -146,41 +130,13 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//jquery or DOM element manager
 				case "fromServerChatMessage":
-					this.ms.fromServerChatMessage(e);
+					this.gc.mainScene.fromServerChatMessage(e);
 					break;
 
 
 
 							
 
-				//READS:
-				//GOM
-				//UM
-				//jquery
-
-				//WRITES:
-				//sprite manager
-				//text manager
-				//main scene
-				//camera manager
-				//jquery or DOM element manager
-				case "addActiveCharacter":
-					this.ms.addActiveCharacter(e.id);
-					break;
-
-
-
-				//READS:
-				//GOM
-				//sprite manager
-				//text manager
-
-				//WRITES:
-				//sprite manager
-				//text manager
-				case "activeCharacterUpdate":
-					this.ms.activeCharacterUpdate(e);
-					break;
 
 
 
@@ -191,42 +147,19 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//images manager
 				//maybe main scene
 				case "addProjectile":
-					this.ms.addProjectile(e);
+					this.gc.mainScene.addProjectile(e);
 					break;
 
 
 
 				//useless...
 				case "projectileUpdate":
-					this.ms.projectileUpdate(e);
+					this.gc.mainScene.projectileUpdate(e);
 					break;
 
 
 
 
-				//READS:
-				//GOM (or sprite manager if needed)
-
-				//WRITES
-				//text manager
-				case "characterDamage":
-					this.ms.characterDamage(e);
-					break;
-
-
-
-				//READS:
-				//UM
-				//dom element manager
-				//text manager
-				//sprite manager (maybe? if text references are stored in sprite object)
-
-				//WRITES:
-				//dom element manager or jquery
-				//text manager
-				case "updateUserInfo":
-					this.ms.updateUserInfo(e);
-					break;
 
 
 				//READS:
@@ -237,7 +170,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//image manager
 				//text manager
 				case "addCastle":
-					this.ms.addCastle(e.id);
+					this.gc.mainScene.addCastle(e.id);
 					break;
 
 
@@ -249,7 +182,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//text manager
 				case "castleUpdate":
-					this.ms.castleUpdate(e);
+					this.gc.mainScene.castleUpdate(e);
 					break;
 
 
@@ -260,7 +193,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 				//WRITES:
 				//text manager
 				case "castleDamage":
-					this.ms.castleDamage(e);
+					this.gc.mainScene.castleDamage(e);
 					break;
 
 				default:

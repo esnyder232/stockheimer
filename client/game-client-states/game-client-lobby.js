@@ -6,13 +6,12 @@ import LobbyScene from "../scenes/lobby-scene.js"
 export default class GameClientLobby extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
-		this.lobbyScene = null;
 	}
 	
 	enter(dt) {
 		super.enter(dt);
 
-		this.lobbyScene = this.gc.phaserGame.scene.add("lobby-scene", LobbyScene, true, {
+		this.gc.lobbyScene = this.gc.phaserGame.scene.add("lobby-scene", LobbyScene, true, {
 			gc: this.gc
 		});
 
@@ -26,9 +25,10 @@ export default class GameClientLobby extends GameClientBaseState {
 
 	exit(dt) {
 		super.exit(dt);
-
+		
 		this.gc.phaserGame.scene.stop("lobby-scene");
 		this.gc.phaserGame.scene.remove("lobby-scene");
+		this.gc.lobbyScene = null;
 	}
 
 	connectUserToServer() {

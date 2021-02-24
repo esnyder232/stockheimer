@@ -10,7 +10,7 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 	enter(dt) {
 		super.enter(dt);
 		this.globalfuncs.appendToLog("Disconnecting...");
-		this.gc.phaserGame.scene.add("user-disconnecting-scene", UserDisconnectingScene, true, {
+		this.gc.userDisconnectingScene = this.gc.phaserGame.scene.add("user-disconnecting-scene", UserDisconnectingScene, true, {
 			gc: this.gc
 		});
 
@@ -31,6 +31,8 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		this.globalfuncs.appendToLog("Disconnected.");
 		this.gc.phaserGame.scene.stop("user-disconnecting-scene");
 		this.gc.phaserGame.scene.remove("user-disconnecting-scene");
+
+		this.gc.userDisconnectingScene = null;
 
 		this.gc.wsh.reset();
 	}

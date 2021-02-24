@@ -48,9 +48,10 @@ export default class GameObjectManager {
 		if(serverId !== undefined)
 		{
 			this.serverIdClientIdMap[serverId] = o.id;
+			o.serverId = serverId
 		}
 		
-		this.updateIndex(o, 'create');
+		this.updateIndex(o.id, o, 'create');
 
 		//go ahead and put in the activate transaction as well
 		this.activateGameObjectId(o.id);
@@ -87,6 +88,11 @@ export default class GameObjectManager {
 			if(this.idIndex[id] !== undefined)
 			{
 				delete this.idIndex[id];
+			}
+
+			if(this.serverIdClientIdMap[obj.serverId] !== undefined)
+			{
+				delete this.serverIdClientIdMap[obj.serverId];
 			}
 		}
 		else if(transaction == "activate")
@@ -144,7 +150,7 @@ export default class GameObjectManager {
 											{
 												this.gameObjectArray[oi].deinit();
 											}
-											this.updateIndex(this.gameObjectArray[oi].id, null, "delete");
+											this.updateIndex(this.gameObjectArray[oi].id, this.gameObjectArray[oi], "delete");
 											this.gameObjectArray.splice(oi, 1);
 										}
 									}
@@ -308,7 +314,7 @@ export default class GameObjectManager {
 	getGameObjectByServerID(serverId) {
 		if(this.serverIdClientIdMap[serverId] !== undefined)
 		{
-			return this.deactivateGameObjectId(this.serverIdClientIdMap[serverId]);
+			return this.getGameObjectByID(this.serverIdClientIdMap[serverId]);
 		}
 		else 
 		{
@@ -317,7 +323,7 @@ export default class GameObjectManager {
 	}
 
 	getGameObjectByID(id) {
-		if(this.idIndex[id])
+		if(this.idIndex[id] !== undefined)
 		{
 			return this.idIndex[id];
 		}
@@ -331,5 +337,3 @@ export default class GameObjectManager {
 		return this.activeGameObjectArray;
 	}
 }
-
-exports.GameObjectManager = GameObjectManager;
