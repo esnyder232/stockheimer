@@ -64,7 +64,7 @@ export default class Character {
 		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
 
 		var usernameText = "???";
-		var u = this.gc.users.find((x) => {return x.userId === this.ownerId;});
+		var u = this.gc.um.getUserByServerID(this.ownerId);
 		
 		var textStyle = {
 			color: this.ms.userTextColor,
@@ -115,7 +115,7 @@ export default class Character {
 		this.pvpGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
 		//check if this is your character your controlling. If it is, then switch pointer modes
-		if(this.gc.c !== null && this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
+		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);
 			this.ms.switchPointerMode(1); //switch to phaser mode
@@ -156,7 +156,7 @@ export default class Character {
 		}
 		else if(this.ownerType === "user")
 		{
-			var u = this.gc.users.find((x) => {return x.userId === this.ownerId;});
+			var u = this.gc.um.getUserByServerID(this.ownerId);
 			var usernameText = "???";
 
 			if(u)

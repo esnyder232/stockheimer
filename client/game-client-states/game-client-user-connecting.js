@@ -2,6 +2,7 @@ import GameClientBaseState from './game-client-base-state.js';
 import GameClientUserDisconnecting from './game-client-user-disconnecting.js';
 import GameClientUserPlaying from './game-client-user-playing.js';
 import UserConnectingScene from "../scenes/user-connecting-scene.js"
+import MainScene from "../scenes/main-scene.js"
 
 export default class GameClientUserConnecting extends GameClientBaseState {
 	constructor(gc) {
@@ -28,6 +29,14 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		{
 			this.websocketErrored();
 		}
+		
+		//create main scene
+		this.gc.mainScene = this.gc.phaserGame.scene.add("main-scene", MainScene, true, {
+			gc: this.gc
+		});
+
+		//put main scene to sleep until we are done preloading everything
+		this.gc.mainScene.scene.sleep();
 	}
 
 	update(dt) {
@@ -55,9 +64,11 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
 				break;
+
 		}
 		
-		
+		//update managers
+		this.gc.um.update(dt);
 	}
 
 	exit(dt) {

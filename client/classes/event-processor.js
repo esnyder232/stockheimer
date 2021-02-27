@@ -6,6 +6,12 @@ import RemoveActiveCharacterEvent from "../event-classes/remove-active-character
 import ActiveCharacterUpdateEvent from "../event-classes/active-character-update-event.js"
 import CharacterDamageEvent from "../event-classes/character-damage-event.js"
 import UpdateUserInfoEvent from "../event-classes/update-user-info-event.js"
+import UserConnectedEvent from "../event-classes/user-connected-event.js"
+import UserDisconnectedEvent from "../event-classes/user-disconnected-event.js"
+import YourUserEvent from "../event-classes/your-user-event.js"
+import FromServerChatMessageEvent from "../event-classes/from-server-chat-message-event.js"
+
+
 
 
 export default class EventProcessor {
@@ -37,7 +43,12 @@ export default class EventProcessor {
 			{eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent()},
 			{eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent()},
 			{eventName: "characterDamage", eventClass: new CharacterDamageEvent()},
-			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()}
+			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()},
+			{eventName: "userConnected", eventClass: new UserConnectedEvent()},
+			{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent()},
+			{eventName: "yourUser", eventClass: new YourUserEvent()},
+			{eventName: "fromServerChatMessage", eventClass: new FromServerChatMessageEvent()},
+			
 		];
 
 	}
@@ -307,95 +318,81 @@ export default class EventProcessor {
 
 			switch(e.eventName)
 			{
-				case "yourUser":
-					this.gc.myUserId = e.userId;
-					console.log('MY USERID IS: ' + this.gc.myUserId);
-					
-					//try to find your own user if you can
-					var me = this.gc.users.find((x) => {return x.userId == this.gc.myUserId;});
-					if(!this.gc.foundMyUser && me)
-					{
-						this.gc.foundMyUser = true;
-						this.gc.myUser = me;
-						console.log('found my user from YourUser')
-						console.log(this.gc.myUser);
-					}
-					break;
-
-				case "userConnected":
-					var u = new User();
-					u.init(this.gc, e.userId, e.activeUserId, e.username, e.userKillCount, e.teamId);
-
-					this.gc.users.push(u);
-
-					//try to find your own user if you can
-					if(!this.gc.foundMyUser && this.gc.myUserId !== null)
-					{
-						var me = this.gc.users.find((x) => {return x.userId == this.gc.myUserId;});
-						if(me)
-						{
-							this.gc.foundMyUser = true;
-							this.gc.myUser = me;
-							console.log('found my user from UserConnected')
-						}
-					}
-					break;
-				case "userDisconnected":
-					var userIndex = this.gc.users.findIndex((x) => {
-						return x.userId == e.userId;
-					})
-
-					if(userIndex >= 0)
-					{
-						this.gc.users.splice(userIndex, 1);
-					}
-
-					break;
-
-				case "fromServerChatMessage":
-					break;
+				
 				
 
-					case "addProjectile":
-						this.gc.projectiles.push({
-							id: e.id,
-							x: e.x,
-							y: e.y,
-							angle: e.angle,
-							size: e.size,
-							speed: e.speed
-						});
-						break;
+				case "addProjectile":
+					this.gc.projectiles.push({
+						id: e.id,
+						x: e.x,
+						y: e.y,
+						angle: e.angle,
+						size: e.size,
+						speed: e.speed
+					});
+					break;
 
-					case "removeProjectile":
-						var pIndex = this.gc.projectiles.findIndex((x) => {return x.id == e.id});
+				case "removeProjectile":
+					var pIndex = this.gc.projectiles.findIndex((x) => {return x.id == e.id});
 
-						if(pIndex >= 0)
+					if(pIndex >= 0)
+					{
+						this.gc.projectiles.splice(pIndex, 1)[0];
+					}
+					break;
+
+				case "projectileUpdate":
+					var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
+					if(p)
+					{
+						p.x = e.x;
+						p.y = e.y;
+						p.angle = e.angle;
+					}
+					break;
+
+				case "fragmentStart":
+					var fragmentInfo = {
+						fragmentLength: e.fragmentLength,
+						fragmentData: new ArrayBuffer(e.fragmentLength),
+						fragmentDataView: null,
+						fragmentId: e.fragmentId,
+						n: 0
+					};
+
+					fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+
+					//copy the fragment in this message to the fragmentedServeRtoClientEvents
+					var dv = new DataView(e.fragmentData);
+					for(var j = 0; j < dv.byteLength; j++)
+					{
+						fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+						fragmentInfo.n++;
+					}
+
+					this.fragmentedServerToClientEvents.push(fragmentInfo);
+
+					break;
+				case "fragmentContinue":
+					var fragmentInfo = this.fragmentedServerToClientEvents.find((x) => {return x.fragmentId === e.fragmentId;});
+
+					if(fragmentInfo)
+					{
+						//copy the fragment in this message to the fragmentedServeRtoClientEvents
+						var dv = new DataView(e.fragmentData);
+						for(var j = 0; j < dv.byteLength; j++)
 						{
-							this.gc.projectiles.splice(pIndex, 1)[0];
+							fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+							fragmentInfo.n++;
 						}
-						break;
+					}
+					break;
+				case "fragmentEnd":
+					var fragmentInfoIndex = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === e.fragmentId;});
 
-					case "projectileUpdate":
-						var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
-						if(p)
-						{
-							p.x = e.x;
-							p.y = e.y;
-							p.angle = e.angle;
-						}
-						break;
-
-					case "fragmentStart":
-						var fragmentInfo = {
-							fragmentLength: e.fragmentLength,
-							fragmentData: new ArrayBuffer(e.fragmentLength),
-							fragmentDataView: null,
-							fragmentId: e.fragmentId,
-							n: 0
-						};
-
-						fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+					if(fragmentInfoIndex >= 0)
+					{							
+						var fragmentInfo = this.fragmentedServerToClientEvents[fragmentInfoIndex];
 
 						//copy the fragment in this message to the fragmentedServeRtoClientEvents
 						var dv = new DataView(e.fragmentData);
@@ -405,93 +402,61 @@ export default class EventProcessor {
 							fragmentInfo.n++;
 						}
 
-						this.fragmentedServerToClientEvents.push(fragmentInfo);
+						this.gc.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
+						this.fragmentedServerToClientEvents.splice(fragmentInfoIndex, 1);
+					}
+					break;
 
-						break;
-					case "fragmentContinue":
-						var fragmentInfo = this.fragmentedServerToClientEvents.find((x) => {return x.fragmentId === e.fragmentId;});
-
-						if(fragmentInfo)
-						{
-							//copy the fragment in this message to the fragmentedServeRtoClientEvents
-							var dv = new DataView(e.fragmentData);
-							for(var j = 0; j < dv.byteLength; j++)
-							{
-								fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-								fragmentInfo.n++;
-							}
-						}
-						break;
-					case "fragmentEnd":
-						var fragmentInfoIndex = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === e.fragmentId;});
-
-						if(fragmentInfoIndex >= 0)
-						{							
-							var fragmentInfo = this.fragmentedServerToClientEvents[fragmentInfoIndex];
-
-							//copy the fragment in this message to the fragmentedServeRtoClientEvents
-							var dv = new DataView(e.fragmentData);
-							for(var j = 0; j < dv.byteLength; j++)
-							{
-								fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-								fragmentInfo.n++;
-							}
-
-							this.gc.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
-							this.fragmentedServerToClientEvents.splice(fragmentInfoIndex, 1);
-						}
-						break;
-
-					case "killfeedMsg":
-						this.globalfuncs.appendToLog(e.killfeedMsg);
-						break;
+				case "killfeedMsg":
+					this.globalfuncs.appendToLog(e.killfeedMsg);
+					break;
 
 
-					case "addCastle":
-						this.gc.castles.push(e);
-						break;
+				case "addCastle":
+					this.gc.castles.push(e);
+					break;
 
-					case "castleUpdate":
-						var c = this.gc.castles.find((x) => {return x.id === e.id;});
-						if(c)
-						{
-							c.castleHpMax = e.castleHpMax;
-							c.castleHpCur = e.castleHpCur;
-						}
-						break;
-							
-					case "removeCastle":
-						var c = this.gc.castles.findIndex((x) => {return x.id === e.id;});
-						if(c >= 0)
-						{
-							this.gc.castles.splice(c, 1);
-						}
-						break;
+				case "castleUpdate":
+					var c = this.gc.castles.find((x) => {return x.id === e.id;});
+					if(c)
+					{
+						c.castleHpMax = e.castleHpMax;
+						c.castleHpCur = e.castleHpCur;
+					}
+					break;
+						
+				case "removeCastle":
+					var c = this.gc.castles.findIndex((x) => {return x.id === e.id;});
+					if(c >= 0)
+					{
+						this.gc.castles.splice(c, 1);
+					}
+					break;
 
-					case "addTeam":
-						console.log("ADD TEAM");
-						console.log(e);
-						break;
+				case "addTeam":
+					console.log("ADD TEAM");
+					console.log(e);
+					break;
 
-					case "updateTeam":
-						console.log("UPDATE TEAM");
-						console.log(e);
-						break;
+				case "updateTeam":
+					console.log("UPDATE TEAM");
+					console.log(e);
+					break;
 
-					case "removeTeam":
-						console.log("REMOVE TEAM");
-						console.log(e);
-						break;
+				case "removeTeam":
+					console.log("REMOVE TEAM");
+					console.log(e);
+					break;
 
-					case "addUserTeam":
-						console.log("ADD USER TEAM");
-						console.log(e);
-						break;
+				case "addUserTeam":
+					console.log("ADD USER TEAM");
+					console.log(e);
+					break;
 
-					case "removeUserTeam":
-						console.log("REMOVE USER TEAM");
-						console.log(e);
-						break;
+				case "removeUserTeam":
+					console.log("REMOVE USER TEAM");
+					console.log(e);
+					break;
 	
 				default:
 					//intentionally blank

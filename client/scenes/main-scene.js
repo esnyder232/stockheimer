@@ -11,7 +11,6 @@ export default class MainScene extends Phaser.Scene {
 		this.planckUnitsToPhaserUnitsRatio = 32;
 		this.radiansToDegreesRatio = 180/3.14;
 		
-		this.userDomElements = [];	//list of json objects that contain user spcific dom elements
 		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
 		this.projectilePhaserElements = []; 
 
@@ -157,18 +156,6 @@ export default class MainScene extends Phaser.Scene {
 		//custom registers on scroll
 		$("#game-div").on("wheel", this.documentScroll.bind(this));
 
-		//initialize userlist
-		for(var i = 0; i < this.gc.users.length; i++)
-		{
-			this.addUser(this.gc.users[i]. userId);
-		}
-
-		//initialize active characters on screen
-		for(var i = 0; i < this.gc.characters.length; i++)
-		{
-			this.addActiveCharacter(this.gc.characters[i].id);
-		}
-
 		//initialize castles (not sure if this actually need to be here lol)
 		for(var i = 0; i < this.gc.castles.length; i++)
 		{
@@ -296,22 +283,6 @@ export default class MainScene extends Phaser.Scene {
 		// this.layer1 = this.map.createLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
 
 
-		//new tech demo map
-		//load tilemap
-		this.map = this.make.tilemap({key: "my-tilemap"});
-
-		//load tileset
-		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 2, 4);
-		
-		//create layers
-		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		this.layer1 = this.map.createLayer("Tile Layer 1", this.tileset, xOffset, yOffset).setScale(2);
-
-
-
-		this.layer1.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
-
 		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
 		this.cameras.main.scrollY = 0;
@@ -341,28 +312,44 @@ export default class MainScene extends Phaser.Scene {
 			}
 		});
 
-		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
+		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);		
+		this.targetLineGraphic.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
-		// this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
-		// 	//scrolled down
-		// 	if(deltaY > 0)
-		// 	{
-		// 		this.cameraZoom -= 0.1;
-		// 		this.setCameraZoom();
-		// 	}
-		// 	//scrolled up
-		// 	else if(deltaY < 0)
-		// 	{
-		// 		this.cameraZoom += 0.1;
-		// 		this.setCameraZoom();
-		// 	}
+		this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
+			//scrolled down
+			if(deltaY > 0)
+			{
+				this.cameraZoom -= 0.1;
+				this.setCameraZoom();
+			}
+			//scrolled up
+			else if(deltaY < 0)
+			{
+				this.cameraZoom += 0.1;
+				this.setCameraZoom();
+			}
 
-		// 	return true;
-		// });
+			return true;
+		});
 
+		
 
 		//this.cameras.main.roundPixels = true;
 		this.cameras.main.setRoundPixels(true);
+	}
+
+	createMap() {
+		this.map = this.make.tilemap({key: "my-tilemap"});
+
+		//load tileset
+		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 2, 4);
+		
+		//create layers
+		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+		this.layer1 = this.map.createLayer("Tile Layer 1", this.tileset, xOffset, yOffset).setScale(2);
+
+		this.layer1.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
 	}
 
 	setCameraZoom() {
@@ -379,12 +366,7 @@ export default class MainScene extends Phaser.Scene {
 		console.log('shutdown on ' + this.scene.key);
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
-		
-		//clear out all userDomElements
-		for(var i = this.userDomElements.length - 1; i >= 0; i--)
-		{
-			this.removeUser(this.userDomElements[i].userId);
-		}
+
 
 		//clear out damage texts
 		for(var i = this.damageTexts.length - 1; i >= 0; i--)
@@ -433,54 +415,6 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.gameState.exitGameClick();
 	}
 
-	//READS:
-	//UM
-	//jquery
-
-	//WRITES:
-	//jquery or DOM element manager
-	userConnected(userId) {
-		this.addUser(userId);
-	}
-
-	//DOM element manager
-	userDisconnected(userId) {
-		this.removeUser(userId);
-	}
-
-
-	//READS:
-	//UM
-	//jquery
-
-	//WRITES:
-	//jquery or DOM element manager
-	addUser(userId)
-	{
-		var u = this.gc.users.find((x) => {return x.userId == userId;});
-
-		if(u) 
-		{
-			var userList = $("#user-list");
-			var userListItemTemplate = $("#user-list-item-template");
-			
-			var newUser = userListItemTemplate.clone();
-			newUser.removeClass("hide");
-			newUser.text("(kills: " + u.userKillCount + ") - " + u.username);
-	
-			userList.append(newUser);
-	
-			this.userDomElements.push({
-				userId: u.userId,
-				activeUserId: u.activeUserId,
-				userListItem: newUser
-			});
-		}
-		
-		var userCountDiv = $("#user-list-player-count");
-		userCountDiv.text("Players: " + this.gc.users.length + "/32");
-	}
-
 
 
 	switchPointerMode(mode)
@@ -527,30 +461,6 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 
-	//DOM element manager
-	removeUser(userId) {
-		var udeIndex = this.userDomElements.findIndex((x) => {return x.userId == userId;});
-		
-		if(udeIndex >= 0)
-		{
-			//remove dom elements
-			this.userDomElements[udeIndex].userListItem.remove();
-
-			//remove the user itself from the list
-			this.userDomElements.splice(udeIndex, 1);
-		}
-	
-	}
-
-	//READS:
-	//jquery
-
-	//WRITES:
-	//jquery or dom element manager
-	userDisconnectedPost() {
-		var userCountDiv = $("#user-list-player-count");
-		userCountDiv.text("Players: " + this.gc.users.length + "/32");
-	}
 
 	update(timeElapsed, dt) {
 		var sendInputEvent = false;
@@ -779,9 +689,6 @@ export default class MainScene extends Phaser.Scene {
 		this.prevIsFiring = this.isFiring;
 		this.prevIsFiringAlt = this.isFiringAlt;
 
-		//update managers
-		this.gc.gom.update(dt);
-
 		this.frameNum++;
 	}
 
@@ -833,57 +740,6 @@ export default class MainScene extends Phaser.Scene {
 	
 	}
 
-
-	//READS:
-	//UM
-	//jquery
-
-	//WRITES:
-	//jquery or DOM element manager
-	fromServerChatMessage(e) {
-		var chatHistory = $("#chat-history");
-		var chatHistoryItemTemplate = $("#chat-history-item-template");
-		var newChat = chatHistoryItemTemplate.clone();
-		
-		var newChatTs = newChat.find("div[name='chat-history-ts']");
-		var newChatName = newChat.find("div[name='chat-history-name']");
-		var newChatMsg = newChat.find("div[name='chat-history-msg']");
-
-
-		var u = this.gc.users.find((x) => {return x.activeUserId == e.activeUserId;});
-		var username = "???";
-		if(u)
-		{
-			username = u.username;
-		}
-
-		var tsOptions = {
-			hour: 'numeric',
-			minute:'numeric',
-			second:'numeric',
-			hour12: false
-		}
-		var ts = new Intl.DateTimeFormat('en-US', tsOptions).format(Date.now())
-
-		newChat.removeClass("hide");
-		newChatTs.text(ts);
-		newChatName.text(username + ": ");
-		newChatMsg.text(e.chatMsg);
-
-		chatHistory.append(newChat);
-
-		//determine if you should scroll
-		var chatMsgHeight = newChat.height();
-		var scrollTop = chatHistory[0].scrollTop;
-		var scrollHeight = chatHistory[0].scrollHeight;
-		var chatHistoryHeight = chatHistory.height();
-		
-		//scroll if your close enough to the bottom of the chat, auto scroll
-		if(scrollTop >= ((scrollHeight - chatHistoryHeight) - (chatMsgHeight * 3)))
-		{
-			chatHistory[0].scrollTop = chatHistory[0].scrollHeight;
-		}
-	}
 
 	createCharacterClick() {
 		if(this.gc.myCharacter === null)

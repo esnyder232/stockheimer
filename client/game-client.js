@@ -5,6 +5,7 @@ import GameClientLobby from "./game-client-states/game-client-lobby.js"
 import WebsocketHandler from "./classes/websocket-handler.js"
 import EventProcessor from "./classes/event-processor.js"
 import GameObjectManager from "./managers/game-object-manager.js"
+import UserManager from "./managers/user-manager.js"
 import Marked from "marked";
 
 export default class GameClient {
@@ -19,13 +20,12 @@ export default class GameClient {
 		this.wsh = null;
 		this.ep = null;
 		this.gom = null;
+		this.um = null;
 
-		this.users = []; //temp living location for users
-		this.characters = [];
 		this.projectiles = [];
 		this.castles = [];
 
-		this.myUserId = null;
+		this.myUserServerId = null;
 		this.myUser = null;
 		this.myCharacter = null;
 		this.foundMyUser = false;
@@ -57,10 +57,12 @@ export default class GameClient {
 		this.wsh = new WebsocketHandler();
 		this.ep = new EventProcessor();
 		this.gom = new GameObjectManager();
+		this.um = new UserManager();
 
 		this.wsh.init(this, this.ep);
 		this.ep.init(this, this.wsh);
 		this.gom.init(this);
+		this.um.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -141,32 +143,36 @@ export default class GameClient {
 		$(".loading-text").addClass("hide");
 
 		//debugging / testing
-		// var a1 = this.gom.createGameObject("character", 1);
-		// var a2 = this.gom.createGameObject("character", 2);
-		// var a3 = this.gom.createGameObject("character", 3);
-		// a1.characterInit(this);
-		// a2.characterInit(this);
-		// a3.characterInit(this);
+		// var a1 = this.um.createUser(1);
+		// var a2 = this.um.createUser(2);
+		// var a3 = this.um.createUser(3);
+		// a1.userInit(this);
+		// a2.userInit(this);
+		// a3.userInit(this);
 
 		// this.debugPrintFunc();
 
-		// this.gom.update(0);
+		// this.um.update(0);
 
-		// this.debugPrintFunc();
-		// this.gom.destroyGameObject(a1.id);
+		// var a4 = this.um.createUser(15);
+		// a4.userInit(this);
+
+		// this.um.update(0);
 		
-		// this.gom.update(0);
-		
+		// this.um.destroyUser(a1.id);
+		// this.um.destroyUser(a3.id);
 		// this.debugPrintFunc();
 		
-		// this.gom.update(0);
+		// this.um.update(0);
+		// this.um.update(0);
 
 		// this.debugPrintFunc();
 
+		// console.log(this.um.getActiveUsers());
 	}
 
 	debugPrintFunc() {
-		console.log('active character length: ' + this.gom.getActiveGameObjects().length);
+		console.log('user array length: ' + this.um.getActiveUsers().length);
 	}
 
 	turnOffContextMenu() {
@@ -192,10 +198,8 @@ export default class GameClient {
 
 
 	reset() {
-		this.users.length = 0;
-		this.characters.length = 0;
 		this.projectiles.length = 0;
-		this.myUserId = null;
+		this.myUserServerId = null;
 		this.myCharacter = null;
 		this.myUser = null;
 		this.foundMyUser = false;

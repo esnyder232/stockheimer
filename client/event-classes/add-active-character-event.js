@@ -28,11 +28,11 @@ export default class AddActiveCharacterEvent {
 			}
 		}
 
-
 		//check if this is your character
-		if(this.gc.foundMyUser && !this.gc.foundMyCharacter)
+		if(!this.gc.foundMyCharacter)
 		{
-			if(c.ownerType === "user" && c.ownerId === this.gc.myUser.userId)
+			var u = this.gc.um.getUserByServerID(this.gc.myUserServerId);
+			if(u !== null && c.ownerType === "user" && c.ownerId === u.serverId)
 			{
 				this.gc.foundMyCharacter = true;
 				this.gc.myCharacter = c;

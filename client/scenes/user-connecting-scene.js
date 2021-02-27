@@ -57,7 +57,7 @@ export default class UserConnectingScene extends Phaser.Scene {
 	}
 	
 	update(timeElapsed, dt) {
-
+		
 	}
 }
 

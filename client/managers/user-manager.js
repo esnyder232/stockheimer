@@ -1,16 +1,14 @@
 import GlobalFuncs from '../global-funcs.js';
-import Character from '../game-objects/character.js';
-// const {Bullet} = require("../projectiles/bullet.js");
-// const {Castle} = require("../classes/castle.js");
+import User from '../classes/user.js';
 
-export default class GameObjectManager {
+export default class UserManager {
 	constructor() {
 		this.gc = null;
 		
-		this.gameObjectArray = [];
+		this.userArray = [];
 		this.idIndex = {};
 
-		this.activeGameObjectArray = [];
+		this.activeUserArray = [];
 		this.activeIdIndex = {};
 		this.serverIdClientIdMap = {};
 		
@@ -24,26 +22,12 @@ export default class GameObjectManager {
 		this.globalfuncs = new GlobalFuncs();
 	}
 
-	createGameObject(type, serverId) {
-		var o = null;
-
-		switch(type)
-		{
-			case "character":
-				o = new Character();
-				break;
-			// case "projectile":
-			// 	o = new Bullet();
-			// 	break;
-			// case "castle":
-			// 	o = new Castle();
-			// 	break;
-		}
+	createUser(serverId) {
+		var o = new User();
 
 		o.id = this.idCounter++;
-		o.type = type;
 
-		this.gameObjectArray.push(o);
+		this.userArray.push(o);
 
 		if(serverId !== undefined)
 		{
@@ -54,21 +38,21 @@ export default class GameObjectManager {
 		this.updateIndex(o.id, o, 'create');
 
 		//go ahead and put in the activate transaction as well
-		this.activateGameObjectId(o.id);
+		this.activateUserId(o.id);
 		
 		return o;
 	}
 
 
-	destroyGameObjectServerId(serverId) {
+	destroyUserServerId(serverId) {
 		if(this.serverIdClientIdMap[serverId] !== undefined)
 		{
-			this.destroyGameObject(this.serverIdClientIdMap[serverId]);
+			this.destroyUser(this.serverIdClientIdMap[serverId]);
 		}
 	}
 
 	//this just marks the inactive object for deletion
-	destroyGameObject(id) {
+	destroyUser(id) {
 		this.transactionQueue.push({
 			"transaction": "deactivateDelete",
 			"id": id
@@ -132,7 +116,7 @@ export default class GameObjectManager {
 						var bError = false;
 						var errorMessage = "";
 
-						var o = this.getGameObjectByID(this.transactionQueue[i].id);
+						var o = this.getUserByID(this.transactionQueue[i].id);
 
 						if(o)
 						{
@@ -142,29 +126,29 @@ export default class GameObjectManager {
 								case "delete":
 									if(!o.isActive)
 									{
-										var oi = this.gameObjectArray.findIndex((x) => {return x.id == o.id;});
+										var oi = this.userArray.findIndex((x) => {return x.id == o.id;});
 										if(oi >= 0)
 										{
 											//call deinit function if it exists
-											if(typeof this.gameObjectArray[oi].deinit === "function")
+											if(typeof this.userArray[oi].deinit === "function")
 											{
-												this.gameObjectArray[oi].deinit();
+												this.userArray[oi].deinit();
 											}
-											this.updateIndex(this.gameObjectArray[oi].id, this.gameObjectArray[oi], "delete");
-											this.gameObjectArray.splice(oi, 1);
+											this.updateIndex(this.userArray[oi].id, this.userArray[oi], "delete");
+											this.userArray.splice(oi, 1);
 										}
 									}
 									else
 									{
 										bError = true;
-										errorMessage = "Game Object is still active.";
+										errorMessage = "User is still active.";
 									}
 									break;
 								//deactivate the game object (deactivate)
 								case "deactivate":
 									if(o.isActive)
 									{
-										var oi = this.activeGameObjectArray.findIndex((x) => {return x.id == o.id;})
+										var oi = this.activeUserArray.findIndex((x) => {return x.id == o.id;})
 	
 										if(oi >= 0)
 										{
@@ -174,15 +158,15 @@ export default class GameObjectManager {
 												o.deactivated();
 											}
 
-											this.activeGameObjectArray[oi].isActive = false;
-											this.activeGameObjectArray.splice(oi, 1);
+											this.activeUserArray[oi].isActive = false;
+											this.activeUserArray.splice(oi, 1);
 											this.updateIndex(o.id, o, "deactivate");
 										}
 									}
 									else 
 									{
 										bError = true;
-										errorMessage = "Game Object is already deactivated.";
+										errorMessage = "User is already deactivated.";
 									}
 									break;
 								
@@ -190,7 +174,7 @@ export default class GameObjectManager {
 								case "deactivateDelete":
 									if(o.isActive)
 									{
-										var oi = this.activeGameObjectArray.findIndex((x) => {return x.id == o.id;})
+										var oi = this.activeUserArray.findIndex((x) => {return x.id == o.id;})
 	
 										if(oi >= 0)
 										{
@@ -200,8 +184,8 @@ export default class GameObjectManager {
 												o.deactivated();
 											}
 
-											this.activeGameObjectArray[oi].isActive = false;
-											this.activeGameObjectArray.splice(oi, 1);
+											this.activeUserArray[oi].isActive = false;
+											this.activeUserArray.splice(oi, 1);
 											this.updateIndex(o.id, o, "deactivate");
 										}
 									}
@@ -218,12 +202,12 @@ export default class GameObjectManager {
 									if(o.isActive)
 									{
 										bError = true;
-										errorMessage = "Game object is already activated.";
+										errorMessage = "User is already activated.";
 									}
 	
 									if(!bError)
 									{
-										this.activeGameObjectArray.push(o);
+										this.activeUserArray.push(o);
 										o.isActive = true;
 										this.updateIndex(o.id, o, "activate");
 
@@ -242,7 +226,7 @@ export default class GameObjectManager {
 						else
 						{
 							bError = true;
-							errorMessage = "Game object does not exist.";
+							errorMessage = "User does not exist.";
 						}
 					}
 					catch(ex) {
@@ -252,7 +236,7 @@ export default class GameObjectManager {
 
 					if(bError)
 					{
-						console.log('Game Object transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						console.log('User transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
 					}
 				}
 
@@ -280,14 +264,14 @@ export default class GameObjectManager {
 		}
 	}
 
-	activateGameObjectServerId(serverId) {
+	activateUserServerId(serverId) {
 		if(this.serverIdClientIdMap[serverId] !== undefined)
 		{
-			this.activateGameObjectId(this.serverIdClientIdMap[serverId]);
+			this.activateUserId(this.serverIdClientIdMap[serverId]);
 		}
 	}
 
-	activateGameObjectId(id) {
+	activateUserId(id) {
 		this.transactionQueue.push({
 			"transaction": "activate",
 			"id": id
@@ -295,14 +279,14 @@ export default class GameObjectManager {
 		this.isDirty = true;
 	}
 
-	deactivateGameObjectServerId(serverId) {
+	deactivateUserServerId(serverId) {
 		if(this.serverIdClientIdMap[serverId] !== undefined)
 		{
-			this.deactivateGameObjectId(this.serverIdClientIdMap[serverId]);
+			this.deactivateUserId(this.serverIdClientIdMap[serverId]);
 		}
 	}
 
-	deactivateGameObjectId(id) {
+	deactivateUserId(id) {
 		this.transactionQueue.push({
 			"transaction": "deactivate",
 			"id": id
@@ -311,10 +295,10 @@ export default class GameObjectManager {
 	}
 
 
-	getGameObjectByServerID(serverId) {
+	getUserByServerID(serverId) {
 		if(this.serverIdClientIdMap[serverId] !== undefined)
 		{
-			return this.getGameObjectByID(this.serverIdClientIdMap[serverId]);
+			return this.getUserByID(this.serverIdClientIdMap[serverId]);
 		}
 		else 
 		{
@@ -322,7 +306,7 @@ export default class GameObjectManager {
 		}
 	}
 
-	getGameObjectByID(id) {
+	getUserByID(id) {
 		if(this.idIndex[id] !== undefined)
 		{
 			return this.idIndex[id];
@@ -333,11 +317,11 @@ export default class GameObjectManager {
 		}
 	}
 	
-	getActiveGameObjects() {
-		return this.activeGameObjectArray;
+	getActiveUsers() {
+		return this.activeUserArray;
 	}
 
-	getGameObjects() {
-		return this.gameObjectArray;
+	getUsers() {
+		return this.userArray;
 	}
 }

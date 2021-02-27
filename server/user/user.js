@@ -633,7 +633,6 @@ class User {
 		return {
 			"eventName": "userConnected",
 			"userId": this.id,
-			"activeUserId": this.activeId,
 			"username": this.username,
 			"userKillCount": this.userKillCount,
 			"teamId": this.teamId
