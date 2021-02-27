@@ -37,18 +37,18 @@ export default class User {
 	}
 
 	deactivated() {
-		var userCountDiv = $("#user-list-player-count");
-		
 		//remove dom elements
 		this.userListItem.remove();
 		this.userListItem = null;
-
-		//update player count
-		var activeUsers = this.gc.um.getActiveUsers();
-		userCountDiv.text("Players: " + activeUsers.length + "/32");
 	}
 
 	deinit() {
+		var userCountDiv = $("#user-list-player-count");
+		
+		//update player count
+		var activeUsers = this.gc.um.getActiveUsers();
+		userCountDiv.text("Players: " + activeUsers.length + "/32");
+
 		this.gc = null;
 		this.globalfuncs = null;
 	}
