@@ -104,8 +104,6 @@ export default class MainScene extends Phaser.Scene {
 		this.gravestoneStrokeThickness = 2;
 
 		this.characterBorderThickness = 3;
-
-		this.castleGraphics = null;
 	}
 
 	init(data) {
@@ -156,11 +154,6 @@ export default class MainScene extends Phaser.Scene {
 		//custom registers on scroll
 		$("#game-div").on("wheel", this.documentScroll.bind(this));
 
-		//initialize castles (not sure if this actually need to be here lol)
-		for(var i = 0; i < this.gc.castles.length; i++)
-		{
-			this.addCastle(this.gc.castles[i].id);
-		}
 
 		this.debugX = $("#debug-x");
 		this.debugY = $("#debug-y");
@@ -836,136 +829,6 @@ export default class MainScene extends Phaser.Scene {
 			ppu.y = e.y;
 			ppu.boxGraphics.setX(ppu.x * this.planckUnitsToPhaserUnitsRatio);
 			ppu.boxGraphics.setY(ppu.y * this.planckUnitsToPhaserUnitsRatio * -1);
-		}
-	}
-
-
-	//READS:
-	//GOM
-	//UM
-
-	//WRITES:
-	//image manager
-	//text manager
-	addCastle(id) {
-		var c = this.gc.castles.find((x) => {return x.id === id;});
-		if(c)
-		{
-			// var halfSize = c.size/2;
-			// var boxGraphics = this.add.graphics();
-			// boxGraphics.lineStyle(1, this.castleColor, 1);
-
-			//box
-			// boxGraphics.moveTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
-			// boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top right
-			// boxGraphics.lineTo(halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom right
-			// boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, halfSize * this.planckUnitsToPhaserUnitsRatio); //bottom left
-			// boxGraphics.lineTo(-halfSize * this.planckUnitsToPhaserUnitsRatio, -halfSize * this.planckUnitsToPhaserUnitsRatio); //top left
-
-			// boxGraphics.closePath();
-			// boxGraphics.strokePath();
-			
-			// boxGraphics.setX(c.x * this.planckUnitsToPhaserUnitsRatio);
-			// boxGraphics.setY(c.y * this.planckUnitsToPhaserUnitsRatio * -1);
-
-			var usernameText = c.castleName;
-
-			var textStyle = {
-				color: this.castleTextColor, 
-				fontSize: "18px",
-				strokeThickness: this.castleStrokeThickness,
-				stroke: this.castleStrokeColor
-			}
-
-			var textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
-			var hpTextGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.planckUnitsToPhaserUnitsRatio * -1) + 34 , c.castleHpCur + "/" + c.castleHpMax, textStyle);
-
-//			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-			textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-			hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-
-			//add castle image
-			var castleImage = this.add.image((32 * this.planckUnitsToPhaserUnitsRatio), (-32 * this.planckUnitsToPhaserUnitsRatio * -1), "castle");
-			castleImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-			castleImage.setScale(2, 2);
-
-			this.userPhaserElements.push({
-				id: c.id,
-//				boxGraphics: boxGraphics,
-				textGraphics: textGraphics,
-				hpTextGraphics: hpTextGraphics,
-				castleImage: castleImage
-			});
-		}
-	}
-
-	//READS:	
-	//images manager
-
-	//WRITES:
-	//images manager
-	removeCastle(id) {		
-		var c = this.gc.castles.find((x) => {return x.id === id});
-
-		if(c)
-		{
-			var upeIndex = this.userPhaserElements.findIndex((x) => {return x.id === c.id;});
-			if(upeIndex >= 0)
-			{
-				//this.userPhaserElements[upeIndex].boxGraphics.destroy();
-				this.userPhaserElements[upeIndex].textGraphics.destroy();
-				this.userPhaserElements[upeIndex].hpTextGraphics.destroy();
-				this.userPhaserElements[upeIndex].castleImage.destroy();
-				
-				this.userPhaserElements.splice(upeIndex, 1);
-			}
-		}
-	}
-	
-	//READS:
-	//sprite manager
-	//GOM
-
-	//WRITES:
-	//text manager
-	castleUpdate(e) {
-		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
-		var c = this.gc.castles.find((x) => {return x.id === e.id});
-
-		if(upe && c)
-		{
-			upe.hpTextGraphics.setText(c.castleHpCur + "/" + c.castleHpMax);
-		}
-	}
-
-
-	//READS:
-	//sprite manager
-	//GOM
-	
-	//WRITES:
-	//text manager
-	castleDamage(e) {
-		var upe = this.userPhaserElements.find((x) => {return x.id === e.id;});
-		var c = this.gc.castles.find((x) => {return x.id === e.id});
-
-		if(upe && c)
-		{
-			var dmgText = {
-				textGraphics: null,
-				countdownTimer: 750 //ms
-			};
-
-			var textStyle = {
-				color: this.damageTextColor, 
-				fontSize: "18px",
-				strokeThickness: 1,
-				stroke: this.damageTextColor
-			}
-
-			dmgText.textGraphics = this.add.text((c.x * this.planckUnitsToPhaserUnitsRatio)-10, (c.y * this.planckUnitsToPhaserUnitsRatio * -1)-28, "-" + e.damage, textStyle);
-
-			this.damageTexts.push(dmgText)
 		}
 	}
 

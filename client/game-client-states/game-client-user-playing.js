@@ -71,15 +71,6 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 					break;
 
 
-				//READS:	
-				//none
-
-				//WRITES:
-				//images manager
-				case "removeCastle":
-					this.gc.mainScene.removeCastle(e.id);
-					break;
-
 				default:
 					//intentionally blank
 					break;
@@ -111,42 +102,6 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 
 
-
-
-
-				//READS:
-				//GOM
-				//UM
-
-				//WRITES:
-				//image manager
-				//text manager
-				case "addCastle":
-					this.gc.mainScene.addCastle(e.id);
-					break;
-
-
-					
-				//READS:
-				//sprite manager
-				//GOM
-
-				//WRITES:
-				//text manager
-				case "castleUpdate":
-					this.gc.mainScene.castleUpdate(e);
-					break;
-
-
-				//READS:
-				//sprite manager
-				//GOM
-				
-				//WRITES:
-				//text manager
-				case "castleDamage":
-					this.gc.mainScene.castleDamage(e);
-					break;
 
 				default:
 					//intentionally blank

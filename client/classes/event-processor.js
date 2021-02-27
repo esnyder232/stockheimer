@@ -10,6 +10,10 @@ import UserConnectedEvent from "../event-classes/user-connected-event.js"
 import UserDisconnectedEvent from "../event-classes/user-disconnected-event.js"
 import YourUserEvent from "../event-classes/your-user-event.js"
 import FromServerChatMessageEvent from "../event-classes/from-server-chat-message-event.js"
+import AddCastleEvent from "../event-classes/add-castle-event.js"
+import CastleUpdateEvent from "../event-classes/castle-update-event.js"
+import RemoveCastleEvent from "../event-classes/remove-castle-event.js"
+import CastleDamageEvent from "../event-classes/castle-damage-event.js"
 
 
 
@@ -48,6 +52,10 @@ export default class EventProcessor {
 			{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent()},
 			{eventName: "yourUser", eventClass: new YourUserEvent()},
 			{eventName: "fromServerChatMessage", eventClass: new FromServerChatMessageEvent()},
+			{eventName: "addCastle", eventClass: new AddCastleEvent()},
+			{eventName: "castleUpdate", eventClass: new CastleUpdateEvent()},
+			{eventName: "removeCastle", eventClass: new RemoveCastleEvent()},
+			{eventName: "castleDamage", eventClass: new CastleDamageEvent()},
 			
 		];
 
@@ -411,27 +419,6 @@ export default class EventProcessor {
 					this.globalfuncs.appendToLog(e.killfeedMsg);
 					break;
 
-
-				case "addCastle":
-					this.gc.castles.push(e);
-					break;
-
-				case "castleUpdate":
-					var c = this.gc.castles.find((x) => {return x.id === e.id;});
-					if(c)
-					{
-						c.castleHpMax = e.castleHpMax;
-						c.castleHpCur = e.castleHpCur;
-					}
-					break;
-						
-				case "removeCastle":
-					var c = this.gc.castles.findIndex((x) => {return x.id === e.id;});
-					if(c >= 0)
-					{
-						this.gc.castles.splice(c, 1);
-					}
-					break;
 
 				case "addTeam":
 					console.log("ADD TEAM");

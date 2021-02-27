@@ -1,7 +1,7 @@
 import GlobalFuncs from '../global-funcs.js';
 import Character from '../game-objects/character.js';
+import Castle from "../game-objects/castle.js";
 // const {Bullet} = require("../projectiles/bullet.js");
-// const {Castle} = require("../classes/castle.js");
 
 export default class GameObjectManager {
 	constructor() {
@@ -35,9 +35,9 @@ export default class GameObjectManager {
 			// case "projectile":
 			// 	o = new Bullet();
 			// 	break;
-			// case "castle":
-			// 	o = new Castle();
-			// 	break;
+			case "castle":
+				o = new Castle();
+				break;
 		}
 
 		o.id = this.idCounter++;

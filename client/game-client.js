@@ -23,7 +23,6 @@ export default class GameClient {
 		this.um = null;
 
 		this.projectiles = [];
-		this.castles = [];
 
 		this.myUserServerId = null;
 		this.myUser = null;
@@ -204,7 +203,6 @@ export default class GameClient {
 		this.myUser = null;
 		this.foundMyUser = false;
 		this.foundMyCharacter = false;
-		this.castles = [];
 		this.ep.reset();
 	}
 
