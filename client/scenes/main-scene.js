@@ -240,19 +240,6 @@ export default class MainScene extends Phaser.Scene {
 
 	preload() {
 		console.log('preload on ' + this.scene.key + ' start');
-
-		//old path testing map
-		// this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-path-testing.json");
-		// this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
-		// this.load.image("stockheimer-test-tileset-extra-extruded", "assets/tilesets/stockheimer-test-tileset-extra-extruded.png");
-
-		// //"new" tech demo map
-		// this.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
-		// this.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
-		
-		// //other assets
-		// this.load.image("gravestone", "assets/sprites/gravestone.png");
-		// this.load.image("castle", "assets/sprites/castle.png");
 	}
 
 	create() {
@@ -260,36 +247,9 @@ export default class MainScene extends Phaser.Scene {
 		$("#main-scene-root").removeClass("hide");
 		$(".main-scene-buttons").removeClass("hide");
 
-
-		//old path testing map
-		// //load tilemap
-		// this.map = this.make.tilemap({key: "my-tilemap"});
-
-		// //load tileset
-		// this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 10, 20);
-		// this.tilesetExtra = this.map.addTilesetImage("stockheimer-test-tileset-extra-extruded", "stockheimer-test-tileset-extra-extruded", 16, 16, 10, 20);
-		
-		// //create layers
-		// var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		// var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		// this.layer1 = this.map.createLayer("Tile Layer 1", [this.tileset, this.tilesetExtra], xOffset, yOffset).setScale(2);
-
-
 		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
 		this.cameras.main.scrollY = 0;
-
-		this.xAxisGraphic = this.add.graphics();
-		this.xAxisGraphic.lineStyle(1, 0xff0000, 1.0);
-		this.xAxisGraphic.moveTo(0, 0);
-		this.xAxisGraphic.lineTo(10, 0);
-		this.xAxisGraphic.strokePath();
-
-		this.yAxisGraphic = this.add.graphics();
-		this.yAxisGraphic.lineStyle(1, 0xff0000, 1.0);
-		this.yAxisGraphic.moveTo(0, 0);
-		this.yAxisGraphic.lineTo(0, 10);
-		this.yAxisGraphic.strokePath();
 
 		this.playerController = new PlayerController(this);
 		this.playerController.init(this.playerInputKeyboardMap);
@@ -306,25 +266,6 @@ export default class MainScene extends Phaser.Scene {
 
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);		
 		this.targetLineGraphic.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-
-		this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
-			//scrolled down
-			if(deltaY > 0)
-			{
-				this.cameraZoom -= 0.1;
-				this.setCameraZoom();
-			}
-			//scrolled up
-			else if(deltaY < 0)
-			{
-				this.cameraZoom += 0.1;
-				this.setCameraZoom();
-			}
-
-			return true;
-		});
-
-		
 
 		//this.cameras.main.roundPixels = true;
 		this.cameras.main.setRoundPixels(true);
@@ -349,9 +290,8 @@ export default class MainScene extends Phaser.Scene {
 		this.cameraZoom = this.cameraZoom <= this.cameraZoomMin ? this.cameraZoomMin : this.cameraZoom;
 
 		this.cameraZoom = Math.round(this.cameraZoom * 10)/10;
-		this.cameras.main.setZoom(this.cameraZoom);
 
-		//console.log(this.cameraZoom);
+		this.cameras.main.setZoom(this.cameraZoom);
 	}
 
 	shutdown() {

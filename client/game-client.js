@@ -6,6 +6,7 @@ import WebsocketHandler from "./classes/websocket-handler.js"
 import EventProcessor from "./classes/event-processor.js"
 import GameObjectManager from "./managers/game-object-manager.js"
 import UserManager from "./managers/user-manager.js"
+import TeamManager from "./managers/team-manager.js"
 import Marked from "marked";
 
 export default class GameClient {
@@ -21,6 +22,7 @@ export default class GameClient {
 		this.ep = null;
 		this.gom = null;
 		this.um = null;
+		this.tm = null;
 
 		this.myUserServerId = null;
 		this.myUser = null;
@@ -55,11 +57,13 @@ export default class GameClient {
 		this.ep = new EventProcessor();
 		this.gom = new GameObjectManager();
 		this.um = new UserManager();
+		this.tm = new TeamManager();
 
 		this.wsh.init(this, this.ep);
 		this.ep.init(this, this.wsh);
 		this.gom.init(this);
 		this.um.init(this);
+		this.tm.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -140,36 +144,34 @@ export default class GameClient {
 		$(".loading-text").addClass("hide");
 
 		//debugging / testing
-		// var a1 = this.um.createUser(1);
-		// var a2 = this.um.createUser(2);
-		// var a3 = this.um.createUser(3);
-		// a1.userInit(this);
-		// a2.userInit(this);
-		// a3.userInit(this);
+		// var a1 = this.tm.createTeam(1);
+		// var a2 = this.tm.createTeam(2);
+		// var a3 = this.tm.createTeam(3);
+		// a1.teamInit(this);
+		// a2.teamInit(this);
+		// a3.teamInit(this);
 
 		// this.debugPrintFunc();
 
-		// this.um.update(0);
+		// this.tm.update(0);
 
-		// var a4 = this.um.createUser(15);
-		// a4.userInit(this);
+		// var a4 = this.tm.createTeam(15);
+		// a4.teamInit(this);
 
-		// this.um.update(0);
+		// this.tm.update(0);
 		
-		// this.um.destroyUser(a1.id);
-		// this.um.destroyUser(a3.id);
+		// this.tm.destroyTeam(a1.id);
+		// this.tm.destroyTeam(a3.id);
 		// this.debugPrintFunc();
 		
-		// this.um.update(0);
-		// this.um.update(0);
+		// this.tm.update(0);
+		// this.tm.update(0);
 
 		// this.debugPrintFunc();
-
-		// console.log(this.um.getActiveUsers());
 	}
 
 	debugPrintFunc() {
-		console.log('user array length: ' + this.um.getActiveUsers().length);
+		console.log('team array length: ' + this.tm.getTeams().length);
 	}
 
 	turnOffContextMenu() {

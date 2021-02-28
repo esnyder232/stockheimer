@@ -1,6 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 
-//This is basically a wrapper wrapper class for Tiled exports (json exports from the Tiled program by Thorbjørn Lindeijer)
+
 class Team {
 	constructor() {
 		this.gs = null;

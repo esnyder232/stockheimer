@@ -1,5 +1,4 @@
 import GlobalFuncs from "../global-funcs.js"
-import User from "./user.js";
 import ClientConfig from '../client-config.json';
 import AddActiveCharacterEvent from "../event-classes/add-active-character-event.js"
 import RemoveActiveCharacterEvent from "../event-classes/remove-active-character-event.js"
@@ -17,6 +16,14 @@ import CastleDamageEvent from "../event-classes/castle-damage-event.js"
 import AddProjectileEvent from "../event-classes/add-projectile-event.js"
 import RemoveProjectileEvent from "../event-classes/remove-projectile-event.js"
 import WorldStateDoneEvent from "../event-classes/world-state-done-event.js"
+import KillfeedMsgEvent from "../event-classes/killfeed-msg-event.js"
+import AddTeamEvent from "../event-classes/add-team-event.js"
+import UpdateTeamEvent from "../event-classes/update-team-event.js"
+import RemoveTeamEvent from "../event-classes/remove-team-event.js"
+
+
+
+
 
 
 
@@ -60,8 +67,11 @@ export default class EventProcessor {
 			{eventName: "castleDamage", eventClass: new CastleDamageEvent()},
 			{eventName: "addProjectile", eventClass: new AddProjectileEvent()},
 			{eventName: "removeProjectile", eventClass: new RemoveProjectileEvent()},
-			{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()}
-			
+			{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()},
+			{eventName: "killfeedMsg", eventClass: new KillfeedMsgEvent()},
+			{eventName: "addTeam", eventClass: new AddTeamEvent()},
+			{eventName: "updateTeam", eventClass: new UpdateTeamEvent()},
+			{eventName: "removeTeam", eventClass: new RemoveTeamEvent()}
 		];
 
 	}
@@ -81,6 +91,9 @@ export default class EventProcessor {
 		}
 
 		//add special fragment functions seperately
+		this.eventFunctions[this.wsh.eventNameIndex["fragmentStart"].event_id] = {processEvent: this.fragmentStart.bind(this)};
+		this.eventFunctions[this.wsh.eventNameIndex["fragmentContinue"].event_id] = {processEvent: this.fragmentContinue.bind(this)};
+		this.eventFunctions[this.wsh.eventNameIndex["fragmentEnd"].event_id] = {processEvent: this.fragmentEnd.bind(this)};
 
 		console.log('eventFunctions built successfully');
 		console.log(this.eventFunctions);
@@ -285,7 +298,6 @@ export default class EventProcessor {
 		var index = this.fragmentedClientToServerEvents.findIndex((x) => {return x.fragmentId == miscData.fragmentId;});
 		if(index >= 0)
 		{
-			
 			this.fragmentedClientToServerEvents[index].ackedFragmentNumber++;
 			//console.log('fragment found. Increasing now. ' + this.fragmentedClientToServerEvents[index].ackedFragmentNumber);
 		}
@@ -324,101 +336,66 @@ export default class EventProcessor {
 			{
 				this.eventFunctions[e.eventId].processEvent(e);
 			}
-			
-			switch(e.eventName)
-			{
-				case "fragmentStart":
-					var fragmentInfo = {
-						fragmentLength: e.fragmentLength,
-						fragmentData: new ArrayBuffer(e.fragmentLength),
-						fragmentDataView: null,
-						fragmentId: e.fragmentId,
-						n: 0
-					};
-
-					fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
-
-					//copy the fragment in this message to the fragmentedServeRtoClientEvents
-					var dv = new DataView(e.fragmentData);
-					for(var j = 0; j < dv.byteLength; j++)
-					{
-						fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-						fragmentInfo.n++;
-					}
-
-					this.fragmentedServerToClientEvents.push(fragmentInfo);
-
-					break;
-				case "fragmentContinue":
-					var fragmentInfo = this.fragmentedServerToClientEvents.find((x) => {return x.fragmentId === e.fragmentId;});
-
-					if(fragmentInfo)
-					{
-						//copy the fragment in this message to the fragmentedServeRtoClientEvents
-						var dv = new DataView(e.fragmentData);
-						for(var j = 0; j < dv.byteLength; j++)
-						{
-							fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-							fragmentInfo.n++;
-						}
-					}
-					break;
-				case "fragmentEnd":
-					var fragmentInfoIndex = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === e.fragmentId;});
-
-					if(fragmentInfoIndex >= 0)
-					{							
-						var fragmentInfo = this.fragmentedServerToClientEvents[fragmentInfoIndex];
-
-						//copy the fragment in this message to the fragmentedServeRtoClientEvents
-						var dv = new DataView(e.fragmentData);
-						for(var j = 0; j < dv.byteLength; j++)
-						{
-							fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-							fragmentInfo.n++;
-						}
-
-						this.gc.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
-						this.fragmentedServerToClientEvents.splice(fragmentInfoIndex, 1);
-					}
-					break;
-
-				case "killfeedMsg":
-					this.globalfuncs.appendToLog(e.killfeedMsg);
-					break;
-
-
-				case "addTeam":
-					console.log("ADD TEAM");
-					console.log(e);
-					break;
-
-				case "updateTeam":
-					console.log("UPDATE TEAM");
-					console.log(e);
-					break;
-
-				case "removeTeam":
-					console.log("REMOVE TEAM");
-					console.log(e);
-					break;
-
-				case "addUserTeam":
-					console.log("ADD USER TEAM");
-					console.log(e);
-					break;
-
-				case "removeUserTeam":
-					console.log("REMOVE USER TEAM");
-					console.log(e);
-					break;
-	
-				default:
-					//intentionally blank
-					break;
-			}
 		}
 		
 		this.serverToClientEvents.length = 0;
 	}
+
+	fragmentStart(e) {
+		var fragmentInfo = {
+			fragmentLength: e.fragmentLength,
+			fragmentData: new ArrayBuffer(e.fragmentLength),
+			fragmentDataView: null,
+			fragmentId: e.fragmentId,
+			n: 0
+		};
+
+		fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+
+		//copy the fragment in this message to the fragmentedServeRtoClientEvents
+		var dv = new DataView(e.fragmentData);
+		for(var j = 0; j < dv.byteLength; j++)
+		{
+			fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+			fragmentInfo.n++;
+		}
+
+		this.fragmentedServerToClientEvents.push(fragmentInfo);
+	}
+
+	fragmentContinue(e) {
+		var fragmentInfo = this.fragmentedServerToClientEvents.find((x) => {return x.fragmentId === e.fragmentId;});
+
+		if(fragmentInfo)
+		{
+			//copy the fragment in this message to the fragmentedServeRtoClientEvents
+			var dv = new DataView(e.fragmentData);
+			for(var j = 0; j < dv.byteLength; j++)
+			{
+				fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+				fragmentInfo.n++;
+			}
+		}
+	}
+
+	fragmentEnd(e) {
+		var fragmentInfoIndex = this.fragmentedServerToClientEvents.findIndex((x) => {return x.fragmentId === e.fragmentId;});
+
+		if(fragmentInfoIndex >= 0)
+		{							
+			var fragmentInfo = this.fragmentedServerToClientEvents[fragmentInfoIndex];
+
+			//copy the fragment in this message to the fragmentedServeRtoClientEvents
+			var dv = new DataView(e.fragmentData);
+			for(var j = 0; j < dv.byteLength; j++)
+			{
+				fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+				fragmentInfo.n++;
+			}
+
+			this.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
+			this.fragmentedServerToClientEvents.splice(fragmentInfoIndex, 1);
+		}
+	}
+
 }

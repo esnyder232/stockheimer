@@ -1,4 +1,4 @@
-export default class WorldStateDoneEvent {
+export default class RemoveTeamEvent {
 	constructor() {
 		this.gc = null;
 	}
@@ -9,6 +9,6 @@ export default class WorldStateDoneEvent {
 
 	processEvent(e)
 	{
-		this.gc.gameState.worldDoneState();
+		this.tm.destroyTeamServerId(e.id);
 	}
 }

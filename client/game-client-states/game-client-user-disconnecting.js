@@ -20,11 +20,6 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		this.gc.wsh.disconnectClient();
 
 		//destroy all game objects
-		//STOPPED HERE
-		//Basically, all these game objects are erroring on the client side when the user exits the server and there are characters still on the screen. (in the "deactivated" function on the character.js, it is calling for "mainScene", which is already destroyed. That is the source of the error)
-		//the question is....what am i gonna do? Do i make the main scene last forever? Do I make the main scene last only until user-disconnecting-state? 
-		//Is there someway I can avoid all that? Because its nice to know that "one-state" has "one-scene".
-
 		var allObjects = this.gc.gom.getGameObjects();
 
 		for(var i = 0; i < allObjects.length; i++)
@@ -39,7 +34,17 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		{
 			this.gc.um.destroyUser(allUsers[i].id);
 		}
-		
+
+		//destroy all teams
+		var allTeams = this.gc.tm.getTeams();
+
+		for(var i = 0; i < allTeams.length; i++)
+		{
+			this.gc.tm.destroyTeam(allTeams[i].id);
+		}
+
+
+		//reset the game client
 		this.gc.reset();
 
 
@@ -54,6 +59,7 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		//update managers
 		this.gc.um.update(dt);
 		this.gc.gom.update(dt);
+		this.gc.tm.update(dt);
 
 		this.updateCounter++;
 

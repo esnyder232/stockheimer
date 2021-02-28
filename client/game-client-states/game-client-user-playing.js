@@ -35,6 +35,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		//update managers
 		this.gc.gom.update(dt);
 		this.gc.um.update(dt);
+		this.gc.tm.update(dt);
 	}
 
 	exit(dt) {

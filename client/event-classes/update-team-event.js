@@ -1,4 +1,4 @@
-export default class TEMPLATEEvent {
+export default class UpdateTeamEvent {
 	constructor() {
 		this.gc = null;
 	}
@@ -9,8 +9,9 @@ export default class TEMPLATEEvent {
 
 	processEvent(e)
 	{
-		console.log('TEMPLATE EVENT called!!!!!');
+		console.log('UpdateTeamEvent EVENT called!!!!!');
 		console.log(e);
 
+		//nothing to do yet
 	}
 }
