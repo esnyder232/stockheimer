@@ -19,7 +19,7 @@ export default class CastleDamageEvent {
 			};
 	
 			var textStyle = {
-				color: this.gc.mainScene.damageTextColor, 
+				color: this.gc.mainScene.damageTextColor,
 				fontSize: "18px",
 				strokeThickness: 1,
 				stroke: this.gc.mainScene.damageTextColor

@@ -22,8 +22,6 @@ export default class GameClient {
 		this.gom = null;
 		this.um = null;
 
-		this.projectiles = [];
-
 		this.myUserServerId = null;
 		this.myUser = null;
 		this.myCharacter = null;
@@ -197,7 +195,6 @@ export default class GameClient {
 
 
 	reset() {
-		this.projectiles.length = 0;
 		this.myUserServerId = null;
 		this.myCharacter = null;
 		this.myUser = null;

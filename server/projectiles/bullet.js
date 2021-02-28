@@ -135,25 +135,6 @@ class Bullet {
 		return eventData;
 	}
 
-	serializeProjectileUpdateEvent() {
-		var eventData = null;
-		var bodyPos = {x: this.xStarting, y: this.yStarting};
-		if(this.plBody !== null)
-		{
-			bodyPos = this.plBody.getPosition();
-		}
-
-		eventData = {
-			"eventName": "projectileUpdate",
-			"id": this.id,
-			"x": bodyPos.x,
-			"y": bodyPos.y,
-			"angle": this.angle
-		};
-		
-		return eventData;
-	}
-
 	serializeRemoveProjectileEvent() {
 		return {
 			"eventName": "removeProjectile",

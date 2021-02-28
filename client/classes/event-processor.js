@@ -14,7 +14,9 @@ import AddCastleEvent from "../event-classes/add-castle-event.js"
 import CastleUpdateEvent from "../event-classes/castle-update-event.js"
 import RemoveCastleEvent from "../event-classes/remove-castle-event.js"
 import CastleDamageEvent from "../event-classes/castle-damage-event.js"
-
+import AddProjectileEvent from "../event-classes/add-projectile-event.js"
+import RemoveProjectileEvent from "../event-classes/remove-projectile-event.js"
+import WorldStateDoneEvent from "../event-classes/world-state-done-event.js"
 
 
 
@@ -34,7 +36,7 @@ export default class EventProcessor {
 		this.fragmentationLimit = Math.round(ClientConfig.max_packet_event_bytes_until_fragmentation);
 
 		this.eventClassesMapping = []; //mapping of eventNames to eventClasses
-		this.eventClasses = {}; //Actual event functions to be called. keys are event_ids from event schema, and values are the eventClasses.processEvent (built from event schema and eventClassesMapping). 
+		this.eventFunctions = {}; //Actual event functions to be called. keys are event_ids from event schema, and values are the eventClasses.processEvent (built from event schema and eventClassesMapping). 
 								  //This is ultimately to make event function lookups more efficient by looking up the event_id instead of the eventName
 	}
 	
@@ -56,27 +58,32 @@ export default class EventProcessor {
 			{eventName: "castleUpdate", eventClass: new CastleUpdateEvent()},
 			{eventName: "removeCastle", eventClass: new RemoveCastleEvent()},
 			{eventName: "castleDamage", eventClass: new CastleDamageEvent()},
+			{eventName: "addProjectile", eventClass: new AddProjectileEvent()},
+			{eventName: "removeProjectile", eventClass: new RemoveProjectileEvent()},
+			{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()}
 			
 		];
 
 	}
 
 	eventSchemaReady() {
-		console.log('building eventClasses mapping...');
+		console.log('building eventFunctions mapping...');
 		console.log(this.wsh.eventNameIndex);
-		//build the eventClasses (map the event id to an event function)
+		//build the eventFunctions (map the event id to an event function)
 		for(var i = 0; i < this.eventClassesMapping.length; i++)
 		{
 			var e = this.wsh.eventNameIndex[this.eventClassesMapping[i].eventName];
 			if(e !== undefined)
 			{
-				this.eventClasses[e.event_id] = this.eventClassesMapping[i].eventClass;
-				this.eventClasses[e.event_id].init(this.gc); //just init it here, whatever
+				this.eventFunctions[e.event_id] = this.eventClassesMapping[i].eventClass;
+				this.eventFunctions[e.event_id].init(this.gc); //just init it here, whatever
 			}
 		}
 
-		console.log('eventClasses built successfully');
-		console.log(this.eventClasses);
+		//add special fragment functions seperately
+
+		console.log('eventFunctions built successfully');
+		console.log(this.eventFunctions);
 	}
 
 	reset() {
@@ -308,57 +315,18 @@ export default class EventProcessor {
 
 
 
-	processServerEvents(cbPreEvent, cbPostEvent) {
+	processServerEvents() {
 		for(var i = 0; i < this.serverToClientEvents.length; i++)
 		{
 			var e = this.serverToClientEvents[i];
 
-			if(this.eventClasses[e.eventId] !== undefined)
+			if(this.eventFunctions[e.eventId] !== undefined)
 			{
-				this.eventClasses[e.eventId].processEvent(e);
+				this.eventFunctions[e.eventId].processEvent(e);
 			}
 			
-			//call preevent callback. This is mostly just called when things get deleted and the scenes have a chance to update their view accordingly
-			if(cbPreEvent)
-			{
-				cbPreEvent(e);
-			}
-
 			switch(e.eventName)
 			{
-				
-				
-
-				case "addProjectile":
-					this.gc.projectiles.push({
-						id: e.id,
-						x: e.x,
-						y: e.y,
-						angle: e.angle,
-						size: e.size,
-						speed: e.speed
-					});
-					break;
-
-				case "removeProjectile":
-					var pIndex = this.gc.projectiles.findIndex((x) => {return x.id == e.id});
-
-					if(pIndex >= 0)
-					{
-						this.gc.projectiles.splice(pIndex, 1)[0];
-					}
-					break;
-
-				case "projectileUpdate":
-					var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
-					if(p)
-					{
-						p.x = e.x;
-						p.y = e.y;
-						p.angle = e.angle;
-					}
-					break;
-
 				case "fragmentStart":
 					var fragmentInfo = {
 						fragmentLength: e.fragmentLength,
@@ -448,12 +416,6 @@ export default class EventProcessor {
 				default:
 					//intentionally blank
 					break;
-			}
-
-			//post event callback. This will probably be the most used call back.
-			if(cbPostEvent)
-			{
-				cbPostEvent(e);
 			}
 		}
 		

@@ -47,7 +47,7 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			case 0:
 				break;
 			case 1:
-				this.gc.ep.processServerEvents(null, this.cbPostEvent.bind(this));
+				this.gc.ep.processServerEvents();
 
 				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
@@ -97,11 +97,16 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 	}
 
 
-	//call back for EventProcessor's processServerEvents
-	cbPostEvent(e) {
-		if(e.eventName == "worldStateDone")
-		{
-			this.connectionState = 2;
-		}
+	worldDoneState(e) {
+		this.connectionState = 2;
 	}
+
+
+	//call back for EventProcessor's processServerEvents
+	// cbPostEvent(e) {
+	// 	if(e.eventName == "worldStateDone")
+	// 	{
+	// 		this.connectionState = 2;
+	// 	}
+	// }
 }

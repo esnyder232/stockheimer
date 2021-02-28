@@ -22,7 +22,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 	update(dt) {
 		super.update(dt);
 
-		this.gc.ep.processServerEvents(this.cbPreEvent.bind(this), this.cbPostEvent.bind(this));
+		this.gc.ep.processServerEvents();
 
 		//put the packet algorithm here (insert from clientToServerEvents 1st, then fragmented events 2nd)
 		this.gc.ep.insertEventsIntoPacket();
@@ -52,60 +52,5 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 	exitGameClick() {
 		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-	}
-
-	cbPreEvent(e) {
-		switch(e.eventName)
-			{
-
-
-
-
-				//READS:
-				//none
-
-				//WRITES:
-				//images manager
-				case "removeProjectile":
-					this.gc.mainScene.removeProjectile(e);
-					break;
-
-
-				default:
-					//intentionally blank
-					break;
-			}
-	}
-
-	cbPostEvent(e) {
-		switch(e.eventName)
-			{	
-
-
-
-				//READS:
-				//GOM
-
-				//WRITES:
-				//images manager
-				//maybe main scene
-				case "addProjectile":
-					this.gc.mainScene.addProjectile(e);
-					break;
-
-
-
-				//useless...
-				case "projectileUpdate":
-					this.gc.mainScene.projectileUpdate(e);
-					break;
-
-
-
-
-				default:
-					//intentionally blank
-					break;
-			}
 	}
 }

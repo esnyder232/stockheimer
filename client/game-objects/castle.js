@@ -69,14 +69,14 @@ export default class Castle {
 
 	update(dt) {
 		//change state
-		if(this.nextState)
-		{
-			this.state.exit();
-			this.nextState.enter();
+		// if(this.nextState)
+		// {
+		// 	this.state.exit();
+		// 	this.nextState.enter();
 
-			this.state = this.nextState;
-			this.nextState = null;
-		}
+		// 	this.state = this.nextState;
+		// 	this.nextState = null;
+		// }
 	}
 
 	castleUpdate(e) {

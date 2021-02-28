@@ -1,0 +1,32 @@
+export default class WorldStateDoneEvent {
+	constructor() {
+		this.gc = null;
+	}
+
+	init(gc) {
+		this.gc = gc;
+	}
+
+	processEvent(e)
+	{
+		console.log('WorldStateDone called!!!!!');
+		console.log(e);
+
+		this.gc.gameState.worldDoneState()
+
+		/////////////////////////////////////////////////////////
+		// event processor stuff
+		
+
+		/////////////////////////////////////////////////////////
+
+
+
+
+
+		/////////////////////////////////////////////////////////
+		// main scene stuff
+
+		/////////////////////////////////////////////////////////
+	}
+}

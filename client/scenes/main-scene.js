@@ -12,7 +12,6 @@ export default class MainScene extends Phaser.Scene {
 		this.radiansToDegreesRatio = 180/3.14;
 		
 		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
-		this.projectilePhaserElements = []; 
 
 		this.playerInputKeyboardMap = {};
 		this.playerController = null;
@@ -492,16 +491,11 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 
-		//update any projectiles on the client side (no longer update driven from server side)
-		for(var i = 0; i < this.projectilePhaserElements.length; i++)
+		//update gameobjects
+		var activeGameObjects = this.gc.gom.getActiveGameObjects();
+		for(var i = 0; i < activeGameObjects.length; i++)
 		{
-			var ppu = this.projectilePhaserElements[i];
-
-			ppu.x += ppu.xSpeedPhaser * (dt/1000);
-			ppu.y += ppu.ySpeedPhaser * (dt/1000);
-
-			ppu.boxGraphics.setX(ppu.x);
-			ppu.boxGraphics.setY(ppu.y);
+			activeGameObjects[i].update(dt);
 		}
 
 		//if you control your character, read input and send it to the server if its dirty.
@@ -753,85 +747,6 @@ export default class MainScene extends Phaser.Scene {
 		}
 		$("#kill-character")[0].blur();
 	}
-
-
-	//READS:
-	//images manager
-
-	//WRITES:
-	//images manager
-	//maybe main scene
-	addProjectile(e) {
-		var p = this.gc.projectiles.find((x) => {return x.id === e.id;});
-		if(p)
-		{
-			var boxGraphics = this.add.graphics();
-
-			boxGraphics.lineStyle(1, this.projectileColor, 1);
-			boxGraphics.moveTo(-p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top left
-			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top right
-			boxGraphics.lineTo(p.size * this.planckUnitsToPhaserUnitsRatio, p.size * this.planckUnitsToPhaserUnitsRatio); //bottom right
-			boxGraphics.lineTo(-p.size * this.planckUnitsToPhaserUnitsRatio, p.size * this.planckUnitsToPhaserUnitsRatio); //bottom left
-			boxGraphics.lineTo(-p.size * this.planckUnitsToPhaserUnitsRatio, -p.size * this.planckUnitsToPhaserUnitsRatio); //top left
-
-			boxGraphics.closePath();
-			boxGraphics.strokePath();
-
-			//calculate the xSpeed and ySpeed components (in phaser units)
-			var xSpeedPhaser = (p.speed * this.planckUnitsToPhaserUnitsRatio) * Math.cos(p.angle);
-			var ySpeedPhaser = (p.speed * this.planckUnitsToPhaserUnitsRatio) * Math.sin(p.angle);
-
-			var ppu = {
-				id: p.id,
-				x: p.x * this.planckUnitsToPhaserUnitsRatio,
-				y: p.y * this.planckUnitsToPhaserUnitsRatio * -1,
-				angle: p.angle,
-				boxGraphics: boxGraphics,
-				speed: p.speed,
-				xSpeedPhaser: xSpeedPhaser,
-				ySpeedPhaser: ySpeedPhaser
-			}
-
-			boxGraphics.setX(ppu.x);
-			boxGraphics.setY(ppu.y);
-
-			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-
-			this.projectilePhaserElements.push(ppu);
-		}
-	}
-
-	//READS:
-	//none
-
-	//WRITES:
-	//images manager
-	removeProjectile(e) {
-		var p = this.gc.projectiles.find((x) => {return x.id === e.id});
-
-		if(p)
-		{
-			var ppeIndex = this.projectilePhaserElements.findIndex((x) => {return x.id === p.id;});
-			if(ppeIndex >= 0)
-			{
-				this.projectilePhaserElements[ppeIndex].boxGraphics.destroy();
-				this.projectilePhaserElements.splice(ppeIndex, 1);
-			}
-		}
-	}
-
-	projectileUpdate(e) {
-		var ppu = this.projectilePhaserElements.find((x) => {return x.id === e.id});
-
-		if(ppu)
-		{
-			ppu.x = e.x;
-			ppu.y = e.y;
-			ppu.boxGraphics.setX(ppu.x * this.planckUnitsToPhaserUnitsRatio);
-			ppu.boxGraphics.setY(ppu.y * this.planckUnitsToPhaserUnitsRatio * -1);
-		}
-	}
-
 
 	spawnEnemyPlayer() {
 		this.fromClientSpawnEnemy("player");

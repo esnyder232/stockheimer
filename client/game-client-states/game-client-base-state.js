@@ -14,4 +14,7 @@ export default class GameClientBaseState {
 	websocketClosed(){};
 	websocketOpened(){};
 	websocketErrored(){};
+
+	//other events to be passed into the game state for it to handle
+	worldDoneState(e){};
 }
