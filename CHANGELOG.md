@@ -1,5 +1,12 @@
 # Change log
 
+## Version - 2021.2.28
+* Client side architechture updated alot!
+   - Game object manager exists on client side
+   - User manager exists on client side
+   - Team Manager exists on client side
+   - Lots of un-speghetifying for the main-scene
+
 ## Version - 2021.2.21
 * Added very basic framework for teams.
 * New life cycle implemented for game objects.
