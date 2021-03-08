@@ -1,7 +1,7 @@
 const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
 const GameConstants = require('../../shared_files/game-constants.json');
-const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
+const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 const logger = require("../../logger.js");
 
 class Character {

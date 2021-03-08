@@ -1,5 +1,8 @@
 # Change log
 
+## Version - 2021.3.8
+* Moved collision data to its own subdirectory "Data"
+
 ## Version - 2021.2.28
 * Client side architechture updated alot!
    - Game object manager exists on client side

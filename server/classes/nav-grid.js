@@ -1,5 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
+const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 
 //This class keeps track of nodes and edges for a particular tilemap. It also holds the functions for the actual pathing (breadth first/A*/ect).
 class NavGrid {

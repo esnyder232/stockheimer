@@ -1,7 +1,7 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
-const {CollisionCategories, CollisionMasks} = require('../../collision-data.js');
+const {CollisionCategories, CollisionMasks} = require('../../data/collision-data.js');
 const logger = require("../../../logger.js");
 
 

@@ -2,7 +2,7 @@ const {GlobalFuncs} = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
 const serverConfig = require('../server-config.json');
-const {CollisionCategories, CollisionMasks} = require('../collision-data.js');
+const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 const logger = require('../../logger.js');
 
 class User {
