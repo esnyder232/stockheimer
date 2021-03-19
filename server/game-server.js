@@ -14,6 +14,7 @@ const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const {TeamManager} = require('./managers/team-manager.js');
+const ApeECS = require("ape-ecs");
 const path = require('path');
 const logger = require("../logger.js");
 
@@ -51,6 +52,8 @@ class GameServer {
 		this.ngm = null;
 		this.aim = null;
 		this.tm = null;
+		this.ecsWorld = null;
+
 		this.appRoot = path.join(__dirname, "..");
 
 		this.activeNavGrid = null; //temporary
@@ -60,6 +63,7 @@ class GameServer {
 
 		this.castleObject = null;
 		this.enemyCap = 100;
+		
 	}
 
 	init() {
@@ -73,7 +77,20 @@ class GameServer {
 		this.ngm = new NavGridManager();
 		this.aim = new AIAgentManager();
 		this.tm = new TeamManager();
+
+		this.ecsWorld = new ApeECS.World({
+			useApeDestroy: true
+		});
 		
+
+
+		logger.log("info", "ECS World created.")
+		this.ecsWorld.logStats(0, this.tempEcsStatCallback.bind(this));
+
+		this.ecsWorld.createEntity({});
+
+		this.ecsWorld._outputStats()
+
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
 			this.world = this.pl.World({
@@ -93,6 +110,10 @@ class GameServer {
 		this.tm.init(this);
 
 		this.gameState = new GameServerStopped(this);
+	}
+
+	tempEcsStatCallback(output) {
+		logger.log("info", "ECS World Logstats output: " + output);
 	}
 
 	getGlobalGameObjectID() {
