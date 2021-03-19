@@ -1,7 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const {Character} = require('../characters/character.js');
-const {Bullet} = require("../projectiles/bullet.js");
-const {Castle} = require("../classes/castle.js");
+const {Character} = require('../game-objects/character.js');
+const {Bullet} = require("../game-objects/bullet.js");
+const {Castle} = require("../game-objects/castle.js");
 const logger = require('../../logger.js');
 
 class GameObjectManager {
