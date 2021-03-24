@@ -7,11 +7,11 @@ class Team {
 		this.globalfuncs = null;
 		this.id = null;
 		this.name = "??? team";
+		this.slotNum = 0;
 	}
 
-	init(gameServer, id) {
+	teamInit(gameServer) {
 		this.gs = gameServer;
-		this.id = id;
 
 		this.globalfuncs = new GlobalFuncs();		
 	}

@@ -16,7 +16,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		});
 
 		this.gc.mainScene.scene.wake();
-		this.gc.mainScene.createMap();
+		this.gc.mainScene.stockheimerActivate();
 	}
 
 	update(dt) {

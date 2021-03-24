@@ -12,64 +12,64 @@
 		<div id="game-div">
 			<div id="ui-div">
 				<div class="scene-root hide" id="lobby-scene-root">					
-						<div class="game-title">
-							Stockheimer
-						</div>
-						<div id="user-name-container">
-							<div class="form-text" id="player-text">Player Name:</div>
-							<input type="text" class="form-input" id="user-name" maxlength="32" />
-							<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
-							<input type="button" class="form-button hide" id="player-submit-existing" value="Play with existing user" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
-							<input type="button" class="form-button hide" id="player-new" value="Delete existing user" onclick="window.dispatchEvent(new CustomEvent('player-new-click'));"/>
-						</div>
-						<div id="game-server-details">
-							<div id="game-server-details-players">Players:</div>
-						</div>
-						<div class="lobby-panel">
-							<div class="info-container">
-								<h1>
-									Brief Explanation
-								</h1>
-								<div class="lobby-panel-section">
-									<div class="lobby-panel-text">Stockheimer is a "defend the castle" multiplayer game.</div>
-									<div class="lobby-panel-text">Defend the castle against waves of enemies to win the game.</div>
-									<div class="lobby-panel-text">
-										*** This is currently built as a "tech demo". Most features need to be controlled manually, such as spawning enemies, castles, PvP, ect. 
-										These can be controlled on the bottom of the screen when you login.
-									</div>
-								</div>
-	
-								<div class="lobby-panel-section">
-									<div class="lobby-panel-title">
-										Controls
-									</div>
-									<div class="lobby-panel-text">
-										WASD + Mouse
-									</div>
-								</div>
-								
-	
-								<div class="lobby-panel-section">
-									<div class="lobby-panel-title">
-										Links
-									</div>
-									<div class="lobby-panel-text">
-										Dev Blog - <a href="https://dontcodethis.com" target="_blank">https://dontcodethis.com</a>
-									</div>
-									<div class="lobby-panel-text">
-										Twitch - <a href="https://twitch.tv/miles_gloriosus" target="_blank">https://twitch.tv/miles_gloriosus</a>
-									</div>
-									<div class="lobby-panel-text">
-										Github - <a href="https://github.com/esnyder232/stockheimer" target="_blank">https://github.com/esnyder232/stockheimer</a>
-									</div>
+					<div class="game-title">
+						Stockheimer
+					</div>
+					<div id="user-name-container">
+						<div class="form-text" id="player-text">Player Name:</div>
+						<input type="text" class="form-input" id="user-name" maxlength="32" />
+						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
+						<input type="button" class="form-button hide" id="player-submit-existing" value="Play with existing user" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
+						<input type="button" class="form-button hide" id="player-new" value="Delete existing user" onclick="window.dispatchEvent(new CustomEvent('player-new-click'));"/>
+					</div>
+					<div id="game-server-details">
+						<div id="game-server-details-players">Players:</div>
+					</div>
+					<div class="lobby-panel">
+						<div class="info-container">
+							<h1>
+								Brief Explanation
+							</h1>
+							<div class="lobby-panel-section">
+								<div class="lobby-panel-text">Stockheimer is a "defend the castle" multiplayer game.</div>
+								<div class="lobby-panel-text">Defend the castle against waves of enemies to win the game.</div>
+								<div class="lobby-panel-text">
+									*** This is currently built as a "tech demo". Most features need to be controlled manually, such as spawning enemies, castles, PvP, ect. 
+									These can be controlled on the bottom of the screen when you login.
 								</div>
 							</div>
-						</div>
-						<div class="lobby-panel">
-							<div class="info-container" id="change-log">
 
+							<div class="lobby-panel-section">
+								<div class="lobby-panel-title">
+									Controls
+								</div>
+								<div class="lobby-panel-text">
+									WASD + Mouse
+								</div>
+							</div>
+							
+
+							<div class="lobby-panel-section">
+								<div class="lobby-panel-title">
+									Links
+								</div>
+								<div class="lobby-panel-text">
+									Dev Blog - <a href="https://dontcodethis.com" target="_blank">https://dontcodethis.com</a>
+								</div>
+								<div class="lobby-panel-text">
+									Twitch - <a href="https://twitch.tv/miles_gloriosus" target="_blank">https://twitch.tv/miles_gloriosus</a>
+								</div>
+								<div class="lobby-panel-text">
+									Github - <a href="https://github.com/esnyder232/stockheimer" target="_blank">https://github.com/esnyder232/stockheimer</a>
+								</div>
 							</div>
 						</div>
+					</div>
+					<div class="lobby-panel">
+						<div class="info-container" id="change-log">
+
+						</div>
+					</div>
 					
 				</div>
 				<div class="scene-root hide" id="user-connecting-scene-root">
@@ -80,6 +80,22 @@
 					<h1>Disconnecting...</h1>
 				</div>
 				<div class="scene-root hide" id="main-scene-root">
+					<div class="small-div-wrapper">
+						<div class="hide small-div-container" id="team-small-div">
+							<div class="small-div-close-container">
+								<div class="small-div-close-button">
+									<img class="small-div-close-button" click.delegate="deleteDetailsRowGrandchild(n, n.parameters, p)" src="assets/images/x-mark.png" />
+								</div>
+							</div>
+							<div class="small-div-title">
+								<span>Join a Team</span>
+							</div>
+							<div class="team-button-container" id="team-button-container">
+
+								<input type="button" class="hide join-team-button" id="join-team-buttom-template" value="???"/>
+							</div>
+						</div>		
+					</div>
 					<div class="panel">
 						<div class="user-list" id="user-list">
 							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
@@ -116,9 +132,6 @@
 						<input type="button" id="exit-game" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
 						<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
 						<input type="button" id="create-character" value="Spawn Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
-						<input type="button" class="hide" id="join-red-team" value="Join Red Team" onclick="window.dispatchEvent(new CustomEvent('join-red-team'));" />
-						<input type="button" class="hide" id="join-blue-team" value="Join Blue Team" onclick="window.dispatchEvent(new CustomEvent('join-blue-team'));" />
-						<input type="button" class="hide" id="join-spectator-team" value="Join Spectators" onclick="window.dispatchEvent(new CustomEvent('join-spectator-team'));" />
 					</div>
 					<div class="input-debug-controls-div main-scene-buttons hide">
 						<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />

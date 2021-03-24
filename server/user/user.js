@@ -72,11 +72,11 @@ class User {
 	userPostActivated() {
 		//console.log('userPostActivated for ' + this.username);
 		
-		//assign to default team
-		var defaultTeam = this.gs.tm.getDefaultTeam();
+		//assign to sepctator team by default
+		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 
-		if(defaultTeam)	{
-			this.teamId = defaultTeam.id;
+		if(spectatorTeam)	{
+			this.teamId = spectatorTeam.id;
 		}
 	}
 

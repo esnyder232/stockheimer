@@ -17,6 +17,7 @@ class UserConnectingState extends UserBaseState {
 		var activeUsers = this.user.gs.um.getActiveUsers();
 		var playingUsers = this.user.gs.um.getPlayingUsers();
 		var teams = this.user.gs.tm.getTeams();
+		var spectatorTeam = this.user.gs.tm.getSpectatorTeam();
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
 		this.user.insertServerToClientEvent({
@@ -57,11 +58,13 @@ class UserConnectingState extends UserBaseState {
 				acked: false
 			});
 
+			var isSpectatorTeam = teams[i].id === spectatorTeam.id;
 			this.user.insertServerToClientEvent({
 				"eventName": "addTeam",
 				"id": teams[i].id,
-				"slotNum": 0,
-				"name": teams[i].name
+				"slotNum": teams[i].slotNum,
+				"name": teams[i].name,
+				"isSpectatorTeam": isSpectatorTeam
 			}, this.cbAddTeam.bind(this), null, {id: teams[i].id});
 		}
 

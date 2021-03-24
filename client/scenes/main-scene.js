@@ -3,6 +3,7 @@ import GlobalFuncs from "../global-funcs.js"
 import config from '../client-config.json';
 import PlayerController from "../classes/player-controller.js"
 import ClientConstants from "../client-constants.js"
+import TeamSmallDiv from "../ui-classes/team-small-div.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -103,6 +104,10 @@ export default class MainScene extends Phaser.Scene {
 		this.gravestoneStrokeThickness = 2;
 
 		this.characterBorderThickness = 3;
+
+		this.teamSmallDiv = null;
+
+
 	}
 
 	init(data) {
@@ -120,9 +125,6 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-			{event: 'join-spectator-team', func: this.joinTeamClick.bind(this, 0)},
-			{event: 'join-red-team', func: this.joinTeamClick.bind(this, 1)},
-			{event: 'join-blue-team', func: this.joinTeamClick.bind(this, 2)},
 			
 			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
 			{event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
@@ -171,6 +173,10 @@ export default class MainScene extends Phaser.Scene {
 		{
 			killCharacterBtn.addClass("hide");
 		}
+
+		//created ui classes
+		this.teamSmallDiv = new TeamSmallDiv();
+		this.teamSmallDiv.init(this.gc);
 	}
 
 	documentScroll(e) {
@@ -244,6 +250,12 @@ export default class MainScene extends Phaser.Scene {
 
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
+	}
+
+	//prepending "stockheimer" just in case this name conflicts with Phaser's scene life cycle....I don't see it anywhere in the api, but i don't want to risk it.
+	stockheimerActivate() {
+		console.log('stockheimerActivate on ' + this.scene.key + ' start');
+
 		$("#main-scene-root").removeClass("hide");
 		$(".main-scene-buttons").removeClass("hide");
 
@@ -269,6 +281,12 @@ export default class MainScene extends Phaser.Scene {
 
 		//this.cameras.main.roundPixels = true;
 		this.cameras.main.setRoundPixels(true);
+
+		//activated ui classes
+		this.teamSmallDiv.activate();
+
+		//other things to create
+		this.gc.mainScene.createMap();
 	}
 
 	createMap() {
@@ -298,7 +316,6 @@ export default class MainScene extends Phaser.Scene {
 		console.log('shutdown on ' + this.scene.key);
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
-
 
 		//clear out damage texts
 		for(var i = this.damageTexts.length - 1; i >= 0; i--)
@@ -339,6 +356,9 @@ export default class MainScene extends Phaser.Scene {
 		{
 			this.playerController.shutdown();
 		}
+
+		this.teamSmallDiv.deactivate();
+		this.teamSmallDiv.deinit();
 	}
 
 	exitGameClick() {
@@ -716,13 +736,5 @@ export default class MainScene extends Phaser.Scene {
 		});
 	}
 
-	joinTeamClick(slotNum) {
-		console.log('team clicked ' + slotNum);
-
-		this.gc.ep.insertClientToServerEvent({
-			"eventName": "fromClientJoinTeam",
-			"slotNum": slotNum
-		});
-	}
 }
 

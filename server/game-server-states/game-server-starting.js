@@ -1,6 +1,8 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerRunning} = require('./game-server-running.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
+var {TeamData, SpectatorTeamSlotNum} = require("../data/team-data.js");
+
 const path = require('path');
 const fs = require('fs');
 const logger = require('../../logger.js');
@@ -40,21 +42,49 @@ class GameServerStarting extends GameServerBaseState {
 
 			this.gs.activeNavGrid = ng; //temporary
 
-			//create teams (probably temporary place for it)
-			var t1 = this.gs.tm.createTeam();
-			var t2 = this.gs.tm.createTeam();
-			var t3 = this.gs.tm.createTeam();
+			//just incase idk
+			if(TeamData === undefined)
+			{
+				TeamData = [];
+			}
 
-			t1.name = "Spectators";
-			t1.slotNum = 0;
+			//detect if a "spectator" team doesn't exist. If the users don't have a team to join, its going to break stuff on the server.
+			var spectatorTeamExists = true;
 
-			t2.name = "Red Team";
-			t2.slotNum = 1;
+			if(TeamData.length === 0)
+			{
+				spectatorTeamExists = false;
+			}
+			else if(SpectatorTeamSlotNum === undefined || TeamData[SpectatorTeamSlotNum] === undefined)
+			{
+				spectatorTeamExists = false;
+			}
 
-			t3.name = "Blue Team";
-			t3.slotNum = 2;
+			//create a default "specator" team if one doesn't exist or things get screwed up somehow
+			if(!spectatorTeamExists)
+			{
+				var specSlotNum = TeamData.length + 1;
+				TeamData.push({
+					name: "Spectator",
+					slotNum: specSlotNum
+				});
 
-			this.gs.tm.assignDefaultTeamById(t1.id);
+				SpectatorTeamSlotNum = specSlotNum;
+			}
+
+			//create teams
+			for(var i = 0; i < TeamData.length; i++)
+			{
+				var temp = this.gs.tm.createTeam();
+				temp.teamInit(this.gs);
+				temp.name = TeamData[i].name;
+				temp.slotNum = TeamData[i].slotNum;
+
+				if(TeamData[i].slotNum === SpectatorTeamSlotNum)
+				{
+					this.gs.tm.assignSpectatorTeamById(temp.id);
+				}
+			}
 
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}

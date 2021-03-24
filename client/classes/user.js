@@ -1,7 +1,6 @@
 import GlobalFuncs from "../global-funcs.js"
 import $ from "jquery"
 
-//the player class
 export default class User {
 	constructor() {
 		this.gc = null;

@@ -34,6 +34,7 @@ export default class GameClient {
 		this.previousTick = 0;
 		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
+		this.frameNum = 0; //debugging
 
 		this.inactivePeriod = 10000; //ms - the amount of ms worth of ack loss (packet loss) before a player is considered "inactive" by the server
 		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
@@ -214,6 +215,7 @@ export default class GameClient {
 			var dt = nowTime - this.previousTick;
 			this.previousTick = nowTime;
 			try {
+				//console.log("=== FRAME " + this.frameNum + " ===")
 				this.gameState.update(dt);
 
 				if(this.nextGameState)
@@ -224,6 +226,8 @@ export default class GameClient {
 					this.gameState = this.nextGameState;
 					this.nextGameState = null;
 				}
+
+				//this.frameNum++;
 			}
 			catch(ex) {
 				this.globalfuncs.appendToLog("Exception caught in game loop: " + ex)
