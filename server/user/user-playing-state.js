@@ -19,13 +19,12 @@ class UserPlayingState extends UserBaseState {
 	update(dt) {
 		super.update(dt);
 
-		var firingInputFound = false;
-
 		if(this.user.bDisconnected)
 		{
 			this.user.nextState = new UserDisconnectingState(this.user);
 		}
 
+		//ECS TODO: REMOVE. Create a system to process the user's input and query the ecs for the user's character's "inputComponent".
 		if(this.user.inputQueue.length > 0)
 		{
 			var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);

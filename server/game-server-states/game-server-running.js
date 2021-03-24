@@ -38,6 +38,8 @@ class GameServerRunning extends GameServerBaseState {
 			aiAgents[i].update(dt);
 		}
 
+		//ECS TODO: CHANGE. Have the pre-physics systems run here.
+
 		//update characters
 		for(var i = 0; i < activeGameObjects.length; i++)
 		{
@@ -46,6 +48,8 @@ class GameServerRunning extends GameServerBaseState {
 
 		//physics update
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
+
+		//ECS TODO: CHANGE. Have the post-physics systems run here.
 
 		//send an empty packet to all users
 		for(var i = 0; i < activeUsers.length; i++)
@@ -56,6 +60,10 @@ class GameServerRunning extends GameServerBaseState {
 				wsh.createPacketForUser();
 			}
 		}
+
+
+		//ECS TODO: CHANGE. Have the Life Cycle systems run here.
+
 
 		//update managers
 		this.gs.wsm.update(dt);
@@ -186,6 +194,7 @@ class GameServerRunning extends GameServerBaseState {
 
 							var z = tm.playerSpawnZones[zIndex];
 
+							//ECS TODO: REMOVE. Change this to call a function to create an entity "Character". Then chnage this to grab each component and change them appropriately.
 							var c = this.gs.gom.createGameObject('character');
 							c.characterInit(this.gs);
 							c.ownerId = user.id;
@@ -490,6 +499,8 @@ class GameServerRunning extends GameServerBaseState {
 	{
 		var owner = this.globalfuncs.getOwner(this.gs, ownerId, ownerType);
 
+		//ECS TODO: REMOVE. Make it add a "gameObjectDestroy" tag or something like that instead of actually destroying it.
+
 		//as long as they have an existing character, kill it.
 		if(owner !== null && owner.characterId !== null)
 		{
@@ -497,7 +508,6 @@ class GameServerRunning extends GameServerBaseState {
 
 			if(c && c.ownerId === owner.id)
 			{
-				
 				this.gs.gom.destroyGameObject(c.id);
 			}
 		}

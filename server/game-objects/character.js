@@ -164,6 +164,8 @@ class Character {
 		{
 			if(this.inputQueue.length > 0)
 			{
+				/////////////////////////////////////////////////////
+				//ECS TODO: RELOCATE. Put this crap into an InputComponent or something.
 				//Step 1 - get the last known input, and THAT is the input this frame
 				var lastKnownInput = this.inputQueue[this.inputQueue.length - 1];
 	
@@ -178,6 +180,13 @@ class Character {
 	
 				this.isInputDirty = true;
 	
+				//
+				/////////////////////////////////////////////////////
+
+				/////////////////////////////////////////////////////
+				//ECS TODO: RELOCATE. Put the input consolidation and edge detection crap into the InputComponent.
+				//ECS TODO: RELOCATE. Put the loginc into a system.
+
 				//Step 2 - detect any events that occured within the potentially clumped inputs (such as firing a bullet)
 				for(var i = 0; i < this.inputQueue.length; i++)
 				{
@@ -219,13 +228,27 @@ class Character {
 	
 				//clear all inputs at the end of the frame
 				this.inputQueue.length = 0;
+
+				//
+				/////////////////////////////////////////////////////
 			}
 	
+
+
+
 			//debug
 			if(this.inputController["right"].state === false && this.inputController["right"].prevState === true)
 			{
 				var stophere = true;
 			}
+
+
+
+
+			/////////////////////////////////////////////////////
+			//ECS TODO: RELOCATE. Move to character movement scheme component/system.
+			// STOPPED HERE - need to relocate this stuff somewhere. Do I make 1 system to operate on MANY "force components"? Do I make 1 system to operate on a SPECIFIC "Movement Force Component"?
+			// Do I basically add 1 compoennt per thing I'm controlling? Or do I make just 1 component, call it "Force Compoennts" or something, and just make an array on that? And then have the systems control their individual force vectors that way?
 
 			//update state
 			this.walkingTargetVelVec.x = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.walkingVelMagMax;
