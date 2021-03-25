@@ -410,12 +410,13 @@ class GameServerRunning extends GameServerBaseState {
 
 					case "fromClientJoinTeam":
 						var existingTeamId = user.teamId;
-						var teams = this.gs.tm.getTeams();
 						var newTeamId = null;
-						var newTeam = teams.find((x) => {return x.slotNum === e.slotNum;});
 						var broadcastMessage = "";
 						var logEventMessage = "";
-						if(newTeam) {
+
+						var newTeam = this.gs.tm.getTeamByID(e.teamId);
+						
+						if(newTeam !== null) {
 							newTeamId = newTeam.id;
 						}
 

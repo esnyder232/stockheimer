@@ -31,9 +31,9 @@ export default class TeamSmallDiv {
 
 		for(var i = 0; i < teamsSorted.length; i++) {
 			var newButton = this.joinTeamButtonTemplate.clone();
-			newButton.on("click", this.joinTeamClick.bind(this, teamsSorted[i].slotNum));
+			newButton.on("click", this.joinTeamClick.bind(this, teamsSorted[i].serverId));
 			newButton.attr("value", teamsSorted[i].name);
-			newButton.attr("id", "join-team-button-" + teamsSorted[i].id);
+			newButton.attr("id", "join-team-button-" + teamsSorted[i].serverId);
 			newButton.removeClass("hide");
 
 			this.teamButtonContainer.append(newButton);
@@ -41,13 +41,13 @@ export default class TeamSmallDiv {
 		}
 	}
 
-	joinTeamClick(slotNum) {
+	joinTeamClick(serverId) {
 		console.log('team aguiowhliugera');
-		console.log('team id clicked ' + slotNum);
+		console.log('team id clicked ' + serverId);
 		
 		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientJoinTeam",
-			"slotNum": slotNum
+			"teamId": serverId
 		});
 	}
 	
