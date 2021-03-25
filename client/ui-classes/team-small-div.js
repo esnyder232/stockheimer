@@ -1,4 +1,5 @@
 import $ from "jquery"
+import GlobalFuncs from "../global-funcs.js"
 
 export default class TeamSmallDiv {
 	constructor() {
@@ -7,19 +8,30 @@ export default class TeamSmallDiv {
 
 	reset() {
 		this.gc = null;
+		this.globalfuncs = null;
 
 		this.teamSmallDiv = null;
 		this.teamButtonContainer = null;
 		this.joinTeamButtonTemplate = null;
 
 		this.joinTeamButtonArray = [];
+		this.windowsEventMapping = [];
 	}
 
 	init(gc) {
 		this.gc = gc;
+
+		this.globalfuncs = new GlobalFuncs();
 	}
 
 	activate() {
+		//register window event mapping
+		this.windowsEventMapping = [
+			{event: 'close-team-small-div', func: this.closeTeamSmallDiv.bind(this)}
+		];
+
+		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
+
 		//grab all the ui elements
 		this.teamSmallDiv = $("#team-small-div");
 		this.teamButtonContainer = $("#team-button-container");
@@ -42,17 +54,18 @@ export default class TeamSmallDiv {
 	}
 
 	joinTeamClick(serverId) {
-		console.log('team aguiowhliugera');
-		console.log('team id clicked ' + serverId);
-		
 		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientJoinTeam",
 			"teamId": serverId
 		});
 	}
+
+	closeTeamSmallDiv() {
+		this.teamSmallDiv.addClass("hide");
+	}
 	
 	deactivate() {
-		
+		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 
 		for(var i = 0; i < this.joinTeamButtonArray.length; i++)
 		{
