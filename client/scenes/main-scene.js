@@ -3,7 +3,9 @@ import GlobalFuncs from "../global-funcs.js"
 import config from '../client-config.json';
 import PlayerController from "../classes/player-controller.js"
 import ClientConstants from "../client-constants.js"
-import TeamSmallDiv from "../ui-classes/team-small-div.js"
+import TeamMenu from "../ui-classes/team-menu.js"
+import QuickMenu from "../ui-classes/quick-menu.js"
+import MainMenu from "../ui-classes/main-menu.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -105,9 +107,9 @@ export default class MainScene extends Phaser.Scene {
 
 		this.characterBorderThickness = 3;
 
-		this.teamSmallDiv = null;
-
-
+		this.quickMenu = null;
+		this.teamMenu = null;
+		this.mainMenu = null;
 	}
 
 	init(data) {
@@ -145,6 +147,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//custom registers
 		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
+		$(window).on("keyup", this.windowInputKeyup.bind(this));
 
 		//custom register on enter and stuff for pointer mode
 		$("#tb-chat-input").on("click", this.chatInputClick.bind(this));
@@ -174,13 +177,29 @@ export default class MainScene extends Phaser.Scene {
 			killCharacterBtn.addClass("hide");
 		}
 
-		//created ui classes
-		this.teamSmallDiv = new TeamSmallDiv();
-		this.teamSmallDiv.init(this.gc);
+		//created menus and small divs
+		this.quickMenu = new QuickMenu();
+		this.teamMenu = new TeamMenu();
+		this.mainMenu = new MainMenu();
+
+		this.teamMenu.init(this.gc);
+		this.quickMenu.init(this.gc);
+		this.mainMenu.init(this.gc);
 	}
 
-	documentScroll(e) {
+	windowInputKeyup(e) {
+		switch(e.code) {
+			case "Escape":
+				window.dispatchEvent(new CustomEvent("toggle-main-menu"));
+				break;
+			case "Comma":
+				window.dispatchEvent(new CustomEvent("toggle-team-menu"));
+				break;
+		}
+	}
 
+
+	documentScroll(e) {
 		if(this.gc.myCharacter !== null)
 		{
 			//browser mode
@@ -227,6 +246,12 @@ export default class MainScene extends Phaser.Scene {
 				this.setCameraZoom();
 			}
 		}
+	}
+
+	//used to close all menus within the menu group
+	closeMenuGroup() {
+		this.mainMenu.closeMenu();
+		this.teamMenu.closeMenu();
 	}
 
 	chatInputClick(e) {
@@ -283,7 +308,9 @@ export default class MainScene extends Phaser.Scene {
 		this.cameras.main.setRoundPixels(true);
 
 		//activated ui classes
-		this.teamSmallDiv.activate();
+		this.teamMenu.activate();
+		this.quickMenu.activate();
+		this.mainMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -343,6 +370,8 @@ export default class MainScene extends Phaser.Scene {
 
 
 		$("#tb-chat-input").off("keyup");
+		$(window).off("keyup");
+
 		$("#tb-chat-input").off("click");
 		$("#tb-enemy-password").off("click");
 		$("#ui-div").off("click");
@@ -357,8 +386,13 @@ export default class MainScene extends Phaser.Scene {
 			this.playerController.shutdown();
 		}
 
-		this.teamSmallDiv.deactivate();
-		this.teamSmallDiv.deinit();
+		this.teamMenu.deactivate();
+		this.quickMenu.deactivate();
+		this.mainMenu.deactivate();
+
+		this.teamMenu.deinit();
+		this.quickMenu.deinit();
+		this.mainMenu.deinit();
 	}
 
 	exitGameClick() {

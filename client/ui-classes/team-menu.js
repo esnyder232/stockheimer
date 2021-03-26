@@ -1,7 +1,7 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 
-export default class TeamSmallDiv {
+export default class TeamMenu {
 	constructor() {
 		this.reset();
 	}
@@ -9,8 +9,9 @@ export default class TeamSmallDiv {
 	reset() {
 		this.gc = null;
 		this.globalfuncs = null;
+		this.isVisible = false;
 
-		this.teamSmallDiv = null;
+		this.menu = null;
 		this.teamButtonContainer = null;
 		this.joinTeamButtonTemplate = null;
 
@@ -27,13 +28,14 @@ export default class TeamSmallDiv {
 	activate() {
 		//register window event mapping
 		this.windowsEventMapping = [
-			{event: 'close-team-small-div', func: this.closeTeamSmallDiv.bind(this)}
+			{event: 'toggle-team-menu', func: this.toggleMenu.bind(this)},
+			{event: 'close-team-menu', func: this.closeMenu.bind(this)}
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		//grab all the ui elements
-		this.teamSmallDiv = $("#team-small-div");
+		this.menu = $("#team-small-div");
 		this.teamButtonContainer = $("#team-button-container");
 		this.joinTeamButtonTemplate = $("#join-team-buttom-template");
 
@@ -60,8 +62,29 @@ export default class TeamSmallDiv {
 		});
 	}
 
-	closeTeamSmallDiv() {
-		this.teamSmallDiv.addClass("hide");
+	toggleMenu() {
+		if(this.isVisible) {
+			this.closeMenu();
+			window.dispatchEvent(new CustomEvent("team-menu-closed"));
+		}
+		else {
+			this.openMenu();
+			window.dispatchEvent(new CustomEvent("team-menu-opened"));
+		}
+	}
+
+	closeMenu() {
+		this.menu.addClass("hide");
+		this.isVisible = false;
+	}
+
+	openMenu() {
+		if(this.gc.mainScene !== null)
+		{
+			this.gc.mainScene.closeMenuGroup();
+		}
+		this.menu.removeClass("hide");
+		this.isVisible = true;
 	}
 	
 	deactivate() {

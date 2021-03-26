@@ -225,6 +225,7 @@ input[type="text"]:disabled {
 .chat-history-item {
 	width: 100%;
 	float: left;
+	text-shadow: 1px 1px #000000;
 }
 
 .chat-history-ts {
@@ -384,7 +385,45 @@ input.join-team-button {
 }
 
 
+.quick-menu-wrapper {
+	position: absolute;
+	bottom: 0px;
+}
 
+.quick-menu {
+	position: relative;
+	float:left;
+	height: 40px;
+	background-color: rgba(0, 0, 0, 0.5);
+	border-color:#cccccc;
+	border-radius: 0px 20px 0px 0px;
+	border-width: 16px 16px 0px 0px;
+	border-style: solid;
+	padding: 4px 4px 4px 4px
+}
+
+
+.quick-menu-container {
+	float: left;
+	margin-top: 5px;
+}
+
+.quick-menu-icon {
+	float: left;
+	height: 32px;
+	width: 32px;
+	cursor: pointer;
+	pointer-events: all;
+	padding: 0px 4px 0px 4px;
+}
+
+.quick-menu-icon:hover {
+	background-color: yellow;
+}
+
+.quick-menu-icon-visible {
+	background-color: orange;
+}
 
 
 .lobby-panel-section {

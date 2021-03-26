@@ -80,11 +80,11 @@
 					<h1>Disconnecting...</h1>
 				</div>
 				<div class="scene-root hide" id="main-scene-root">
-					<div class="small-div-wrapper">
-						<div class="hide small-div-container" id="team-small-div">
+					<div class="hide small-div-wrapper" id="team-small-div">
+						<div class="small-div-container">
 							<div class="small-div-close-container">
-								<div class="small-div-close-button" onclick="window.dispatchEvent(new CustomEvent('close-team-small-div'));">
-									<img class="small-div-close-button" click.delegate="deleteDetailsRowGrandchild(n, n.parameters, p)" src="assets/images/x-mark.png" />
+								<div class="small-div-close-button" onclick="window.dispatchEvent(new CustomEvent('close-team-menu'));">
+									<img class="small-div-close-button" src="assets/images/x-mark.png" />
 								</div>
 							</div>
 							<div class="small-div-title">
@@ -96,6 +96,37 @@
 							</div>
 						</div>		
 					</div>
+
+					<div class="small-div-wrapper" id="main-menu-small-div">
+						<div class="small-div-container">
+							<div class="small-div-close-container">
+								<div class="small-div-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
+									<img class="small-div-close-button" src="assets/images/x-mark.png" />
+								</div>
+							</div>
+							<div class="small-div-title">
+								<span>Main Menu</span>
+							</div>
+							<div class="team-button-container" id="team-button-container">
+								<input type="button" class="join-team-button" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));"/>
+							</div>
+						</div>		
+					</div>
+
+
+
+					<div class="quick-menu-wrapper">
+						<div class="quick-menu" id="quick-menu">
+							<div class="quick-menu-container">
+								<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
+								<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
+								<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('open-chat-click'));"/>
+								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('open-user-list-click'));"/>
+								<img class="quick-menu-icon" id="quick-menu-debug-console" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('open-debug-console-click'));"/>
+							</div>
+						</div>
+					</div>
+
 					<div class="panel">
 						<div class="user-list" id="user-list">
 							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
@@ -127,7 +158,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="log-div">
+				<div class="hide log-div">
 					<div class="input-controls-div main-scene-buttons hide">
 						<input type="button" id="exit-game" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
 						<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
