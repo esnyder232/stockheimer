@@ -40,8 +40,6 @@ input[type="text"]:disabled {
 	border-color: #47494b;
 }
 
-#game-div {}
-
 #ui-div {
 	position: absolute;
 	top:0px;
@@ -186,26 +184,187 @@ input[type="text"]:disabled {
 	height: 75%;
 }
 
-.chat-div-wrapper {
-	width: 100%;
-	float: right;
-	height: 85%;
-	padding-bottom: 27px;
-}
-.chat-div {
+
+.debug-div {
 	width: 50%;
 	float: right;
+	margin-top: 14px;
+	background-color: rgba(0, 0, 0, 0.5);
 	max-width: 500px;
+}
+
+
+.capture-pointer-events {
+	pointer-events: all;
+}
+
+.ignore-pointer-events {
+	pointer-events: none;
+}
+
+.main-scene-buttons-misc {
+	position:absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
 	height: 100%;
 }
 
-.chat-history {
-	float: left;
+#create-character {
+	margin-right: 12px;
+	color:green
+}
+
+#kill-character {
+	color:rgb(255, 107, 107);
+}
+
+#exit-game {
+	margin-right: 12px;
+}
+
+.lobby-login-container {
+	width: 100%;
+	height: 33%;
+}
+
+.lobby-info-container {
+	width: 100%;
+	height: 67%;
+}
+
+.lobby-panel {
+	width: 50%;
+	float:left;
+	vertical-align: top;
+	height: 39%;
+}
+
+.info-container {
+	width: 80%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	overflow-y: auto;
+	border-color:#cccccc;
+	border-radius: 20px;
+	border-width: 16px;
+	border-style: solid;
+	padding: 0px 12px 0px 12px;
+	color: #cccccc;
+	margin: 0px auto;
+}
+
+.menu-wrapper {
+	position:absolute;
 	width: 100%;
 	height: 100%;
-	border: 1px solid red;
-	overflow-y: scroll;
+	pointer-events: none;
+}
+
+.menu-container {
+	width: 310px;
 	background-color: rgba(0, 0, 0, 0.5);
+	overflow-y: auto;
+	border-color:#cccccc;
+	border-radius: 20px;
+	border-width: 16px;
+	border-style: solid;
+	padding: 0px 12px 12px 12px;
+	color: #cccccc;
+	position: relative;
+	margin: 10% auto;
+}
+
+.menu-title {
+	width: 100%;
+	font-size: 36px;
+	font-weight: bold;
+	text-align: center;
+	margin-top:6px;
+	margin-bottom:24px;
+}
+
+.menu-close-container {
+	width:100%;
+	height: 24px;
+}
+
+.menu-close-button {
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	float: right;
+	margin-top: 6px;
+	pointer-events: all;
+}
+
+
+
+.small-menu-wrapper {
+	position:absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.small-menu-container {
+	background-color: rgba(0, 0, 0, 0.5);
+	border-color:#cccccc;
+	border-radius: 10px;
+	border-width: 8px;
+	border-style: solid;
+	padding: 0px 6px 6px 6px;
+	color: #cccccc;
+	position: absolute;
+}
+
+.small-menu-close-container {
+	top: -22px;
+	right: -22px;
+	position: absolute;
+	background-color: #cccccc;
+	border-color:#cccccc;
+	border-radius: 50px;
+	border-width: 8px;
+	border-style: solid;
+}
+
+.small-menu-close-button {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+	float: right;
+	pointer-events: all;
+}
+
+.small-menu-contents {
+	position: relative;
+}
+
+
+.chat-menu-container {
+	bottom: 70px;
+	left: 10px;
+	height: 50%;
+}
+
+.chat-menu-contents {
+	width: 300px;
+	height: 100%;
+}
+
+
+
+
+
+
+.chat-history {
+	position: absolute;
+	bottom: 32px;
+	left: 0px;
+	width: 100%;
+	height: 92%;
+	overflow-y: scroll;
 }
 
 .chat-history::-webkit-scrollbar {
@@ -250,132 +409,29 @@ input[type="text"]:disabled {
 }
 
 .chat-input-container {
-	float: left;
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
 	width: 100%;
-	border: 1px solid yellow;
 }
 
 .tb-chat-input {
 	float:left;
-	width:85%;
-}
-
-.debug-div {
-	width: 50%;
-	float: right;
-	margin-top: 14px;
-	background-color: rgba(0, 0, 0, 0.5);
-	max-width: 500px;
-}
-
-
-.capture-pointer-events {
+	width:80%;
 	pointer-events: all;
-}
-
-.ignore-pointer-events {
-	pointer-events: none;
-}
-
-.main-scene-buttons-misc {
-	position:absolute;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 100%;
-}
-
-#create-character {
-	margin-right: 12px;
-	color:green
-}
-
-#kill-character {
-	color:rgb(255, 107, 107);
-}
-
-#exit-game {
-	margin-right: 12px;
 }
 
 .tb-chat-submit {
 	float: left;
-}
-
-.lobby-login-container {
-	width: 100%;
-	height: 33%;
-}
-
-.lobby-info-container {
-	width: 100%;
-	height: 67%;
-}
-
-.lobby-panel {
-	width: 50%;
-	float:left;
-	vertical-align: top;
-	height: 39%;
-}
-
-.info-container {
-	width: 80%;
-	height: 100%;
-	background-color: rgba(0, 0, 0, 0.5);
-	overflow-y: auto;
-	border-color:#cccccc;
-	border-radius: 20px;
-	border-width: 16px;
-	border-style: solid;
-	padding: 0px 12px 0px 12px;
-	color: #cccccc;
-	margin: 0px auto;
-}
-
-.small-div-wrapper {
-	position:absolute;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-}
-
-.small-div-container {
-	width: 310px;
-	background-color: rgba(0, 0, 0, 0.5);
-	overflow-y: auto;
-	border-color:#cccccc;
-	border-radius: 20px;
-	border-width: 16px;
-	border-style: solid;
-	padding: 0px 12px 12px 12px;
-	color: #cccccc;
-	position: relative;
-	margin: 10% auto;
-}
-
-.small-div-title {
-	width: 100%;
-	font-size: 36px;
-	font-weight: bold;
-	text-align: center;
-	margin-top:6px;
-	margin-bottom:24px;
-}
-
-.small-div-close-container {
-	width:100%;
-	height: 24px;
-}
-
-.small-div-close-button {
-	width: 20px;
-	height: 20px;
-	cursor: pointer;
-	float: right;
-	margin-top: 6px;
+	width: 15%;
 	pointer-events: all;
 }
+
+
+
+
+
+
 
 input.join-team-button {
 	width: 80%;

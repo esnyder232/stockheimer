@@ -1,7 +1,7 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 
-export default class MainMenu {
+export default class ChatMenu {
 	constructor() {
 		this.reset();
 	}
@@ -25,14 +25,14 @@ export default class MainMenu {
 	activate() {
 		//register window event mapping
 		this.windowsEventMapping = [
-			{event: 'toggle-main-menu',  func: this.toggleMenu.bind(this)},
-			{event: 'close-main-menu', func: this.closeMenu.bind(this)}
+			{event: 'toggle-chat-menu',  func: this.toggleMenu.bind(this)},
+			{event: 'close-chat-menu', func: this.closeMenu.bind(this)}
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		//grab all the ui elements
-		this.menu = $("#main-menu");
+		this.menu = $("#chat-menu");
 	}
 
 	toggleMenu() {
@@ -41,22 +41,18 @@ export default class MainMenu {
 		}
 		else {
 			this.openMenu();
-			window.dispatchEvent(new CustomEvent("main-menu-opened"));
+			window.dispatchEvent(new CustomEvent("chat-menu-opened"));
 		}
 	}
 
 	openMenu() {
-		if(this.gc.mainScene !== null)
-		{
-			this.gc.mainScene.closeMenuGroup();
-		}
 		this.menu.removeClass("hide");
 		this.isVisible = true;
 	}
 
 	closeMenu() {
 		this.menu.addClass("hide");
-		window.dispatchEvent(new CustomEvent("main-menu-closed"));
+		window.dispatchEvent(new CustomEvent("chat-menu-closed"));
 		this.isVisible = false;
 	}
 	

@@ -80,14 +80,14 @@
 					<h1>Disconnecting...</h1>
 				</div>
 				<div class="scene-root hide" id="main-scene-root">
-					<div class="hide small-div-wrapper" id="team-small-div">
-						<div class="small-div-container">
-							<div class="small-div-close-container">
-								<div class="small-div-close-button" onclick="window.dispatchEvent(new CustomEvent('close-team-menu'));">
-									<img class="small-div-close-button" src="assets/images/x-mark.png" />
+					<div class="hide menu-wrapper" id="team-menu">
+						<div class="menu-container">
+							<div class="menu-close-container">
+								<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-team-menu'));">
+									<img class="menu-close-button" src="assets/images/x-mark.png" />
 								</div>
 							</div>
-							<div class="small-div-title">
+							<div class="menu-title">
 								<span>Join a Team</span>
 							</div>
 							<div class="team-button-container" id="team-button-container">
@@ -97,14 +97,14 @@
 						</div>		
 					</div>
 
-					<div class="small-div-wrapper" id="main-menu-small-div">
-						<div class="small-div-container">
-							<div class="small-div-close-container">
-								<div class="small-div-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
-									<img class="small-div-close-button" src="assets/images/x-mark.png" />
+					<div class="hide menu-wrapper" id="main-menu">
+						<div class="menu-container">
+							<div class="menu-close-container">
+								<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
+									<img class="menu-close-button" src="assets/images/x-mark.png" />
 								</div>
 							</div>
-							<div class="small-div-title">
+							<div class="menu-title">
 								<span>Main Menu</span>
 							</div>
 							<div class="team-button-container" id="team-button-container">
@@ -113,29 +113,14 @@
 						</div>		
 					</div>
 
-
-
-					<div class="quick-menu-wrapper">
-						<div class="quick-menu" id="quick-menu">
-							<div class="quick-menu-container">
-								<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('open-chat-click'));"/>
-								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('open-user-list-click'));"/>
-								<img class="quick-menu-icon" id="quick-menu-debug-console" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('open-debug-console-click'));"/>
+					<div class="small-menu-wrapper" id="chat-menu">
+						<div class="small-menu-container chat-menu-container">
+							<div class="small-menu-close-container">
+								<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-chat-menu'));">
+									<img class="small-menu-close-button" src="assets/images/x-mark.png" />
+								</div>
 							</div>
-						</div>
-					</div>
-
-					<div class="panel">
-						<div class="user-list" id="user-list">
-							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
-							<div class="user-list-item hide" id="user-list-item-template"></div>
-						</div>
-					</div>
-					<div class="panel">
-						<div class="chat-div-wrapper">
-							<div class="chat-div">
+							<div class="small-menu-contents chat-menu-contents">
 								<div class="chat-history" id="chat-history">
 									<div class="chat-history-item hide" id="chat-history-item-template">
 										<div class="chat-history-ts" name="chat-history-ts"></div>
@@ -149,6 +134,27 @@
 								</div>
 							</div>
 						</div>
+					</div>
+
+					<div class="quick-menu-wrapper">
+						<div class="quick-menu" id="quick-menu">
+							<div class="quick-menu-container">
+								<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
+								<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
+								<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
+								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('open-user-list-click'));"/>
+								<img class="quick-menu-icon" id="quick-menu-debug-console" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('open-debug-console-click'));"/>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel">
+						<div class="user-list" id="user-list">
+							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
+							<div class="user-list-item hide" id="user-list-item-template"></div>
+						</div>
+					</div>
+					<div class="panel">
 						<div class="debug-div" id="debug-div">
 							<div>Debug Information:</div>
 							<div id="debug-x"></div>

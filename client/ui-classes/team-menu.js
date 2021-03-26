@@ -35,7 +35,7 @@ export default class TeamMenu {
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		//grab all the ui elements
-		this.menu = $("#team-small-div");
+		this.menu = $("#team-menu");
 		this.teamButtonContainer = $("#team-button-container");
 		this.joinTeamButtonTemplate = $("#join-team-buttom-template");
 
@@ -65,7 +65,6 @@ export default class TeamMenu {
 	toggleMenu() {
 		if(this.isVisible) {
 			this.closeMenu();
-			window.dispatchEvent(new CustomEvent("team-menu-closed"));
 		}
 		else {
 			this.openMenu();
@@ -75,6 +74,7 @@ export default class TeamMenu {
 
 	closeMenu() {
 		this.menu.addClass("hide");
+		window.dispatchEvent(new CustomEvent("team-menu-closed"));
 		this.isVisible = false;
 	}
 
