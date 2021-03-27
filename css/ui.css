@@ -61,6 +61,10 @@ input[type="text"]:disabled {
 	display:none !important;
 }
 
+.invisible {
+	visibility: hidden;
+}
+
 .loading-text {
 	/* position:absolute; */
 	margin: 0px auto;
@@ -259,6 +263,7 @@ input[type="text"]:disabled {
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
+	z-index: 100;
 }
 
 .menu-container {
@@ -305,6 +310,7 @@ input[type="text"]:disabled {
 	width: 100%;
 	height: 100%;
 	pointer-events: none;
+	z-index: 50;
 }
 
 .small-menu-container {
@@ -342,6 +348,23 @@ input[type="text"]:disabled {
 }
 
 
+
+
+.ui-list-container {
+	position:absolute;
+	pointer-events: none;
+}
+
+.ui-list-contents {
+	position: relative;
+}
+
+
+
+
+
+
+
 .chat-menu-container {
 	bottom: 70px;
 	left: 10px;
@@ -349,22 +372,18 @@ input[type="text"]:disabled {
 }
 
 .chat-menu-contents {
-	width: 300px;
+	width: 400px;
 	height: 100%;
 }
 
-
-
-
-
-
 .chat-history {
 	position: absolute;
-	bottom: 32px;
+	bottom: 31px;
 	left: 0px;
 	width: 100%;
 	height: 92%;
 	overflow-y: scroll;
+	pointer-events: all;
 }
 
 .chat-history::-webkit-scrollbar {
@@ -388,23 +407,18 @@ input[type="text"]:disabled {
 }
 
 .chat-history-ts {
-	float: left;
 	font-size: 14px;
 	margin-top: 4px;
 	font-style: italic;
 }
 
 .chat-history-name {
-	float: left;
 	font-size: 18px;
 	font-weight: bold;
-	margin-left: 4px;
 }
 
 .chat-history-msg {
-	float: left;
 	font-size: 18px;
-	margin-left: 4px;
 	word-break: break-word;
 }
 
@@ -431,6 +445,45 @@ input[type="text"]:disabled {
 
 
 
+.chat-menu-minified-container {
+	bottom: 115px;
+	left: 24px;
+	height: 50%;
+}
+
+.chat-menu-minified-contents {
+	width: 400px;
+	height: 100%;
+	overflow-y: hidden;
+}
+
+
+.chat-history-minified-item {
+	width: 100%;
+	float: left;
+	text-shadow: 1px 1px #000000;
+}
+
+.chat-history-minified-item-inner-wrapper {
+	float: left;
+	background-color: rgba(0.3, 0.3, 0.3, 0.3);
+}
+
+.fade-out {
+	opacity: 0;
+	transition: opacity 10s ease-in;
+}
+
+
+.chat-history-minified-wrapper {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+}
+
+.chat-history-minifed {
+	position: relative;
+}
 
 
 input.join-team-button {

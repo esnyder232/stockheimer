@@ -113,7 +113,7 @@
 						</div>		
 					</div>
 
-					<div class="small-menu-wrapper" id="chat-menu">
+					<div class="hide small-menu-wrapper" id="chat-menu">
 						<div class="small-menu-container chat-menu-container">
 							<div class="small-menu-close-container">
 								<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-chat-menu'));">
@@ -123,14 +123,30 @@
 							<div class="small-menu-contents chat-menu-contents">
 								<div class="chat-history" id="chat-history">
 									<div class="chat-history-item hide" id="chat-history-item-template">
-										<div class="chat-history-ts" name="chat-history-ts"></div>
-										<div class="chat-history-name" name="chat-history-name"></div>
-										<div class="chat-history-msg" name="chat-history-msg"></div>
+										<span class="chat-history-ts" name="chat-history-ts"></span>
+										<span class="chat-history-name" name="chat-history-name"></span>
+										<span class="chat-history-msg" name="chat-history-msg"></span>
 									</div>
 								</div>
 								<div class="chat-input-container">
 									<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="Chat message" maxlength="400"/>
 									<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="ui-list-container chat-menu-minified-container" id="chat-menu-minified">
+						<div class="ui-list-contents chat-menu-minified-contents">
+							<div class="chat-history-minified-wrapper">
+								<div class="chat-history-minifed" id="chat-history-minified">
+									<div class="chat-history-minified-item invisible" id="chat-history-minified-item-template">
+										<div class="chat-history-minified-item-inner-wrapper">
+											<span class="chat-history-ts" name="chat-history-minified-ts"></span>
+											<span class="chat-history-name" name="chat-history-minified-name"></span>
+											<span class="chat-history-msg" name="chat-history-minified-msg"></span>	
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

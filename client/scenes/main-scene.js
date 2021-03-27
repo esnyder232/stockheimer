@@ -7,6 +7,8 @@ import TeamMenu from "../ui-classes/team-menu.js"
 import QuickMenu from "../ui-classes/quick-menu.js"
 import MainMenu from "../ui-classes/main-menu.js"
 import ChatMenu from "../ui-classes/chat-menu.js"
+import ChatMenuMinified from "../ui-classes/chat-menu-minified.js"
+
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -112,6 +114,8 @@ export default class MainScene extends Phaser.Scene {
 		this.teamMenu = null;
 		this.mainMenu = null;
 		this.chatMenu = null;
+		this.chatMenuMinified = null;
+		
 	}
 
 	init(data) {
@@ -184,11 +188,13 @@ export default class MainScene extends Phaser.Scene {
 		this.teamMenu = new TeamMenu();
 		this.mainMenu = new MainMenu();
 		this.chatMenu = new ChatMenu();
+		this.chatMenuMinified = new ChatMenuMinified();
 
 		this.teamMenu.init(this.gc);
 		this.quickMenu.init(this.gc);
 		this.mainMenu.init(this.gc);
 		this.chatMenu.init(this.gc);
+		this.chatMenuMinified.init(this.gc);
 	}
 
 	windowInputKeyup(e) {
@@ -320,6 +326,7 @@ export default class MainScene extends Phaser.Scene {
 		this.quickMenu.activate();
 		this.mainMenu.activate();
 		this.chatMenu.activate();
+		this.chatMenuMinified.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -399,11 +406,15 @@ export default class MainScene extends Phaser.Scene {
 		this.quickMenu.deactivate();
 		this.mainMenu.deactivate();
 		this.chatMenu.deactivate();
+		this.chatMenuMinified.deactivate();
 
 		this.teamMenu.deinit();
 		this.quickMenu.deinit();
 		this.mainMenu.deinit();
 		this.chatMenu.deinit();
+		this.chatMenuMinified.deinit();
+
+		
 	}
 
 	exitGameClick() {

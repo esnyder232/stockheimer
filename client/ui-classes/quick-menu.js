@@ -37,6 +37,11 @@ export default class QuickMenu {
 		this.mainMenuIcon = $("#quick-menu-main-menu");
 		this.teamMenuIcon = $("#quick-menu-team");
 		this.chatIcon = $("#quick-menu-chat");
+
+		//reset to initial state
+		this.mainMenuClosed();
+		this.teamMenuClosed();
+		this.chatMenuClosed();
 	}
 
 

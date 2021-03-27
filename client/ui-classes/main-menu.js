@@ -17,6 +17,7 @@ export default class MainMenu {
 	}
 
 	init(gc) {
+		this.reset();
 		this.gc = gc;
 
 		this.globalfuncs = new GlobalFuncs();
@@ -33,6 +34,10 @@ export default class MainMenu {
 
 		//grab all the ui elements
 		this.menu = $("#main-menu");
+
+		//reset to initial state
+		this.menu.addClass("hide");
+		this.isVisible = false;
 	}
 
 	toggleMenu() {
