@@ -112,6 +112,15 @@ export default class GameClient {
 			this.phaserGame.input.keyboard.enabled = true;
 		});
 
+		document.addEventListener("keydown", (e) => {
+			switch(e.code)
+			{
+				case "Tab":
+					e.preventDefault();
+					break;
+			}
+		})
+
 		//fetch the game constants
 		$.ajax({url: "./shared_files/game-constants.json", method: "GET"})
 		.done((responseData, textStatus, xhr) => {

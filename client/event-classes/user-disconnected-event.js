@@ -12,5 +12,7 @@ export default class UserDisconnectedEvent {
 	processEvent(e)
 	{
 		this.gc.um.destroyUserServerId(e.userId);
+
+		this.gc.mainScene.userListMenu.userDisconnectedEvent(e);
 	}
 }

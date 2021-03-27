@@ -136,6 +136,21 @@
 						</div>
 					</div>
 
+					<div class="small-menu-wrapper-center" id="user-list-menu">
+						<div class="small-menu-container-center user-list-menu-container">
+							<div class="small-menu-close-container">
+								<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-user-list-menu'));">
+									<img class="small-menu-close-button" src="assets/images/x-mark.png" />
+								</div>
+							</div>
+							<div class="small-menu-contents user-list-menu-contents" id="user-list">
+								<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
+								<div class="user-list-item hide" id="user-list-item-template"></div>
+							</div>
+						</div>
+					</div>
+
+
 					<div class="ui-list-container chat-menu-minified-container" id="chat-menu-minified">
 						<div class="ui-list-contents chat-menu-minified-contents">
 							<div class="chat-history-minified-wrapper">
@@ -158,17 +173,13 @@
 								<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
 								<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
 								<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('open-user-list-click'));"/>
+								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
 								<img class="quick-menu-icon" id="quick-menu-debug-console" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('open-debug-console-click'));"/>
 							</div>
 						</div>
 					</div>
 
 					<div class="panel">
-						<div class="user-list" id="user-list">
-							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
-							<div class="user-list-item hide" id="user-list-item-template"></div>
-						</div>
 					</div>
 					<div class="panel">
 						<div class="debug-div" id="debug-div">

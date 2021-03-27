@@ -23,5 +23,8 @@ export default class UserConnectedEvent {
 				this.gc.myUser = u;
 			}
 		}
+
+		this.gc.mainScene.userListMenu.userConnectedEvent(e);
+
 	}
 }

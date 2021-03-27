@@ -14,5 +14,7 @@ export default class UpdateUserInfoEvent {
 		{
 			u.UpdateUserInfoEvent(e)
 		}
+
+		this.gc.mainScene.userListMenu.updateUserInfoEvent(e);
 	}
 }
