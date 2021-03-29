@@ -31,6 +31,8 @@ export default class QuickMenu {
 			{event: 'chat-menu-closed', func: this.chatMenuClosed.bind(this)},
 			{event: 'user-list-menu-opened', func: this.userListMenuOpened.bind(this)},
 			{event: 'user-list-menu-closed', func: this.userListMenuClosed.bind(this)},
+			{event: 'debug-menu-opened', func: this.debugMenuOpened.bind(this)},
+			{event: 'debug-menu-closed', func: this.debugMenuClosed.bind(this)},
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -40,11 +42,13 @@ export default class QuickMenu {
 		this.teamMenuIcon = $("#quick-menu-team");
 		this.chatIcon = $("#quick-menu-chat");
 		this.userListIcon = $("#quick-menu-user-list");
+		this.debugIcon = $("#quick-menu-debug");
 
 		//reset to initial state
 		this.mainMenuClosed();
 		this.teamMenuClosed();
 		this.chatMenuClosed();
+		this.debugMenuClosed();
 	}
 
 
@@ -91,6 +95,14 @@ export default class QuickMenu {
 		this.userListIcon.removeClass("quick-menu-icon-visible");
 	}
 
+
+	debugMenuOpened() {
+		this.debugIcon.addClass("quick-menu-icon-visible");
+	}
+
+	debugMenuClosed() {
+		this.debugIcon.removeClass("quick-menu-icon-visible");
+	}
 
 
 

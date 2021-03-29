@@ -9,6 +9,7 @@ import MainMenu from "../ui-classes/main-menu.js"
 import ChatMenu from "../ui-classes/chat-menu.js"
 import ChatMenuMinified from "../ui-classes/chat-menu-minified.js"
 import UserListMenu from "../ui-classes/user-list-menu.js"
+import DebugMenu from "../ui-classes/debug-menu.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -116,6 +117,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu = null;
 		this.chatMenuMinified = null;
 		this.userListMenu = null;
+		this.debugMenu = null;
 		
 	}
 
@@ -191,6 +193,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu = new ChatMenu();
 		this.chatMenuMinified = new ChatMenuMinified();
 		this.userListMenu = new UserListMenu();
+		this.debugMenu = new DebugMenu();
 
 		this.teamMenu.init(this.gc);
 		this.quickMenu.init(this.gc);
@@ -198,6 +201,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.init(this.gc);
 		this.chatMenuMinified.init(this.gc);
 		this.userListMenu.init(this.gc);
+		this.debugMenu.init(this.gc);
 	}
 
 	windowInputKeyup(e) {
@@ -302,7 +306,6 @@ export default class MainScene extends Phaser.Scene {
 		console.log('stockheimerActivate on ' + this.scene.key + ' start');
 
 		$("#main-scene-root").removeClass("hide");
-		$(".main-scene-buttons").removeClass("hide");
 
 		this.cameras.main.setZoom(this.cameraZoom);
 		this.cameras.main.scrollX = 0;
@@ -334,6 +337,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.activate();
 		this.chatMenuMinified.activate();
 		this.userListMenu.activate();
+		this.debugMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -402,7 +406,6 @@ export default class MainScene extends Phaser.Scene {
 		$("#game-div").off("wheel");
 
 		$("#main-scene-root").addClass("hide");
-		$(".main-scene-buttons").addClass("hide");
 
 		if(this.playerController !== null)
 		{
@@ -415,6 +418,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.deactivate();
 		this.chatMenuMinified.deactivate();
 		this.userListMenu.deactivate();
+		this.debugMenu.deactivate();
 
 		this.teamMenu.deinit();
 		this.quickMenu.deinit();
@@ -422,6 +426,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.deinit();
 		this.chatMenuMinified.deinit();
 		this.userListMenu.deinit();
+		this.debugMenu.deinit();
 	}
 
 	exitGameClick() {

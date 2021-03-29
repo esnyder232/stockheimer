@@ -167,6 +167,26 @@
 						</div>
 					</div>
 
+					<div class="hide debug-menu-wrapper" id="debug-menu">
+						<div class="debug-menu-container debug-log-container">
+							<div class="debug-menu-contents debug-log-contents">
+								<div class="debug-title">Debug Log</div>
+								<div class="debug-log" id="debug-log" readonly></div>
+							</div>
+						</div>
+
+						<div class="debug-menu-container debug-input-container">
+							<div class="debug-menu-contents debug-input-contents">
+								<div class="debug-title">Input Information:</div>
+								<div id="debug-x"></div>
+								<div id="debug-y"></div>
+								<div id="debug-is-down"></div>
+								<div id="debug-angle"></div>
+							</div>
+						</div>
+					</div>
+
+
 					<div class="quick-menu-wrapper">
 						<div class="quick-menu" id="quick-menu">
 							<div class="quick-menu-container">
@@ -174,24 +194,36 @@
 								<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
 								<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
 								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-debug-console" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('open-debug-console-click'));"/>
+								<img class="quick-menu-icon" id="quick-menu-debug" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('toggle-debug-menu'));"/>
 							</div>
 						</div>
 					</div>
 
-					<div class="panel">
-					</div>
-					<div class="panel">
-						<div class="debug-div" id="debug-div">
-							<div>Debug Information:</div>
-							<div id="debug-x"></div>
-							<div id="debug-y"></div>
-							<div id="debug-is-down"></div>
-							<div id="debug-angle"></div>
+					<div class="temp-menu-wrapper">
+						<div class="temp-menu">
+							<div class="temp-menu-container">
+								<div class="input-controls-div main-scene-buttons">
+									<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
+									<input type="button" id="create-character" value="Spawn Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
+								</div>
+								<div class="input-debug-controls-div main-scene-buttons">
+									<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
+									<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
+									<input type="button" id="toggle-pvp" value="Toggle PVP" onclick="window.dispatchEvent(new CustomEvent('toggle-pvp'));" />
+									<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
+								</div>
+							</div>
 						</div>
 					</div>
+
+
+					<div class="panel">
+					</div>
+					<div class="panel">
+
+					</div>
 				</div>
-				<div class="hide log-div">
+				<!-- <div class="hide log-div">
 					<div class="input-controls-div main-scene-buttons hide">
 						<input type="button" id="exit-game" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
 						<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
@@ -204,7 +236,7 @@
 						<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
 					</div>
 					<div id="temp-log" readonly></div>
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</body>

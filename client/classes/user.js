@@ -42,7 +42,7 @@ export default class User {
 		//DEBUG: this should be out of here
 		if(c)
 		{
-			c.pvpGraphics.setText(pvpPart);
+			//c.pvpGraphics.setText(pvpPart);
 		}
 	}
 }

@@ -159,7 +159,7 @@ export default class GlobalFuncs {
 		var s = document.createElement('div');
 		s.textContent = msgWithTimestamp;
 
-		var log = $("#temp-log")[0];
+		var log = $("#debug-log")[0];
 		log.appendChild(s)
 		log.scrollTop = log.scrollHeight;
 		
