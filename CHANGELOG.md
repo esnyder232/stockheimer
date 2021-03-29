@@ -1,5 +1,19 @@
 # Change log
 
+## Version - 2021.3.29
+* Lots of UI work done.
+   - Quick menu added to bottom left.
+   - Main Menu added.
+   - Teams menu added.
+   - Chat menu added.
+     - Chat is no longer on the right hand side of the screen. It is now a menu that can be opened up with "enter".
+	 - If its not open, new chat messages appear and fade away after a little bit.
+   - User list menu added.
+     - Userlist is no longer on the left hand side of the screen. It is now a menu that can be opened up with "tab".
+   - Debug menu added.
+     - Debugging stuff does not show up by default anymore. It is now a menu that can be opened up to show debugging information.
+   - Also uninstalled the ape-ECS library. ECS is abandoned for this game.
+
 ## Version - 2021.3.8
 * Moved collision data to its own subdirectory "Data"
 
