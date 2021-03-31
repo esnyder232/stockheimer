@@ -92,23 +92,7 @@
 							</div>
 							<div class="team-button-container" id="team-button-container">
 
-								<input type="button" class="hide join-team-button" id="join-team-buttom-template" value="???"/>
-							</div>
-						</div>		
-					</div>
-
-					<div class="hide menu-wrapper" id="main-menu">
-						<div class="menu-container">
-							<div class="menu-close-container">
-								<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
-									<img class="menu-close-button" src="assets/images/x-mark.png" />
-								</div>
-							</div>
-							<div class="menu-title">
-								<span>Main Menu</span>
-							</div>
-							<div class="team-button-container" id="team-button-container">
-								<input type="button" class="join-team-button" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));"/>
+								<input type="button" class="hide menu-button" id="join-team-buttom-template" value="???"/>
 							</div>
 						</div>		
 					</div>
@@ -167,38 +151,6 @@
 						</div>
 					</div>
 
-					<div class="hide debug-menu-wrapper" id="debug-menu">
-						<div class="debug-menu-container debug-log-container">
-							<div class="debug-menu-contents debug-log-contents">
-								<div class="debug-title">Debug Log</div>
-								<div class="debug-log" id="debug-log" readonly></div>
-							</div>
-						</div>
-
-						<div class="debug-menu-container debug-input-container">
-							<div class="debug-menu-contents debug-input-contents">
-								<div class="debug-title">Input Information:</div>
-								<div id="debug-x"></div>
-								<div id="debug-y"></div>
-								<div id="debug-is-down"></div>
-								<div id="debug-angle"></div>
-							</div>
-						</div>
-					</div>
-
-
-					<div class="quick-menu-wrapper">
-						<div class="quick-menu" id="quick-menu">
-							<div class="quick-menu-container">
-								<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
-								<img class="quick-menu-icon" id="quick-menu-debug" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('toggle-debug-menu'));"/>
-							</div>
-						</div>
-					</div>
-
 					<div class="temp-menu-wrapper">
 						<div class="temp-menu">
 							<div class="temp-menu-container">
@@ -215,28 +167,82 @@
 							</div>
 						</div>
 					</div>
+				</div>
 
+				<div class="hide menu-wrapper" id="main-menu">
+					<div class="menu-container">
+						<div class="menu-close-container">
+							<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
+								<img class="menu-close-button" src="assets/images/x-mark.png" />
+							</div>
+						</div>
+						<div class="menu-title">
+							<span>Main Menu</span>
+						</div>
+						<div class="team-button-container" id="team-button-container">
+							<input type="button" class="menu-button" value="Exit Server" id="main-menu-exit-server-button" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));"/>
+						</div>
+					</div>		
+				</div>
 
-					<div class="panel">
+				<div class="hide debug-menu-wrapper" id="debug-menu">
+					<div class="debug-menu-container debug-log-container">
+						<div class="debug-menu-contents debug-log-contents">
+							<div class="debug-title">Debug Log</div>
+							<div class="debug-log" id="debug-log" readonly></div>
+						</div>
 					</div>
-					<div class="panel">
 
+					<div class="debug-menu-container debug-input-container">
+						<div class="debug-menu-contents debug-input-contents">
+							<div class="debug-title">Input Information:</div>
+							<div id="debug-x"></div>
+							<div id="debug-y"></div>
+							<div id="debug-is-down"></div>
+							<div id="debug-angle"></div>
+						</div>
 					</div>
 				</div>
-				<!-- <div class="hide log-div">
-					<div class="input-controls-div main-scene-buttons hide">
-						<input type="button" id="exit-game" value="Exit Server" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
-						<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
-						<input type="button" id="create-character" value="Spawn Character" onclick="window.dispatchEvent(new CustomEvent('create-character-click'));" />
+
+
+				<div class="quick-menu-wrapper">
+					<div class="quick-menu" id="quick-menu">
+						<div class="quick-menu-container">
+							<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
+							<img class="quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
+							<img class="quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
+							<img class="quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
+							<img class="quick-menu-icon" id="quick-menu-debug" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('toggle-debug-menu'));"/>
+						</div>
 					</div>
-					<div class="input-debug-controls-div main-scene-buttons hide">
-						<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
-						<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
-						<input type="button" id="toggle-pvp" value="Toggle PVP" onclick="window.dispatchEvent(new CustomEvent('toggle-pvp'));" />
-						<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
+				</div>
+
+
+				<div class="hide modal-wrapper" id="modal-menu">
+					<div class="menu-container">
+						<div class="menu-title">
+							<span id="modal-title">Error</span>
+						</div>
+						<div class="modal-info" id="modal-info">
+							???
+						</div>
+						<input type="button" class="menu-button" value="Okay" onclick="window.dispatchEvent(new CustomEvent('close-modal-menu'));"/>
 					</div>
-					<div id="temp-log" readonly></div>
-				</div> -->
+				</div>
+
+				<div class="hide modal-wrapper" id="confirm-menu">
+					<div class="menu-container">
+						<div class="menu-title">
+							<span id="confirm-title">Confirm?</span>
+						</div>
+						<div class="confirm-info" id="confirm-info">
+							Are you sure?
+						</div>
+						<input type="button" class="menu-button" value="Confirm" id="confirm-button" onclick="window.dispatchEvent(new CustomEvent('confirm-menu-yes'));"/>
+						<input type="button" class="menu-button" value="Cancel" id="cancel-button" onclick="window.dispatchEvent(new CustomEvent('confirm-menu-no'));"/>
+					</div>
+				</div>
+				
 			</div>
 		</div>
 	</body>

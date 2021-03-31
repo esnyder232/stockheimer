@@ -37,6 +37,8 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 
 		//put main scene to sleep until we are done preloading everything
 		this.gc.mainScene.scene.sleep();
+
+		this.gc.mainMenu.enableExitServerButton();
 	}
 
 	update(dt) {

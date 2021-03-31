@@ -51,6 +51,20 @@ export default class QuickMenu {
 		this.debugMenuClosed();
 	}
 
+	showMainSceneIcons() {
+		this.teamMenuIcon.removeClass("hide");
+		this.chatIcon.removeClass("hide");
+		this.userListIcon.removeClass("hide");
+	}
+
+	hideMainSceneIcon() {
+		this.teamMenuIcon.addClass("hide");
+		this.chatIcon.addClass("hide");
+		this.userListIcon.addClass("hide");
+	}
+
+
+
 
 
 	mainMenuOpened() {

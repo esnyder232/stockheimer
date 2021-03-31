@@ -1,7 +1,7 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 
-export default class MainMenu {
+export default class ModalMenu {
 	constructor() {
 		this.reset();
 	}
@@ -12,6 +12,8 @@ export default class MainMenu {
 		this.isVisible = false;
 
 		this.menu = null;
+		this.menuTitle = null;
+		this.menuInfo = null;
 
 		this.windowsEventMapping = [];
 	}
@@ -26,51 +28,45 @@ export default class MainMenu {
 	activate() {
 		//register window event mapping
 		this.windowsEventMapping = [
-			{event: 'toggle-main-menu',  func: this.toggleMenu.bind(this)},
-			{event: 'close-main-menu', func: this.closeMenu.bind(this)}
+			{event: 'close-modal-menu', func: this.closeMenu.bind(this)}
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		//grab all the ui elements
-		this.menu = $("#main-menu");
-		this.exitServerButton = $("#main-menu-exit-server-button");
+		this.menu = $("#modal-menu");
+		this.menuTitle = $("#modal-title");
+		this.menuInfo = $("#modal-info");
 
 		//reset to initial state
 		this.menu.addClass("hide");
 		this.isVisible = false;
 	}
 
-	toggleMenu() {
-		if(this.isVisible) {
-			this.closeMenu();
-		}
-		else {
-			this.openMenu();
-			window.dispatchEvent(new CustomEvent("main-menu-opened"));
-		}
-	}
-
-	enableExitServerButton() {
-		this.exitServerButton.prop("disabled", false)
-	}
-
-	disableExitServerButton() {
-		this.exitServerButton.prop("disabled", true)
-	}
-
-	openMenu() {
-		if(this.gc.mainScene !== null)
-		{
-			this.gc.mainScene.closeMenuGroup();
-		}
+	openMenu(messageType, message) {
 		this.menu.removeClass("hide");
 		this.isVisible = true;
+
+		switch(messageType)
+		{
+			case "error":
+				this.menuTitle.text("Error");
+				break;
+			
+			case "info":
+				this.menuTitle.text("Information");
+				break;
+
+			case "":
+				this.menuTitle.text("");
+				break;
+		}
+
+		this.menuInfo.text(message)
 	}
 
 	closeMenu() {
 		this.menu.addClass("hide");
-		window.dispatchEvent(new CustomEvent("main-menu-closed"));
 		this.isVisible = false;
 	}
 	

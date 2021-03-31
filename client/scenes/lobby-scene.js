@@ -103,7 +103,10 @@ export default class LobbyScene extends Phaser.Scene {
 			})
 			.fail((xhr) => {
 				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-				this.globalfuncs.appendToLog('Failed to get server details: ' + responseData.userMessage);
+
+				var msg = 'Failed to get server details: ' + responseData.userMessage;
+				this.globalfuncs.appendToLog(msg);
+				this.gc.modalMenu.openMenu("error", msg);
 			})
 
 
@@ -125,7 +128,10 @@ export default class LobbyScene extends Phaser.Scene {
 			})
 			.fail((xhr) => {
 				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-				this.globalfuncs.appendToLog('Failed to get user session: ' + responseData.userMessage);
+
+				var msg = 'Failed to get user session: ' + responseData.userMessage;
+				this.globalfuncs.appendToLog(msg);
+				this.gc.modalMenu.openMenu("error", msg);
 			})
 			.always(() => {
 				this.checkUsernameEnablePlayButton();
@@ -217,7 +223,10 @@ export default class LobbyScene extends Phaser.Scene {
 			})
 			.fail((xhr) => {
 				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-				this.globalfuncs.appendToLog('Failed to connect to server: ' + responseData.userMessage);
+
+				var msg = 'Failed to connect to server: ' + responseData.userMessage;
+				this.globalfuncs.appendToLog(msg);
+				this.gc.modalMenu.openMenu("error", msg);
 				
 				this.currentlyConnecting = false;
 				this.checkUsernameEnablePlayButton();
@@ -233,6 +242,9 @@ export default class LobbyScene extends Phaser.Scene {
 		if(!this.currentlyConnecting)
 		{
 			//warn the player
+			//TODO: switch over to the custom confirm menu when you figure out how to do contextual "enter" key (so the user doesn't accidentally hit enter and bypasses the confirm)
+			//this.gc.confirmMenu.openMenu("This will permanently delete your current player and let you create a new one.", this.cbPlayerNewClickConfirm.bind(this));
+			
 			var heyhey = confirm("This will permanently delete your current player and let you create a new one. Continue?");
 			if(heyhey)
 			{
@@ -255,13 +267,51 @@ export default class LobbyScene extends Phaser.Scene {
 				})
 				.fail((xhr) => {
 					var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-					this.globalfuncs.appendToLog('Failed to clear user session: ' + responseData.userMessage);
+					
+					var msg = 'Failed to clear user session: ' + responseData.userMessage;
+					this.globalfuncs.appendToLog(msg);
+					this.gc.modalMenu.openMenu("error", msg);
+
 				})
 				.always(() => {
 					this.checkUsernameEnablePlayButton();
 					this.updateUI();
 				})
 			}
+		}
+	}
+
+	cbPlayerNewClickConfirm(answer) {
+		if(answer) {
+			//delete the player from the database
+			var data = {};
+			$.ajax({url: "./api/clear-user-session", method: "POST", data: data})
+			.done((responseData, textStatus, xhr) => {
+				this.globalfuncs.appendToLog(responseData.userMessage);
+
+				var usernameInput = $("#user-name");
+				usernameInput.val("");
+				this.userSession.sessionExists = false;
+				this.enableUsername = !this.userSession.sessionExists;
+				this.enableNewButton = this.userSession.sessionExists;
+				this.enableExistingButton = this.userSession.sessionExists;
+				
+				this.showPlayButton = !this.userSession.sessionExists;
+				this.showExistingButton = this.userSession.sessionExists;
+				this.showNewButton = this.userSession.sessionExists;
+			})
+			.fail((xhr) => {
+				var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
+				
+				var msg = 'Failed to clear user session: ' + responseData.userMessage;
+				this.globalfuncs.appendToLog(msg);
+				this.gc.modalMenu.openMenu("error", msg);
+
+			})
+			.always(() => {
+				this.checkUsernameEnablePlayButton();
+				this.updateUI();
+			})
 		}
 	}
 

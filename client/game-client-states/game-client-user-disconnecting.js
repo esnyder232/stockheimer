@@ -82,9 +82,8 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 
 		this.gc.userDisconnectingScene = null;
 
+		this.gc.mainMenu.disableExitServerButton();
+		
 		this.gc.wsh.reset();
-
-
 	}
-	
 }

@@ -48,8 +48,9 @@ export default class WebsocketHandler {
 			}
 		})
 		.fail((xhr) => {
-			var responseData = this.globalfuncs.getDataObject(xhr.responseJSON);
-			this.globalfuncs.appendToLog('VERY BAD ERROR: Failed to get event-schema.');
+			var msg = "VERY BAD ERROR: Failed to get event-schema.";
+			this.globalfuncs.appendToLog(msg);
+			this.gc.modalMenu.openMenu("error", msg);
 		})
 
 		for(var i = 0; i <= this.localSequenceMaxValue; i++)
@@ -96,7 +97,10 @@ export default class WebsocketHandler {
 		}
 		catch(ex) {
 			bFail = true;
-			this.globalfuncs.appendToLog(ex);
+
+			var msg = ex;
+			this.globalfuncs.appendToLog(msg);
+			this.gc.modalMenu.openMenu("error", msg);
 		}
 		
 		return bFail;
@@ -123,7 +127,10 @@ export default class WebsocketHandler {
 	}
 
 	onerror(e) {
-		this.globalfuncs.appendToLog("WebsocketHandler: Websocket error:" + e);
+		var msg = "WebsocketHandler: Websocket error:" + e;
+		this.globalfuncs.appendToLog(msg);
+		this.gc.modalMenu.openMenu("error", msg);
+		
 		this.gc.gameState.websocketErrored();
 	}
 

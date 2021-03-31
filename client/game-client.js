@@ -8,6 +8,12 @@ import GameObjectManager from "./managers/game-object-manager.js"
 import UserManager from "./managers/user-manager.js"
 import TeamManager from "./managers/team-manager.js"
 import Marked from "marked";
+import ModalMenu from "./ui-classes/modal-menu.js"
+import ConfirmMenu from "./ui-classes/confirm-menu.js"
+import QuickMenu from "./ui-classes/quick-menu.js"
+import DebugMenu from "./ui-classes/debug-menu.js"
+import MainMenu from "./ui-classes/main-menu.js"
+
 
 export default class GameClient {
 	constructor() {
@@ -49,6 +55,13 @@ export default class GameClient {
 		this.mainScene = null;
 		this.userConnectingScene = null;
 		this.userDisconnectingScene = null;
+
+		//menus
+		this.quickMenu = null;
+		this.mainMenu = null;
+		this.modalMenu = null;
+		this.confirmMenu = null;
+		this.debugMenu = null;
 	}
 
 	init() {
@@ -127,7 +140,9 @@ export default class GameClient {
 			this.gameConstants = responseData;
 		})
 		.fail((xhr) => {
-			this.globalfuncs.appendToLog('VERY BAD ERROR: Failed to get game-constants.');
+			var msg = "VERY BAD ERROR: Failed to get game-constants.";
+			this.globalfuncs.appendToLog(msg);
+			this.gc.modalMenu.openMenu("error", msg);
 		})
 
 		//get the change log
@@ -138,7 +153,9 @@ export default class GameClient {
 			$("#change-log").html(this.changelogFinal);
 		})
 		.fail((xhr) => {
-			this.globalfuncs.appendToLog('Failed to get change log.');
+			var msg = "Failed to get change log.";
+			this.globalfuncs.appendToLog(msg);
+			this.gc.modalMenu.openMenu("error", msg);
 		})
 
 
@@ -153,32 +170,41 @@ export default class GameClient {
 		//hide loading text
 		$(".loading-text").addClass("hide");
 
+		//menus
+		this.quickMenu = new QuickMenu();
+		this.mainMenu = new MainMenu();
+		this.modalMenu = new ModalMenu();
+		this.confirmMenu = new ConfirmMenu();
+		
+		this.debugMenu = new DebugMenu();
+
+		this.quickMenu.init(this);
+		this.mainMenu.init(this);
+		this.modalMenu.init(this)
+		this.confirmMenu.init(this)
+		this.debugMenu.init(this);
+
+		this.quickMenu.activate();
+		this.mainMenu.activate();
+		this.modalMenu.activate();
+		this.confirmMenu.activate();
+		this.debugMenu.activate();
+
+		this.quickMenu.hideMainSceneIcon();
+		this.mainMenu.disableExitServerButton();
+
+
 		//debugging / testing
-		// var a1 = this.tm.createTeam(1);
-		// var a2 = this.tm.createTeam(2);
-		// var a3 = this.tm.createTeam(3);
-		// a1.teamInit(this);
-		// a2.teamInit(this);
-		// a3.teamInit(this);
+		//this.modalMenu.openMenu("error", "Hello, this is an error message!!!");
 
-		// this.debugPrintFunc();
-
-		// this.tm.update(0);
-
-		// var a4 = this.tm.createTeam(15);
-		// a4.teamInit(this);
-
-		// this.tm.update(0);
-		
-		// this.tm.destroyTeam(a1.id);
-		// this.tm.destroyTeam(a3.id);
-		// this.debugPrintFunc();
-		
-		// this.tm.update(0);
-		// this.tm.update(0);
+		//this.confirmMenu.openMenu("Test Message", "Test Title", "Can Confirm", "CANCELE IT TNOPNONNO", this.cbTest.bind(this));
 
 		// this.debugPrintFunc();
 	}
+
+	// cbTest(answer) {
+	// 	console.log("answer: " + answer);
+	// }
 
 	debugPrintFunc() {
 		console.log('team array length: ' + this.tm.getTeams().length);

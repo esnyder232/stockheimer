@@ -17,6 +17,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 		this.gc.mainScene.scene.wake();
 		this.gc.mainScene.stockheimerActivate();
+		this.gc.quickMenu.showMainSceneIcons();
 	}
 
 	update(dt) {
@@ -40,6 +41,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 	exit(dt) {
 		super.exit(dt);
+		this.gc.quickMenu.hideMainSceneIcon();
 	}
 
 
