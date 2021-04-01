@@ -29,6 +29,9 @@ class GameServer {
 		this.runGameLoop = false;
 		this.gameState = null;
 		this.nextGameState = null;
+
+		this.roundState = null;
+		this.nextRoundState = null;
 		
 		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
@@ -61,7 +64,8 @@ class GameServer {
 
 		this.castleObject = null;
 		this.enemyCap = 100;
-		
+
+		this.roundTimer = 0;
 	}
 
 	init() {

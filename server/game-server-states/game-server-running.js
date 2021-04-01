@@ -1,6 +1,8 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
 const {UserDisconnectingState} = require('../user/user-disconnecting-state.js');
+const {RoundStarting} = require('../round-states/round-starting.js');
+
 const crypto = require('crypto');
 const logger = require('../../logger.js');
 
@@ -12,6 +14,12 @@ class GameServerRunning extends GameServerBaseState {
 	enter(dt) {
 		logger.log("info", 'running server enter');
 		super.enter(dt);
+
+		//start a round
+		this.gs.roundState = new RoundStarting(this.gs);
+		this.gs.roundState.enter(dt);
+
+		this.gs.nextRoundState = null;
 	}
 
 	update(dt) {
@@ -48,6 +56,20 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 
 
+		//update round state
+		this.gs.roundState.update(dt);
+
+		//change round state if necessary
+		if(this.gs.nextRoundState)
+		{
+			this.gs.roundState.exit();
+			this.gs.nextRoundState.enter();
+
+			this.gs.roundState = this.gs.nextRoundState;
+			this.gs.nextRoundState = null;
+		}
+
+
 		//send an empty packet to all users
 		for(var i = 0; i < activeUsers.length; i++)
 		{
@@ -74,6 +96,9 @@ class GameServerRunning extends GameServerBaseState {
 
 	exit(dt) {
 		super.exit(dt);
+
+		this.gs.roundState = null;
+		this.gs.nextRoundState = null;
 	}
 	
 	stopGameRequest() {
