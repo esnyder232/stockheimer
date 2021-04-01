@@ -11,7 +11,8 @@ class TrackedEntity {
 		
 		this.entId = null;
 		this.entType = null;
-		this.eventQueue = [];
+		this.eventQueue = []; //unordered event queue. Events in here will reach the client in any ordered way (whatever fits)
+		this.orderedEventQueue = []; //ordered event queue. Events in here will reach the client in the exact order that they were inserted. This is slower than eventQueue, but it ensures order of events.
 		this.pa = 0.0;//priority accumulator
 		this.paWeight = 1; //original priority weight
 		this.isDirty = false;
@@ -44,6 +45,14 @@ class TrackedEntity {
 
 		this.state = new TrackedEntityDestroyedState(this);
 		this.state.enter();
+	}
+
+	insertEvent(event) {
+		this.eventQueue.push(event);
+	}
+
+	insertOrderedEvent(event) {
+		this.orderedEventQueue.push(event);
 	}
 
 	//called when the tracked entity's state is created. 

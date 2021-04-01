@@ -188,7 +188,7 @@ class User {
 				}
 			}
 
-			e.eventQueue.push({
+			e.insertEvent({
 				"eventName": "createTrackedEntity",
 			});
 		}
@@ -262,7 +262,7 @@ class User {
 		var e = this.findTrackedEntity(type, id);
 
 		if(e !== null) {
-			e.eventQueue.push({
+			e.insertEvent({
 				"eventName": "deleteTrackedEntity",
 			});
 		}
@@ -299,7 +299,7 @@ class User {
 
 		if(e !== null)
 		{
-			e.eventQueue.push(event);
+			e.insertEvent(event);
 		}
 	}
 
