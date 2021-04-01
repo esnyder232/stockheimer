@@ -20,8 +20,8 @@ export default class AddActiveCharacterEvent {
 
 		//translate the owner type to a string again
 		//DONT CARE!!!
-		for (const key in this.gc.gameConstants.owner_types) {
-			var val = this.gc.gameConstants.owner_types[key];
+		for (const key in this.gc.gameConstants.OwnerTypes) {
+			var val = this.gc.gameConstants.OwnerTypes[key];
 			if(val === c.ownerType)
 			{
 				c.ownerType = key;

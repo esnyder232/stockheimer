@@ -1,7 +1,13 @@
 {
-	"owner_types": {
+	"OwnerTypes": {
 		"none": 0,
 		"user": 1,
 		"ai": 2
+	},
+
+	"RoundStates": {
+		"STARTING": 0,
+		"PLAYING": 1,
+		"OVER": 2
 	}
 }

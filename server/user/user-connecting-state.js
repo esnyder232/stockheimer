@@ -18,6 +18,7 @@ class UserConnectingState extends UserBaseState {
 		var playingUsers = this.user.gs.um.getPlayingUsers();
 		var teams = this.user.gs.tm.getTeams();
 		var spectatorTeam = this.user.gs.tm.getSpectatorTeam();
+		var theRound = this.user.gs.theRound;
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
 		this.user.insertServerToClientEvent({
@@ -49,6 +50,9 @@ class UserConnectingState extends UserBaseState {
 		{
 			this.user.insertTrackedEntity("user", activeUsers[i].id);
 		}
+
+		//send the user who just joined the round state
+		this.user.insertTrackedEntity("round", theRound.id);
 
 		//send the user who just joined a list of the existing teams
 		for(var i = 0; i < teams.length; i++)

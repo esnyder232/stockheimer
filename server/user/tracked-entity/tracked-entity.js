@@ -42,6 +42,10 @@ class TrackedEntity {
 		{
 			this.ent = this.gs.gom.getGameObjectByID(this.entId);
 		}
+		else if(entType === "round")
+		{
+			this.ent = this.gs.theRound;
+		}
 
 		this.state = new TrackedEntityDestroyedState(this);
 		this.state.enter();

@@ -62,6 +62,8 @@ export default class GameClient {
 		this.modalMenu = null;
 		this.confirmMenu = null;
 		this.debugMenu = null;
+
+		this.gameConstants = {};
 	}
 
 	init() {

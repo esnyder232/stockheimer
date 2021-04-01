@@ -20,11 +20,8 @@ import KillfeedMsgEvent from "../event-classes/killfeed-msg-event.js"
 import AddTeamEvent from "../event-classes/add-team-event.js"
 import UpdateTeamEvent from "../event-classes/update-team-event.js"
 import RemoveTeamEvent from "../event-classes/remove-team-event.js"
-
-
-
-
-
+import AddRoundEvent from "../event-classes/add-round-event.js"
+import UpdateRoundStateEvent from "../event-classes/update-round-state-event.js"
 
 
 export default class EventProcessor {
@@ -71,7 +68,9 @@ export default class EventProcessor {
 			{eventName: "killfeedMsg", eventClass: new KillfeedMsgEvent()},
 			{eventName: "addTeam", eventClass: new AddTeamEvent()},
 			{eventName: "updateTeam", eventClass: new UpdateTeamEvent()},
-			{eventName: "removeTeam", eventClass: new RemoveTeamEvent()}
+			{eventName: "removeTeam", eventClass: new RemoveTeamEvent()},
+			{eventName: "addRound", eventClass: new AddRoundEvent()},
+			{eventName: "updateRoundState", eventClass: new UpdateRoundStateEvent()},
 		];
 
 	}

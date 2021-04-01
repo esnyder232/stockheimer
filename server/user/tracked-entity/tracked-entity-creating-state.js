@@ -39,6 +39,9 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 						break;
 				}
 				break;
+			case "round":
+				event = this.trackedEntity.ent.serializeAddRoundEvent();
+				break;
 		}
 
 		if(event !== null)

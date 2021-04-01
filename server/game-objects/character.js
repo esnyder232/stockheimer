@@ -509,7 +509,7 @@ class Character {
 			bodyPos = this.plBody.getPosition();
 		}
 
-		var eventOwnerType = GameConstants.owner_types[this.ownerType];
+		var eventOwnerType = GameConstants.OwnerTypes[this.ownerType];
 
 		if(eventOwnerType === undefined)
 		{

@@ -40,7 +40,8 @@ class User {
 		this.trackedEntities = []; //entities to keep track of for this particular user. Events will be sent to the client for creation/destruction/updates/etc.
 		this.trackedEntityTypeIdIndex = {
 			"user": {},
-			"gameobject": {}
+			"gameobject": {},
+			"round": {}
 		}; //index for the trackedEntities array
 		this.trackedEntityTransactions = [];
 
@@ -136,7 +137,8 @@ class User {
 		this.fragmentedServerToClientEvents.length = 0;
 		this.trackedEntityTypeIdIndex = {
 			"user": {},
-			"gameobject": {}
+			"gameobject": {},
+			"round": {}
 		}
 	}
 
@@ -151,18 +153,15 @@ class User {
 	}
 	
 	insertTrackedEntity(type, id) {
-		var e = this.findTrackedEntity(type, id);
+		var existingEnt = this.findTrackedEntity(type, id);
 
-		if(e === null) {
-			e = new TrackedEntity();
+		if(existingEnt === null) {
+			var e = new TrackedEntity();
 			e.trackedEntityInit(this.gs, this.id, type, id);
 
 			this.trackedEntities.push(e);
 			this.updateTrackedEntityIndex(type, id, e, "create");
-		}
 
-		if(e !== null)
-		{
 			//for now, just set priority weights here
 			if(e.entType == "gameobject")
 			{
@@ -186,6 +185,10 @@ class User {
 				{
 					e.paWeight = 1;
 				}
+			}
+			else
+			{
+				e.paWeight = 1;
 			}
 
 			e.insertEvent({
@@ -302,6 +305,16 @@ class User {
 			e.insertEvent(event);
 		}
 	}
+
+	insertTrackedEntityOrderedEvent(entType, entId, event) {
+		var e = this.findTrackedEntity(entType, entId);
+
+		if(e !== null)
+		{
+			e.insertOrderedEvent(event);
+		}
+	}
+
 
 	findTrackedEntity(type, id) {
 		if(this.trackedEntityTypeIdIndex[type][id])

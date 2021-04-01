@@ -30,9 +30,8 @@ class GameServer {
 		this.gameState = null;
 		this.nextGameState = null;
 
-		this.roundState = null;
-		this.nextRoundState = null;
-		
+		this.theRound = null; //temporary place for the only round to live
+
 		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
 		this.velocityIterations = 1;
@@ -65,7 +64,6 @@ class GameServer {
 		this.castleObject = null;
 		this.enemyCap = 100;
 
-		this.roundTimer = 0;
 	}
 
 	init() {
