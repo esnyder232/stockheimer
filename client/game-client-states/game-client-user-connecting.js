@@ -103,13 +103,4 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 	worldDoneState(e) {
 		this.connectionState = 2;
 	}
-
-
-	//call back for EventProcessor's processServerEvents
-	// cbPostEvent(e) {
-	// 	if(e.eventName == "worldStateDone")
-	// 	{
-	// 		this.connectionState = 2;
-	// 	}
-	// }
 }

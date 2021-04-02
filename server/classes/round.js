@@ -51,7 +51,7 @@ class Round {
 
 			for(var i = 0; i < activeUsers.length; i++)
 			{
-				activeUsers[i].insertTrackedEntityEvent("round", this.id, event)
+				activeUsers[i].insertTrackedEntityOrderedEvent("round", this.id, event)
 			}
 		}
 	}
@@ -59,7 +59,8 @@ class Round {
 	serializeAddRoundEvent() {
 		return {
 			"eventName": "addRound",
-			"id": this.id
+			"id": this.id,
+			"roundState": this.stateEnum
 		};
 	}
 	

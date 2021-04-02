@@ -9,6 +9,11 @@ export default class UpdateRoundStateEvent {
 
 	processEvent(e)
 	{
-		console.log("!!!! UPDATING ROUND STATE EVENT RECIEVED !!! - " + e.roundState);
+		var theRound = this.gc.theRound;
+
+		if(theRound)
+		{
+			theRound.insertOrderedEvent(e);
+		}
 	}
 }

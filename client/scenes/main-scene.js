@@ -470,6 +470,7 @@ export default class MainScene extends Phaser.Scene {
 	update(timeElapsed, dt) {
 		var sendInputEvent = false;
 		//console.log('dt ' + dt);
+		//console.log("=== Client Framenum " + this.frameNum + " ===")
 
 		//update any dmg texts
 		for(var i = this.damageTexts.length - 1; i >= 0; i--)
@@ -503,6 +504,9 @@ export default class MainScene extends Phaser.Scene {
 			}
 		}
 
+
+		//update round
+		this.gc.theRound.update(dt);
 
 		//update gameobjects
 		var activeGameObjects = this.gc.gom.getActiveGameObjects();

@@ -15,9 +15,45 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 
 	update(dt) {
 		super.update(dt);
+		var orderedProcessedIndexes = [];
 		var processedIndexes = [];
 
-		//process any events from the event queue
+		//FIRST - process any ordered events from the event queue
+		//4/1/2021 - Note: ordered events are NOT going to be fragmentable at this time (too much going on at once code change wise)
+		var continueProcessingEvents = true;
+		for(var i = 0; i < this.trackedEntity.orderedEventQueue.length; i++)
+		{
+			if(!continueProcessingEvents)
+			{
+				break;
+			}
+
+			var event = this.trackedEntity.orderedEventQueue[i];
+			
+			//check if the websocket handler can fit the event
+			var info = this.trackedEntity.user.wsh.canEventFit(event);
+			
+			//insert the event
+			if(info.canEventFit)
+			{
+				this.trackedEntity.user.wsh.insertEvent(event);
+				orderedProcessedIndexes.push(i);
+			}
+			else
+			{
+				//stop processing events
+				continueProcessingEvents = false;
+			}
+		}
+
+		//splice out any processed events
+		for(var i = orderedProcessedIndexes.length - 1; i >= 0; i--)
+		{
+			this.trackedEntity.orderedEventQueue.splice(orderedProcessedIndexes[i], 1);
+		}
+
+
+		//SECOND - process any events from the event queue
 		for(var i = 0; i < this.trackedEntity.eventQueue.length; i++)
 		{
 			var event = this.trackedEntity.eventQueue[i];

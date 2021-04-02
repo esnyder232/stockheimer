@@ -64,6 +64,7 @@ export default class GameClient {
 		this.debugMenu = null;
 
 		this.gameConstants = {};
+		this.gameConstantsInverse = {};
 	}
 
 	init() {
@@ -140,6 +141,24 @@ export default class GameClient {
 		$.ajax({url: "./shared_files/game-constants.json", method: "GET"})
 		.done((responseData, textStatus, xhr) => {
 			this.gameConstants = responseData;
+
+			//compute the inverse of game constants
+			for(var enumKey in this.gameConstants)
+			{
+				if (this.gameConstants.hasOwnProperty(enumKey)) 
+				{
+					this.gameConstantsInverse[enumKey] = {};
+
+					for(var key in this.gameConstants[enumKey])
+					{
+						if (this.gameConstants[enumKey].hasOwnProperty(key)) 
+						{
+							var val = this.gameConstants[enumKey][key];
+							this.gameConstantsInverse[enumKey][val] = key
+						}
+					}
+				}
+			}
 		})
 		.fail((xhr) => {
 			var msg = "VERY BAD ERROR: Failed to get game-constants.";

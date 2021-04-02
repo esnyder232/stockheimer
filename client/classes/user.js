@@ -5,6 +5,7 @@ export default class User {
 	constructor() {
 		this.gc = null;
 		this.globalfuncs = null;
+		this.serverId = null;
 		this.id = null;
 		this.userId = null;
 		this.username = null;

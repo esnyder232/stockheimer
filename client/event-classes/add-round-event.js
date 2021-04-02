@@ -1,3 +1,5 @@
+import Round from "../classes/round.js"
+
 export default class AddRoundEvent {
 	constructor() {
 		this.gc = null;
@@ -9,6 +11,8 @@ export default class AddRoundEvent {
 
 	processEvent(e)
 	{
-		console.log("Add round event recieved");
+		this.gc.theRound = new Round();
+		this.gc.theRound.roundInit(this.gc);
+		this.gc.theRound.insertOrderedEvent(e);
 	}
 }
