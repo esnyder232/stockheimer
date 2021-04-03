@@ -60,8 +60,6 @@ class User {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
 		this.wsId = wsId;
-		this.teamId = null;
-
 		
 		//get a direct reference to the websocket handler
 		this.wsh = this.gs.wsm.getWebsocketByID(this.wsId);
@@ -76,7 +74,7 @@ class User {
 		//assign to sepctator team by default
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 
-		if(spectatorTeam)	{
+		if(this.teamId === null && spectatorTeam) {
 			this.teamId = spectatorTeam.id;
 		}
 	}
@@ -108,6 +106,8 @@ class User {
 			filterCategoryBits: CollisionCategories["user_sensor"],
 			filterMaskBits: CollisionMasks["user_sensor"]
 		});
+
+		//this.globalfuncs.spawnCharacterForUser(this.gs, this);
 	}
 
 	userPreStopPlaying() {
@@ -126,7 +126,7 @@ class User {
 		this.serverToClientEvents = [];
 		this.clientToServerEvents = [];
 		this.characterId = null;
-		this.teamId = null;
+		//this.teamId = null;
 		this.bReadyToPlay = false;
 		this.bDisconnected = false;
 		this.inputQueue = [];

@@ -437,6 +437,7 @@ class GameServerRunning extends GameServerBaseState {
 						{
 							user.updateTeamId(newTeamId);
 
+							this.globalfuncs.spawnCharacterForUser(this.gs, user);
 							broadcastMessage = "Player '" + user.username + "' joined " + newTeam.name;
 							logEventMessage = "Player: " + user.username + ", event: fromClientJoinTeam: joined " + newTeam.name + "(" + newTeamId + ")";
 						}
@@ -465,6 +466,7 @@ class GameServerRunning extends GameServerBaseState {
 			user.clientToServerEvents.length = 0;
 		}
 	}
+
 
 	userResponseMessage(user, userMessage, logEventMessage) {
 		logger.log("info", logEventMessage + userMessage);

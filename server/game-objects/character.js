@@ -47,6 +47,9 @@ class Character {
 		this.walkingCurrentAccMagx = 0;
 		this.walkingCurrentAccMagy = 0;
 
+		this.bAllowedMove = true;
+		this.bAllowedShoot = true;
+
 		this.inputQueue = [];
 		this.eventQueue = [];
 	}
@@ -350,8 +353,8 @@ class Character {
 				}
 			}
 
-			
-			if(Math.abs(this.walkingAccVec.x) >= 0.001 || Math.abs(this.walkingAccVec.y) >= 0.001)
+			//process movement
+			if(this.bAllowedMove && (Math.abs(this.walkingAccVec.x) >= 0.001 || Math.abs(this.walkingAccVec.y) >= 0.001))
 			{
 				var f = this.plBody.getWorldVector(Vec2(this.walkingAccVec.x, this.walkingAccVec.y));
 				var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
@@ -361,7 +364,7 @@ class Character {
 			
 	
 			//process force impulses
-			if(this.forceImpulses.length > 0)
+			if(this.bAllowedMove && this.forceImpulses.length > 0)
 			{
 				for(var i = 0; i < this.forceImpulses.length; i++)
 				{
@@ -380,30 +383,33 @@ class Character {
 		//process events
 		if(this.eventQueue.length > 0)
 		{
-			for(var i = 0; i < this.eventQueue.length; i++)
+			if(this.bAllowedShoot)
 			{
-				//spawn the bullet
-				var o = this.gs.gom.createGameObject("projectile");
-				
-				if(o)
+				for(var i = 0; i < this.eventQueue.length; i++)
 				{
-					var e = this.eventQueue[i];
-					o.bulletType = e.type;
-					o.characterId = this.id;
-					o.ownerId = this.ownerId;
-					o.ownerType = this.ownerType;
-
-					if(e.type == "bigBullet")
+					//spawn the bullet
+					var o = this.gs.gom.createGameObject("projectile");
+					
+					if(o)
 					{
-						o.bulletInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000, 7.0);
+						var e = this.eventQueue[i];
+						o.bulletType = e.type;
+						o.characterId = this.id;
+						o.ownerId = this.ownerId;
+						o.ownerType = this.ownerType;
+	
+						if(e.type == "bigBullet")
+						{
+							o.bulletInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000, 7.0);
+						}
+						else //small normal bullet
+						{
+							o.bulletInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000, 100);
+						}
+	
+						//just activate it here...whatever
+						//this.gs.gom.activateGameObjectId(o.id, o.bulletPostActivated.bind(o), o.cbBulletActivatedFailed.bind(this));
 					}
-					else //small normal bullet
-					{
-						o.bulletInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000, 100);
-					}
-
-					//just activate it here...whatever
-					//this.gs.gom.activateGameObjectId(o.id, o.bulletPostActivated.bind(o), o.cbBulletActivatedFailed.bind(this));
 				}
 			}
 
@@ -427,7 +433,7 @@ class Character {
 			this.isInputDirty = false;
 		}
 
-		if(this.hpCur == 0)
+		if(this.hpCur <= 0)
 		{
 			//tell the user he has killed a character if applicable
 			this.gs.gameState.characterDied(this.id);

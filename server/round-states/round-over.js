@@ -13,6 +13,21 @@ class RoundOver extends RoundBaseState {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
 		this.round.roundTimer = 3000;
+
+		// //kill all characters
+		// var activeUsers = this.gs.um.getActiveUsers();
+		// for(var i = 0; i < activeUsers.length; i++)
+		// {
+		// 	var user = activeUsers[i];
+		// 	if(user.characterId !== null)
+		// 	{
+		// 		var c = this.gs.gom.getGameObjectByID(user.characterId);
+		// 		if(c !== null)
+		// 		{
+		// 			c.hpCur = 0;
+		// 		}
+		// 	}
+		// }
 	}
 
 	update(dt) {
