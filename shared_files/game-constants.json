@@ -9,5 +9,10 @@
 		"STARTING": 0,
 		"PLAYING": 1,
 		"OVER": 2
+	},
+
+	"ProcessTypes": {
+		"RESPAWN": 0,
+		"COOLDOWN": 1
 	}
 }

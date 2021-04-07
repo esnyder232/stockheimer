@@ -54,6 +54,14 @@ class Character {
 		this.eventQueue = [];
 	}
 
+	changeAllowMove(bAllowedMove) {
+		this.bAllowedMove = bAllowedMove;
+	}
+
+	changeAllowShoot(bAllowedShoot) {
+		this.bAllowedShoot = bAllowedShoot;
+	}
+
 	//called only once when the character is first created. This is only called once ever.
 	characterInit(gameServer) {
 		this.gs = gameServer;

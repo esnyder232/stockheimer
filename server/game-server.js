@@ -14,6 +14,8 @@ const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const {TeamManager} = require('./managers/team-manager.js');
+const {ProcessManager} = require('./managers/process-manager.js');
+const GameConstants = require('../shared_files/game-constants.json');
 const path = require('path');
 const logger = require("../logger.js");
 
@@ -47,12 +49,12 @@ class GameServer {
 		this.wsm = null;
 		this.um = null;
 		this.cm = null;
-		this.pm = null;
 		this.cs = null;
 		this.tmm = null;
 		this.ngm = null;
 		this.aim = null;
 		this.tm = null;
+		this.pm = null;
 
 		this.appRoot = path.join(__dirname, "..");
 
@@ -77,6 +79,7 @@ class GameServer {
 		this.ngm = new NavGridManager();
 		this.aim = new AIAgentManager();
 		this.tm = new TeamManager();
+		this.pm = new ProcessManager();
 
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -95,8 +98,29 @@ class GameServer {
 		this.ngm.init(this);
 		this.aim.init(this);
 		this.tm.init(this);
+		this.pm.init(this);
 
 		this.gameState = new GameServerStopped(this);
+
+		//debug stuff here
+		// var p1 = this.pm.createProcess("RESPAWN", 5000);
+		// var p2 = this.pm.createProcess("RESPAWN", 7000);
+		// var p3 = this.pm.createProcess("RESPAWN", 8000);
+		// var p4 = this.pm.createProcess("COOLDOWN", 15000);
+		// var p5 = this.pm.createProcess("COOLDOWN", 20000);
+		// var p6 = this.pm.createProcess("COOLDOWN", 7000);
+
+		// p1.name = "p1";
+		// p2.name = "p2";
+		// p3.name = "p3";
+		// p4.name = "p4";
+		// p5.name = "p5";
+		// p6.name = "p6";
+
+		// setTimeout(() => {
+		// 	this.pm.destroyProcess(p1.id);
+		// 	this.pm.destroyProcess(p3.id);
+		// }, 2000)
 	}
 
 	getGlobalGameObjectID() {

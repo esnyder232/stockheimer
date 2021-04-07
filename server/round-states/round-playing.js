@@ -24,8 +24,8 @@ class RoundPlaying extends RoundBaseState {
 		// 		var c = this.gs.gom.getGameObjectByID(user.characterId);
 		// 		if(c !== null)
 		// 		{
-		// 			c.bAllowedMove = true;
-		// 			c.bAllowedShoot = true;
+		// 			c.changeAllowMove(true);
+		// 			c.changeAllowShoot(true);
 		// 		}
 		// 	}
 		// }
