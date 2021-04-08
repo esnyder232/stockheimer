@@ -7,7 +7,15 @@ export default class RoundBaseState {
 		this.globalfuncs = new GlobalFuncs();
 	}
 
-	enter(dt) {}
+	
+	updateStateName() {
+		this.round.stateName = this.stateName;
+		this.round.stateEnum = this.gc.gameConstants.RoundStates[this.stateName];
+	}
+
+	enter(dt) {
+		this.updateStateName();
+	}
 	update(dt) {}
 	exit(dt) {}
 }

@@ -21,13 +21,14 @@ class RoundStarting extends RoundBaseState {
 		// 	this.globalfuncs.spawnCharacterForUser(this.gs, activeUsers[i]);
 		// }
 
+		this.round.roundTimeAcc = 0;
 		this.round.roundTimer = 3000;
 	}
 
 	update(dt) {
-		this.round.roundTimer -= dt;
+		this.round.roundTimeAcc += dt;
 
-		if(this.round.roundTimer <= 0)
+		if(this.round.roundTimeAcc >= this.round.roundTimer)
 		{
 			this.round.nextState = new RoundPlaying(this.gs, this.round);
 		}

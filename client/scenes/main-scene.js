@@ -7,6 +7,7 @@ import TeamMenu from "../ui-classes/team-menu.js"
 import ChatMenu from "../ui-classes/chat-menu.js"
 import ChatMenuMinified from "../ui-classes/chat-menu-minified.js"
 import UserListMenu from "../ui-classes/user-list-menu.js"
+import RoundMenu from "../ui-classes/round-menu.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -112,6 +113,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu = null;
 		this.chatMenuMinified = null;
 		this.userListMenu = null;
+		this.roundMenu = null;
 		
 	}
 
@@ -185,11 +187,14 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu = new ChatMenu();
 		this.chatMenuMinified = new ChatMenuMinified();
 		this.userListMenu = new UserListMenu();
+		this.roundMenu = new RoundMenu();
+		
 
 		this.teamMenu.init(this.gc);
 		this.chatMenu.init(this.gc);
 		this.chatMenuMinified.init(this.gc);
 		this.userListMenu.init(this.gc);
+		this.roundMenu.init(this.gc);
 	}
 
 	windowInputKeyup(e) {
@@ -324,6 +329,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.activate();
 		this.chatMenuMinified.activate();
 		this.userListMenu.activate();
+		this.roundMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -407,11 +413,13 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.deactivate();
 		this.chatMenuMinified.deactivate();
 		this.userListMenu.deactivate();
+		this.roundMenu.deactivate();
 
 		this.teamMenu.deinit();
 		this.chatMenu.deinit();
 		this.chatMenuMinified.deinit();
 		this.userListMenu.deinit();
+		this.roundMenu.deinit();
 	}
 
 	exitGameClick() {
@@ -692,6 +700,9 @@ export default class MainScene extends Phaser.Scene {
 		this.prevAngle = this.angle;
 		this.prevIsFiring = this.isFiring;
 		this.prevIsFiringAlt = this.isFiringAlt;
+
+		//update menus
+		this.roundMenu.update(dt);
 
 		this.frameNum++;
 	}

@@ -12,6 +12,7 @@ class RoundOver extends RoundBaseState {
 	enter(dt) {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
+		this.round.roundTimeAcc = 0;
 		this.round.roundTimer = 3000;
 
 		// //kill all characters
@@ -31,9 +32,9 @@ class RoundOver extends RoundBaseState {
 	}
 
 	update(dt) {
-		this.round.roundTimer -= dt;
+		this.round.roundTimeAcc += dt;
 
-		if(this.round.roundTimer <= 0)
+		if(this.round.roundTimeAcc >= this.round.roundTimer)
 		{
 			this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
 		}

@@ -12,7 +12,8 @@ class RoundPlaying extends RoundBaseState {
 	enter(dt) {
 		logger.log("info", 'Round playing.');
 		super.enter(dt);
-		this.round.roundTimer = 3000;
+		this.round.roundTimeAcc = 0;
+		this.round.roundTimer = 120000;
 
 		// //allow all active character. Kinda hacky and probably not gonna remain her for long....
 		// var activeUsers = this.gs.um.getActiveUsers();
@@ -32,9 +33,9 @@ class RoundPlaying extends RoundBaseState {
 	}
 
 	update(dt) {
-		this.round.roundTimer -= dt;
+		this.round.roundTimeAcc += dt;
 
-		if(this.round.roundTimer <= 0)
+		if(this.round.roundTimeAcc >= this.round.roundTimer)
 		{
 			this.round.nextState = new RoundOver.RoundOver(this.gs, this.round);
 		}

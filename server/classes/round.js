@@ -7,6 +7,7 @@ class Round {
 		this.globalfuncs = null;
 		this.id = 123; //hardcoded for now
 		this.roundTimer = 0;
+		this.roundTimeAcc = 0;
 
 		this.stateName = "";
 		this.stateEnum = 0;
@@ -60,7 +61,9 @@ class Round {
 		return {
 			"eventName": "addRound",
 			"id": this.id,
-			"roundState": this.stateEnum
+			"roundState": this.stateEnum,
+			"roundTime": this.roundTimer,
+			"roundTimeAcc": this.roundTimeAcc
 		};
 	}
 	
@@ -68,7 +71,9 @@ class Round {
 		return {
 			"eventName": "updateRoundState",
 			"id": this.id,
-			"roundState": this.stateEnum
+			"roundState": this.stateEnum,
+			"roundTime": this.roundTimer,
+			"roundTimeAcc": this.roundTimeAcc
 		};
 	}
 }

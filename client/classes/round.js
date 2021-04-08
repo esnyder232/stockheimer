@@ -15,6 +15,8 @@ export default class Round {
 
 		this.state = null;
 		this.nextState= null;
+		this.roundTime = 0;
+		this.roundTimeAcc = 0;
 
 		this.eventMapping = {
 			"addRound": this.changeState.bind(this),
@@ -42,6 +44,8 @@ export default class Round {
 		this.processOrderedEvents();
 		this.processEvents();
 
+		this.roundTimeAcc += dt;
+
 		this.state.update(dt);
 
 		//change round state if necessary
@@ -52,6 +56,8 @@ export default class Round {
 
 			this.state = this.nextState;
 			this.nextState = null;
+
+			window.dispatchEvent(new CustomEvent("round-state-updated"));
 		}	
 	}
 
@@ -89,8 +95,19 @@ export default class Round {
 		this.eventQueue.length = 0;
 	}
 
+	getMinutes() {
+		return Math.floor((this.roundTime - this.roundTimeAcc) / (60 * 1000));
+	}
+
+	getSeconds() {
+		return (Math.floor((this.roundTime - this.roundTimeAcc) / 1000) % 60).toString().padStart(2, "0");
+	}
+
+	//thss could be 2 different functions...but meh whatever
 	changeState(e) {
 		var initState = this.gc.gameConstantsInverse["RoundStates"][e.roundState];
+		this.roundTime = e.roundTime;
+		this.roundTimeAcc = e.roundTimeAcc;
 		switch(initState)
 		{
 			case "STARTING":
@@ -102,6 +119,11 @@ export default class Round {
 			case "OVER":
 				this.nextState = new RoundOver(this.gc, this);
 				break;
+		}
+
+		if(e.eventName === "addRound")
+		{
+			window.dispatchEvent(new CustomEvent("round-added"));
 		}
 	}
 }
