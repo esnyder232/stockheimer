@@ -1,6 +1,6 @@
 import GlobalFuncs from "../global-funcs.js"
 import RoundStarting from "../round-states/round-starting.js"
-import RoundPlaying from "../round-states/round-Playing.js"
+import RoundPlaying from "../round-states/round-playing.js"
 import RoundOver from "../round-states/round-over.js"
 
 export default class Round {
