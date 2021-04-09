@@ -14,5 +14,12 @@
 	"ProcessTypes": {
 		"RESPAWN": 0,
 		"COOLDOWN": 1
+	},
+
+	"UserPlayingStates": {
+		"SPECATING": 0,
+		"DEAD": 1,
+		"RESPAWNING": 2,
+		"PLAYING": 3
 	}
 }

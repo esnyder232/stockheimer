@@ -1,8 +1,10 @@
-const {GlobalFuncs} = require('../global-funcs.js');
+const GlobalFuncs = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
 const serverConfig = require('../server-config.json');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
+const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
+const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
 const logger = require('../../logger.js');
 
 class User {
@@ -53,12 +55,24 @@ class User {
 		this.rttCalcThreshold = 1000; //ms
 		this.pvpEnabled = true;
 		this.teamId = null;
+
+		this.playingState = null;
+		this.nextPlayingState = null;
+		this.playingStateName = "";
+		this.playingStateEnum = null;
+
+		this.playingEventQueue = [];
+
+		this.respawnTimer = 0;
+		this.respawnTimeAcc = 0;
 	}
+
+
 
 
 	userInit(gameServer, wsId) {
 		this.gs = gameServer;
-		this.globalfuncs = new GlobalFuncs();
+		this.globalfuncs = new GlobalFuncs.GlobalFuncs();
 		this.wsId = wsId;
 		
 		//get a direct reference to the websocket handler
@@ -73,15 +87,35 @@ class User {
 		
 		//assign to sepctator team by default
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
-
 		if(this.teamId === null && spectatorTeam) {
 			this.teamId = spectatorTeam.id;
 		}
+
+		this.playingState = new PlayingSpectatorState.PlayingSpectatorState(this);
+		this.playingState.enter();
+
 	}
 
 	updateTeamId(newTeamId) {
 		this.teamId = newTeamId;
 		this.userInfoDirty = true;
+		
+		//this.determinePlayingState();
+		this.insertPlayingEvent("team-changed");
+	}
+
+	determinePlayingState() {
+		var spectatorTeam = this.gs.tm.getSpectatorTeam();
+
+		//if the player chose any team except the spectator team, put the player in an initial playing state
+		if(spectatorTeam && this.teamId !== spectatorTeam.id)
+		{
+			this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this);
+		}
+		else
+		{
+			this.nextPlayingState = new PlayingSpectatorState.PlayingSpectatorState(this);
+		}
 	}
 
 	userPostStartPlaying() {
@@ -107,7 +141,7 @@ class User {
 			filterMaskBits: CollisionMasks["user_sensor"]
 		});
 
-		//this.globalfuncs.spawnCharacterForUser(this.gs, this);
+		this.determinePlayingState();
 	}
 
 	userPreStopPlaying() {
@@ -126,7 +160,7 @@ class User {
 		this.serverToClientEvents = [];
 		this.clientToServerEvents = [];
 		this.characterId = null;
-		//this.teamId = null;
+		//this.teamId = null; //purposely commented out and left in code to remind you later: don't get rid of the teamId so the game remembers what team you were on.
 		this.bReadyToPlay = false;
 		this.bDisconnected = false;
 		this.inputQueue = [];
@@ -140,6 +174,17 @@ class User {
 			"gameobject": {},
 			"round": {}
 		}
+
+		this.playingState = null;
+		this.nextPlayingState = null;
+		this.playingEventQueue = [];
+	}
+
+	insertPlayingEvent(eventName, data) {
+		this.playingEventQueue.push({
+			eventName: eventName,
+			data: data
+		})
 	}
 
 	//inserts the event into the serverToclient array so it can be processed later in the update loop
@@ -340,7 +385,22 @@ class User {
 	}
 
 	update(dt) {
+
+		//update connection state
 		this.state.update();
+
+		//update plyaing state if they have one
+		this.playingState.update(dt);
+
+		if(this.nextPlayingState !== null)
+		{
+			this.playingState.exit(dt);
+			this.nextPlayingState.enter(dt);
+
+			this.playingState = this.nextPlayingState;
+			this.nextPlayingState = null;
+		}
+		
 
 		//update rtt if its time
 		this.rttCalcTimer += dt;

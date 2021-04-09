@@ -13,22 +13,7 @@ class RoundOver extends RoundBaseState {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 3000;
-
-		// //kill all characters
-		// var activeUsers = this.gs.um.getActiveUsers();
-		// for(var i = 0; i < activeUsers.length; i++)
-		// {
-		// 	var user = activeUsers[i];
-		// 	if(user.characterId !== null)
-		// 	{
-		// 		var c = this.gs.gom.getGameObjectByID(user.characterId);
-		// 		if(c !== null)
-		// 		{
-		// 			c.hpCur = 0;
-		// 		}
-		// 	}
-		// }
+		this.round.roundTimer = 10000;
 	}
 
 	update(dt) {
@@ -44,6 +29,14 @@ class RoundOver extends RoundBaseState {
 
 	exit(dt) {
 		super.exit(dt);
+
+		//tell all active users the round is restarting. Let them sort themselves out.
+		var activeUsers = this.gs.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			activeUsers[i].insertPlayingEvent("round-restarting");
+		}
+		
 	}
 }
 

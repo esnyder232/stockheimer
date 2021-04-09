@@ -146,9 +146,10 @@ class Character {
 		}
 
 		//disassociate the owner from the character
-		if(owner !== null)
+		if(owner !== null && this.ownerType === "user")
 		{
-			owner.characterId = null;
+			owner.insertPlayingEvent("character-died");
+			//owner.characterId = null;
 		}
 		/////////////////////
 	}

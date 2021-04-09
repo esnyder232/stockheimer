@@ -13,23 +13,14 @@ class RoundPlaying extends RoundBaseState {
 		logger.log("info", 'Round playing.');
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 120000;
+		this.round.roundTimer = 10000;
 
-		// //allow all active character. Kinda hacky and probably not gonna remain her for long....
-		// var activeUsers = this.gs.um.getActiveUsers();
-		// for(var i = 0; i < activeUsers.length; i++)
-		// {
-		// 	var user = activeUsers[i];
-		// 	if(user.characterId !== null)
-		// 	{
-		// 		var c = this.gs.gom.getGameObjectByID(user.characterId);
-		// 		if(c !== null)
-		// 		{
-		// 			c.changeAllowMove(true);
-		// 			c.changeAllowShoot(true);
-		// 		}
-		// 	}
-		// }
+		//tell users that the rouns has started
+		var activeUsers = this.gs.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			activeUsers[i].insertPlayingEvent("round-started");
+		}
 	}
 
 	update(dt) {

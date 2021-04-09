@@ -57,6 +57,10 @@ class Round {
 		}
 	}
 
+	getStateEnum() {
+		return this.stateEnum;
+	}
+
 	serializeAddRoundEvent() {
 		return {
 			"eventName": "addRound",

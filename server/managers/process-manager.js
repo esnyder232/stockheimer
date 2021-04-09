@@ -22,8 +22,6 @@ class ProcessManager {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
 
-		var whatisthis = RespawnProcess;
-
 		//create process map
 		this.processMap = {
 			"RESPAWN": RespawnProcess,

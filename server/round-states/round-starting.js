@@ -13,16 +13,17 @@ class RoundStarting extends RoundBaseState {
 		logger.log("info", 'Round starting.');
 		super.enter(dt);
 
-		// //spawn all the users that have a team that is not spectators
-		// var activeUsers = this.gs.um.getActiveUsers();
+		var activeUsers = this.gs.um.getActiveUsers();
 
+		//tell all users that the round has started
 		// for(var i = 0; i < activeUsers.length; i++)
 		// {
-		// 	this.globalfuncs.spawnCharacterForUser(this.gs, activeUsers[i]);
+		// 	//this.globalfuncs.spawnCharacterForUser(this.gs, activeUsers[i]);
+		// 	this.activeUsers.insertPlayingEvent("round-starting");
 		// }
 
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 3000;
+		this.round.roundTimer = 10000;
 	}
 
 	update(dt) {

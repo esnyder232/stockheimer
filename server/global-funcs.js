@@ -112,13 +112,6 @@ class GlobalFuncs {
 				bFail = true;
 			}
 
-			//check if the round is currently starting
-			if(!bFail && gs.theRound.stateEnum !== GameConstants.RoundStates["STARTING"])
-			{
-				bFail = true;
-				userMessage = "You can only spawn in when the round is starting.";
-			}
-
 			//check if the navgrid exists (to be safe)
 			if(!bFail && gs.activeNavGrid === null)
 			{
@@ -187,6 +180,8 @@ class GlobalFuncs {
 				gs.gameState.broadcastResponseMessage(broadcastMessage, logEventMessage);
 			}
 		}
+
+		return bFail;
 
 	}
 	

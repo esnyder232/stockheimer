@@ -24,22 +24,22 @@ class UserPlayingState extends UserBaseState {
 			this.user.nextState = new UserDisconnectingState(this.user);
 		}
 
-		if(this.user.inputQueue.length > 0)
-		{
-			var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
+		// if(this.user.inputQueue.length > 0)
+		// {
+		// 	var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
 
-			//if you are currently controlling a character, just pass the input events to the character itself
-			if(c !== null)
-			{
-				for(var i = 0; i < this.user.inputQueue.length; i++)
-				{
-					c.inputQueue.push(this.user.inputQueue[i]);
-				}
-			}
+		// 	//if you are currently controlling a character, just pass the input events to the character itself
+		// 	if(c !== null)
+		// 	{
+		// 		for(var i = 0; i < this.user.inputQueue.length; i++)
+		// 		{
+		// 			c.inputQueue.push(this.user.inputQueue[i]);
+		// 		}
+		// 	}
 			
-			//clear out input queue at end of frame
-			this.user.inputQueue.length = 0;
-		}
+		// 	//clear out input queue at end of frame
+		// 	this.user.inputQueue.length = 0;
+		// }
 	}
 
 	exit(dt) {

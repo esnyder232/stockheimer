@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const {GlobalFuncs} = require('../global-funcs.js');
+const GlobalFuncs = require('../global-funcs.js');
 const {User} = require('../user/user.js');
 const serverConfig = require('../server-config.json');
 const logger = require('../../logger.js');
@@ -26,7 +26,7 @@ class UserManager {
 
 	init(gameServer) {
 		this.gs = gameServer;
-		this.globalfuncs = new GlobalFuncs();
+		this.globalfuncs = new GlobalFuncs.GlobalFuncs();
 
 		for(var i = 0; i < this.maxActiveAllowed; i++)
 		{
