@@ -13,7 +13,7 @@ class RoundOver extends RoundBaseState {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 3000;
+		this.round.roundTimer = 10000;
 	}
 
 	update(dt) {

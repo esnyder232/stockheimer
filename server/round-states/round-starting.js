@@ -23,7 +23,7 @@ class RoundStarting extends RoundBaseState {
 		// }
 
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 3000;
+		this.round.roundTimer = 10000;
 	}
 
 	update(dt) {
