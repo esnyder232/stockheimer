@@ -1,4 +1,5 @@
 import GlobalFuncs from "../global-funcs.js"
+import EventQueue from "./event-queue.js"
 import $ from "jquery"
 
 export default class User {
@@ -15,11 +16,21 @@ export default class User {
 		this.userPvp = true;
 
 		this.userListItem = null;
+
+		this.eq = null;
+		this.eventMapping = {
+			"updateUserInfo": this.updateUserInfoEvent.bind(this),
+			"updateUserPlayingState": this.updateUserPlayingState.bind(this)
+		}
 	}
 	
 	userInit(gc) {
 		this.gc = gc;
 		this.globalfuncs = new GlobalFuncs();
+
+		this.eq = new EventQueue();
+		this.eq.eventQueueInit(this.gc);
+		this.eq.batchRegisterToEvent(this.eventMapping);
 	}
 
 	activated() {
@@ -31,9 +42,17 @@ export default class User {
 	deinit() {
 		this.gc = null;
 		this.globalfuncs = null;
+
+		this.eq.batchUnregisterFromEvent(this.eventMapping);
+		this.eq.deinit();
 	}
 
-	UpdateUserInfoEvent(e) {
+	update(dt) {
+		this.eq.processOrderedEvents();
+		this.eq.processEvents();
+	}
+
+	updateUserInfoEvent(e) {
 		this.userKillCount = e.userKillCount;
 		this.userRtt = e.userRtt;
 		this.userPvp = e.userPvp;
@@ -45,6 +64,11 @@ export default class User {
 		{
 			//c.pvpGraphics.setText(pvpPart);
 		}
+	}
+
+	updateUserPlayingState(e) {
+		//console.log('INSIDE USER: updating user playing state');
+		
 	}
 }
 

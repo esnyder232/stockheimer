@@ -12,7 +12,7 @@ export default class UpdateUserInfoEvent {
 		var u = this.gc.um.getUserByServerID(e.userId);
 		if(u !== null)
 		{
-			u.UpdateUserInfoEvent(e)
+			u.eq.insertEvent(e);
 		}
 
 		this.gc.mainScene.userListMenu.updateUserInfoEvent(e);

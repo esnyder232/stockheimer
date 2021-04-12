@@ -397,6 +397,18 @@ class User {
 			this.playingState.exit(dt);
 			this.nextPlayingState.enter(dt);
 
+			var te = this.findTrackedEntity("user", this.id);
+			if(te !== null)
+			{
+				te.insertOrderedEvent({
+					"eventName": "updateUserPlayingState",
+					"userId": this.id,
+					"userPlayingState": this.playingStateEnum,
+					"userRespawnTime": this.respawnTimer,
+					"userRespawnTimeAcc": this.respawnTimeAcc
+				})
+			}
+
 			this.playingState = this.nextPlayingState;
 			this.nextPlayingState = null;
 		}

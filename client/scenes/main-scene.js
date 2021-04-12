@@ -516,6 +516,14 @@ export default class MainScene extends Phaser.Scene {
 		//update round
 		this.gc.theRound.update(dt);
 
+
+		//update users
+		var activeUsers = this.gc.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++)
+		{
+			activeUsers[i].update(dt);
+		}
+
 		//update gameobjects
 		var activeGameObjects = this.gc.gom.getActiveGameObjects();
 		for(var i = 0; i < activeGameObjects.length; i++)
