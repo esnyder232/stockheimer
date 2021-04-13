@@ -156,8 +156,7 @@ export default class UserListMenu {
 				if(this.userIdUserListItemMap[u.serverId] !== undefined)
 				{
 					//update userListItem
-					var pvpPart = u.userPvp ? this.gc.mainScene.pvpEmoji : "\xa0\xa0\xa0\xa0\xa0";
-					var myText = pvpPart + " (kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
+					var myText = "(kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
 					this.userIdUserListItemMap[u.serverId].text(myText);
 				}
 			}

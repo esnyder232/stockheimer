@@ -79,7 +79,7 @@ export default class MainScene extends Phaser.Scene {
 
 		this.frameNum = 0;
 
-		this.pvpEmoji = String.fromCharCode(0x2694, 0xFE0F);
+		// this.pvpEmoji = String.fromCharCode(0x2694, 0xFE0F);
 		this.aiColor = 0xff0000;
 		this.aiFillColor = 0xff6600;
 		this.aiTextColor = "#000000";
@@ -131,12 +131,10 @@ export default class MainScene extends Phaser.Scene {
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
-			{event: 'create-character-click', func: this.createCharacterClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
 			
 			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
 			{event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
-			{event: 'toggle-pvp', func: this.togglePvp.bind(this)},
 			{event: 'respawn-castle', func: this.respawnCastle.bind(this)}
 		];
 
@@ -171,13 +169,8 @@ export default class MainScene extends Phaser.Scene {
 		this.debugAngle = $("#debug-angle");
 
 		//always hide the kill character button and show create button
-		var createCharacterBtn = $("#create-character");
 		var killCharacterBtn = $("#kill-character");
 		
-		if(createCharacterBtn.length > 0)
-		{
-			createCharacterBtn.removeClass("hide");
-		}
 		if(killCharacterBtn.length > 0)
 		{
 			killCharacterBtn.addClass("hide");
@@ -770,17 +763,6 @@ export default class MainScene extends Phaser.Scene {
 	
 	}
 
-
-	createCharacterClick() {
-		if(this.gc.myCharacter === null)
-		{
-			this.gc.ep.insertClientToServerEvent({
-				"eventName": "fromClientSpawnCharacter"
-			});
-		}
-		$("#create-character")[0].blur();
-	}
-
 	killCharacterClick() {
 		if(this.gc.myCharacter !== null)
 		{
@@ -803,12 +785,6 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.ep.insertClientToServerEvent({
 			"eventName": "fromClientSpawnEnemy",
 			"spawnLocation": spawnLocation
-		});
-	}
-
-	togglePvp() {
-		this.gc.ep.insertClientToServerEvent({
-			"eventName": "fromClientTogglePvp"
 		});
 	}
 

@@ -228,27 +228,9 @@ class CollisionSystem {
 			{
 				processDamage = false;
 			}
-			//check for pvp flags if the character is owned by a player and the projectile is owned by a player
-			else if(p.ownerType === c.ownerType && p.ownerType === "user")
-			{
-				var sourceOwner = this.gs.um.getUserByID(p.ownerId);
-				var targetOwner = this.gs.um.getUserByID(c.ownerId);
 
-				if(sourceOwner !== null && targetOwner !== null)
-				{
-					if(!(sourceOwner.pvpEnabled && targetOwner.pvpEnabled))
-					{
-						processDamage = false;
-					}
-				}
-				else
-				{
-					processDamage = false;
-				}
-			}
-
-			//if its the character's own bullet, see if he is allowed to get hit by it yet
-			if(p.characterId === c.id && p.firedCountdown >= 0)
+			//if its the character's own bullet, don't allow the character to get hit
+			if(p.characterId === c.id)
 			{
 				processDamage = false;
 			}

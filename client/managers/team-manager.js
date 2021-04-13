@@ -9,13 +9,13 @@ export default class TeamManager {
 		this.idIndex = {};
 		this.serverIdClientIdMap = {};
 		this.isDirty = false;
+		this.spectatorTeam = null;
 	}
 
 	init(gameClient) {
 		this.gc = gameClient;
 	}
 
-	//this doesn't actually CREATE the websocket, it creates a websocketHandler class and passes the actual websocket to it.
 	createTeam(serverId) {
 		var o = new Team();
 
@@ -111,5 +111,16 @@ export default class TeamManager {
 		{
 			return null;
 		}
+	}
+
+	assignSpectatorTeamByServerId(serverId) {
+		var t = this.getTeamByServerID(serverId);
+		if(t) {
+			this.spectatorTeam = t;
+		}
+	}
+
+	getSpectatorTeam() {
+		return this.spectatorTeam;
 	}
 }

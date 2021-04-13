@@ -28,14 +28,8 @@ export default class RemoveActiveCharacterEvent {
 
 				//also destroy the target line
 				this.gc.mainScene.targetLineGraphic.clear();
-
-				var createCharacterBtn = $("#create-character");
 				var killCharacterBtn = $("#kill-character");
-				
-				if(createCharacterBtn.length > 0)
-				{
-					createCharacterBtn.removeClass("hide");
-				}
+
 				if(killCharacterBtn.length > 0)
 				{
 					killCharacterBtn.addClass("hide");

@@ -322,18 +322,6 @@ class GameServerRunning extends GameServerBaseState {
 
 						break;
 
-					case "fromClientTogglePvp":
-						user.updateUserPvpFlag(!user.pvpEnabled);
-						var broadcastMessage = "Player '" + user.username + "' updated his pvp to " + user.pvpEnabled;
-						var logEventMessage = "Player: " + user.username + ", event: fromClientTogglePvp: ";
-
-						//send out usermessage and/or broadcast message
-						if(broadcastMessage !== "")
-						{
-							this.broadcastResponseMessage(broadcastMessage, logEventMessage);
-						}
-						break;
-
 					case "fromClientJoinTeam":
 						var existingTeamId = user.teamId;
 						var newTeamId = null;

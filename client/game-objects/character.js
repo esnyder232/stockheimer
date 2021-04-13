@@ -27,7 +27,6 @@ export default class Character {
 		this.boxGraphics = null;
 		this.textGraphics = null;
 		this.hpTextGraphics = null;
-		this.pvpGraphics = null;
 	}
 
 	characterInit(gameClient) {
@@ -73,12 +72,12 @@ export default class Character {
 			stroke: this.ms.userStrokeColor
 		}
 
-		var pvpTextStyle = {
-			color: this.ms.userTextColor, 
-			fontSize: "12px",
-			strokeThickness: 4,
-			stroke: this.ms.userStrokeColor
-		}
+		// var pvpTextStyle = {
+		// 	color: this.ms.userTextColor, 
+		// 	fontSize: "12px",
+		// 	strokeThickness: 4,
+		// 	stroke: this.ms.userStrokeColor
+		// }
 
 		//add username text
 		if(this.ownerType === "user")
@@ -99,33 +98,28 @@ export default class Character {
 
 
 		//add pvp emoji
-		var pvpText = "";
-		if(u && this.ownerType === "user")
-		{
-			pvpText = u.userPvp ? this.ms.pvpEmoji : "";
-		}
+		// var pvpText = "";
+		// if(u && this.ownerType === "user")
+		// {
+		// 	pvpText = u.userPvp ? this.ms.pvpEmoji : "";
+		// }
 
 		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
 		this.hpTextGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 34 , this.hpCur + "/" + this.hpMax, textStyle);
-		this.pvpGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-10, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) - 36 , pvpText, pvpTextStyle);
+		// this.pvpGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-10, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) - 36 , pvpText, pvpTextStyle);
 
 		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.pvpGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		// this.pvpGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
 		//check if this is your character your controlling. If it is, then switch pointer modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);
 			this.ms.switchPointerMode(1); //switch to phaser mode
-			var createCharacterBtn = $("#create-character");
 			var killCharacterBtn = $("#kill-character");
 
-			if(createCharacterBtn.length > 0)
-			{
-				createCharacterBtn.addClass("hide");
-			}
 			if(killCharacterBtn.length > 0)
 			{
 				killCharacterBtn.removeClass("hide");
@@ -137,7 +131,7 @@ export default class Character {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
 		this.hpTextGraphics.destroy();
-		this.pvpGraphics.destroy();
+		// this.pvpGraphics.destroy();
 
 		//put gravestone where the character was removed
 		var gravestone = {

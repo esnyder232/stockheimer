@@ -15,7 +15,6 @@ class AIAgent {
 		this.nodePathToCastle = [];
 		this.currentNode = 0;
 		this.followPath = false;
-		this.pvpEnabled = false;
 		
 		this.currentNodeReached = false;
 		this.nodeRadiusSquared = 0.01; //radius to determine if the character has reached its current node

@@ -53,6 +53,25 @@ export default class TeamMenu {
 			this.teamButtonContainer.append(newButton);
 			this.joinTeamButtonArray.push(newButton);
 		}
+
+		//reset to initial state
+		var showTeamMenu = false;
+
+		//if the user's initial team is spectator, show the team menu so they can pick a team
+		if(this.gc.myUser !== null) {
+			var spectatorTeam = this.gc.tm.getSpectatorTeam();
+
+			if(spectatorTeam !== null && this.gc.myUser.teamId === spectatorTeam.serverId) {
+				showTeamMenu = true;
+			}
+		}
+
+		if(showTeamMenu) {
+			this.menu.removeClass("hide");
+		}
+		else {
+			this.menu.addClass("hide");
+		}
 	}
 
 	joinTeamClick(serverId) {
@@ -60,6 +79,8 @@ export default class TeamMenu {
 			"eventName": "fromClientJoinTeam",
 			"teamId": serverId
 		});
+
+		this.closeMenu();
 	}
 
 	toggleMenu() {

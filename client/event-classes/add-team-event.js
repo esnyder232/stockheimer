@@ -13,5 +13,9 @@ export default class AddTeamEvent {
 		t.teamInit(this.gc);
 		t.slotNum = e.slotNum;
 		t.name=  e.name;
+
+		if(e.isSpectatorTeam) {
+			this.gc.tm.assignSpectatorTeamByServerId(t.serverId);
+		}
 	}
 }

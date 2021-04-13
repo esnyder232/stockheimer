@@ -22,8 +22,8 @@ export default class ActiveCharacterUpdateEvent {
 			c.textGraphics.setX((c.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
 			c.textGraphics.setY((c.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 18)
 
-			c.pvpGraphics.setX((c.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-10)
-			c.pvpGraphics.setY((c.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) - 36)
+			// c.pvpGraphics.setX((c.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-10)
+			// c.pvpGraphics.setY((c.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) - 36)
 
 			c.hpTextGraphics.setX((c.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
 			c.hpTextGraphics.setY((c.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 34)

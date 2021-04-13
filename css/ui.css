@@ -159,11 +159,6 @@ input[type="text"]:disabled {
 	pointer-events: none;
 }
 
-#create-character {
-	margin-right: 12px;
-	color:rgb(114, 255, 114);
-}
-
 #kill-character {
 	color:rgb(255, 107, 107);
 }
