@@ -22,7 +22,7 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 				break;
 
 			case GameConstants.RoundStates["PLAYING"]:
-				this.user.respawnTimer = 3000;
+				this.user.respawnTimer = 6000;
 				break;
 
 			case GameConstants.RoundStates["OVER"]:

@@ -17,7 +17,7 @@
 	},
 
 	"UserPlayingStates": {
-		"SPECATING": 0,
+		"SPECTATING": 0,
 		"DEAD": 1,
 		"RESPAWNING": 2,
 		"PLAYING": 3

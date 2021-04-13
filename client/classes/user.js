@@ -16,6 +16,11 @@ export default class User {
 		this.userPvp = true;
 
 		this.userListItem = null;
+		this.playingStateEnum = null;
+		this.playingStateName = "";
+
+		this.respawnTimer = 0;
+		this.respawnTimerAcc = 0;
 
 		this.eq = null;
 		this.eventMapping = {
@@ -31,6 +36,9 @@ export default class User {
 		this.eq = new EventQueue();
 		this.eq.eventQueueInit(this.gc);
 		this.eq.batchRegisterToEvent(this.eventMapping);
+
+		this.playingStateEnum = this.gc.gameConstants["UserPlayingStates"]["SPECTATING"];
+		this.playingStateName = this.gc.gameConstantsInverse["UserPlayingStates"][this.playingStateEnum];
 	}
 
 	activated() {
@@ -42,6 +50,7 @@ export default class User {
 	deinit() {
 		this.gc = null;
 		this.globalfuncs = null;
+		this.userPlayingState = null;
 
 		this.eq.batchUnregisterFromEvent(this.eventMapping);
 		this.eq.deinit();
@@ -50,6 +59,10 @@ export default class User {
 	update(dt) {
 		this.eq.processOrderedEvents();
 		this.eq.processEvents();
+
+		if(this.playingStateName === "RESPAWNING") {
+			this.respawnTimerAcc += dt;
+		}
 	}
 
 	updateUserInfoEvent(e) {
@@ -67,8 +80,16 @@ export default class User {
 	}
 
 	updateUserPlayingState(e) {
-		//console.log('INSIDE USER: updating user playing state');
-		
+		this.playingStateEnum = e.userPlayingState;
+		this.playingStateName = this.gc.gameConstantsInverse["UserPlayingStates"][this.playingStateEnum];
+		this.respawnTimer = e.userRespawnTime;
+		this.respawnTimerAcc = e.userRespawnTimeAcc;
+
+		window.dispatchEvent(new CustomEvent("user-playing-state-updated", {detail: {serverId: this.serverId}}));
+	}
+
+	getRespawnSeconds() {
+		return (Math.floor((this.respawnTimer - this.respawnTimerAcc) / 1000) % 60);
 	}
 }
 
