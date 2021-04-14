@@ -44,6 +44,10 @@ export default class ChatMenu {
 		//reset to initial state
 		this.menu.addClass("hide");
 		this.isVisible = false;
+
+		//custom event registration
+		this.chatInput.on("keyup", this.tbChatInputKeyup.bind(this));
+
 	}
 
 	toggleMenu() {
@@ -57,29 +61,59 @@ export default class ChatMenu {
 	}
 
 	openMenu() {
-		this.menu.removeClass("hide");		
+		this.menu.removeClass("hide");
 		this.isVisible = true;
 
-		// //focus on textbox
-		// commented out for now....it ties into the game mechanics. So i can't focus on the chat message for now.
-		// if(this.chatInput)
-		// {
-		// 	this.chatInput[0].focus();
-		// }
-		
+		//focus on textbox
+		if(this.chatInput)
+		{
+			this.chatInput[0].focus();
+		}
 
 		//scroll to bottom
 		this.chatHistory[0].scrollTop = this.chatHistory[0].scrollHeight;
 	}
 
+
+	tbChatInputKeyup(e) {
+		if((e.code == "NumpadEnter" || e.code == "Enter")) {
+			this.tbChatSubmitClick();
+		}
+
+		e.preventDefault();
+		e.stopPropagation();
+	}
+
+	tbChatSubmitClick() {
+		var chatMsg = "";
+		chatMsg = this.chatInput.val();
+
+		if(chatMsg !== "")
+		{
+			this.chatInput.val("");
+
+			this.gc.ep.insertClientToServerEvent({
+				"eventName": "fromClientChatMessage",
+				"chatMsg": chatMsg
+			});
+		}
+
+		this.closeMenu();
+	}
+
+
+
 	closeMenu() {
 		this.menu.addClass("hide");
+
 		window.dispatchEvent(new CustomEvent("chat-menu-closed"));
 		this.isVisible = false;
 	}
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+
+		this.chatInput.off("keyup");
 	}
 
 	deinit() {

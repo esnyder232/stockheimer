@@ -121,7 +121,6 @@ export default class MainScene extends Phaser.Scene {
 		];
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
-			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
 			
 			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
@@ -141,7 +140,6 @@ export default class MainScene extends Phaser.Scene {
 		};
 
 		//custom registers
-		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
 		$(window).on("keyup", this.windowInputKeyup.bind(this));
 
 		//phaser scene input events
@@ -327,11 +325,7 @@ export default class MainScene extends Phaser.Scene {
 			this.gravestones.splice(i, 1);
 		}
 
-
-		$("#tb-chat-input").off("keyup");
 		$(window).off("keyup");
-
-		$("#tb-chat-input").off("click");
 		$(document).off("keyup");
 
 		$("#main-scene-root").addClass("hide");
@@ -620,33 +614,6 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu.update(dt);
 
 		this.frameNum++;
-	}
-
-	tbChatInputKeyup(e) {
-		//If the user clicks enter, click the play button if its enabled.
-		if((e.code == "NumpadEnter" || e.code == "Enter")) {
-			this.tbChatSubmitClick();
-			return false; //don't allow it to propogate. Otherwise the pointer mode will turn back into phaser mode
-		}
-
-		return true;
-	}
-
-	tbChatSubmitClick() {
-		var chatMsg = "";
-		var tbChatInput = $("#tb-chat-input");
-
-		chatMsg = tbChatInput.val();
-
-		if(chatMsg !== "")
-		{
-			tbChatInput.val("");
-
-			this.gc.ep.insertClientToServerEvent({
-				"eventName": "fromClientChatMessage",
-				"chatMsg": chatMsg
-			});
-		}
 	}
 
 	killCharacterClick() {
