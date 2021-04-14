@@ -22,13 +22,6 @@ export default class MainScene extends Phaser.Scene {
 		this.playerInputKeyboardMap = {};
 		this.playerController = null;
 
-		//0 = "browser" mode
-		//1 = "phaser" mode
-		//When mode is "browser", the mouse is allowed to click on buttons, textboxes, scroll through stuff. The mouse events don't affect the gameplay.
-		//When mode is "phaser", the mouse events get processed by the game, and mouse events become ignored by all ui elements in the browser.
-		//For now, to switch modes, click "enter".
-		this.currentPointerMode = 0;
-
 		this.targetX = 0;
 		this.targetY = 0;
 		this.targetLine = null;
@@ -122,8 +115,6 @@ export default class MainScene extends Phaser.Scene {
 		console.log('init on ' + this.scene.key + ' start');
 		
 		this.gc = data.gc;
-
-		this.switchPointerMode(0); //switch to browser mode if it wasn't already
 		
 		this.phaserEventMapping = [
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
@@ -153,15 +144,10 @@ export default class MainScene extends Phaser.Scene {
 		$("#tb-chat-input").on("keyup", this.tbChatInputKeyup.bind(this));
 		$(window).on("keyup", this.windowInputKeyup.bind(this));
 
-		//custom register on enter and stuff for pointer mode
-		$("#tb-chat-input").on("click", this.chatInputClick.bind(this));
-		$("#tb-enemy-password").on("click", this.passInputClick.bind(this));
-		$("#ui-div").on("click", this.uiDivClick.bind(this));
-		$(document).on("keyup", this.documentEnterClicked.bind(this));
-
-		//custom registers on scroll
-		$("#game-div").on("wheel", this.documentScroll.bind(this));
-
+		//phaser scene input events
+		this.input.on("gameout", this.gameout.bind(this));
+		this.input.on("gameover", this.gameover.bind(this));
+		this.input.on("wheel", this.wheel.bind(this));
 
 		this.debugX = $("#debug-x");
 		this.debugY = $("#debug-y");
@@ -192,7 +178,29 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu.init(this.gc);
 	}
 
+	gameout(time, e) {
+		this.gc.turnOnContextMenu();
+	}
+
+	gameover(time, e) {
+		this.gc.turnOffContextMenu();
+	}
+
+	wheel(pointer, currentlyOver, deltaX, deltaY, deltaZ) {
+		//scrolled down
+		if(deltaY > 0) {
+			this.cameraZoom -= 0.2;
+		}
+		//scrolled up
+		else if(deltaY < 0) {
+			this.cameraZoom += 0.2;
+		}
+		this.setCameraZoom();
+	}
+
+
 	windowInputKeyup(e) {
+		// console.log(e.code);
 		switch(e.code) {
 			case "Escape":
 				window.dispatchEvent(new CustomEvent("toggle-main-menu"));
@@ -210,76 +218,11 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
-
-	documentScroll(e) {
-		if(this.gc.myCharacter !== null)
-		{
-			//browser mode
-			if(this.currentPointerMode === 0)
-			{
-				//console.log('browser mode scroll');
-				//do nothing
-			}
-			//phaser mode
-			else if(this.currentPointerMode === 1)
-			{
-				e.stopPropagation();
-				e.preventDefault();
-	
-				//scrolled down
-				if(e.originalEvent.deltaY > 0)
-				{
-					this.cameraZoom -= 0.2;
-					this.setCameraZoom();
-				}
-				//scrolled up
-				else if(e.originalEvent.deltaY < 0)
-				{
-					this.cameraZoom += 0.2;
-					this.setCameraZoom();
-				}
-			}
-		}
-		else
-		{
-			e.stopPropagation();
-			e.preventDefault();
-
-			//scrolled down
-			if(e.originalEvent.deltaY > 0)
-			{
-				this.cameraZoom -= 0.2;
-				this.setCameraZoom();
-			}
-			//scrolled up
-			else if(e.originalEvent.deltaY < 0)
-			{
-				this.cameraZoom += 0.2;
-				this.setCameraZoom();
-			}
-		}
-	}
-
 	//used to close all menus within the menu group
 	//....should really just pull all the menus out and put them in game-client one day
 	closeMenuGroup() {
 		this.gc.mainMenu.closeMenu();
 		this.teamMenu.closeMenu();
-	}
-
-	chatInputClick(e) {
-		return false; //make sure to return false here or the ui div will return the pointer mode to "phaser" 
-	}
-
-	passInputClick(e) {
-		return false; //make sure to return false here or the ui div will return the pointer mode to "phaser" 
-	}
-
-	uiDivClick(e) {
-		if(this.gc.myCharacter !== null)
-		{
-			this.switchPointerMode(1); //switch to phaser mode
-		}
 	}
 
 	preload() {
@@ -389,10 +332,7 @@ export default class MainScene extends Phaser.Scene {
 		$(window).off("keyup");
 
 		$("#tb-chat-input").off("click");
-		$("#tb-enemy-password").off("click");
-		$("#ui-div").off("click");
 		$(document).off("keyup");
-		$("#game-div").off("wheel");
 
 		$("#main-scene-root").addClass("hide");
 
@@ -423,33 +363,8 @@ export default class MainScene extends Phaser.Scene {
 
 	exitGameClick() {
 		this.gc.turnOnContextMenu();
-		this.switchPointerMode(0); //switch to browser mode
 		this.gc.gameState.exitGameClick();
 	}
-
-
-
-	switchPointerMode(mode)
-	{
-		console.log('switching pointer mode');
-		if(mode === 1) //1 - phaser mode
-		{
-			this.currentPointerMode = 1;
-			$("#tb-chat-input").attr('placeholder','Hit enter to chat');
-			$("#ui-div").addClass("ignore-pointer-events");
-
-			this.gc.turnOffContextMenu();
-		}
-		else //0 - browser mode
-		{
-			this.currentPointerMode = 0;
-			$("#tb-chat-input").attr('placeholder','Chat message');
-			$("#ui-div").removeClass("ignore-pointer-events");
-
-			this.gc.turnOnContextMenu();
-		}
-	}
-
 
 	switchCameraMode(mode)
 	{
@@ -472,9 +387,8 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
-
-
 	update(timeElapsed, dt) {
+		var pointer = this.input.activePointer;
 		var sendInputEvent = false;
 		//console.log('dt ' + dt);
 		//console.log("=== Client Framenum " + this.frameNum + " ===")
@@ -533,59 +447,52 @@ export default class MainScene extends Phaser.Scene {
 		//if you control your character, read input and send it to the server if its dirty.
 		if(this.gc.myCharacter !== null)
 		{
-			//if pointer mode is "phaser", capture the mouse position and update turret drawing
-			if(this.currentPointerMode === 1) //phaser mode
+			this.targetLineGraphic.clear();
+
+			pointer.updateWorldPoint(this.cameras.main);
+
+			//redraw the target line
+			var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
+			var y1 = this.gc.myCharacter.y * this.planckUnitsToPhaserUnitsRatio * -1;
+			var x2 = pointer.worldX;
+			var y2 = pointer.worldY;
+
+			this.targetLine.x1 = x1;
+			this.targetLine.y1 = y1;
+
+			this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
+			this.angle = (Math.round((this.angle*1000))/1000)
+			
+			Phaser.Geom.Line.SetToAngle(this.targetLine, x1, y1, this.angle, 100);
+
+			this.targetLineGraphic.strokeLineShape(this.targetLine);
+
+			//debugging text
+			this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
+			this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
+			this.debugIsDown.text('isDown: ' + pointer.isDown);
+			this.debugAngle.text('angle: ' + this.angle);
+
+			//check to see if the user wants to fire a bullet
+			if(pointer.leftButtonDown())
 			{
-				var pointer = this.input.activePointer;
-
-				this.targetLineGraphic.clear();
-
-				pointer.updateWorldPoint(this.cameras.main);
-
-				//redraw the target line
-				var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
-				var y1 = this.gc.myCharacter.y * this.planckUnitsToPhaserUnitsRatio * -1;
-				var x2 = pointer.worldX;
-				var y2 = pointer.worldY;
-
-				this.targetLine.x1 = x1;
-				this.targetLine.y1 = y1;
-
-				this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
-				this.angle = (Math.round((this.angle*1000))/1000)
-				
-				Phaser.Geom.Line.SetToAngle(this.targetLine, x1, y1, this.angle, 100);
-
-				this.targetLineGraphic.strokeLineShape(this.targetLine);
-
-				//debugging text
-				this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
-				this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
-				this.debugIsDown.text('isDown: ' + pointer.isDown);
-				this.debugAngle.text('angle: ' + this.angle);
-
-				//check to see if the user wants to fire a bullet
-				if(pointer.leftButtonDown())
-				{
-					this.isFiring = true;
-				}
-				else
-				{
-					this.isFiring = false;
-				}
-
-				//firing alt
-				if(pointer.rightButtonDown())
-				{
-					this.isFiringAlt = true;
-				}
-				else
-				{
-					this.isFiringAlt = false;
-				}
-
+				this.isFiring = true;
 			}
-		
+			else
+			{
+				this.isFiring = false;
+			}
+
+			//firing alt
+			if(pointer.rightButtonDown())
+			{
+				this.isFiringAlt = true;
+			}
+			else
+			{
+				this.isFiringAlt = false;
+			}
+
 			//if input changes, send the input event
 			if(this.playerController.isDirty)
 			{
@@ -715,18 +622,6 @@ export default class MainScene extends Phaser.Scene {
 		this.frameNum++;
 	}
 
-
-	//use this to enter "browser" pointer mode and focus on the chat input box
-	documentEnterClicked(e) {
-		//If the user clicks enter, focus on the chat input box, and turn the pointer mode into phaser mode
-		if((e.code == "NumpadEnter" || e.code == "Enter")) {
-			$("#tb-chat-input").focus();
-			this.switchPointerMode(0); //switch to browser mode
-		}
-
-		return true;
-	}
-
 	tbChatInputKeyup(e) {
 		//If the user clicks enter, click the play button if its enabled.
 		if((e.code == "NumpadEnter" || e.code == "Enter")) {
@@ -736,8 +631,6 @@ export default class MainScene extends Phaser.Scene {
 
 		return true;
 	}
-
-
 
 	tbChatSubmitClick() {
 		var chatMsg = "";
@@ -754,13 +647,6 @@ export default class MainScene extends Phaser.Scene {
 				"chatMsg": chatMsg
 			});
 		}
-		//if chat was blank, and they hit enter, AND they have a character to control, then switch pointer mode back to "phaser"
-		if(this.gc.myCharacter !== null)
-		{
-			this.switchPointerMode(1); //switch to phaser mode
-			tbChatInput[0].blur();
-		}
-	
 	}
 
 	killCharacterClick() {

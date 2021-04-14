@@ -10,252 +10,249 @@
 			Loading...
 		</div>
 		<div id="game-div">
-			<div id="ui-div">
-				<div class="scene-root hide" id="lobby-scene-root">					
-					<div class="game-title">
-						Stockheimer
-					</div>
-					<div id="user-name-container">
-						<div class="form-text" id="player-text">Player Name:</div>
-						<input type="text" class="form-input" id="user-name" maxlength="32" />
-						<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
-						<input type="button" class="form-button hide" id="player-submit-existing" value="Play with existing user" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
-						<input type="button" class="form-button hide" id="player-new" value="Delete existing user" onclick="window.dispatchEvent(new CustomEvent('player-new-click'));"/>
-					</div>
-					<div id="game-server-details">
-						<div id="game-server-details-players">Players:</div>
-					</div>
-					<div class="lobby-panel">
-						<div class="info-container">
-							<h1>
-								Brief Explanation
-							</h1>
-							<div class="lobby-panel-section">
-								<div class="lobby-panel-text">Stockheimer is a "defend the castle" multiplayer game.</div>
-								<div class="lobby-panel-text">Defend the castle against waves of enemies to win the game.</div>
-								<div class="lobby-panel-text">
-									*** This is currently built as a "tech demo". Most features need to be controlled manually, such as spawning enemies, castles, PvP, ect. 
-									These can be controlled on the bottom of the screen when you login.
-								</div>
-							</div>
-
-							<div class="lobby-panel-section">
-								<div class="lobby-panel-title">
-									Controls
-								</div>
-								<div class="lobby-panel-text">
-									WASD + Mouse
-								</div>
-							</div>
-							
-
-							<div class="lobby-panel-section">
-								<div class="lobby-panel-title">
-									Links
-								</div>
-								<div class="lobby-panel-text">
-									Dev Blog - <a href="https://dontcodethis.com" target="_blank">https://dontcodethis.com</a>
-								</div>
-								<div class="lobby-panel-text">
-									Twitch - <a href="https://twitch.tv/miles_gloriosus" target="_blank">https://twitch.tv/miles_gloriosus</a>
-								</div>
-								<div class="lobby-panel-text">
-									Github - <a href="https://github.com/esnyder232/stockheimer" target="_blank">https://github.com/esnyder232/stockheimer</a>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="lobby-panel">
-						<div class="info-container" id="change-log">
-
-						</div>
-					</div>
-					
+			<div class="scene-root hide" id="lobby-scene-root">					
+				<div class="game-title">
+					Stockheimer
 				</div>
-				<div class="scene-root hide" id="user-connecting-scene-root">
-					<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
-					<h1>Initializing...</h1>
+				<div id="user-name-container">
+					<div class="form-text" id="player-text">Player Name:</div>
+					<input type="text" class="form-input" id="user-name" maxlength="32" />
+					<input type="button" class="form-button" id="player-submit" value="Play" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
+					<input type="button" class="form-button hide" id="player-submit-existing" value="Play with existing user" onclick="window.dispatchEvent(new CustomEvent('player-submit-click'));"/>
+					<input type="button" class="form-button hide" id="player-new" value="Delete existing user" onclick="window.dispatchEvent(new CustomEvent('player-new-click'));"/>
 				</div>
-				<div class="scene-root hide" id="user-disconnecting-scene-root">
-					<h1>Disconnecting...</h1>
+				<div id="game-server-details">
+					<div id="game-server-details-players">Players:</div>
 				</div>
-				<div class="scene-root hide" id="main-scene-root">
-					<div class="hide menu-wrapper" id="team-menu">
-						<div class="menu-container">
-							<div class="menu-close-container">
-								<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-team-menu'));">
-									<img class="menu-close-button" src="assets/images/x-mark.png" />
-								</div>
-							</div>
-							<div class="menu-title">
-								<span>Join a Team</span>
-							</div>
-							<div class="team-button-container" id="team-button-container">
-
-								<input type="button" class="hide menu-button" id="join-team-buttom-template" value="???"/>
-							</div>
-						</div>		
-					</div>
-
-					<div class="hide small-menu-wrapper" id="chat-menu">
-						<div class="small-menu-container chat-menu-container">
-							<div class="small-menu-close-container">
-								<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-chat-menu'));">
-									<img class="small-menu-close-button" src="assets/images/x-mark.png" />
-								</div>
-							</div>
-							<div class="small-menu-contents chat-menu-contents">
-								<div class="chat-history" id="chat-history">
-									<div class="chat-history-item hide" id="chat-history-item-template">
-										<span class="chat-history-ts" name="chat-history-ts"></span>
-										<span class="chat-history-name" name="chat-history-name"></span>
-										<span class="chat-history-msg" name="chat-history-msg"></span>
-									</div>
-								</div>
-								<div class="chat-input-container">
-									<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="Chat message" maxlength="400"/>
-									<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
-								</div>
+				<div class="lobby-panel">
+					<div class="info-container">
+						<h1>
+							Brief Explanation
+						</h1>
+						<div class="lobby-panel-section">
+							<div class="lobby-panel-text">Stockheimer is a "defend the castle" multiplayer game.</div>
+							<div class="lobby-panel-text">Defend the castle against waves of enemies to win the game.</div>
+							<div class="lobby-panel-text">
+								*** This is currently built as a "tech demo". Most features need to be controlled manually, such as spawning enemies, castles, PvP, ect. 
+								These can be controlled on the bottom of the screen when you login.
 							</div>
 						</div>
-					</div>
 
-					<div class="small-menu-wrapper-center" id="user-list-menu">
-						<div class="small-menu-container-center user-list-menu-container">
-							<div class="small-menu-close-container">
-								<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-user-list-menu'));">
-									<img class="small-menu-close-button" src="assets/images/x-mark.png" />
-								</div>
+						<div class="lobby-panel-section">
+							<div class="lobby-panel-title">
+								Controls
 							</div>
-							<div class="small-menu-contents user-list-menu-contents" id="user-list">
-								<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
-								<div class="user-list-item hide" id="user-list-item-template"></div>
+							<div class="lobby-panel-text">
+								WASD + Mouse
 							</div>
 						</div>
-					</div>
+						
 
-
-					<div class="ui-list-container chat-menu-minified-container" id="chat-menu-minified">
-						<div class="ui-list-contents chat-menu-minified-contents">
-							<div class="chat-history-minified-wrapper">
-								<div class="chat-history-minifed" id="chat-history-minified">
-									<div class="chat-history-minified-item invisible" id="chat-history-minified-item-template">
-										<div class="chat-history-minified-item-inner-wrapper">
-											<span class="chat-history-ts" name="chat-history-minified-ts"></span>
-											<span class="chat-history-name" name="chat-history-minified-name"></span>
-											<span class="chat-history-msg" name="chat-history-minified-msg"></span>	
-										</div>
-									</div>
-								</div>
+						<div class="lobby-panel-section">
+							<div class="lobby-panel-title">
+								Links
 							</div>
-						</div>
-					</div>
-
-					<div class="temp-menu-wrapper">
-						<div class="temp-menu">
-							<div class="temp-menu-container">
-								<div class="input-controls-div main-scene-buttons">
-									<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
-								</div>
-								<div class="input-debug-controls-div main-scene-buttons">
-									<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
-									<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
-									<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
-								</div>
+							<div class="lobby-panel-text">
+								Dev Blog - <a href="https://dontcodethis.com" target="_blank">https://dontcodethis.com</a>
 							</div>
-						</div>
-					</div>
-
-					<div class="round-menu-wrapper" id="round-menu">
-						<div class="round-timer-container" id="round-timer">
-							12:00
-						</div>
-						<div class="round-state-container" id="round-state">
-							Setup
-						</div>
-					</div>
-
-					<div class="respawn-menu-wrapper" id="respawn-menu">
-						<div class="respawn-message-container" id="respawn-message">
-							hello
+							<div class="lobby-panel-text">
+								Twitch - <a href="https://twitch.tv/miles_gloriosus" target="_blank">https://twitch.tv/miles_gloriosus</a>
+							</div>
+							<div class="lobby-panel-text">
+								Github - <a href="https://github.com/esnyder232/stockheimer" target="_blank">https://github.com/esnyder232/stockheimer</a>
+							</div>
 						</div>
 					</div>
 				</div>
+				<div class="lobby-panel">
+					<div class="info-container" id="change-log">
 
-				<div class="hide menu-wrapper" id="main-menu">
+					</div>
+				</div>
+				
+			</div>
+			<div class="scene-root hide" id="user-connecting-scene-root">
+				<input type="button" id="exit-game" value="Exit" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));" />
+				<h1>Initializing...</h1>
+			</div>
+			<div class="scene-root hide" id="user-disconnecting-scene-root">
+				<h1>Disconnecting...</h1>
+			</div>
+			<div class="scene-root ignore-pointer-events hide" id="main-scene-root">
+				<div class="hide menu-wrapper" id="team-menu">
 					<div class="menu-container">
 						<div class="menu-close-container">
-							<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
+							<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-team-menu'));">
 								<img class="menu-close-button" src="assets/images/x-mark.png" />
 							</div>
 						</div>
 						<div class="menu-title">
-							<span>Main Menu</span>
+							<span>Join a Team</span>
 						</div>
 						<div class="team-button-container" id="team-button-container">
-							<input type="button" class="menu-button" value="Exit Server" id="main-menu-exit-server-button" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));"/>
+
+							<input type="button" class="hide menu-button" id="join-team-buttom-template" value="???"/>
 						</div>
 					</div>		
 				</div>
 
-				<div class="hide debug-menu-wrapper" id="debug-menu">
-					<div class="debug-menu-container debug-log-container">
-						<div class="debug-menu-contents debug-log-contents">
-							<div class="debug-title">Debug Log</div>
-							<div class="debug-log" id="debug-log" readonly></div>
+				<div class="hide small-menu-wrapper" id="chat-menu">
+					<div class="small-menu-container chat-menu-container">
+						<div class="small-menu-close-container">
+							<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-chat-menu'));">
+								<img class="small-menu-close-button" src="assets/images/x-mark.png" />
+							</div>
+						</div>
+						<div class="small-menu-contents chat-menu-contents">
+							<div class="chat-history" id="chat-history">
+								<div class="chat-history-item hide" id="chat-history-item-template">
+									<span class="chat-history-ts" name="chat-history-ts"></span>
+									<span class="chat-history-name" name="chat-history-name"></span>
+									<span class="chat-history-msg" name="chat-history-msg"></span>
+								</div>
+							</div>
+							<div class="chat-input-container">
+								<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="Chat message" maxlength="400"/>
+								<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
+							</div>
 						</div>
 					</div>
+				</div>
 
-					<div class="debug-menu-container debug-input-container">
-						<div class="debug-menu-contents debug-input-contents">
-							<div class="debug-title">Input Information:</div>
-							<div id="debug-x"></div>
-							<div id="debug-y"></div>
-							<div id="debug-is-down"></div>
-							<div id="debug-angle"></div>
+				<div class="small-menu-wrapper-center" id="user-list-menu">
+					<div class="small-menu-container-center user-list-menu-container">
+						<div class="small-menu-close-container">
+							<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-user-list-menu'));">
+								<img class="small-menu-close-button" src="assets/images/x-mark.png" />
+							</div>
+						</div>
+						<div class="small-menu-contents user-list-menu-contents" id="user-list">
+							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
+							<div class="user-list-item hide" id="user-list-item-template"></div>
 						</div>
 					</div>
 				</div>
 
 
-				<div class="quick-menu-wrapper">
-					<div class="quick-menu" id="quick-menu">
-						<div class="quick-menu-container">
-							<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
-							<img class="hide quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
-							<img class="hide quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
-							<img class="hide quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
-							<img class="quick-menu-icon" id="quick-menu-debug" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('toggle-debug-menu'));"/>
+				<div class="ui-list-container chat-menu-minified-container" id="chat-menu-minified">
+					<div class="ui-list-contents chat-menu-minified-contents">
+						<div class="chat-history-minified-wrapper">
+							<div class="chat-history-minifed" id="chat-history-minified">
+								<div class="chat-history-minified-item invisible" id="chat-history-minified-item-template">
+									<div class="chat-history-minified-item-inner-wrapper">
+										<span class="chat-history-ts" name="chat-history-minified-ts"></span>
+										<span class="chat-history-name" name="chat-history-minified-name"></span>
+										<span class="chat-history-msg" name="chat-history-minified-msg"></span>	
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 
-
-				<div class="hide modal-wrapper" id="modal-menu">
-					<div class="menu-container">
-						<div class="menu-title">
-							<span id="modal-title">Error</span>
+				<div class="temp-menu-wrapper">
+					<div class="temp-menu">
+						<div class="temp-menu-container">
+							<div class="input-controls-div main-scene-buttons">
+								<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
+							</div>
+							<div class="input-debug-controls-div main-scene-buttons">
+								<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
+								<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
+								<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
+							</div>
 						</div>
-						<div class="modal-info" id="modal-info">
-							???
-						</div>
-						<input type="button" class="menu-button" value="Okay" onclick="window.dispatchEvent(new CustomEvent('close-modal-menu'));"/>
 					</div>
 				</div>
 
-				<div class="hide modal-wrapper" id="confirm-menu">
-					<div class="menu-container">
-						<div class="menu-title">
-							<span id="confirm-title">Confirm?</span>
-						</div>
-						<div class="confirm-info" id="confirm-info">
-							Are you sure?
-						</div>
-						<input type="button" class="menu-button" value="Confirm" id="confirm-button" onclick="window.dispatchEvent(new CustomEvent('confirm-menu-yes'));"/>
-						<input type="button" class="menu-button" value="Cancel" id="cancel-button" onclick="window.dispatchEvent(new CustomEvent('confirm-menu-no'));"/>
+				<div class="round-menu-wrapper" id="round-menu">
+					<div class="round-timer-container" id="round-timer">
+						12:00
+					</div>
+					<div class="round-state-container" id="round-state">
+						Setup
 					</div>
 				</div>
-				
+
+				<div class="respawn-menu-wrapper" id="respawn-menu">
+					<div class="respawn-message-container" id="respawn-message">
+						hello
+					</div>
+				</div>
+			</div>
+
+			<div class="hide menu-wrapper" id="main-menu">
+				<div class="menu-container">
+					<div class="menu-close-container">
+						<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-main-menu'));">
+							<img class="menu-close-button" src="assets/images/x-mark.png" />
+						</div>
+					</div>
+					<div class="menu-title">
+						<span>Main Menu</span>
+					</div>
+					<div class="team-button-container" id="team-button-container">
+						<input type="button" class="menu-button" value="Exit Server" id="main-menu-exit-server-button" onclick="window.dispatchEvent(new CustomEvent('exit-game-click'));"/>
+					</div>
+				</div>		
+			</div>
+
+			<div class="hide debug-menu-wrapper" id="debug-menu">
+				<div class="debug-menu-container debug-log-container">
+					<div class="debug-menu-contents debug-log-contents">
+						<div class="debug-title">Debug Log</div>
+						<div class="debug-log" id="debug-log" readonly></div>
+					</div>
+				</div>
+
+				<div class="debug-menu-container debug-input-container">
+					<div class="debug-menu-contents debug-input-contents">
+						<div class="debug-title">Input Information:</div>
+						<div id="debug-x"></div>
+						<div id="debug-y"></div>
+						<div id="debug-is-down"></div>
+						<div id="debug-angle"></div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="quick-menu-wrapper">
+				<div class="quick-menu" id="quick-menu">
+					<div class="quick-menu-container">
+						<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
+						<img class="hide quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
+						<img class="hide quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
+						<img class="hide quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
+						<img class="quick-menu-icon" id="quick-menu-debug" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('toggle-debug-menu'));"/>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="hide modal-wrapper" id="modal-menu">
+				<div class="menu-container">
+					<div class="menu-title">
+						<span id="modal-title">Error</span>
+					</div>
+					<div class="modal-info" id="modal-info">
+						???
+					</div>
+					<input type="button" class="menu-button" value="Okay" onclick="window.dispatchEvent(new CustomEvent('close-modal-menu'));"/>
+				</div>
+			</div>
+
+			<div class="hide modal-wrapper" id="confirm-menu">
+				<div class="menu-container">
+					<div class="menu-title">
+						<span id="confirm-title">Confirm?</span>
+					</div>
+					<div class="confirm-info" id="confirm-info">
+						Are you sure?
+					</div>
+					<input type="button" class="menu-button" value="Confirm" id="confirm-button" onclick="window.dispatchEvent(new CustomEvent('confirm-menu-yes'));"/>
+					<input type="button" class="menu-button" value="Cancel" id="cancel-button" onclick="window.dispatchEvent(new CustomEvent('confirm-menu-no'));"/>
+				</div>
 			</div>
 		</div>
 	</body>

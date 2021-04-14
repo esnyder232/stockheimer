@@ -117,7 +117,6 @@ export default class Character {
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);
-			this.ms.switchPointerMode(1); //switch to phaser mode
 			var killCharacterBtn = $("#kill-character");
 
 			if(killCharacterBtn.length > 0)

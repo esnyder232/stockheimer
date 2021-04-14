@@ -104,6 +104,11 @@ export default class GameClient {
 				width: 800,
 				height: 600,
 				zoom:1
+			},
+			input: {
+				keyboard: true,
+				mouse: true,
+				windowEvents: false
 			}
 		}
 
@@ -222,6 +227,8 @@ export default class GameClient {
 
 		// this.debugPrintFunc();
 	}
+
+
 
 	// cbTest(answer) {
 	// 	console.log("answer: " + answer);

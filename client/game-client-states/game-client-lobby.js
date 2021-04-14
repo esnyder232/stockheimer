@@ -16,7 +16,6 @@ export default class GameClientLobby extends GameClientBaseState {
 		});
 
 		this.gc.turnOnContextMenu();
-		$("#ui-div").removeClass("ignore-pointer-events");
 	}
 
 	update(dt) {
