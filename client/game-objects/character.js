@@ -14,6 +14,8 @@ export default class Character {
 		this.type = "character";
 		this.ownerId = null;
 		this.ownerType = "";
+		this.serverX = 0;
+		this.serverY = 0;
 		this.x = 0;
 		this.y = 0;
 		
@@ -171,6 +173,8 @@ export default class Character {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
 
+		this.updateRenderTarget(dt);
+		this.render(dt);
 
 
 		//change state
@@ -185,10 +189,58 @@ export default class Character {
 
 
 	activeCharacterUpdateEvent(e) {
-		this.x = e.characterPosX;
-		this.y = e.characterPosY;
+		this.serverX = e.characterPosX;
+		this.serverY = e.characterPosY;
 		this.hpCur = e.characterHpCur;
-	
+	}
+
+	//this lerps the character from the (x,y) to the (serverX, serverY)
+	updateRenderTarget(dt) {
+		var curx = this.x;
+		var cury = this.y;
+		var targetx = this.serverX;
+		var targety = this.serverY;
+		var actualx = targetx;
+		var actualy = targety;
+		var tolerance = 0.07;
+		var maxTolerance = 2.00;
+		var mySpeed = 0.25;
+
+		//if the target is too far away, snap to the target instead of slowly panning (this avoids a "zoop" across the screen)
+		//snap to target if its too far away (above max tolerance)
+		if(curx <= targetx - maxTolerance || curx >= targetx + maxTolerance) {
+			actualx = targetx;
+		}
+		//slowly pan to the target
+		else if (curx <= targetx - tolerance || curx >= targetx + tolerance) {
+			actualx = ((targetx - curx) * mySpeed) + curx;
+		}
+		//snap to the target if your close enough (within tolerance)
+		else {
+			actualx = targetx;
+		}
+
+
+		//snap to target if its too far away (above max tolerance)
+		if(cury <= targety - maxTolerance || cury >= targety + maxTolerance ) {
+			actualy = targety
+		}
+		//slowly pan to the target
+		else if (cury <= targety - tolerance || cury >= targety + tolerance) {
+			actualy = ((targety - cury) * mySpeed) + cury;
+		}
+		//snap to the target if your close enough (within tolerance)
+		else {
+			actualy = targety;
+		}
+
+
+		this.x = actualx;
+		this.y = actualy;
+	}
+
+	//this actually renders the character in phaser
+	render(dt) {
 		//just to make it equivalent to the old "architecture"
 		this.boxGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
 		this.boxGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
