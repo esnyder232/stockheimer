@@ -13,6 +13,8 @@ export default class AddActiveCharacterEvent {
 		c.characterInit(this.gc);
 		c.x = e.characterPosX;
 		c.y = e.characterPosY;
+		c.serverX = e.characterPosX;
+		c.serverY = e.characterPosY;
 		c.ownerId = e.ownerId; //temporarily make ownerId = the server id (this will eventually be "c.serverOwnerId = e.ownerId;")
 		c.ownerType = e.ownerType;
 		c.hpCur = e.characterHpCur;
