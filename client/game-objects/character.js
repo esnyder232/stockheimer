@@ -1,6 +1,7 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 import ClientConstants from "../client-constants.js"
+import ServerEventQueue from "../classes/server-event-queue.js"
 
 export default class Character {
 	constructor() {
@@ -8,6 +9,8 @@ export default class Character {
 		this.id = null;
 		this.serverId = null;
 		this.serverOwnerId = null;
+		this.seq = null;
+
 		this.type = "character";
 		this.ownerId = null;
 		this.ownerType = "";
@@ -27,12 +30,20 @@ export default class Character {
 		this.boxGraphics = null;
 		this.textGraphics = null;
 		this.hpTextGraphics = null;
+
+		this.serverEventMapping = {
+			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this)
+		}
 	}
 
 	characterInit(gameClient) {
 		this.gc = gameClient;
 		this.ms = this.gc.mainScene;
 		this.globalfuncs = new GlobalFuncs();
+		this.seq = new ServerEventQueue();
+		this.seq.serverEventQueueInit(this.gc);
+		this.seq.batchRegisterToEvent(this.serverEventMapping);
+
 	}
 
 	activated() {
@@ -72,13 +83,6 @@ export default class Character {
 			stroke: this.ms.userStrokeColor
 		}
 
-		// var pvpTextStyle = {
-		// 	color: this.ms.userTextColor, 
-		// 	fontSize: "12px",
-		// 	strokeThickness: 4,
-		// 	stroke: this.ms.userStrokeColor
-		// }
-
 		//add username text
 		if(this.ownerType === "user")
 		{
@@ -95,23 +99,12 @@ export default class Character {
 			textStyle.strokeThickness = this.ms.aiStrokeThickness;
 		}
 		
-
-
-		//add pvp emoji
-		// var pvpText = "";
-		// if(u && this.ownerType === "user")
-		// {
-		// 	pvpText = u.userPvp ? this.ms.pvpEmoji : "";
-		// }
-
 		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
 		this.hpTextGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 34 , this.hpCur + "/" + this.hpMax, textStyle);
-		// this.pvpGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-10, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) - 36 , pvpText, pvpTextStyle);
 
 		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		// this.pvpGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
 		//check if this is your character your controlling. If it is, then switch pointer modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
@@ -130,7 +123,6 @@ export default class Character {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
 		this.hpTextGraphics.destroy();
-		// this.pvpGraphics.destroy();
 
 		//put gravestone where the character was removed
 		var gravestone = {
@@ -176,14 +168,35 @@ export default class Character {
 	}
 
 	update(dt) {
+		this.seq.processOrderedEvents();
+		this.seq.processEvents();
+
+
+
 		//change state
 		// if(this.nextState)
 		// {
 		// 	this.state.exit();
 		// 	this.nextState.enter();
-
 		// 	this.state = this.nextState;
 		// 	this.nextState = null;
 		// }
+	}
+
+
+	activeCharacterUpdateEvent(e) {
+		this.x = e.characterPosX;
+		this.y = e.characterPosY;
+		this.hpCur = e.characterHpCur;
+	
+		//just to make it equivalent to the old "architecture"
+		this.boxGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
+		this.boxGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
+		this.textGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
+		this.textGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 18)
+	
+		this.hpTextGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
+		this.hpTextGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 34)
+		this.hpTextGraphics.setText(this.hpCur + "/" + this.hpMax);
 	}
 }

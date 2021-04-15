@@ -2,7 +2,7 @@ import GlobalFuncs from "../global-funcs.js"
 import RoundStarting from "../round-states/round-starting.js"
 import RoundPlaying from "../round-states/round-playing.js"
 import RoundOver from "../round-states/round-over.js"
-import EventQueue from "./event-queue.js";
+import ServerEventQueue from "./server-event-queue.js";
 
 export default class Round {
 	constructor() {
@@ -10,14 +10,14 @@ export default class Round {
 		this.globalfuncs = null;
 		this.serverId = null;
 		this.id = null;
-		this.eq = null;
+		this.seq = null;
 
 		this.state = null;
 		this.nextState= null;
 		this.roundTime = 0;
 		this.roundTimeAcc = 0;
 
-		this.eventMapping = {
+		this.serverEventMapping = {
 			"addRound": this.changeState.bind(this),
 			"updateRoundState": this.changeState.bind(this)
 		}
@@ -32,24 +32,25 @@ export default class Round {
 
 		this.state.enter();
 
-		this.eq = new EventQueue();
-		this.eq.eventQueueInit(this.gc);
-		this.eq.batchRegisterToEvent(this.eventMapping);
+		this.seq = new ServerEventQueue();
+		this.seq.serverEventQueueInit(this.gc);
+		this.seq.batchRegisterToEvent(this.serverEventMapping);
 	}
 
 	deinit() {
 		this.gc = null;
 		this.globalfuncs = null;
 		
-		this.eq.deinit();
-		this.eq = null;
+		this.seq.batchUnregisterFromEvent(this.serverEventMapping);
+		this.seq.deinit();
+		this.seq = null;
 	}
 
 
 	update(dt) {
 		//not much going on in round. So just process the events every frame anyway, regardless of state.
-		this.eq.processOrderedEvents();
-		this.eq.processEvents();
+		this.seq.processOrderedEvents();
+		this.seq.processEvents();
 
 		this.roundTimeAcc += dt;
 

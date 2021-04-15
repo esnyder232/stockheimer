@@ -13,7 +13,7 @@ export default class UpdateUserPlayingStateEvent {
 
 		if(user !== null)
 		{
-			user.eq.insertOrderedEvent(e);
+			user.seq.insertOrderedEvent(e);
 		}
 	}
 }

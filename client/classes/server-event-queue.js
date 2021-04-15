@@ -4,7 +4,7 @@ import GlobalFuncs from "../global-funcs.js"
 	This event queue is used to hold onto events that are delievered from the server.
 	Events flow from the event-processor to these event queues.
 */
-export default class EventQueue {
+export default class ServerEventQueue {
 	constructor() {
 		this.gc = null;
 		this.globalfuncs = null;
@@ -15,7 +15,7 @@ export default class EventQueue {
 		this.eventMapping = {};
 	}
 
-	eventQueueInit(gameClient) {
+	serverEventQueueInit(gameClient) {
 		this.gc = gameClient;
 		this.globalfuncs = new GlobalFuncs();
 	}

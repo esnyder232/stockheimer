@@ -13,7 +13,7 @@ export default class UpdateRoundStateEvent {
 
 		if(theRound)
 		{
-			theRound.eq.insertOrderedEvent(e);
+			theRound.seq.insertOrderedEvent(e);
 		}
 	}
 }

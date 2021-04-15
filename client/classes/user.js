@@ -1,5 +1,5 @@
 import GlobalFuncs from "../global-funcs.js"
-import EventQueue from "./event-queue.js"
+import ServerEventQueue from "./server-event-queue.js"
 import $ from "jquery"
 
 export default class User {
@@ -21,8 +21,8 @@ export default class User {
 		this.respawnTimer = 0;
 		this.respawnTimerAcc = 0;
 
-		this.eq = null;
-		this.eventMapping = {
+		this.seq = null;
+		this.serverEventMapping = {
 			"updateUserInfo": this.updateUserInfoEvent.bind(this),
 			"updateUserPlayingState": this.updateUserPlayingState.bind(this)
 		}
@@ -32,9 +32,9 @@ export default class User {
 		this.gc = gc;
 		this.globalfuncs = new GlobalFuncs();
 
-		this.eq = new EventQueue();
-		this.eq.eventQueueInit(this.gc);
-		this.eq.batchRegisterToEvent(this.eventMapping);
+		this.seq = new ServerEventQueue();
+		this.seq.serverEventQueueInit(this.gc);
+		this.seq.batchRegisterToEvent(this.serverEventMapping);
 
 		this.playingStateEnum = this.gc.gameConstants["UserPlayingStates"]["SPECTATING"];
 		this.playingStateName = this.gc.gameConstantsInverse["UserPlayingStates"][this.playingStateEnum];
@@ -51,13 +51,13 @@ export default class User {
 		this.globalfuncs = null;
 		this.userPlayingState = null;
 
-		this.eq.batchUnregisterFromEvent(this.eventMapping);
-		this.eq.deinit();
+		this.seq.batchUnregisterFromEvent(this.serverEventMapping);
+		this.seq.deinit();
 	}
 
 	update(dt) {
-		this.eq.processOrderedEvents();
-		this.eq.processEvents();
+		this.seq.processOrderedEvents();
+		this.seq.processEvents();
 
 		if(this.playingStateName === "RESPAWNING") {
 			this.respawnTimerAcc += dt;

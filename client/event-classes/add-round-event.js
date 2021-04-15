@@ -13,6 +13,6 @@ export default class AddRoundEvent {
 	{
 		this.gc.theRound = new Round();
 		this.gc.theRound.roundInit(this.gc);
-		this.gc.theRound.eq.insertOrderedEvent(e);
+		this.gc.theRound.seq.insertOrderedEvent(e);
 	}
 }

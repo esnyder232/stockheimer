@@ -453,6 +453,8 @@ export default class MainScene extends Phaser.Scene {
 
 			this.targetLine.x1 = x1;
 			this.targetLine.y1 = y1;
+			this.targetLine.x2 = x2;
+			this.targetLine.y2 = y2;
 
 			this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
 			this.angle = (Math.round((this.angle*1000))/1000)
@@ -576,22 +578,31 @@ export default class MainScene extends Phaser.Scene {
 			}
 		}
 
-		//update camera position
+		//camera smoothing
+		var curx = this.cameraTarget.x;
+		var cury = this.cameraTarget.y;
+		var targetx = curx;
+		var targety = cury;
+		var actualx = curx;
+		var actualy = cury;
+		var tolerance = 0.05;
+		var mySpeed = 0.07;
+
+		//decide what the target should be
 		if(this.cameraMode === 0 && this.gc.myCharacter === null)
 		{
-			this.cameraTarget.x = this.spectatorCamera.x;
-			this.cameraTarget.y = this.spectatorCamera.y;
+			targetx = this.spectatorCamera.x;
+			targety = this.spectatorCamera.y;
+			mySpeed = 0.15;
 		}
 		else if(this.cameraMode === 1 && this.gc.myCharacter !== null)
 		{
-			this.cameraTarget.x = this.gc.myCharacter.x;
-			this.cameraTarget.y = this.gc.myCharacter.y;
+			targetx = this.gc.myCharacter.x;
+			targety = this.gc.myCharacter.y;
 		}
 		else if(this.cameraMode === 2)
 		{
 			this.deathCamTimer += dt;
-			// this.cameraTarget.x = this.defaultCenter.x;
-			// this.cameraTarget.y = this.defaultCenter.y;
 
 			if(this.deathCamTimer >= this.deathCamTimerInterval)
 			{
@@ -599,6 +610,24 @@ export default class MainScene extends Phaser.Scene {
 				this.switchCameraMode(0);
 			}
 		}
+
+		actualx = targetx;
+		actualy = targety;
+
+		//slowly pan to target
+		if(curx <= targetx - tolerance || curx >= targetx + tolerance ) {
+			actualx = ((targetx - curx) * mySpeed) + curx;
+		}
+
+		if(cury <= targety - tolerance || cury >= targety + tolerance ) {
+			actualy = ((targety - cury) * mySpeed) + cury;
+		}
+
+
+		this.cameraTarget.x = actualx;
+		this.cameraTarget.y = actualy;
+
+
 
 		this.cameras.main.scrollX = (this.cameraTarget.x * this.planckUnitsToPhaserUnitsRatio) - (this.scale.width/2);
 		this.cameras.main.scrollY = ((this.cameraTarget.y * this.planckUnitsToPhaserUnitsRatio) * -1) - (this.scale.height/2);
