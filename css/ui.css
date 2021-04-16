@@ -781,13 +781,6 @@ input.menu-button {
 	background-color: rgba(150, 150, 150, 0.7) !important;
 }
 
-.kill-feed-killer {
-	color: rgb(255, 26, 26);
-}
-
-.kill-feed-victim {
-	color: rgb(51, 125, 255);
-}
 
 .chat-history-minified-wrapper {
 	position: absolute;

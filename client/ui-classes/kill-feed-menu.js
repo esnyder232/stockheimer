@@ -128,7 +128,15 @@ export default class KillFeedMenu {
 			newKillFeedKiller.text(e.killerName);
 			newKillFeedAction.text("killed");
 			newKillFeedVictim.text(e.victimName);
+
+			//apply team colors
+			var killerColor = this.getTeamKillFeedColor(e.killerTeam, e.killerType);
+			var victimColor = this.getTeamKillFeedColor(e.victimTeam, e.victimType);
+
+			newKillFeedKiller.css("color", killerColor);
+			newKillFeedVictim.css("color", victimColor);
 	
+			//highlight the item if the user is involved
 			if(isYourUserInvolved) {
 				newKillFeedInner.addClass("kill-feed-highlight");
 			}
@@ -144,6 +152,22 @@ export default class KillFeedMenu {
 
 			this.killFeedQueue.push(item);
 		}
+	}
+
+	getTeamKillFeedColor(teamId, ownertype) {
+		var color = "#ffffff";
+
+		if(ownertype === this.gc.gameConstants.OwnerTypes["ai"]) {
+			color = "#ffffff";
+		}
+		else {
+			var team = this.gc.tm.getTeamByServerID(teamId);
+			if(team !== null) {
+				color = team.killFeedTextColor;
+			}
+		}
+
+		return color;
 	}
 
 	destroyKillFeedItem(killFeedQueueIndex) {
