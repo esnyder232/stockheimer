@@ -1,6 +1,6 @@
 import GlobalFuncs from "../global-funcs.js";
 
-export default class KillfeedMsgEvent {
+export default class DebugMsgEvent {
 	constructor() {
 		this.gc = null;
 		this.globalfuncs = null;
@@ -13,6 +13,6 @@ export default class KillfeedMsgEvent {
 
 	processEvent(e)
 	{
-		this.globalfuncs.appendToLog(e.killfeedMsg);
+		this.globalfuncs.appendToLog(e.debugMsg);
 	}
 }

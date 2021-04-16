@@ -16,13 +16,15 @@ import CastleDamageEvent from "../event-classes/castle-damage-event.js"
 import AddProjectileEvent from "../event-classes/add-projectile-event.js"
 import RemoveProjectileEvent from "../event-classes/remove-projectile-event.js"
 import WorldStateDoneEvent from "../event-classes/world-state-done-event.js"
-import KillfeedMsgEvent from "../event-classes/killfeed-msg-event.js"
+import DebugMsgEvent from "../event-classes/debug-msg-event.js"
 import AddTeamEvent from "../event-classes/add-team-event.js"
 import UpdateTeamEvent from "../event-classes/update-team-event.js"
 import RemoveTeamEvent from "../event-classes/remove-team-event.js"
 import AddRoundEvent from "../event-classes/add-round-event.js"
 import UpdateRoundStateEvent from "../event-classes/update-round-state-event.js"
 import UpdateUserPlayingStateEvent from "../event-classes/update-user-playing-state.js"
+import KillFeedMsgEvent from "../event-classes/kill-feed-msg-event.js"
+
 
 
 
@@ -67,14 +69,14 @@ export default class EventProcessor {
 			{eventName: "addProjectile", eventClass: new AddProjectileEvent()},
 			{eventName: "removeProjectile", eventClass: new RemoveProjectileEvent()},
 			{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()},
-			{eventName: "killfeedMsg", eventClass: new KillfeedMsgEvent()},
+			{eventName: "debugMsg", eventClass: new DebugMsgEvent()},
 			{eventName: "addTeam", eventClass: new AddTeamEvent()},
 			{eventName: "updateTeam", eventClass: new UpdateTeamEvent()},
 			{eventName: "removeTeam", eventClass: new RemoveTeamEvent()},
 			{eventName: "addRound", eventClass: new AddRoundEvent()},
 			{eventName: "updateRoundState", eventClass: new UpdateRoundStateEvent()},
 			{eventName: "updateUserPlayingState", eventClass: new UpdateUserPlayingStateEvent()},
-			
+			{eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent()},
 		];
 
 	}

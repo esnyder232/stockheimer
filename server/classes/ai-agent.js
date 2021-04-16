@@ -55,6 +55,7 @@ class AIAgent {
 
 		this.character = null; 		//direct reference to the character the ai agent is controlling
 		this.characterPos = null;	//direct reference to the character's planck position vector
+		this.teamId = 0;
 	}
 
 	aiAgentInit(gameServer, characterId) {
@@ -64,7 +65,7 @@ class AIAgent {
 
 		this.username = "AI " + this.id;
 
-		this.state = new AIAgentInitializingState(this);		
+		this.state = new AIAgentInitializingState(this);
 		this.nextState = null;
 
 		this.state.enter();

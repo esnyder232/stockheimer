@@ -372,8 +372,8 @@ class GameServerRunning extends GameServerBaseState {
 	userResponseMessage(user, userMessage, logEventMessage) {
 		logger.log("info", logEventMessage + userMessage);
 		user.insertServerToClientEvent({
-			"eventName": "killfeedMsg",
-			"killfeedMsg": userMessage
+			"eventName": "debugMsg",
+			"debugMsg": userMessage
 		});
 	}
 
@@ -383,8 +383,8 @@ class GameServerRunning extends GameServerBaseState {
 		for(var j = 0; j < activeUsers.length; j++)
 		{
 			activeUsers[j].insertServerToClientEvent({
-				"eventName": "killfeedMsg",
-				"killfeedMsg": broadcastMessage
+				"eventName": "debugMsg",
+				"debugMsg": broadcastMessage
 			});
 		}
 	}
@@ -485,8 +485,13 @@ class GameServerRunning extends GameServerBaseState {
 				for(var i = 0; i < activeUsers.length; i++)
 				{
 					activeUsers[i].insertServerToClientEvent({
-						"eventName": "killfeedMsg",
-						"killfeedMsg": killFeedMessage
+						"eventName": "killFeedMsg",
+						"killerName": killerOwner.username,
+						"killerTeam": killerOwner.teamId,
+						"victimName": victimOwner.username,
+						"victimTeam": victimOwner.teamId,						
+						"isKillerAI": c.lastHitByOwnerType === "ai",
+						"isVictimAI": c.ownerType === "ai"
 					});
 				}
 			}

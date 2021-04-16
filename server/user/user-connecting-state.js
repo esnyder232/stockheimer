@@ -36,8 +36,8 @@ class UserConnectingState extends UserBaseState {
 		for(var j = 0; j < activeUsers.length; j++)
 		{
 			activeUsers[j].insertServerToClientEvent({
-				"eventName": "killfeedMsg",
-				"killfeedMsg": "Player '" + this.user.username + "' has connected."
+				"eventName": "debugMsg",
+				"debugMsg": "Player '" + this.user.username + "' has connected."
 			});
 		}
 

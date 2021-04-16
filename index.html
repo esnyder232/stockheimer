@@ -179,6 +179,46 @@
 						hello
 					</div>
 				</div>
+
+
+				<div class="ui-list-container kill-feed-menu-container" id="kill-feed-menu">
+					<div class="ui-list-contents kill-feed-contents">
+						<div class="kill-feed-history" id="kill-feed-history">
+							<div class="kill-feed-item hide" id="kill-feed-item-template">
+								<div class="kill-feed-item-inner-wrapper" name="kill-feed-item-inner-wrapper">
+									<span class="kill-feed-killer" name="kill-feed-killer"></span>
+									<span class="kill-feed-action" name="kill-feed-action">killed</span>
+									<span class="kill-feed-victim" name="kill-feed-victim"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+
+				<div class="hide small-menu-wrapper" id="kill-feed-menu">
+					<div class="small-menu-container chat-menu-container">
+						<div class="small-menu-close-container">
+							<div class="small-menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-chat-menu'));">
+								<img class="small-menu-close-button" src="assets/images/x-mark.png" />
+							</div>
+						</div>
+						<div class="small-menu-contents chat-menu-contents">
+							<div class="chat-history" id="chat-history">
+								<div class="chat-history-item hide" id="chat-history-item-template">
+									<span class="chat-history-ts" name="chat-history-ts"></span>
+									<span class="chat-history-name" name="chat-history-name"></span>
+									<span class="chat-history-msg" name="chat-history-msg"></span>
+								</div>
+							</div>
+							<div class="chat-input-container">
+								<input type="text" class="tb-chat-input" id="tb-chat-input" placeholder="Chat message" maxlength="400"/>
+								<input type="button" class="tb-chat-submit" id="tb-chat-submit" value="Chat" onclick="window.dispatchEvent(new CustomEvent('tb-chat-submit-click'));" />
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<div class="hide menu-wrapper" id="main-menu">

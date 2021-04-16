@@ -100,8 +100,8 @@ class Castle {
 				for(var j = 0; j < activeUsers.length; j++)
 				{
 					activeUsers[j].insertServerToClientEvent({
-						"eventName": "killfeedMsg",
-						"killfeedMsg": broadcastMessage
+						"eventName": "debugMsg",
+						"debugMsg": broadcastMessage
 					});
 				}
 			}
