@@ -124,7 +124,7 @@ input[type="text"]:disabled {
 
 .input-controls-div input[type="button"] {
 	float: left;
-	font-size:28px;
+	font-size:24px;
 }
 
 .input-debug-controls-div {

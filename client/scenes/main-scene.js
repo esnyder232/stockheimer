@@ -649,6 +649,7 @@ export default class MainScene extends Phaser.Scene {
 		//update menus
 		this.roundMenu.update(dt);
 		this.respawnTimeMenu.update(dt);
+		this.killFeedMenu.update(dt);
 
 		this.frameNum++;
 	}

@@ -13,6 +13,8 @@ export default class KillFeedMsgEvent {
 
 	processEvent(e)
 	{
+		var msg = e.killerName + " killed " + e.victimName;
+		this.globalfuncs.appendToLog(msg);
 		this.gc.mainScene.killFeedMenu.killFeedMsgEvent(e);
 	}
 }

@@ -2,6 +2,7 @@ const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
 const {UserDisconnectingState} = require('../user/user-disconnecting-state.js');
 const {Round} = require('../classes/round.js');
+const GameConstants = require('../../shared_files/game-constants.json');
 
 const crypto = require('crypto');
 const logger = require('../../logger.js');
@@ -480,18 +481,31 @@ class GameServerRunning extends GameServerBaseState {
 
 				logger.log("info", killFeedMessage);
 
+				var killerType = GameConstants.OwnerTypes[c.lastHitByOwnerType];
+				var victimType = GameConstants.OwnerTypes[c.ownerType];
+
+				if(killerType === undefined) {
+					killerType = GameConstants.OwnerTypes["none"];
+				}
+
+				if(victimType === undefined) {
+					victimType = GameConstants.OwnerTypes["none"];
+				}
+
 				//create event for clients for killfeed
 				var activeUsers = this.gs.um.getActiveUsers();
 				for(var i = 0; i < activeUsers.length; i++)
 				{
 					activeUsers[i].insertServerToClientEvent({
 						"eventName": "killFeedMsg",
+						"killerId": killerOwner.id,
+						"killerType": killerType,
 						"killerName": killerOwner.username,
 						"killerTeam": killerOwner.teamId,
+						"victimId": victimOwner.id,
+						"victimType": victimType,
 						"victimName": victimOwner.username,
-						"victimTeam": victimOwner.teamId,						
-						"isKillerAI": c.lastHitByOwnerType === "ai",
-						"isVictimAI": c.ownerType === "ai"
+						"victimTeam": victimOwner.teamId
 					});
 				}
 			}
