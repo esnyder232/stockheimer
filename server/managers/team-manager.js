@@ -67,6 +67,7 @@ class TeamManager {
 		var t = this.getTeamByID(id);
 		if(t) {
 			this.spectatorTeam = t;
+			this.spectatorTeam.isSpectatorTeam = true;
 		}
 	}
 

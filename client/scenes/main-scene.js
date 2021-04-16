@@ -80,10 +80,6 @@ export default class MainScene extends Phaser.Scene {
 		this.aiStrokeColor = "#ff0000";
 		this.aiStrokeThickness = 3;
 
-		this.userColor = 0x0000ff;
-		this.userFillColor = 0x00ffff;
-		this.userTextColor = "#0000ff";
-		this.userStrokeColor = "#000000";
 		this.userStrokeThickness = 1;
 
 		this.damageTextColor = "#000000";
@@ -101,8 +97,6 @@ export default class MainScene extends Phaser.Scene {
 		this.gravestoneTextColor = "#ffffff";
 		this.gravestoneStrokeColor = "#000000";
 		this.gravestoneStrokeThickness = 2;
-
-		this.characterBorderThickness = 3;
 
 		this.teamMenu = null;
 		this.chatMenu = null;

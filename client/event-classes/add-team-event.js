@@ -13,6 +13,13 @@ export default class AddTeamEvent {
 		t.teamInit(this.gc);
 		t.slotNum = e.slotNum;
 		t.name=  e.name;
+		t.characterTextStrokeColor = e.characterTextStrokeColor;
+		t.characterTextFillColor = e.characterTextFillColor;
+		t.killFeedTextColor = e.killFeedTextColor;
+		t.isSpectatorTeam = e.isSpectatorTeam;
+
+		t.changeCharacterFillColor(e.characterFillColor);
+		t.changeCharacterStrokeColor(e.characterStrokeColor);
 
 		if(e.isSpectatorTeam) {
 			this.gc.tm.assignSpectatorTeamByServerId(t.serverId);

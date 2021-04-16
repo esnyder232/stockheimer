@@ -49,56 +49,64 @@ export default class Character {
 	}
 
 	activated() {
+		var boxGraphicsStrokeColor = 0;
+		var boxGraphicsFillColor = 0;
+		var characterBorderThickness = 3;
+		var characterTextStrokeColor = 0;
+		var characterTextFillColor = 0;
+		var characterTextStrokeThickness = 1;
+		var usernameText = "???";
 
-		////////////////////////////////////////////////////////////////////////////////
-		//main scene stuff:
-		var boxGraphicsColor = this.ms.userColor;
-		var boxGraphicsFillColor = this.ms.userFillColor;
-
-		if(this.ownerType === "ai")
-		{
-			boxGraphicsColor = this.ms.aiColor;
+		//get the colors sorted out
+		//ai gets special treatment because they don't belong to a team yet
+		if(this.ownerType === "ai") {
+			boxGraphicsStrokeColor = this.ms.aiColor;
 			boxGraphicsFillColor = this.ms.aiFillColor;
+			characterTextFillColor = this.ms.aiTextColor;
+			characterTextStrokeColor = this.ms.aiStrokeColor;
+			characterTextStrokeThickness = this.ms.aiStrokeThickness;
+			usernameText = "AI " + this.ownerId
 		}
+		else {
+			var user = this.gc.um.getUserByServerID(this.ownerId);
 
+			if(user !== null)
+			{
+				var team = this.gc.tm.getTeamByServerID(user.teamId);
+			
+				if(team !== null)
+				{
+					boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
+					boxGraphicsFillColor = team.phaserCharacterFillColor;
+					characterTextFillColor = team.characterTextFillColor;
+					characterTextStrokeColor = team.characterTextStrokeColor;
+
+				}
+
+				usernameText = user.username;
+			}
+		}
+		
+		//now make the character in phaser
 		var circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * 0.375);
 
 		this.boxGraphics = this.ms.add.graphics({ 
 			fillStyle: { color: boxGraphicsFillColor }, 
 			lineStyle: {
-				width: this.ms.characterBorderThickness,
-				color: boxGraphicsColor}
+				width: characterBorderThickness,
+				color: boxGraphicsStrokeColor}
 		});
 		this.boxGraphics.fillCircleShape(circleShape);
 		this.boxGraphics.strokeCircleShape(circleShape);
 
 		this.boxGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
 		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
-
-		var usernameText = "???";
-		var u = this.gc.um.getUserByServerID(this.ownerId);
 		
 		var textStyle = {
-			color: this.ms.userTextColor,
+			color: characterTextFillColor,
 			fontSize: "18px",
-			strokeThickness: this.ms.userStrokeThickness,
-			stroke: this.ms.userStrokeColor
-		}
-
-		//add username text
-		if(this.ownerType === "user")
-		{
-			if(u)
-			{
-				usernameText = u.username;
-			}
-		}
-		else if(this.ownerType === "ai")
-		{
-			usernameText = "AI " + this.ownerId
-			textStyle.color = this.ms.aiTextColor;
-			textStyle.stroke = this.ms.aiStrokeColor;
-			textStyle.strokeThickness = this.ms.aiStrokeThickness;
+			strokeThickness: characterTextStrokeThickness,
+			stroke: characterTextStrokeColor
 		}
 		
 		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
@@ -108,7 +116,7 @@ export default class Character {
 		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
-		//check if this is your character your controlling. If it is, then switch pointer modes
+		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);

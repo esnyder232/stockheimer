@@ -79,6 +79,11 @@ class GameServerStarting extends GameServerBaseState {
 				temp.teamInit(this.gs);
 				temp.name = TeamData[i].name;
 				temp.slotNum = TeamData[i].slotNum;
+				temp.characterStrokeColor = TeamData[i].characterStrokeColor;
+				temp.characterFillColor = TeamData[i].characterFillColor;
+				temp.characterTextStrokeColor = TeamData[i].characterTextStrokeColor;
+				temp.characterTextFillColor = TeamData[i].characterTextFillColor;
+				temp.killFeedTextColor = TeamData[i].killFeedTextColor;
 
 				if(TeamData[i].slotNum === SpectatorTeamSlotNum)
 				{
