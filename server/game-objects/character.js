@@ -409,15 +409,12 @@ class Character {
 	
 						if(e.type == "bigBullet")
 						{
-							o.bulletInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000, 7.0);
+							o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000, 7.0);
 						}
 						else //small normal bullet
 						{
-							o.bulletInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000, 100);
+							o.projectileInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000, 100);
 						}
-	
-						//just activate it here...whatever
-						//this.gs.gom.activateGameObjectId(o.id, o.bulletPostActivated.bind(o), o.cbBulletActivatedFailed.bind(this));
 					}
 				}
 			}

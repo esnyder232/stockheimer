@@ -1,6 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {Character} = require('../game-objects/character.js');
-const {Bullet} = require("../game-objects/bullet.js");
+const {Projectile} = require("../game-objects/projectile.js");
 const {Castle} = require("../game-objects/castle.js");
 const logger = require('../../logger.js');
 
@@ -32,7 +32,7 @@ class GameObjectManager {
 				o = new Character();
 				break;
 			case "projectile":
-				o = new Bullet();
+				o = new Projectile();
 				break;
 			case "castle":
 				o = new Castle();

@@ -2,7 +2,7 @@ const planck = require('planck-js');
 const {GlobalFuncs} = require('../global-funcs.js');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 
-class Bullet {
+class Projectile {
 	constructor() {
 		this.gs = null;
 		this.id = null;
@@ -23,7 +23,7 @@ class Bullet {
 		this.firedCountdown = 250; //ms. This is the amount of time remaining until your own bullets will hurt the character that fired it.
 	}
 
-	bulletInit(gameServer, xc, yc, angle, size, speed, lifespan) {
+	projectileInit(gameServer, xc, yc, angle, size, speed, lifespan) {
 		this.gs = gameServer;
 		this.xStarting = xc + ((0.5+(size))*Math.cos(angle));
 		this.yStarting = yc + ((0.5+(size))*Math.sin(angle)*-1);
@@ -143,4 +143,4 @@ class Bullet {
 	}
 }
 
-exports.Bullet = Bullet;
+exports.Projectile = Projectile;
