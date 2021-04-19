@@ -11,6 +11,8 @@ class AIAgent {
 		this.teamId = null;
 		this.bCharacterIsActive = false;
 
+		this.playingEventQueue = [];
+
 		this.username = "";
 		this.pathSet = false;
 		this.nodePathToCastle = [];
@@ -62,7 +64,7 @@ class AIAgent {
 	aiAgentInit(gameServer, characterId) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
-		this.characterId = characterId
+		this.characterId = characterId;
 
 		this.username = "AI " + this.id;
 
@@ -77,6 +79,14 @@ class AIAgent {
 		this.characterPos = null;
 		this.nextState = null;
 	}
+
+	insertPlayingEvent(eventName, data) {
+		this.playingEventQueue.push({
+			eventName: eventName,
+			data: data
+		})
+	}
+
 
 	characterEnteredVision(c) {
 		var a = this.userCharactersInVision.find((x) => {return x.c === c});

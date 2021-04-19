@@ -1,5 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const {AIAgent} = require('../classes/ai-agent.js');
+const {AIAgent} = require('../ai-agent/ai-agent.js');
 const logger = require('../../logger.js');
 
 class AIAgentManager {
