@@ -71,6 +71,29 @@ class TeamManager {
 		}
 	}
 
+	//gets any random team that is not spectator
+	getRandomTeam() {
+		var randTeamArray = [];
+		var t = null;
+		for(var i = 0; i < this.teamArray.length; i++) {
+			if(!this.teamArray[i].isSpectatorTeam) {
+				randTeamArray.push(this.teamArray[i]);
+			}
+		}
+
+		var ri = Math.floor(Math.random() * randTeamArray.length);
+		
+		if(ri === randTeamArray.length) {
+			ri = randTeamArray.length-1
+		}
+
+		if(ri >= 0 && ri < randTeamArray.length) {
+			t = randTeamArray[ri];
+		}
+
+		return t;
+	}
+
 	getSpectatorTeam() {
 		return this.spectatorTeam;
 	}

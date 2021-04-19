@@ -8,6 +8,7 @@ class AIAgent {
 		this.globalfuncs = null;
 		this.id = null;
 		this.characterId = null;
+		this.teamId = null;
 		this.bCharacterIsActive = false;
 
 		this.username = "";

@@ -14,6 +14,7 @@ class Character {
 
 		this.ownerId = null;
 		this.ownerType = ""; //translated to an integer when sent to the client. Integer mapping in game-constants.json.
+		this.teamId = null;
 
 		this.stateName = "";
 		this.state = null;
@@ -406,6 +407,7 @@ class Character {
 						o.characterId = this.id;
 						o.ownerId = this.ownerId;
 						o.ownerType = this.ownerType;
+						o.teamId = this.teamId;
 	
 						if(e.type == "bigBullet")
 						{

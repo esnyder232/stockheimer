@@ -99,7 +99,6 @@ class User {
 		this.teamId = newTeamId;
 		this.userInfoDirty = true;
 		
-		//this.determinePlayingState();
 		this.insertPlayingEvent("team-changed");
 	}
 

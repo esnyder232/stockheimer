@@ -229,8 +229,8 @@ class CollisionSystem {
 				processDamage = false;
 			}
 
-			//if its the character's own bullet, don't allow the character to get hit
-			if(p.characterId === c.id)
+			//friendly fire check
+			if(p.teamId === c.teamId)
 			{
 				processDamage = false;
 			}

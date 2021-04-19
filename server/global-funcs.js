@@ -155,6 +155,8 @@ class GlobalFuncs {
 
 				var c = gs.gom.createGameObject('character');
 				c.characterInit(gs);
+
+				c.teamId = user.teamId;
 				c.ownerId = user.id;
 				c.ownerType = "user";
 				user.characterId = c.id;

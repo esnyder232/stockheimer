@@ -9,6 +9,7 @@ class Projectile {
 		this.characterId = null; //the character that fired the bullet
 		this.ownerId = null; //the user/ai that controller the character that fired the bullet
 		this.ownerType = "";
+		this.teamId = null;
 		this.type = "projectile";
 
 		this.plBody = null;

@@ -202,9 +202,16 @@ class GameServerRunning extends GameServerBaseState {
 								
 								ai.aiAgentInit(this.gs, c.id);
 								
+								//randomize the ai team for now
+								var team = this.gs.tm.getRandomTeam();
+								if(team !== null) {
+									ai.teamId = team.id;
+								}
+								
 								c.ownerId = ai.id;
 								c.ownerType = "ai";
 								c.characterInit(this.gs);
+								c.teamId = ai.teamId;
 
 								var pos = userChar.getPlanckPosition();
 								var xStarting = (pos.x - 1) + (2 * Math.random());
@@ -265,9 +272,16 @@ class GameServerRunning extends GameServerBaseState {
 									
 									ai.aiAgentInit(this.gs, c.id);
 									
+									//randomize the ai team for now
+									var team = this.gs.tm.getRandomTeam();
+									if(team !== null) {
+										ai.teamId = team.id;
+									}
+
 									c.ownerId = ai.id;
 									c.ownerType = "ai";
 									c.characterInit(this.gs);
+									c.teamId = ai.teamId;
 
 									var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
 									var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
