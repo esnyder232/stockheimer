@@ -12,6 +12,7 @@ const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const {TilemapManager} = require ('./managers/tilemap-manager.js');
 const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
+const {UserAgentManager} = require ('./managers/user-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
@@ -55,6 +56,7 @@ class GameServer {
 		this.aim = null;
 		this.tm = null;
 		this.pm = null;
+		this.uam = null;
 
 		this.appRoot = path.join(__dirname, "..");
 
@@ -80,6 +82,7 @@ class GameServer {
 		this.aim = new AIAgentManager();
 		this.tm = new TeamManager();
 		this.pm = new ProcessManager();
+		this.uam = new UserAgentManager();
 
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -99,16 +102,17 @@ class GameServer {
 		this.aim.init(this);
 		this.tm.init(this);
 		this.pm.init(this);
+		this.uam.init(this);
 
 		this.gameState = new GameServerStopped(this);
 
 		//debug stuff here
-		// var p1 = this.pm.createProcess("RESPAWN", 5000);
-		// var p2 = this.pm.createProcess("RESPAWN", 7000);
-		// var p3 = this.pm.createProcess("RESPAWN", 8000);
-		// var p4 = this.pm.createProcess("COOLDOWN", 15000);
-		// var p5 = this.pm.createProcess("COOLDOWN", 20000);
-		// var p6 = this.pm.createProcess("COOLDOWN", 7000);
+		// var p1 = this.uam.createUserAgent();
+		// var p2 = this.uam.createUserAgent();
+		// var p3 = this.uam.createUserAgent();
+		// var p4 = this.uam.createUserAgent();
+		// var p5 = this.uam.createUserAgent();
+		// var p6 = this.uam.createUserAgent();
 
 		// p1.name = "p1";
 		// p2.name = "p2";
@@ -118,9 +122,17 @@ class GameServer {
 		// p6.name = "p6";
 
 		// setTimeout(() => {
-		// 	this.pm.destroyProcess(p1.id);
-		// 	this.pm.destroyProcess(p3.id);
+		// 	console.log('killing p1 and p3');
+		// 	this.uam.destroyUserAgent(p1.id);
+		// 	this.uam.destroyUserAgent(p3.id);
 		// }, 2000)
+		
+		// setTimeout(() => {
+		// 	var a = this.uam;
+		// 	console.log('stopping');
+		// }, 3000)
+		
+
 	}
 
 	getGlobalGameObjectID() {
@@ -217,6 +229,9 @@ class GameServer {
 			//create a websocket handler
 			var wsh = this.wsm.createWebsocket(ws);
 			wsh.init(this, user.id, ws);
+
+			//create the user agent
+
 			
 			//At this point, the user was only created, not initialized. So setup user now.
 			user.userInit(this, wsh.id);

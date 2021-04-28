@@ -9,7 +9,6 @@ class PlayingSpectatorState extends PlayingBaseState.PlayingBaseState {
 	}
 
 	enter(dt) {
-		logger.log("info", this.stateName + ' enter');
 		super.enter(dt);
 		this.user.inputQueue.length = 0;
 	}
@@ -32,7 +31,6 @@ class PlayingSpectatorState extends PlayingBaseState.PlayingBaseState {
 	}
 
 	exit(dt) {
-		logger.log("info", this.stateName + ' exit');		
 		super.exit(dt);
 		this.user.inputQueue.length = 0;
 	}

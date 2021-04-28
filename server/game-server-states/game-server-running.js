@@ -78,6 +78,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.aim.update(dt);
 		this.gs.tm.update(dt);
 		this.gs.pm.update(dt);
+		this.gs.uam.update(dt);
 
 		this.gs.frameNum++;
 
