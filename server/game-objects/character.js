@@ -494,16 +494,15 @@ class Character {
 		}
 
 		//create event for clients to notify them of damage
-		var activeUsers = this.gs.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
-		{
-			activeUsers[i].insertTrackedEntityEvent("gameobject", this.id, {
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
 				"eventName": "characterDamage",
 				"id": this.id,
 				"damage": dmg
 			});
 		}
-		
+
 		
 		this.hpCur -= dmg;
 		if(this.hpCur < 0)

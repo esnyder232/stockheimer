@@ -31,12 +31,12 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 			var event = this.trackedEntity.orderedEventQueue[i];
 			
 			//check if the websocket handler can fit the event
-			var info = this.trackedEntity.user.wsh.canEventFit(event);
+			var info = this.trackedEntity.ua.wsh.canEventFit(event);
 			
 			//insert the event
 			if(info.canEventFit)
 			{
-				this.trackedEntity.user.wsh.insertEvent(event);
+				this.trackedEntity.ua.wsh.insertEvent(event);
 				orderedProcessedIndexes.push(i);
 			}
 			else
@@ -62,19 +62,19 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 			if(event.eventName != "deleteTrackedEntity")
 			{
 				//check if the websocket handler can fit the event
-				var info = this.trackedEntity.user.wsh.canEventFit(event);
+				var info = this.trackedEntity.ua.wsh.canEventFit(event);
 
 				//check if the size can vary, and the size is big. If it is, we will start fragmentation. Also only do this if its NOT a fragment already
-				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.trackedEntity.user.fragmentationLimit)
+				if(!info.isFragment && info.b_size_varies && info.bytesRequired >= this.trackedEntity.ua.fragmentationLimit)
 				{
-					this.trackedEntity.user.insertFragmentEvent(event, info);
+					this.trackedEntity.ua.insertFragmentEvent(event, info);
 
 					processedIndexes.push(i); //just push it in this queue so it gets spliced off at the end
 				}
 				//insert the event
 				else if(info.canEventFit)
 				{
-					this.trackedEntity.user.wsh.insertEvent(event);
+					this.trackedEntity.ua.wsh.insertEvent(event);
 					processedIndexes.push(i);
 				}
 				else
@@ -122,12 +122,12 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 			if(eventData !== null)
 			{
 				//check if the websocket handler can fit the event
-				var info = this.trackedEntity.user.wsh.canEventFit(eventData);
+				var info = this.trackedEntity.ua.wsh.canEventFit(eventData);
 	
 				//insert the event, and reset the priority accumulator
 				if(info.canEventFit)
 				{
-					this.trackedEntity.user.wsh.insertEvent(eventData);
+					this.trackedEntity.ua.wsh.insertEvent(eventData);
 					this.trackedEntity.pa = 0.0;
 				}
 				else

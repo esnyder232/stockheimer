@@ -29,14 +29,16 @@ class UserDisconnectingState extends UserBaseState {
 		this.user.gs.gameState.deactivateUserId(this.user.id);
 
 		//send a message to existing users about the person that left
-		var activeUsers = this.user.gs.um.getActiveUsers();
-		for(var j = 0; j < activeUsers.length; j++)
+		var userAgents = this.user.gs.uam.getUserAgents();
+		for(var j = 0; j < userAgents.length; j++)
 		{
-			activeUsers[j].insertServerToClientEvent({
+			userAgents[j].insertServerToClientEvent({
 				"eventName": "debugMsg",
 				"debugMsg": "Player '" + this.user.username + "' has disconnected."
 			});
 		}
+
+		this.user.gs.uam.destroyUserAgent(this.user.userAgentId);
 		
 		//reset the user
 		this.user.userDeinit();

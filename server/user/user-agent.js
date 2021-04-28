@@ -1,10 +1,6 @@
 const GlobalFuncs = require('../global-funcs.js');
-const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
 const serverConfig = require('../server-config.json');
-const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
-const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
-const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
 const logger = require('../../logger.js');
 
 class UserAgent {
@@ -15,22 +11,16 @@ class UserAgent {
 		this.isActive = false;
 		this.globalfuncs = null;
 
-		this.username = "";
 		this.wsId = null;
-
-		this.wsh = null; //a direct reference to the websocket handler since the things in user will be using it often (tracked entities will use it often)
-
-		this.stateName = "";
-		this.state = null;
-		this.nextState = null;
+		this.userId = null;
+		this.wsh = null; //a direct reference to the websocket handler (tracked entities will use it often)
+		this.user = null; //a direct reference to ther user
 
 		this.serverToClientEvents = []; //event queue to be processed by the packet system
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events coming from the client
 
 		this.fragmentedClientToServerEvents = []; //fragmented events from client to the server
 		this.fragmentedServerToClientEvents = []; //fragmented events to be sent to the client. ONLY 1 fragmented message is sent at a time.
-
-		this.bDisconnected = false; //flag that gets flipped when the user disconnects or times out
 
 		this.inputQueue = [];
 		
@@ -53,99 +43,23 @@ class UserAgent {
 		this.rttCalcThreshold = 1000; //ms
 	}
 
-	userAgentInit(gameServer, wsId) {
+	userAgentInit(gameServer, userId, wsId) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs.GlobalFuncs();
+		this.userId = userId;
 		this.wsId = wsId;
 		
 		//get a direct reference to the websocket handler
 		this.wsh = this.gs.wsm.getWebsocketByID(this.wsId);
-
-		this.state = new UserDisconnectedState(this);
-		this.state.enter();
+		this.user = this.gs.um.getUserByID(this.userId);
 	}
 
-	activated() {
-		//console.log('userPostActivated for ' + this.username);
-		
-		//assign to sepctator team by default
-		var spectatorTeam = this.gs.tm.getSpectatorTeam();
-		if(this.teamId === null && spectatorTeam) {
-			this.teamId = spectatorTeam.id;
-		}
-
-		this.playingState = new PlayingSpectatorState.PlayingSpectatorState(this);
-		this.playingState.enter();
-
-	}
-
-	updateTeamId(newTeamId) {
-		this.teamId = newTeamId;
-		this.userInfoDirty = true;
-		
-		this.insertPlayingEvent("team-changed");
-	}
-
-	determinePlayingState() {
-		var spectatorTeam = this.gs.tm.getSpectatorTeam();
-
-		//if the player chose any team except the spectator team, put the player in an initial playing state
-		if(spectatorTeam && this.teamId !== spectatorTeam.id)
-		{
-			this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this);
-		}
-		else
-		{
-			this.nextPlayingState = new PlayingSpectatorState.PlayingSpectatorState(this);
-		}
-	}
-
-	userPostStartPlaying() {
-		const pl = this.gs.pl;
-		const Vec2 = pl.Vec2;
-
-		//create a tracking sensor
-		var trackingSensor = pl.Circle(Vec2(0, 0), 100);
-
-		this.plBody = this.gs.world.createBody({
-			position: Vec2(15, -15),
-			type: pl.Body.DYNAMIC,
-			fixedRotation: true,
-			userData: {type:"user", id: this.id}
-		});
-
-		this.plBody.createFixture({
-			shape: trackingSensor,
-			density: 0.0,
-			friction: 1.0,
-			isSensor: true,
-			filterCategoryBits: CollisionCategories["user_sensor"],
-			filterMaskBits: CollisionMasks["user_sensor"]
-		});
-
-		this.determinePlayingState();
-	}
-
-	userPreStopPlaying() {
-		if(this.plBody !== null)
-		{
-			this.gs.world.destroyBody(this.plBody);
-			this.plBody = null;
-		}
-	}
-
-	userPreDeactivated() {
-		//nothing for now
-	}
-
-	userDeinit() {
+	userAgentDeinit() {
 		this.serverToClientEvents = [];
 		this.clientToServerEvents = [];
-		this.characterId = null;
-		//this.teamId = null; //purposely commented out and left in code to remind you later: don't get rid of the teamId so the game remembers what team you were on.
-		this.bReadyToPlay = false;
-		this.bDisconnected = false;
 		this.inputQueue = [];
+		this.userId = null;
+		this.user = null;
 		this.wsId = null;
 		this.wsh = null;
 
@@ -156,17 +70,6 @@ class UserAgent {
 			"gameobject": {},
 			"round": {}
 		}
-
-		this.playingState = null;
-		this.nextPlayingState = null;
-		this.playingEventQueue = [];
-	}
-
-	insertPlayingEvent(eventName, data) {
-		this.playingEventQueue.push({
-			eventName: eventName,
-			data: data
-		})
 	}
 
 	//inserts the event into the serverToclient array so it can be processed later in the update loop
@@ -195,7 +98,7 @@ class UserAgent {
 				if(e.ent.type == "character")
 				{
 					//if the character belongs to this user, give it a high priority
-					if(e.ent.ownerType === "user" && e.ent.ownerId == this.id)
+					if(e.ent.ownerType === "user" && e.ent.ownerId == this.userId)
 					{
 						e.paWeight = 1000;
 					}
@@ -354,61 +257,28 @@ class UserAgent {
 		}
 	}
 
-	updateKillCount(amt) {
-		this.userKillCount += amt;
-		this.userInfoDirty = true;
-	}
-
 	update(dt) {
-
-		//update connection state
-		this.state.update();
-
-		//update plyaing state if they have one
-		this.playingState.update(dt);
-
-		if(this.nextPlayingState !== null)
-		{
-			this.playingState.exit(dt);
-			this.nextPlayingState.enter(dt);
-
-			var te = this.findTrackedEntity("user", this.id);
-			if(te !== null)
-			{
-				te.insertOrderedEvent({
-					"eventName": "updateUserPlayingState",
-					"userId": this.id,
-					"userPlayingState": this.playingStateEnum,
-					"userRespawnTime": this.respawnTimer,
-					"userRespawnTimeAcc": this.respawnTimeAcc
-				})
-			}
-
-			this.playingState = this.nextPlayingState;
-			this.nextPlayingState = null;
-		}
-		
-
 		//update rtt if its time
 		this.rttCalcTimer += dt;
 		if(this.rttCalcTimer >= this.rttCalcThreshold)
 		{
 			this.rtt = this.wsh.calcRTT();
-			this.userInfoDirty = true;
+			// this.userInfoDirty = true;
 			this.rttCalcTimer = 0;
 		}
 
+		//REDO this for user-agent
 		//tell all users about the new info if its dirty
-		if(this.userInfoDirty) {
+		// if(this.userInfoDirty) {
 
-			var activeUsers = this.gs.um.getActiveUsers();
-			for(var i = 0; i < activeUsers.length; i++)
-			{
-				activeUsers[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
-			}
+		// 	var activeUsers = this.gs.um.getActiveUsers();
+		// 	for(var i = 0; i < activeUsers.length; i++)
+		// 	{
+		// 		activeUsers[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
+		// 	}
 
-			this.userInfoDirty = false;
-		}
+		// 	this.userInfoDirty = false;
+		// }
 
 		//first, see if there are any fragmented messages that need to go to the client
 		if(this.fragmentedServerToClientEvents.length > 0)
@@ -607,15 +477,6 @@ class UserAgent {
 			
 			this.trackedEntityTransactions.length = 0;
 		}
-
-		if(this.nextState)
-		{
-			this.state.exit();
-			this.nextState.enter();
-
-			this.state = this.nextState;
-			this.nextState = null;
-		}
 	}
 
 	insertFragmentEvent(event, info, cbFinalFragmentAck, cbFinalFragmentSend, cbFinalFragmentMiscData) {
@@ -683,39 +544,6 @@ class UserAgent {
 
 		return result;
 	}
-
-
-	
-	///////////////////////////////////
-	// EVENT SERIALIZATION FUNCTIONS //
-	///////////////////////////////////
-	serializeUserConnectedEvent() {
-		return {
-			"eventName": "userConnected",
-			"userId": this.id,
-			"username": this.username,
-			"userKillCount": this.userKillCount,
-			"teamId": this.teamId
-		};
-	}
-
-	serializeUserDisconnectedEvent() {
-		return {
-			"eventName": "userDisconnected",
-			"userId": this.id
-		};
-	}
-
-	serializeUpdateUserInfoEvent() {
-		return {
-			"eventName": "updateUserInfo",
-			"userId": this.id,
-			"userKillCount": this.userKillCount,
-			"userRtt": this.rtt,
-			"teamId": this.teamId
-		};
-	}
-
 }
 
 exports.UserAgent = UserAgent;

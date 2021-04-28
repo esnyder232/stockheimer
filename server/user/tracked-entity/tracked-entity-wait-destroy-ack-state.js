@@ -49,7 +49,7 @@ class TrackedEntityWaitDestroyAckState extends TrackedEntityBaseState {
 
 		if(permDelete)
 		{
-			this.trackedEntity.user.permDeleteTrackedEntity(this.trackedEntity.entType, this.trackedEntity.entId);
+			this.trackedEntity.ua.permDeleteTrackedEntity(this.trackedEntity.entType, this.trackedEntity.entId);
 		}
 	}
 }

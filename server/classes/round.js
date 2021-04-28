@@ -47,12 +47,12 @@ class Round {
 			this.nextState = null;
 
 			//tell users about the round's changed state
-			var activeUsers = this.gs.um.getActiveUsers();
+			var userAgents = this.gs.uam.getUserAgents();
 			var event = this.serializeUpdateRoundStateEvent();
 
-			for(var i = 0; i < activeUsers.length; i++)
+			for(var i = 0; i < userAgents.length; i++)
 			{
-				activeUsers[i].insertTrackedEntityOrderedEvent("round", this.id, event)
+				userAgents[i].insertTrackedEntityOrderedEvent("round", this.id, event)
 			}
 		}
 	}

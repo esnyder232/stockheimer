@@ -48,12 +48,12 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 		if(se !== null)
 		{
 			//check if the websocket handler can fit the event
-			var info = this.trackedEntity.user.wsh.canEventFit(se);
+			var info = this.trackedEntity.ua.wsh.canEventFit(se);
 
 			//insert the event
 			if(info.canEventFit)
 			{
-				this.trackedEntity.user.wsh.insertEvent(se, this.trackedEntity.cbDestroyAck.bind(this.trackedEntity));
+				this.trackedEntity.ua.wsh.insertEvent(se, this.trackedEntity.cbDestroyAck.bind(this.trackedEntity));
 
 				//for right now, just move on to the next state
 				this.trackedEntity.nextState = new TrackedEntityWaitDestroyAckState(this.trackedEntity);

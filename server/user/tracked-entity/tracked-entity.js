@@ -4,9 +4,9 @@ const {TrackedEntityDestroyedState} = require("./tracked-entity-destroyed-state.
 class TrackedEntity {
 	constructor() {
 		this.gs = null;
-		this.userId = null;
+		this.userAgentId = null;
 
-		this.user = null; //direct reference to the user
+		this.userAgent = null; //direct reference to the user
 		this.ent = null; //direct reference to the entity
 		
 		this.entId = null;
@@ -23,15 +23,15 @@ class TrackedEntity {
 	}
 
 	//called when this gets created and put onto the user's trackedEntity array. Only ever called once.
-	trackedEntityInit(gs, userId, entType, entId)
+	trackedEntityInit(gs, userAgentId, entType, entId)
 	{
 		this.gs = gs;
-		this.userId = userId;
+		this.userAgentId = userAgentId;
 		this.entType = entType;
 		this.entId = entId;
 
 		//get direct reference to user since this will be using it alot
-		this.user = this.gs.um.getUserByID(this.userId);
+		this.ua = this.gs.uam.getUserAgentByID(this.userAgentId);
 
 		//get direct reference to the entity
 		if(entType === "user")

@@ -96,10 +96,11 @@ class Castle {
 				//announce the castle has been killed.
 				var broadcastMessage = this.castleName + " has been destroyed!";
 				logger.log("info", broadcastMessage);
-				var activeUsers = this.gs.um.getActiveUsers();
-				for(var j = 0; j < activeUsers.length; j++)
+
+				var userAgents = this.gs.uam.getUserAgents();
+				for(var j = 0; j < userAgents.length; j++)
 				{
-					activeUsers[j].insertServerToClientEvent({
+					userAgents[j].insertServerToClientEvent({
 						"eventName": "debugMsg",
 						"debugMsg": broadcastMessage
 					});
@@ -116,16 +117,14 @@ class Castle {
 
 	isHit(dmg)	{
 		//create event for clients to notify them of damage
-		var activeUsers = this.gs.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
-		{
-			activeUsers[i].insertTrackedEntityEvent("gameobject", this.id, {
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
 				"eventName": "castleDamage",
 				"id": this.id,
 				"damage": dmg
 			});
 		}
-		
 		
 		this.hpCur -= dmg;
 		if(this.hpCur < 0)

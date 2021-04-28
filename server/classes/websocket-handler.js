@@ -24,6 +24,7 @@ class WebsocketHandler {
 
 		this.id = null;
 		this.userId = null;
+		this.userAgentId = null;
 
 		this.localSequence = 0; 	//current local sequence number
 		this.remoteSequence = 0;	//most recent remote sequence number
@@ -44,9 +45,10 @@ class WebsocketHandler {
 		this.rttPacketHistoryLength = 60; //the number of packets to look back from the local sequence number to calculate the rtt
 	}
 
-	init(gameServer, userId, ws) {
+	init(gameServer, userId, userAgentId, ws) {
 		this.gs = gameServer;
 		this.userId = userId;
+		this.userAgentId = userAgentId;
 		this.ws = ws;
 
 		//calculate maxPacketSize through config values
@@ -251,7 +253,7 @@ class WebsocketHandler {
 
 
 	decodeEvent(n, view, debugMe) {
-		var user = this.gs.um.getUserByID(this.userId);
+		var userAgent = this.gs.uam.getUserAgentByID(this.userAgentId);
 		var oldN = n;
 
 		//event id
@@ -415,7 +417,7 @@ class WebsocketHandler {
 				eventData[schema.parameters[p].txt_param_name] = value;
 			}
 
-			user.clientToServerEvents.push(eventData);
+			userAgent.clientToServerEvents.push(eventData);
 		}
 
 		return n - oldN;

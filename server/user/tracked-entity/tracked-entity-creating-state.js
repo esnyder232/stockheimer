@@ -47,13 +47,13 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 		if(event !== null)
 		{
 			//check if the websocket handler can fit the event
-			var info = this.trackedEntity.user.wsh.canEventFit(event);
+			var info = this.trackedEntity.ua.wsh.canEventFit(event);
 
 			//insert the event
 			//fragment
-			if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.trackedEntity.user.fragmentationLimit)
+			if(!info.isFragment && info.b_size_varies && info.bytesRequired > this.trackedEntity.ua.fragmentationLimit)
 			{
-				this.trackedEntity.user.insertFragmentEvent(event, info, this.trackedEntity.cbCreateAck.bind(this.trackedEntity));
+				this.trackedEntity.ua.insertFragmentEvent(event, info, this.trackedEntity.cbCreateAck.bind(this.trackedEntity));
 				
 				//for right now, just move on to the next state
 				this.trackedEntity.nextState = new TrackedEntityWaitCreateAckState(this.trackedEntity);
@@ -61,7 +61,7 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 			//insert the event
 			else if(info.canEventFit)
 			{
-				this.trackedEntity.user.wsh.insertEvent(event, this.trackedEntity.cbCreateAck.bind(this.trackedEntity));
+				this.trackedEntity.ua.wsh.insertEvent(event, this.trackedEntity.cbCreateAck.bind(this.trackedEntity));
 
 				//for right now, just move on to the next state
 				this.trackedEntity.nextState = new TrackedEntityWaitCreateAckState(this.trackedEntity);

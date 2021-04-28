@@ -15,31 +15,32 @@ class UserConnectingState extends UserBaseState {
 		//logger.log("info", this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 		var activeUsers = this.user.gs.um.getActiveUsers();
-		var playingUsers = this.user.gs.um.getPlayingUsers();
+		var userAgents = this.user.gs.uam.getUserAgents();
 		var teams = this.user.gs.tm.getTeams();
 		var theRound = this.user.gs.theRound;
+		var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
 		
 		//tell the client about his/her own user id so they can identify themselves from other users
-		this.user.insertServerToClientEvent({
+		ua.insertServerToClientEvent({
 			"eventName": "yourUser",
 			"userId": this.user.id
 		})
 		
 		//tell existing users about the user that joined
-		for(var i = 0; i < playingUsers.length; i++)
+		for(var i = 0; i < userAgents.length; i++)
 		{
-			playingUsers[i].insertTrackedEntity("user", this.user.id);
+			userAgents[i].insertTrackedEntity("user", this.user.id);
 		}
 
 		//send a message to existing users about the person that joined
-		for(var j = 0; j < activeUsers.length; j++)
+		for(var j = 0; j < userAgents.length; j++)
 		{
-			activeUsers[j].insertServerToClientEvent({
+			userAgents[j].insertServerToClientEvent({
 				"eventName": "debugMsg",
 				"debugMsg": "Player '" + this.user.username + "' has connected."
 			});
 		}
-
+		
 		/////////////////////////////////////
 		// SENDING WORLD STATE TO NEW USER //
 		/////////////////////////////////////
@@ -47,11 +48,11 @@ class UserConnectingState extends UserBaseState {
 		//send the user who just joined a list of all the users
 		for(var i = 0; i < activeUsers.length; i++)
 		{
-			this.user.insertTrackedEntity("user", activeUsers[i].id);
+			ua.insertTrackedEntity("user", activeUsers[i].id);
 		}
 
 		//send the user who just joined the round state
-		this.user.insertTrackedEntity("round", theRound.id);
+		ua.insertTrackedEntity("round", theRound.id);
 
 		//send the user who just joined a list of the existing teams
 		for(var i = 0; i < teams.length; i++)
@@ -62,7 +63,7 @@ class UserConnectingState extends UserBaseState {
 			});
 
 			var addTeamEvent = teams[i].serializeAddTeamEvent();
-			this.user.insertServerToClientEvent(addTeamEvent, this.cbAddTeam.bind(this), null, {id: teams[i].id});
+			ua.insertServerToClientEvent(addTeamEvent, this.cbAddTeam.bind(this), null, {id: teams[i].id});
 		}
 
 		super.enter(dt);
@@ -74,12 +75,13 @@ class UserConnectingState extends UserBaseState {
 		//quite a bit hacky here, but it DOES work
 		if(!this.worldStateDoneEventSent)
 		{
+			var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
 			var worldStateGood = true;
 
 			//check if the tracked entities have all been created on the client side
-			for(var i = 0; i < this.user.trackedEntities.length; i++)
+			for(var i = 0; i < ua.trackedEntities.length; i++)
 			{
-				if(this.user.trackedEntities[i].stateName !== "tracked-entity-created-state") {
+				if(ua.trackedEntities[i].stateName !== "tracked-entity-created-state") {
 					worldStateGood = false;
 					break;
 				}
@@ -97,8 +99,9 @@ class UserConnectingState extends UserBaseState {
 
 			if(worldStateGood && !this.worldStateDoneEventSent)
 			{
+				
 				this.worldStateDoneEventSent = true;
-				this.user.insertServerToClientEvent({
+				ua.insertServerToClientEvent({
 					"eventName": "worldStateDone"
 				});
 			}

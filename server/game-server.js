@@ -226,15 +226,16 @@ class GameServer {
 
 	onopen(user, ws) {
 		try {
-			//create a websocket handler
+			//create a websocket handler and useragent
 			var wsh = this.wsm.createWebsocket(ws);
-			wsh.init(this, user.id, ws);
-
-			//create the user agent
-
+			var ua = this.uam.createUserAgent();
+		
+			wsh.init(this, user.id, ua.id, ws);
+			ua.userAgentInit(this, user.id, wsh.id);
 			
 			//At this point, the user was only created, not initialized. So setup user now.
-			user.userInit(this, wsh.id);
+			user.userInit(this);
+			user.userAgentId = ua.id;
 
 			//activate the user
 			this.um.activateUserId(user.id, this.cbUserActivateSuccess.bind(this), this.cbUserActivateFail.bind(this));
@@ -258,13 +259,13 @@ class GameServer {
 		}
 
 		//adjust all user's websocket handler's max packet size
-		var activeUsers = this.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
+		var userAgents = this.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++)
 		{
 			//i don't know why it would EVER be null at this point. Buy just to be safe.
-			if(activeUsers[i].wsh !== null)
+			if(userAgents[i].wsh !== null)
 			{
-				activeUsers[i].wsh.updateMaxPacketSize();
+				userAgents[i].wsh.updateMaxPacketSize();
 			}
 		}
 	}
@@ -295,15 +296,15 @@ class GameServer {
 
 	cbUserDeactivateSuccess(id) {
 		//adjust all user's websocket handler's max packet size
-		var activeUsers = this.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
+		var userAgents = this.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++)
 		{
 			//i don't know why it would EVER be null at this point. Buy just to be safe.
-			if(activeUsers[i].wsh !== null)
+			if(userAgents[i].wsh !== null)
 			{
-				activeUsers[i].wsh.updateMaxPacketSize();
+				userAgents[i].wsh.updateMaxPacketSize();
 			}
-		}	
+		}
 	}
 
 

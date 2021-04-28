@@ -181,19 +181,19 @@ class CollisionSystem {
 
 	beginCastleUserCollision(castleUserData, userData, contactObj, isCastleA)
 	{
-		var u = this.gs.um.getUserByID(userData.id);
-		if(u !== null)
+		var ua = this.gs.uam.getUserAgentByID(userData.userAgentId);
+		if(ua !== null)
 		{
-			u.insertTrackedEntity("gameobject", castleUserData.id);
+			ua.insertTrackedEntity("gameobject", castleUserData.id);
 		}
 	}
 
 	endCastleUserCollision(castleUserData, userData, contactObj, isCastleA)
 	{
-		var u = this.gs.um.getUserByID(userData.id);
-		if(u !== null)
+		var ua = this.gs.uam.getUserAgentByID(userData.userAgentId);
+		if(ua !== null)
 		{
-			u.deleteTrackedEntity("gameobject", castleUserData.id);
+			ua.deleteTrackedEntity("gameobject", castleUserData.id);
 		}
 	}
 
@@ -292,20 +292,22 @@ class CollisionSystem {
 	beginCharacterUserCollision(characterUserData, userUserData, contactObj, isCharacterA)
 	{
 		//logger.log("info", 'begin character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
-		var u = this.gs.um.getUserByID(userUserData.id);
-		if(u !== null)
+
+		var ua = this.gs.uam.getUserAgentByID(userUserData.userAgentId);
+		if(ua !== null)
 		{
-			u.insertTrackedEntity("gameobject", characterUserData.id);
+			ua.insertTrackedEntity("gameobject", characterUserData.id);
 		}
 	}
 
 	endCharacterUserCollision(characterUserData, userUserData, contactObj, isCharacterA)
 	{
 		//logger.log("info", 'end character user Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
-		var u = this.gs.um.getUserByID(userUserData.id);
-		if(u !== null)
+
+		var ua = this.gs.uam.getUserAgentByID(userUserData.userAgentId);
+		if(ua !== null)
 		{
-			u.deleteTrackedEntity("gameobject", characterUserData.id);
+			ua.deleteTrackedEntity("gameobject", characterUserData.id);
 		}
 	}
 
@@ -362,20 +364,22 @@ class CollisionSystem {
 	beginProjectileUserCollision(projectileUserData, userUserData, contactObj, isProjectileA)
 	{
 		//logger.log("info", 'begin projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
-		var u = this.gs.um.getUserByID(userUserData.id);
-		if(u !== null)
+
+		var ua = this.gs.uam.getUserAgentByID(userUserData.userAgentId);
+		if(ua !== null)
 		{
-			u.insertTrackedEntity("gameobject", projectileUserData.id);
+			ua.insertTrackedEntity("gameobject", projectileUserData.id);
 		}
 	}
 
 	endProjectileUserCollision(projectileUserData, userUserData, contactObj, isProjectileA)
 	{
 		//logger.log("info", 'end projectile user Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + userUserData.type + " " + userUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
-		var u = this.gs.um.getUserByID(userUserData.id);
-		if(u !== null)
+
+		var ua = this.gs.uam.getUserAgentByID(userUserData.userAgentId);
+		if(ua !== null)
 		{
-			u.deleteTrackedEntity("gameobject", projectileUserData.id);
+			ua.deleteTrackedEntity("gameobject", projectileUserData.id);
 		}
 	}
 
