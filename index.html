@@ -157,8 +157,6 @@
 								<input type="button" class="hide" id="kill-character" value="Kill Self" onclick="window.dispatchEvent(new CustomEvent('kill-character-click'));" />
 							</div>
 							<div class="input-debug-controls-div main-scene-buttons">
-								<input type="button" id="spawn-enemy-player" value="Spawn Enemy at player" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-player'));" />
-								<input type="button" id="spawn-enemy-red" value="Spawn Enemies on red" onclick="window.dispatchEvent(new CustomEvent('spawn-enemy-red'));" />
 								<input type="button" id="respawn-castle" value="Respawn Castle" onclick="window.dispatchEvent(new CustomEvent('respawn-castle'));" />
 							</div>
 						</div>
@@ -254,6 +252,15 @@
 						<div id="debug-angle"></div>
 					</div>
 				</div>
+				<div class="debug-menu-container debug-ai-container">
+					<div class="debug-menu-contents debug-ai-contents" id="debug-ai-contents">
+						<div class="debug-title">AI Controls:</div>
+						<input type="button" class="hide" id="spawn-ai-button-template" value="???"/>
+						<input type="button" class="hide" id="kill-random-ai-button-template" value="???"/>
+						<input type="button" class="hide" id="kill-all-ai-button-template" value="???"/>
+					</div>
+				</div>
+
 			</div>
 
 

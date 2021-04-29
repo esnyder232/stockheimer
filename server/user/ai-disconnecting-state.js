@@ -2,10 +2,10 @@ const {UserBaseState} = require('./user-base-state.js');
 const UserDisconnectedState = require('./user-disconnected-state.js');
 const logger = require('../../logger.js');
 
-class UserDisconnectingState extends UserBaseState {
+class AiDisconnectingState extends UserBaseState {
 	constructor(user) {
 		super(user);
-		this.stateName = "user-disconnecting-state";
+		this.stateName = "ai-disconnecting-state";
 	}
 
 	enter(dt) {
@@ -38,10 +38,6 @@ class UserDisconnectingState extends UserBaseState {
 			});
 		}
 
-		if(this.user.userAgentId !== null) {
-			this.user.gs.uam.destroyUserAgent(this.user.userAgentId);
-		}
-		
 		//reset the user
 		this.user.userDeinit();
 
@@ -51,4 +47,4 @@ class UserDisconnectingState extends UserBaseState {
 
 
 
-exports.UserDisconnectingState = UserDisconnectingState;
+exports.AiDisconnectingState = AiDisconnectingState;

@@ -118,9 +118,6 @@ export default class MainScene extends Phaser.Scene {
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-			
-			{event: 'spawn-enemy-player', func: this.spawnEnemyPlayer.bind(this)},
-			{event: 'spawn-enemy-red', func: this.spawnEnemyRed.bind(this)},
 			{event: 'respawn-castle', func: this.respawnCastle.bind(this)}
 		];
 
@@ -267,10 +264,10 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.activate();
 		this.respawnTimeMenu.activate();
 		this.killFeedMenu.activate();
-		
 
 		//other things to create
 		this.gc.mainScene.createMap();
+		this.gc.debugMenu.populateAiControls();
 	}
 
 	createMap() {
@@ -355,6 +352,9 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.deinit();
 		this.respawnTimeMenu.deinit();
 		this.killFeedMenu.deinit();
+
+		//other stuff
+		this.gc.debugMenu.clearAiControls();
 	}
 
 	exitGameClick() {
@@ -656,21 +656,6 @@ export default class MainScene extends Phaser.Scene {
 			});
 		}
 		$("#kill-character")[0].blur();
-	}
-
-	spawnEnemyPlayer() {
-		this.fromClientSpawnEnemy("player");
-	}
-
-	spawnEnemyRed() {
-		this.fromClientSpawnEnemy("red");
-	}
-
-	fromClientSpawnEnemy(spawnLocation) {
-		this.gc.ep.insertClientToServerEvent({
-			"eventName": "fromClientSpawnEnemy",
-			"spawnLocation": spawnLocation
-		});
 	}
 
 	respawnCastle() {

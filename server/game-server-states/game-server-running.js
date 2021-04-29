@@ -1,6 +1,6 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
-const {UserDisconnectingState} = require('../user/user-disconnecting-state.js');
+const {AiConnectingState} = require('../user/ai-connecting-state.js');
 const {Round} = require('../classes/round.js');
 const GameConstants = require('../../shared_files/game-constants.json');
 
@@ -163,7 +163,62 @@ class GameServerRunning extends GameServerBaseState {
 								}
 							}
 							break;
-	
+
+						case "fromClientSpawnAi":
+							logger.log("info", "Player: " + user.username + ", event: fromClientSpawnAi: teamId: " + e.teamId);
+							var aiUser = this.gs.um.createUser();
+							aiUser.username = "AI " + aiUser.id;
+							aiUser.stateName = "user-disconnected-state";
+							aiUser.userType = "ai";
+							aiUser.updateTeamId(e.teamId);
+
+							//create an ai agent
+							//var ua = this.uam.createUserAgent();
+
+							//At this point, the user was only created, not initialized. So setup user now.
+							aiUser.userInit(this.gs);
+							//user.aiAgentId = ua.id;
+				
+							//activate the user
+							this.gs.um.activateUserId(aiUser.id, this.cbAiUserActivateSuccess.bind(this), this.cbAiUserActivateFail.bind(this));
+				
+							//setup the user's nextState
+							aiUser.nextState = new AiConnectingState(aiUser);
+			
+							break;
+
+						case "fromClientKillAllAi":
+							logger.log("info", "Player: " + user.username + ", event: fromClientKillAllAi: teamId: " + e.teamId);
+							var activeUsers = this.gs.um.getActiveUsers();
+							for(var i = 0; i < activeUsers.length; i++) {
+								if(activeUsers[i].userType === "ai" && activeUsers[i].teamId === e.teamId) {
+									activeUsers[i].bDisconnected = true;
+								}
+							}
+							break;
+
+						case "fromClientKillRandomAi":
+							logger.log("info", "Player: " + user.username + ", event: fromClientKillRandomAi: teamId: " + e.teamId);
+							var activeUsers = this.gs.um.getActiveUsers();
+							var teamAiUsers = [];
+
+							for(var i = 0; i < activeUsers.length; i++) {
+								if(activeUsers[i].userType === "ai" && activeUsers[i].teamId === e.teamId) {
+									teamAiUsers.push(activeUsers[i]);
+								}
+							}
+
+							if(teamAiUsers.length > 0) {
+								var killIndex = Math.floor(teamAiUsers.length * Math.random());
+
+								if(killIndex === teamAiUsers.length) {
+									killIndex = teamAiUsers.length-1
+								}
+
+								teamAiUsers[killIndex].bDisconnected = true;
+							}
+							break;
+							
 						case "fromClientInputs":
 							user.inputQueue.push(e);
 							break;
@@ -388,6 +443,33 @@ class GameServerRunning extends GameServerBaseState {
 	
 		}
 	}
+
+
+	cbAiUserActivateSuccess(id) {
+		//logger.log("info", 'user activation success CB called');
+
+		//call the user's post activation step
+		var u = this.gs.um.getUserByID(id);
+		if(u) {
+			u.userPostActivated();
+		}
+	}
+
+	//if ai user fails to be activated
+	cbAiUserActivateFail(id, failedReason) {
+		//logger.log("info", 'user activation failed CB called');
+
+		var user = this.gs.um.getUserByID(id);
+
+		//unsetup the users state
+		if(user !== null){
+			user.nextState = null;
+			
+			//unsetup the user
+			user.userDeinit();
+		}
+	}
+
 
 
 	userResponseMessage(user, userMessage, logEventMessage) {

@@ -1,8 +1,5 @@
 const GlobalFuncs = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
-const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
-const serverConfig = require('../server-config.json');
-const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
 const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
 const logger = require('../../logger.js');
@@ -15,6 +12,8 @@ class User {
 		this.isActive = false;
 		this.globalfuncs = null;
 		this.userAgentId = null;
+		this.aiAgentId = null;
+		this.userType = "";
 
 		this.username = "";
 
@@ -88,41 +87,7 @@ class User {
 	}
 
 	userPostStartPlaying() {
-		const pl = this.gs.pl;
-		const Vec2 = pl.Vec2;
-
-		//create a tracking sensor
-		var trackingSensor = pl.Circle(Vec2(0, 0), 100);
-
-		this.plBody = this.gs.world.createBody({
-			position: Vec2(15, -15),
-			type: pl.Body.DYNAMIC,
-			fixedRotation: true,
-			userData: {type:"user", id: this.id, userAgentId: this.userAgentId}
-		});
-
-		this.plBody.createFixture({
-			shape: trackingSensor,
-			density: 0.0,
-			friction: 1.0,
-			isSensor: true,
-			filterCategoryBits: CollisionCategories["user_sensor"],
-			filterMaskBits: CollisionMasks["user_sensor"]
-		});
-
 		this.determinePlayingState();
-	}
-
-	userPreStopPlaying() {
-		if(this.plBody !== null)
-		{
-			this.gs.world.destroyBody(this.plBody);
-			this.plBody = null;
-		}
-	}
-
-	userPreDeactivated() {
-		//nothing for now
 	}
 
 	userDeinit() {
@@ -135,6 +100,7 @@ class User {
 		this.playingState = null;
 		this.nextPlayingState = null;
 		this.userAgentId = null;
+		this.aiAgentId = null;
 		this.playingEventQueue = [];
 	}
 

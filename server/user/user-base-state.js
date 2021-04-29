@@ -9,8 +9,6 @@ class UserBaseState {
 	enter(dt) {}
 	update(dt) {}
 	exit(dt) {}
-
-	disconnectRequest() {}
 }
 
 

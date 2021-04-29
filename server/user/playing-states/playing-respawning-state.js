@@ -11,7 +11,7 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 	}
 
 	enter(dt) {
-		logger.log("info", this.stateName + ' enter');
+		// logger.log("info", this.stateName + ' enter');
 		super.enter(dt);
 		
 		//respawn time depends on round state
@@ -67,7 +67,7 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 	}
 
 	exit(dt) {
-		logger.log("info", this.stateName + ' exit');
+		// logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 
 		this.user.respawnTimer = 0;

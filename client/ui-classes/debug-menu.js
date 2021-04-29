@@ -14,6 +14,11 @@ export default class DebugMenu {
 		this.menu = null;
 
 		this.windowsEventMapping = [];
+		this.spawnAiButtonTemplate = null;
+		this.killRandomAiButtonTemplate = null;
+		this.killAllAiButtonTemplate = null;
+		this.debugAiContents = null;
+		this.aiControlButtons = [];
 	}
 
 	init(gc) {
@@ -37,7 +42,81 @@ export default class DebugMenu {
 		
 		//reset to initial state
 		this.menu.addClass("hide");
+
+		//create ai controls
+		this.spawnAiButtonTemplate = $("#spawn-ai-button-template");
+		this.killAllAiButtonTemplate = $("#kill-all-ai-button-template");
+		this.killRandomAiButtonTemplate = $("#kill-random-ai-button-template");
+		this.debugAiContents = $("#debug-ai-contents");
 	}
+
+	populateAiControls() {
+		//create a button for each team
+		var teams = this.gc.tm.getTeams();
+		var teamsSorted = teams.sort((a, b) => {return a.slotNum - b.slotNum});
+
+		for(var i = 0; i < teamsSorted.length; i++) {
+			//spawn button
+			var newSpawnButton = this.spawnAiButtonTemplate.clone();
+			newSpawnButton.on("click", this.spawnAiClick.bind(this, teamsSorted[i].serverId));
+			newSpawnButton.attr("value", "Spawn AI on " + teamsSorted[i].name);
+			newSpawnButton.attr("id", "spawn-ai-team-" + teamsSorted[i].serverId);
+			newSpawnButton.removeClass("hide");
+
+			this.debugAiContents.append(newSpawnButton);
+			this.aiControlButtons.push(newSpawnButton);
+
+			//kill button
+			var newKillButton = this.killAllAiButtonTemplate.clone();
+			newKillButton.on("click", this.killAllAiClick.bind(this, teamsSorted[i].serverId));
+			newKillButton.attr("value", "Kill All AI on " + teamsSorted[i].name);
+			newKillButton.attr("id", "kill-all-ai-team-" + teamsSorted[i].serverId);
+			newKillButton.removeClass("hide");
+
+			this.debugAiContents.append(newKillButton);
+			this.aiControlButtons.push(newKillButton);
+
+			//kill random button
+			var newKillRandomButton = this.killAllAiButtonTemplate.clone();
+			newKillRandomButton.on("click", this.killRandomAiClick.bind(this, teamsSorted[i].serverId));
+			newKillRandomButton.attr("value", "Kill random AI on " + teamsSorted[i].name);
+			newKillRandomButton.attr("id", "kill-random-ai-team-" + teamsSorted[i].serverId);
+			newKillRandomButton.removeClass("hide");
+
+			this.debugAiContents.append(newKillRandomButton);
+			this.aiControlButtons.push(newKillRandomButton);
+		}
+	}
+
+	clearAiControls() {
+		for(var i = 0; i < this.aiControlButtons.length; i++)
+		{
+			this.aiControlButtons[i].off("click");
+			this.aiControlButtons[i].remove()
+		}
+	}
+
+	spawnAiClick(teamServerId) {
+		this.gc.ep.insertClientToServerEvent({
+			"eventName": "fromClientSpawnAi",
+			"teamId": teamServerId
+		});
+	}
+ 
+	killAllAiClick(teamServerId) {
+		this.gc.ep.insertClientToServerEvent({
+			"eventName": "fromClientKillAllAi",
+			"teamId": teamServerId
+		});
+	}
+
+	killRandomAiClick(teamServerId) {
+		this.gc.ep.insertClientToServerEvent({
+			"eventName": "fromClientKillRandomAi",
+			"teamId": teamServerId
+		});
+	}
+
 
 	toggleMenu() {
 		if(this.isVisible) {
@@ -62,6 +141,7 @@ export default class DebugMenu {
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+
 	}
 
 	deinit() {
