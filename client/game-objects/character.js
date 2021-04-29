@@ -36,6 +36,16 @@ export default class Character {
 		this.serverEventMapping = {
 			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this)
 		}
+
+		this.boxGraphicsStrokeColor = 0;
+		this.boxGraphicsFillColor = 0;
+		this.characterBorderThickness = 3;
+		this.characterTextStrokeColor = 0;
+		this.characterTextFillColor = 0;
+		this.characterTextStrokeThickness = 1;
+		this.usernameText = "???";
+		this.circleShape = null;
+
 	}
 
 	characterInit(gameClient) {
@@ -49,72 +59,21 @@ export default class Character {
 	}
 
 	activated() {
-		var boxGraphicsStrokeColor = 0;
-		var boxGraphicsFillColor = 0;
-		var characterBorderThickness = 3;
-		var characterTextStrokeColor = 0;
-		var characterTextFillColor = 0;
-		var characterTextStrokeThickness = 1;
-		var usernameText = "???";
-
-		//get the colors sorted out
-		//ai gets special treatment because they don't belong to a team yet
-		if(this.ownerType === "ai") {
-			boxGraphicsStrokeColor = this.ms.aiColor;
-			boxGraphicsFillColor = this.ms.aiFillColor;
-			characterTextFillColor = this.ms.aiTextColor;
-			characterTextStrokeColor = this.ms.aiStrokeColor;
-			characterTextStrokeThickness = this.ms.aiStrokeThickness;
-			usernameText = "AI " + this.ownerId
-		}
-		else {
-			var user = this.gc.um.getUserByServerID(this.ownerId);
-
-			if(user !== null)
-			{
-				var team = this.gc.tm.getTeamByServerID(user.teamId);
-			
-				if(team !== null)
-				{
-					boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
-					boxGraphicsFillColor = team.phaserCharacterFillColor;
-					characterTextFillColor = team.characterTextFillColor;
-					characterTextStrokeColor = team.characterTextStrokeColor;
-
-				}
-
-				usernameText = user.username;
-			}
-		}
-		
-		//now make the character in phaser
-		var circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * 0.375);
-
-		this.boxGraphics = this.ms.add.graphics({ 
-			fillStyle: { color: boxGraphicsFillColor }, 
-			lineStyle: {
-				width: characterBorderThickness,
-				color: boxGraphicsStrokeColor}
-		});
-		this.boxGraphics.fillCircleShape(circleShape);
-		this.boxGraphics.strokeCircleShape(circleShape);
-
+		//create the graphics first
+		this.circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * 0.375);
+		this.boxGraphics = this.ms.add.graphics();
 		this.boxGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
 		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
-		
-		var textStyle = {
-			color: characterTextFillColor,
-			fontSize: "18px",
-			strokeThickness: characterTextStrokeThickness,
-			stroke: characterTextStrokeColor
-		}
-		
-		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
-		this.hpTextGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 34 , this.hpCur + "/" + this.hpMax, textStyle);
+
+		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18, this.usernameText);
+		this.hpTextGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 34, this.hpCur + "/" + this.hpMax);
 
 		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+
+		//now fill in the graphics colors
+		this.drawGraphics();
 
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
@@ -126,6 +85,67 @@ export default class Character {
 			{
 				killCharacterBtn.removeClass("hide");
 			}
+		}
+	}
+
+
+	//this draws the graphics with the correct team colors and user name text
+	drawGraphics() {
+		//get the colors sorted out
+		//ai gets special treatment because they don't belong to a team yet
+		if(this.ownerType === "ai") {
+			this.boxGraphicsStrokeColor = this.ms.aiColor;
+			this.boxGraphicsFillColor = this.ms.aiFillColor;
+			this.characterTextFillColor = this.ms.aiTextColor;
+			this.characterTextStrokeColor = this.ms.aiStrokeColor;
+			this.characterTextStrokeThickness = this.ms.aiStrokeThickness;
+			this.usernameText = "AI " + this.ownerId
+		}
+		else {
+			var user = this.gc.um.getUserByServerID(this.ownerId);
+
+			if(user !== null)
+			{
+				var team = this.gc.tm.getTeamByServerID(user.teamId);
+			
+				if(team !== null)
+				{
+					this.boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
+					this.boxGraphicsFillColor = team.phaserCharacterFillColor;
+					this.characterTextFillColor = team.characterTextFillColor;
+					this.characterTextStrokeColor = team.characterTextStrokeColor;
+
+				}
+
+				this.usernameText = user.username;
+			}
+		}
+
+		//now redraw the graphics
+		if(this.boxGraphics !== null) {
+			this.boxGraphics.fillStyle(this.boxGraphicsFillColor);
+			this.boxGraphics.lineStyle(this.characterBorderThickness, this.boxGraphicsStrokeColor);
+			this.boxGraphics.fillCircleShape(this.circleShape);
+			this.boxGraphics.strokeCircleShape(this.circleShape);
+		}
+
+		
+		var textStyle = {
+			color: this.characterTextFillColor,
+			fontSize: "18px",
+			strokeThickness: this.characterTextStrokeThickness,
+			stroke: this.characterTextStrokeColor
+		}
+
+		if(this.textGraphics !== null) {
+			this.textGraphics.setStyle(textStyle);
+			this.textGraphics.setText(this.usernameText);
+		}
+
+		if(this.hpTextGraphics !== null) {
+
+			this.hpTextGraphics.setStyle(textStyle);
+			this.hpTextGraphics.setText(this.hpCur + "/" + this.hpMax);
 		}
 	}
 
@@ -175,6 +195,17 @@ export default class Character {
 		this.gc = null;
 		this.ownerId = null;
 		this.ownerType = null;
+		this.boxGraphics = null;
+		this.textGraphics = null;
+		this.hpTextGraphics = null;
+		this.boxGraphicsStrokeColor = 0;
+		this.boxGraphicsFillColor = 0;
+		this.characterBorderThickness = 3;
+		this.characterTextStrokeColor = 0;
+		this.characterTextFillColor = 0;
+		this.characterTextStrokeThickness = 1;
+		this.usernameText = "???";
+		this.circleShape = null;
 	}
 
 	update(dt) {

@@ -68,8 +68,8 @@ export default class User {
 		this.userKillCount = e.userKillCount;
 		this.userRtt = e.userRtt;
 		this.teamId = e.teamId;
-	
-		var c = this.gc.gom.getActiveGameObjects().find((x) => {return x.ownerType === "user" && x.ownerId === e.userId;});
+
+		var c = this.gc.gom.getActiveGameObjects().find((x) => {return x.ownerType === "user" && x.serverOwnerId === e.userId;});
 	}
 
 	updateUserPlayingState(e) {
