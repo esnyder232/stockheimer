@@ -281,11 +281,13 @@ class GameServer {
 		//deactivate the user (should already be deactivated...but do it anyway)
 		this.um.deactivateUserId(user.id);
 
-		//unsetup the user
-		user.userDeinit();
-		user.wsId = null;
-
-		//destroy the websocket handler
+		//destroy the userAgent
+		var userAgent = this.gs.uam.getUserAgentByID(user.userAgentId);
+		if(userAgent !== null) {
+			this.gs.uam.destroyUserAgent(userAgent.id);
+		}
+		
+		//destroy the websocket handler 
 		this.wsm.destroyWebsocket(wsh);
 	}
 

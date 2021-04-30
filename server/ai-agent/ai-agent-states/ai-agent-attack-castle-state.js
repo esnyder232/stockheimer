@@ -133,6 +133,8 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 		{
 			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
 		}
+
+		this.aiAgent.processPlayingEvents();
 	}
 
 	exit(dt) {

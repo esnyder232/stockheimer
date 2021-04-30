@@ -35,6 +35,8 @@ class Round {
 		this.state = null;
 		this.nextState = null;
 		this.globalfuncs = null;
+		this.em.eventEmitterDeinit();
+		this.em = null;
 	}
 
 

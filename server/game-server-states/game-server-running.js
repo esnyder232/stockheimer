@@ -336,8 +336,11 @@ class GameServerRunning extends GameServerBaseState {
 		if(user !== null){
 			user.nextState = null;
 			
-			//unsetup the user
-			user.userDeinit();
+			//destroy the aiAgent
+			var aiAgent = this.gs.aim.getAIAgentByID(user.aiAgentId);
+			if(aiAgent !== null) {
+				this.gs.aim.destroyAIAgent(aiAgent.id);
+			}
 		}
 	}
 

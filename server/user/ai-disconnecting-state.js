@@ -38,9 +38,6 @@ class AiDisconnectingState extends UserBaseState {
 			});
 		}
 
-		//reset the user
-		this.user.userDeinit();
-
 		super.exit(dt);
 	}
 }

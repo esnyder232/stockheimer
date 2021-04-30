@@ -41,9 +41,6 @@ class UserDisconnectingState extends UserBaseState {
 		if(this.user.userAgentId !== null) {
 			this.user.gs.uam.destroyUserAgent(this.user.userAgentId);
 		}
-		
-		//reset the user
-		this.user.userDeinit();
 
 		super.exit(dt);
 	}

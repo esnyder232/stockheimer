@@ -63,7 +63,13 @@ class AIAgent {
 		this.characterPos = null;	//direct reference to the character's planck position vector
 		this.teamId = 0;
 
-		this.characterDiedHandleId = null;
+		this.characterEventCallbackMapping = [ 
+			{eventName: "character-deactivated", cb: this.cbEventEmitted.bind(this), handleId: null}
+		];
+
+		this.userEventCallbackMapping = [ 
+			{eventName: "user-deactivated", cb: this.cbEventEmitted.bind(this), handleId: null}
+		]
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -73,7 +79,8 @@ class AIAgent {
 
 		this.user = this.gs.um.getUserByID(this.userId);
 		this.username = "AI " + this.id + " (old)";
-		
+
+		this.user.em.batchRegisterForEvent(this.userEventCallbackMapping);
 
 		//this.state = new AIAgentInitializingState(this);
 		this.state = new AIAgentWaitingState(this);
@@ -94,6 +101,31 @@ class AIAgent {
 			eventName: eventName
 		})
 	}
+
+	processPlayingEvents() {
+		if(this.playingEventQueue.length > 0) {
+			for(var i = 0; i < this.playingEventQueue.length; i++) {
+				switch(this.playingEventQueue[i].eventName) {
+					case "character-deactivated":
+						//unregister events
+						this.character.em.batchUnregisterForEvent(this.characterEventCallbackMapping);
+
+						//change state back to waiting
+						this.nextState = new AIAgentWaitingState(this);
+						break;
+					case "user-deactivated":
+						//unregister events
+						this.user.em.batchUnregisterForEvent(this.userEventCallbackMapping);
+
+						//destroy this ai agent
+						this.gs.aim.destroyAIAgent(this.id);
+						break;
+				}
+			}
+			this.playingEventQueue.length = 0;
+		}
+	}
+
 
 
 	characterEnteredVision(c) {

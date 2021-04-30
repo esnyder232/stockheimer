@@ -137,6 +137,8 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 
 		}
 		super.update(dt);
+
+		this.aiAgent.processPlayingEvents();
 	}
 
 	exit(dt) {

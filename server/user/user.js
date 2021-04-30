@@ -2,6 +2,7 @@ const GlobalFuncs = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
 const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
+const {EventEmitter} = require('../classes/event-emitter.js');
 const logger = require('../../logger.js');
 
 class User {
@@ -46,11 +47,14 @@ class User {
 			{eventName: "round-restarting", cb: this.cbEventEmitted.bind(this), handleId: null},
 			{eventName: "round-started", cb: this.cbEventEmitted.bind(this), handleId: null},
 		]
+		
+		this.em = null;
 	}
 
 	userInit(gameServer) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs.GlobalFuncs();
+		this.em = new EventEmitter(this);
 		
 		this.state = new UserDisconnectedState(this);
 		this.state.enter();
@@ -76,6 +80,8 @@ class User {
 		// console.log('user deactivated called for ' + this.username);
 		//unregister for events from the round
 		this.gs.theRound.em.batchUnregisterForEvent(this.roundEventCallbackMapping);
+
+		this.em.emitEvent("user-deactivated");
 	}
 
 
@@ -118,6 +124,8 @@ class User {
 		this.userAgentId = null;
 		this.aiAgentId = null;
 		this.playingEventQueue = [];
+		this.em.eventEmitterDeinit();
+		this.em = null;
 	}
 
 	//just queue the events that occured and handle them in the user's own update loop

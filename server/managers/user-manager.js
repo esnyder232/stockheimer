@@ -88,6 +88,9 @@ class UserManager {
 	update() {
 		if(this.isDirty)
 		{
+			//temp array for follow up transactions to be processed on the next frame (usually for userDeinit)
+			var followUpTransactions = [];
+
 			//process any transactions that occured this frame
 			if(this.transactionQueue.length > 0)
 			{
@@ -151,6 +154,12 @@ class UserManager {
 										//invalidate the id
 										temp.activeId = null;
 										temp.isActive = false;
+
+										//follup transaction
+										followUpTransactions.push({
+											"transaction": "userDeinit",
+											"id": u.id
+										});
 									}
 
 									//check if they were playing as well (they shouldn't be, but check anyway)
@@ -167,6 +176,26 @@ class UserManager {
 									bError = true;
 									errorMessage = "User is already deactivated.";
 								}
+								break;
+
+
+							//deinit the inactive user
+							case "userDeinit":
+								if(u.isActive)
+								{
+									bError = true;
+									errorMessage = "Error in deinit transation. User is still activated.";
+								}
+
+								if(!bError)
+								{
+									//call activate function if it exists
+									if(typeof u.userDeinit === "function")
+									{
+										u.userDeinit();
+									}
+								}
+
 								break;
 	
 							//activate the inactive user
@@ -273,7 +302,24 @@ class UserManager {
 			}
 
 			this.updateIndex();
-			this.isDirty = false;
+
+			//add any follow up transactions to the main transaction queue
+			if(followUpTransactions.length > 0)
+			{
+				for(var i = 0; i < followUpTransactions.length; i++)
+				{
+					this.transactionQueue.push(followUpTransactions[i]);
+				}
+
+				followUpTransactions.length = 0;
+				
+				//important to dirty the game object manager here, so the follow up transactions next frame will be processed
+				this.isDirty = true;
+			}
+			else
+			{
+				this.isDirty = false;
+			}
 		}
 	}
 

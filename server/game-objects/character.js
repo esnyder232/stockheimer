@@ -146,6 +146,7 @@ class Character {
 		this.ownerId = null;
 		this.ownerType = null;
 		this.em.eventEmitterDeinit();
+		this.em = null;
 	}
 
 	update(dt) {
