@@ -8,6 +8,7 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 		super(user);
 		this.stateName = "PLAYING";
 		this.spawnFailed = false;
+		this.characterDeactivatedHandleId = null;
 	}
 
 	enter(dt) {
@@ -18,14 +19,16 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 		this.spawnFailed = this.globalfuncs.spawnCharacterForUser(this.user.gs, this.user);
 
 		//if they spawned in when the round is starting up, don't allow them to move yet
-		if(!this.spawnFailed && this.user.gs.theRound.getStateEnum() === GameConstants.RoundStates["STARTING"])
-		{
-			var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
-			if(c !== null)
+		var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
+		if(!this.spawnFailed && c !== null) {
+			if(this.user.gs.theRound.getStateEnum() === GameConstants.RoundStates["STARTING"])
 			{
 				c.changeAllowMove(false);
 				c.changeAllowShoot(false);
 			}
+			
+			//also register for an event for when the character dies
+			this.characterDeactivatedHandleId = c.em.registerForEvent("character-deactivated", this.user.cbEventEmitted.bind(this.user));
 		}
 	}
 
@@ -68,16 +71,13 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 						case "round-restarting":
 							//kill the current character, and put user in respawning state
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
-							this.user.characterId = null;
 							this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
 							break;
-						case "character-died":
-							this.user.characterId = null;
+						case "character-deactivated":
 							this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
 							break;
 						case "team-changed":
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
-							this.user.characterId = null;
 							this.user.determinePlayingState();
 							break;
 					}
@@ -94,9 +94,17 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 	}
 
 	exit(dt) {
-		//logger.log("info", this.stateName + ' exit');		
+		//logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
 		this.user.inputQueue.length = 0;
+
+		var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
+		if(c !== null)
+		{
+			c.em.unregisterForEvent("character-deactivated", this.characterDeactivatedHandleId);
+		}
+
+		this.user.characterId = null;
 	}
 }
 

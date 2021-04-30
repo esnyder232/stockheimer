@@ -166,24 +166,29 @@ class GameServerRunning extends GameServerBaseState {
 
 						case "fromClientSpawnAi":
 							logger.log("info", "Player: " + user.username + ", event: fromClientSpawnAi: teamId: " + e.teamId);
+
+							//create the user to be controlled by the ai
 							var aiUser = this.gs.um.createUser();
+
+							//create an ai agent to control the user
+							var aiAgent = this.gs.aim.createAIAgent();
+
+							//setup user
+							aiUser.userInit(this.gs);
 							aiUser.username = "AI " + aiUser.id;
 							aiUser.stateName = "user-disconnected-state";
 							aiUser.userType = "ai";
+							aiUser.aiAgentId = aiAgent.id;
 							aiUser.updateTeamId(e.teamId);
 
-							//create an ai agent
-							//var ua = this.uam.createUserAgent();
-
-							//At this point, the user was only created, not initialized. So setup user now.
-							aiUser.userInit(this.gs);
-							//user.aiAgentId = ua.id;
-				
-							//activate the user
-							this.gs.um.activateUserId(aiUser.id, this.cbAiUserActivateSuccess.bind(this), this.cbAiUserActivateFail.bind(this));
-				
 							//setup the user's nextState
 							aiUser.nextState = new AiConnectingState(aiUser);
+
+							//setup aiAgent
+							aiAgent.aiAgentInit(this.gs, aiUser.id);
+				
+							//activate the user
+							this.gs.um.activateUserId(aiUser.id, null, this.cbAiUserActivateFail.bind(this));
 			
 							break;
 
@@ -234,131 +239,8 @@ class GameServerRunning extends GameServerBaseState {
 							var logEventMessage = "";
 							logEventMessage = "Player: " + user.username + ", event: fromClientSpawnEnemy " + e.spawnLocation + ": ";
 	
-							//spawn 1 enemy at the player's location
-							if(e.spawnLocation === "player")
-							{
-								//check if the user has a character
-								var userChar = this.gs.gom.getGameObjectByID(user.characterId);
-								if(userChar === null)
-								{
-									bFail = true;
-									userMessage = "You must have a character spawned to spawn enemies around you.";
-								}
-	
-								//check enemy cap
-								if(!bFail)
-								{
-									bFail = this.checkEnemyCap();
-									if(bFail)
-									{
-										userMessage = "Only " + this.gs.enemyCap + " enemies are allowed to spawn with this tech demo. Kill some enemies to spawn more."
-									}
-								}
-								
-								if(!bFail)
-								{
-									var ai = this.gs.aim.createAIAgent();
-									var c = this.gs.gom.createGameObject('character');
-									
-									ai.aiAgentInit(this.gs, c.id);
-									
-									//randomize the ai team for now
-									var team = this.gs.tm.getRandomTeam();
-									if(team !== null) {
-										ai.teamId = team.id;
-									}
-									
-									c.ownerId = ai.id;
-									c.ownerType = "ai";
-									c.characterInit(this.gs);
-									c.teamId = ai.teamId;
-	
-									var pos = userChar.getPlanckPosition();
-									var xStarting = (pos.x - 1) + (2 * Math.random());
-									var yStarting = (pos.y + 1) - (2 * Math.random());
-		
-									c.xStarting = xStarting;
-									c.yStarting = yStarting;
-									c.hpCur = 5;
-									c.hpMax = 5;
-									c.walkingVelMagMax = 1.5;
-		
-	
-									broadcastMessage = "Player '" + user.username + "' spawned 1 enemy at player's location.";
-								}
-							}
-							//spawn 1 enemy at each red zone (enemy spawn)
-							else if(e.spawnLocation === "red")
-							{
-								var tm = null;
-	
-								//check enemy cap
-								if(!bFail)
-								{
-									bFail = this.checkEnemyCap();
-									if(bFail)
-									{
-										userMessage = "Only " + this.gs.enemyCap + " enemies are allowed to spawn with this tech demo. Kill some enemies to spawn more."
-									}
-								}
-	
-								//check if the navgrid exists (to be safe)
-								if(!bFail && this.gs.activeNavGrid === null)
-								{
-									bFail = true;
-									userMessage = "Enemy spawn failed. No active nav grid.";
-								}
-	
-								//get the tilemap
-								if(!bFail)
-								{
-									tm = this.gs.tmm.getTilemapByID(this.gs.activeNavGrid.tmId);
-									if(tm === null)
-									{
-										bFail = true;
-										userMessage = "Enemy spawn failed. Could not get the tilemap.";
-									}
-								}
-								
-								//spawn enemies at each red zone.
-								if(!bFail)
-								{
-									for(var j = 0; j < tm.enemySpawnZones.length; j++)
-									{
-										var z = tm.enemySpawnZones[j];
-	
-										var ai = this.gs.aim.createAIAgent();
-										var c = this.gs.gom.createGameObject('character');
-										
-										ai.aiAgentInit(this.gs, c.id);
-										
-										//randomize the ai team for now
-										var team = this.gs.tm.getRandomTeam();
-										if(team !== null) {
-											ai.teamId = team.id;
-										}
-	
-										c.ownerId = ai.id;
-										c.ownerType = "ai";
-										c.characterInit(this.gs);
-										c.teamId = ai.teamId;
-	
-										var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
-										var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
-	
-										c.xStarting = xStarting;
-										c.yStarting = yStarting;
-										c.hpCur = 5;
-										c.hpMax = 5;
-										c.walkingVelMagMax = 1.5;
-	
-	
-										broadcastMessage = "Player '" + user.username + "' spawned 1 enemy on each red zone.";
-									}
-								}
-							}
 							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
-							else if (e.spawnLocation === "respawnCastle")
+							if (e.spawnLocation === "respawnCastle")
 							{
 								if(this.gs.castleObject !== null)
 								{
@@ -441,17 +323,6 @@ class GameServerRunning extends GameServerBaseState {
 				ua.clientToServerEvents.length = 0;
 			}
 	
-		}
-	}
-
-
-	cbAiUserActivateSuccess(id) {
-		//logger.log("info", 'user activation success CB called');
-
-		//call the user's post activation step
-		var u = this.gs.um.getUserByID(id);
-		if(u) {
-			u.userPostActivated();
 		}
 	}
 

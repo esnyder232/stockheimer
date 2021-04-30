@@ -31,11 +31,7 @@ class RoundOver extends RoundBaseState {
 		super.exit(dt);
 
 		//tell all active users the round is restarting. Let them sort themselves out.
-		var activeUsers = this.gs.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
-		{
-			activeUsers[i].insertPlayingEvent("round-restarting");
-		}
+		this.round.em.emitEvent("round-restarting");
 		
 	}
 }

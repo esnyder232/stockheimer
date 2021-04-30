@@ -3,6 +3,9 @@ const {GlobalFuncs} = require('../global-funcs.js');
 const GameConstants = require('../../shared_files/game-constants.json');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 const logger = require("../../logger.js");
+const {EventEmitter} = require('../classes/event-emitter.js');
+
+
 
 class Character {
 	constructor() {
@@ -53,6 +56,8 @@ class Character {
 
 		this.inputQueue = [];
 		this.eventQueue = [];
+
+		this.em = null;
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -67,6 +72,7 @@ class Character {
 	characterInit(gameServer) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
+		this.em = new EventEmitter(this);
 
 		//make simple little input controller
 		this.inputController.up = {state: false, prevState: false};
@@ -112,17 +118,6 @@ class Character {
 			filterCategoryBits: collisionCategory,
 			filterMaskBits: collisionMask
 		});
-
-		//if an ai is controlling this, we need to tell it the character its controlling is activated
-		//eh, just put it in here. Probably gonna be moved later.
-		if(this.ownerType === "ai")
-		{
-			var ai = this.gs.aim.getAIAgentByID(this.ownerId);
-			if(ai !== null)
-			{
-				ai.postCharacterActivate(this.id);
-			}
-		}
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
@@ -139,19 +134,7 @@ class Character {
 		var owner = null;
 		owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
 		
-		//hacky as shit, but delete the ai agent as well if the character was controlled by an ai
-		if(owner !== null && this.ownerType === "ai")
-		{
-			owner.aiAgentDeinit();
-			this.gs.aim.destroyAIAgent(this.ownerId);
-		}
-
-		//disassociate the owner from the character
-		if(owner !== null && this.ownerType === "user")
-		{
-			owner.insertPlayingEvent("character-died");
-			//owner.characterId = null;
-		}
+		this.em.emitEvent("character-deactivated");
 		/////////////////////
 	}
 
@@ -162,6 +145,7 @@ class Character {
 		this.forceImpulses.length = 0;
 		this.ownerId = null;
 		this.ownerType = null;
+		this.em.eventEmitterDeinit();
 	}
 
 	update(dt) {

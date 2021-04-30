@@ -1,5 +1,6 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {RoundStarting} = require('../round-states/round-starting.js');
+const {EventEmitter} = require("./event-emitter.js");
 
 class Round {
 	constructor() {
@@ -14,12 +15,15 @@ class Round {
 
 		this.state = null;
 		this.nextState = null;
+
+		this.em = null;
 	}
 
 	roundInit(gameServer) {
 		this.gs = gameServer;
 
 		this.globalfuncs = new GlobalFuncs();
+		this.em = new EventEmitter(this);
 
 		this.state = new RoundStarting(this.gs, this);
 		this.nextState = null;

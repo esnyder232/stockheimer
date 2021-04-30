@@ -6,7 +6,7 @@ const logger = require('../../logger.js');
 class AiConnectingState extends UserBaseState {
 	constructor(user) {
 		super(user);
-		this.stateName = "user-connecting-state";
+		this.stateName = "ai-connecting-state";
 		this.worldStateDoneEventSent = false;
 		this.teamAcks = [];
 	}

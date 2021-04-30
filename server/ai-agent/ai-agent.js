@@ -1,5 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 const {AIAgentInitializingState} = require('./ai-agent-states/ai-agent-initializing-state.js');
+const {AIAgentWaitingState} = require('./ai-agent-states/ai-agent-waiting-state.js');
+
 const logger = require("../../logger.js");
 
 class AIAgent {
@@ -7,9 +9,10 @@ class AIAgent {
 		this.gs = null;
 		this.globalfuncs = null;
 		this.id = null;
+		this.userId = null;
 		this.characterId = null;
 		this.teamId = null;
-		this.bCharacterIsActive = false;
+		this.user = null; //direct reference to the user
 
 		this.playingEventQueue = [];
 
@@ -59,31 +62,36 @@ class AIAgent {
 		this.character = null; 		//direct reference to the character the ai agent is controlling
 		this.characterPos = null;	//direct reference to the character's planck position vector
 		this.teamId = 0;
+
+		this.characterDiedHandleId = null;
 	}
 
-	aiAgentInit(gameServer, characterId) {
+	aiAgentInit(gameServer, userId) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
-		this.characterId = characterId;
+		this.userId = userId;
 
-		this.username = "AI " + this.id;
+		this.user = this.gs.um.getUserByID(this.userId);
+		this.username = "AI " + this.id + " (old)";
+		
 
-		this.state = new AIAgentInitializingState(this);
+		//this.state = new AIAgentInitializingState(this);
+		this.state = new AIAgentWaitingState(this);
 		this.nextState = null;
 
 		this.state.enter();
 	}
 
 	aiAgentDeinit() {
+		this.user = null;
 		this.character = null;
 		this.characterPos = null;
 		this.nextState = null;
 	}
 
-	insertPlayingEvent(eventName, data) {
+	cbEventEmitted(eventName, owner) {
 		this.playingEventQueue.push({
-			eventName: eventName,
-			data: data
+			eventName: eventName
 		})
 	}
 
@@ -185,14 +193,6 @@ class AIAgent {
 		//logger.log("info", 'updateing castle distance: ' + this.castleDistanceSquared);
 	}
 
-	
-
-	postCharacterActivate(characterId) {
-		this.bCharacterIsActive = true;
-	}
-
-
-
 	seekCastle() {
 		var character = this.gs.gom.getGameObjectByID(this.characterId);
 		if(character !== null && character.isActive)
@@ -247,30 +247,6 @@ class AIAgent {
 		}
 	}
 
-	stop() {
-		this.pathSet = false;
-		this.followPath = false;
-		this.currentNode = 0;
-		this.nodePathToCastle = [];
-
-		var character = this.gs.gom.getGameObjectByID(this.characterId);
-		if(character !== null && character.isActive)
-		{
-			var finalInput = {
-				up: false,
-				down: false,
-				left: false,
-				right: false,
-				isFiring: false,
-				isFiringAlt: false,
-				characterDirection: 0.0
-			}
-	
-			//stop the character
-			character.inputQueue.push(finalInput);
-		}
-	}
-
 	insertStopInput() {
 		var finalInput = {
 			up: false,
@@ -283,7 +259,7 @@ class AIAgent {
 		}
 
 		//stop the character
-		this.character.inputQueue.push(finalInput);
+		this.user.inputQueue.push(finalInput);
 	}
 
 	update(dt) {

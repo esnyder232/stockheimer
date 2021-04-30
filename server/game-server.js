@@ -253,12 +253,6 @@ class GameServer {
 	cbUserActivateSuccess(id) {
 		//logger.log("info", 'user activation success CB called');
 
-		//call the user's post activation step
-		var u = this.um.getUserByID(id);
-		if(u) {
-			u.userPostActivated();
-		}
-
 		//adjust all user's websocket handler's max packet size
 		var userAgents = this.uam.getUserAgents();
 		for(var i = 0; i < userAgents.length; i++)

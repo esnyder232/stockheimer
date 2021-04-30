@@ -134,6 +134,12 @@ class UserManager {
 
 									if(ui >= 0)
 									{
+										//call deactivate function if it exists
+										if(typeof this.activeUserArray[ui].deactivated === "function")
+										{
+											this.activeUserArray[ui].deactivated();
+										}
+
 										var temp = this.activeUserArray.splice(ui, 1)[0];
 										this.activeUserIdArray[temp.activeId] = false;
 
@@ -185,6 +191,12 @@ class UserManager {
 									u.isActive = true;
 									this.activeUserIdArray[u.activeId] = true;
 									this.nextAvailableActiveId = this.globalfuncs.findNextAvailableId(this.activeUserIdArray, this.nextAvailableActiveId+1, this.maxActiveAllowed);
+
+									//call activate function if it exists
+									if(typeof u.activated === "function")
+									{
+										u.activated();
+									}
 								}
 								break;
 

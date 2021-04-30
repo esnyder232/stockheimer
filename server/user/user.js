@@ -41,6 +41,11 @@ class User {
 
 		this.respawnTimer = 0;
 		this.respawnTimeAcc = 0;
+
+		this.roundEventCallbackMapping = [ 
+			{eventName: "round-restarting", cb: this.cbEventEmitted.bind(this), handleId: null},
+			{eventName: "round-started", cb: this.cbEventEmitted.bind(this), handleId: null},
+		]
 	}
 
 	userInit(gameServer) {
@@ -51,8 +56,8 @@ class User {
 		this.state.enter();
 	}
 
-	userPostActivated() {
-		//console.log('userPostActivated for ' + this.username);
+	activated() {
+		//console.log('user activated for ' + this.username);
 		
 		//assign to sepctator team by default
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
@@ -63,13 +68,24 @@ class User {
 		this.playingState = new PlayingSpectatorState.PlayingSpectatorState(this);
 		this.playingState.enter();
 
+		//register for events from the round
+		this.gs.theRound.em.batchRegisterForEvent(this.roundEventCallbackMapping);
 	}
+
+	deactivated() {
+		// console.log('user deactivated called for ' + this.username);
+		//unregister for events from the round
+		this.gs.theRound.em.batchUnregisterForEvent(this.roundEventCallbackMapping);
+	}
+
 
 	updateTeamId(newTeamId) {
 		this.teamId = newTeamId;
 		this.userInfoDirty = true;
 		
-		this.insertPlayingEvent("team-changed");
+		this.playingEventQueue.push({
+			eventName: "team-changed"
+		})
 	}
 
 	determinePlayingState() {
@@ -104,10 +120,10 @@ class User {
 		this.playingEventQueue = [];
 	}
 
-	insertPlayingEvent(eventName, data) {
+	//just queue the events that occured and handle them in the user's own update loop
+	cbEventEmitted(eventName, owner) {
 		this.playingEventQueue.push({
-			eventName: eventName,
-			data: data
+			eventName: eventName
 		})
 	}
 

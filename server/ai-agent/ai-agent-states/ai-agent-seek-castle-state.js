@@ -255,6 +255,10 @@ class AIAgentSeekCastleState extends AIAgentBaseState.AIAgentBaseState {
 		if(!decisionMade && inputChanged)
 		{
 			this.aiAgent.character.inputQueue.push(finalInput);
+
+			//STOPPED HERE - I think just switching this out with "this.aiAgent.user.inputQueue.push(finalInput)" would be a good starting point.
+			//But, the ai agent has to last the whole time and not be deleted everytim the character dies.
+			//...idk something like that.
 		}
 
 

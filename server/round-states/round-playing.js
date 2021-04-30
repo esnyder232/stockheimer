@@ -16,11 +16,7 @@ class RoundPlaying extends RoundBaseState {
 		this.round.roundTimer = 999000;
 
 		//tell users that the rouns has started
-		var activeUsers = this.gs.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
-		{
-			activeUsers[i].insertPlayingEvent("round-started");
-		}
+		this.round.em.emitEvent("round-started");
 	}
 
 	update(dt) {
