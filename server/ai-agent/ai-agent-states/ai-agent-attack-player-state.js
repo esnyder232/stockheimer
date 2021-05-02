@@ -89,6 +89,11 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 		//put straffing here if you feel like it
 
+
+		
+		this.aiAgent.isAttackCurrentTimer -= dt;
+		
+
 		//fire a bullet
 		if(!decisionMade && this.aiAgent.isAttackCurrentTimer <= 0)
 		{
@@ -116,6 +121,7 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 				angle += radiansToAdd;
 
 				finalInput.isFiring = true;
+				// finalInput.isFiringAlt = true;
 				finalInput.characterDirection = angle;
 				inputChanged = true;
 				
@@ -123,21 +129,9 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 			}
 		}
 
-		if(!decisionMade && this.aiAgent.isAttackCurrentTimer > 0)
-		{
-			this.aiAgent.isAttackCurrentTimer -= dt;
-			if(this.aiAgent.isAttackCurrentTimer <= 0)
-			{
-				finalInput.isFiring = false;
-				inputChanged = true;
-			}
-		}
 
 		//input the finalInput to the character
-		if(!decisionMade && inputChanged)
-		{
-			this.aiAgent.character.inputQueue.push(finalInput);
-		}
+		this.aiAgent.user.inputQueue.push(finalInput);
 
 
 		this.aiAgent.processPlayingEvents();

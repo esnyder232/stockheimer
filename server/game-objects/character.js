@@ -157,6 +157,7 @@ class Character {
 
 		//temporary. The character processes the inputs here.
 		var firingInputFound = false;
+		var altFiringInputFound = false;
 
 		if(this.plBody !== null)
 		{
@@ -193,13 +194,11 @@ class Character {
 						}
 	
 						this.eventQueue.push(fireEvent);
-						
-						break;
 					}
 	
-					if(!firingInputFound && this.inputQueue[i].isFiringAlt && !this.inputController.isFiringAlt.prevState && this.bigBulletCounter <= 0)
+					if(!altFiringInputFound && this.inputQueue[i].isFiringAlt && !this.inputController.isFiringAlt.prevState && this.bigBulletCounter <= 0)
 					{
-						firingInputFound = true;
+						altFiringInputFound = true;
 						var pos = this.plBody.getPosition();
 						var fireEvent = {
 							x: pos.x,
@@ -211,8 +210,6 @@ class Character {
 						this.bigBulletCounter = 5000;
 	
 						this.eventQueue.push(fireEvent);
-						
-						break;
 					}
 				}
 	
@@ -227,10 +224,10 @@ class Character {
 
 
 			//debug
-			if(this.inputController["right"].state === false && this.inputController["right"].prevState === true)
-			{
-				var stophere = true;
-			}
+			// if(this.inputController["right"].state === false && this.inputController["right"].prevState === true)
+			// {
+			// 	var stophere = true;
+			// }
 
 
 			//update state

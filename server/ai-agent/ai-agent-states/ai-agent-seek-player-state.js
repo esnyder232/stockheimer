@@ -12,6 +12,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		this.pathValid = false;
 		this.checkTimer = 0;
 		this.checkTimerInterval = 500;	//ms
+		this.prevAltFireInput = false;
 	}
 	
 	enter(dt) {
@@ -28,6 +29,18 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		var decisionMade = false;
 		var isLOS = false;
 		var isInAttackRange = false;
+		var inputChanged = false;
+
+		var finalInput = {
+			up: false,
+			down: false,
+			left: false,
+			right: false,
+			isFiring: false,
+			isFiringAlt: false,
+			characterDirection: 0.0
+		}
+
 
 		this.checkTimer += dt;
 
@@ -76,7 +89,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 			else if (!isInAttackRange && isLOS)
 			{
 				this.aiAgent.findStraightPathToPlayer();
-				decisionMade = true;
+				// decisionMade = true;
 			}
 			//if the user doesn't have LOS. Find the player with A*
 			else {
@@ -91,17 +104,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 		//if you currently have a path to travel on, keep traveling on it
 		if(this.aiAgent.nodePathToCastle.length > 0) {
-			var inputChanged = false;
 
-			var finalInput = {
-				up: false,
-				down: false,
-				left: false,
-				right: false,
-				isFiring: false,
-				isFiringAlt: false,
-				characterDirection: 0.0
-			}
 
 			//check if you have reached your current node
 			if(this.aiAgent.currentNode < this.aiAgent.nodePathToCastle.length && this.aiAgent.nodePathToCastle[this.aiAgent.currentNode])
@@ -242,16 +245,51 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 				this.aiAgent.agentPrevPosition.x = this.aiAgent.characterPos.x;
 				this.aiAgent.agentPrevPosition.y = this.aiAgent.characterPos.y;
 			}
-			
-			//input the finalInput to the character
-			if(inputChanged)
+
+
+		}
+
+		this.aiAgent.isAttackCurrentTimer -= dt;
+
+		//fire a bullet
+		if(!decisionMade && isLOS && this.aiAgent.isAttackCurrentTimer <= 0)
+		{
+			var targetCharacterPos = null;
+			targetCharacterPos = this.aiAgent.targetCharacter.getPlanckPosition();
+
+			//NOW fire a bullet
+			if(this.aiAgent.characterPos !== null && targetCharacterPos !== null)
 			{
-				this.aiAgent.character.inputQueue.push(finalInput);
+				//calculate angle
+				var dx = targetCharacterPos.x - this.aiAgent.characterPos.x;
+				var dy = targetCharacterPos.y - this.aiAgent.characterPos.y;
+
+				//hack to make sure the entire server doesn't crash because 0/0 is NaN
+				if(Math.abs(dx) === 0 && Math.abs(dy) === 0)
+				{
+					dx = 1
+				}
+				var angle = Math.atan(-dy / dx);
+				
+				//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
+				//this basically just flips the direction of the x and y
+				var radiansToAdd = dx < 0 ? Math.PI : 0;
+
+				angle += radiansToAdd;
+
+				finalInput.isFiring = true;
+				// finalInput.isFiringAlt = true;
+				finalInput.characterDirection = angle;
+				inputChanged = true;
+				
+				this.aiAgent.isAttackCurrentTimer = this.aiAgent.isAttackInterval;
 			}
 		}
 
 
 
+		//input the finalInput to the character
+		this.aiAgent.user.inputQueue.push(finalInput);
 
 
 

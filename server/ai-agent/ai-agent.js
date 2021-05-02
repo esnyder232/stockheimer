@@ -49,7 +49,7 @@ class AIAgent {
 		this.castleDistanceSquared = 0;
 
 		this.userCharactersInVision = [];
-		this.isAttackInterval = 1000; //ms
+		this.isAttackInterval = 500; //ms
 		this.isAttackCurrentTimer = 0; //ms
 
 		this.state = null;
