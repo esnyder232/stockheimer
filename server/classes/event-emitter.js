@@ -4,11 +4,13 @@ class EventEmitter {
 		this.eventCallbacks = {};
 		this.handleIdCounter = 1;
 		this.owner = owner; //owner of the eventEmitter. This owner is passed to each callback when an event is emitted.
+		this.unregisterRequestQueue = [];
 	}
 
 	eventEmitterDeinit() {
 		this.eventCallbacks = {};
 		this.owner = null;
+		this.unregisterRequestQueue = [];
 	}
 
 	//register a callback for an event. Returns a handleId (int). The handleId is used later to unregister.
@@ -32,14 +34,10 @@ class EventEmitter {
 	}
 
 	unregisterForEvent(eventName, handleId) {
-		if(this.eventCallbacks[eventName] === undefined) {
-			return;
-		}
-
-		var index = this.eventCallbacks[eventName].findIndex((x) => {return x.handleId === handleId;});
-		if(index >= 0) {
-			this.eventCallbacks[eventName].splice(index, 1);
-		}
+		this.unregisterRequestQueue.push({
+			eventName: eventName,
+			handleId: handleId
+		});
 	}
 
 	/*shortcut for registering a bunch of functions all at once. This also automaticlaly stores the handleId on each object in the eventMappings argument.
@@ -70,6 +68,23 @@ class EventEmitter {
 
 		for(var i = 0; i < this.eventCallbacks[eventName].length; i++) {
 			this.eventCallbacks[eventName][i].cb(eventName, this.owner);
+		}
+	}
+
+	update(dt) {
+		if(this.unregisterRequestQueue.length > 0) {
+			//splice the callbacks off if any
+			for(var i = 0; i < this.unregisterRequestQueue.length; i++) {
+				if(this.eventCallbacks[this.unregisterRequestQueue[i].eventName] !== undefined) {
+					var index = this.eventCallbacks[this.unregisterRequestQueue[i].eventName].findIndex((x) => {return x.handleId === this.unregisterRequestQueue[i].handleId;});
+
+					if(index >= 0) {
+						this.eventCallbacks[this.unregisterRequestQueue[i].eventName].splice(index, 1);
+					}
+				}
+			}
+
+			this.unregisterRequestQueue.length = 0;
 		}
 	}
 }

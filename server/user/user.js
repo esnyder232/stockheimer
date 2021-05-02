@@ -193,6 +193,8 @@ class User {
 			this.state = this.nextState;
 			this.nextState = null;
 		}
+
+		this.em.update(dt);
 	}
 
 	///////////////////////////////////

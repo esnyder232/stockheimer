@@ -61,6 +61,8 @@ class Round {
 				userAgents[i].insertTrackedEntityOrderedEvent("round", this.id, event)
 			}
 		}
+		
+		this.em.update(dt);
 	}
 
 	getStateEnum() {

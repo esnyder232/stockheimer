@@ -1,5 +1,4 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const {AIAgentInitializingState} = require('./ai-agent-states/ai-agent-initializing-state.js');
 const {AIAgentWaitingState} = require('./ai-agent-states/ai-agent-waiting-state.js');
 
 const logger = require("../../logger.js");
@@ -63,6 +62,8 @@ class AIAgent {
 		this.characterPos = null;	//direct reference to the character's planck position vector
 		this.teamId = 0;
 
+		this.targetCharacterDeactivatedHandleId = null;
+
 		this.characterEventCallbackMapping = [ 
 			{eventName: "character-deactivated", cb: this.cbEventEmitted.bind(this), handleId: null}
 		];
@@ -82,7 +83,6 @@ class AIAgent {
 
 		this.user.em.batchRegisterForEvent(this.userEventCallbackMapping);
 
-		//this.state = new AIAgentInitializingState(this);
 		this.state = new AIAgentWaitingState(this);
 		this.nextState = null;
 
@@ -94,6 +94,10 @@ class AIAgent {
 		this.character = null;
 		this.characterPos = null;
 		this.nextState = null;
+
+		if(this.aiAgent.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
+			this.aiAgent.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
+		}
 	}
 
 	cbEventEmitted(eventName, owner) {
@@ -132,12 +136,16 @@ class AIAgent {
 		var a = this.userCharactersInVision.find((x) => {return x.c === c});
 		if(c.id !== this.characterId && a === undefined && c.ownerType === "user")
 		{
-			var characterDistanceObj = {
-				c: c,
-				distanceSquared: 99999
-			};
-
-			this.userCharactersInVision.push(characterDistanceObj);
+			//quick hack to filter out anyone who is not on the ai agent's team
+			var u = this.gs.um.getUserByID(c.ownerId);
+			if(u !== null && u.teamId !== this.user.teamId) {
+				var characterDistanceObj = {
+					c: c,
+					distanceSquared: 99999
+				};
+	
+				this.userCharactersInVision.push(characterDistanceObj);	
+			}
 		}
 	}
 
@@ -307,6 +315,129 @@ class AIAgent {
 			this.nextState = null;
 		}
 	}
+
+	//finds the nearest opponent based on true distance (not manhattan distance, and not path finding)
+	findNearestOpponentTrueDistance() {
+		var nearestOpponent = null;
+
+		if(this.character !== null && this.characterPos !== null) {
+			var opponents = [];
+			var activeGameObjects = this.gs.gom.getActiveGameObjects();
+			var spectatorTeamId = this.gs.tm.getSpectatorTeam().id;
+	
+			//get all opponents
+			for(var i = 0; i < activeGameObjects.length; i++) {
+				//meh...don't care about the string comparison for now
+				if(activeGameObjects[i].type === "character" 
+				&& activeGameObjects[i].teamId !== spectatorTeamId 
+				&& activeGameObjects[i].teamId !== this.user.teamId
+				&& activeGameObjects[i].id !== this.user.characterId) {
+					opponents.push({
+						character: activeGameObjects[i],
+						distanceSquared: 9999
+					});
+				}
+			}
+	
+			//go through opponents, and calculate true distance squared
+			for(var i = 0; i < opponents.length; i++) {
+				var opponentPos = opponents[i].character.plBody.getPosition();
+				var dx = opponentPos.x - this.characterPos.x;
+				var dy = opponentPos.y - this.characterPos.y;
+				opponents[i].distanceSquared = dx*dx + dy*dy;
+			}
+
+			//find the closest opponent
+			if(opponents.length > 0) {
+				nearestOpponent = opponents.reduce((acc, cur) => {return  cur.distanceSquared < acc.distanceSquared ? cur : acc})
+			}
+		}
+
+		return nearestOpponent;
+	}
+
+
+
+	findaStarPathToPlayer() {
+		//contact the nav grid to get a path
+		var aiPos = this.characterPos;
+		var userPos = this.targetCharacter.getPlanckPosition();
+
+		if(aiPos !== null && userPos !== null)
+		{
+			var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
+			var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
+
+			if(aiNode !== null && userNode !== null)
+			{
+				this.nodePathToCastle = this.gs.activeNavGrid.AStarSearch(aiNode, userNode);
+				
+				if(this.nodePathToCastle.length > 0)
+				{
+					this.currentNode = 0;
+
+					this.findNextLOSNode(aiPos);
+				}
+			}
+		}
+	}
+
+	//this is already assuming the ai has LOS to the player
+	findStraightPathToPlayer() {
+		var aiPos = this.characterPos;
+		var userPos = this.targetCharacter.getPlanckPosition();
+
+		this.currentNode = 0;
+
+		if(aiPos !== null && userPos !== null)
+		{
+			var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
+			var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
+
+			if(aiNode !== null && userNode !== null)
+			{
+				this.nodePathToCastle = [];
+				this.nodePathToCastle.push(userNode);
+
+				this.currentNode = 0;
+			}
+		}
+	}
+
+
+	assignTargetCharacter(character) {
+		// logger.log("info", 'assign target called for ' + this.id);
+
+		//if there was an old targetCharacter, unregister from their event emitter
+		if(this.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
+			if(this.targetCharacter.em === null) {
+				var stopHere = true;
+			}
+
+			this.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
+			this.targetCharacterDeactivatedHandleId = null;
+		}
+
+		this.targetCharacter = character;
+
+		//register a function for when the target character is deactivated
+		if(this.targetCharacter !== null && this.targetCharacter.em !== null) {
+			this.targetCharacterDeactivatedHandleId = this.targetCharacter.em.registerForEvent("character-deactivated", this.cbTargetCharacterDeactivated.bind(this));
+		}
+	}
+
+	cbTargetCharacterDeactivated() {
+		// logger.log("info", 'cbTargetCharacterDeactivated called for ' + this.id);
+		
+		if(this.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
+			this.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
+		}
+
+		this.targetCharacter = null;
+		this.targetCharacterDeactivatedHandleId = null;
+	}
+
+
 
 	calcSeekSteering(pos) {
 		var velVec = {

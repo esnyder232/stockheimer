@@ -1,7 +1,8 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
-const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
+// const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentAttackPlayerState = require('./ai-agent-attack-player-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
+const AIAgentWaitingState = require('./ai-agent-waiting-state.js');
 const logger = require("../../../logger.js");
 
 class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
@@ -10,48 +11,49 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		this.stateName = "ai-agent-seek-player-state";
 		this.pathValid = false;
 		this.checkTimer = 0;
-		this.checkTimerInterval = 1000;	//ms
+		this.checkTimerInterval = 500;	//ms
 	}
 	
 	enter(dt) {
 		//logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
+		this.aiAgent.nodePathToCastle = [];
 		super.enter(dt);
-
-		//find path to target
-		this.findaStarPathToPlayer();
 	}
 
 	update(dt) {
 		//logger.log("info", this.stateName + ' update');
 		super.update(dt);
 
-		this.checkTimer += dt;
 		var decisionMade = false;
 		var isLOS = false;
-		var isInSeekRange = false;
 		var isInAttackRange = false;
-		var isCurrentNodeReached = false;
 
-		//checks for when traveling to the current node:
-		//if the target is within seek range and comes into LOS again AND is within attacking distance, stop seeking and start attacking
-		if(this.pathValid && this.checkTimer >= this.checkTimerInterval)
+		this.checkTimer += dt;
+
+		//any state can be forced into the forced idle state with bForceIdle
+		if(this.aiAgent.bForceIdle) {
+			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			decisionMade = true;
+		}
+
+		//if you currently do not have a target (either the player was killed/disconnected/whatever), switch back to idle mode
+		if(!decisionMade && this.aiAgent.targetCharacter === null) {
+			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			decisionMade = true;
+		}
+
+
+
+		//every so often, make checks on the current status of the ai to the target
+		if(!decisionMade && this.checkTimer >= this.checkTimerInterval)
 		{
-			var temp = this.aiAgent.userCharactersInVision.find((x) => {return x.c.id == this.aiAgent.targetCharacter.id;});
-			if(temp !== undefined)
-			{
-				isInSeekRange = true;
-			}
+			//check if the target is in attack range
+			this.aiAgent.updateTargetCharacterDistance();
 			
-			//if target is within seeking range, check if they are within attack range
-			if(isInSeekRange)
+			if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared)
 			{
-				this.aiAgent.updateTargetCharacterDistance();
-				
-				if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared)
-				{
-					isInAttackRange = true;
-				}
+				isInAttackRange = true;
 			}
 
 			//check to see if you have a LOS to them
@@ -64,26 +66,31 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 			//make a decision if you can
 			//if the player is within attacking distance and you have LOS, switch to attacking.
-			if(isInSeekRange && isInAttackRange && isLOS)
+			if(isInAttackRange && isLOS)
 			{
 				this.aiAgent.insertStopInput();
 				this.aiAgent.nextState = new AIAgentAttackPlayerState.AIAgentAttackPlayerState(this.aiAgent);
 				decisionMade = true;
 			}
 			//if the player is NOT within attacking distance, but you have LOS, keep seeking to the player, but change the nodes to where they are currently located
-			else if (isInSeekRange && !isInAttackRange && isLOS)
+			else if (!isInAttackRange && isLOS)
 			{
-				this.findStraightPathToPlayer();
+				this.aiAgent.findStraightPathToPlayer();
 				decisionMade = true;
+			}
+			//if the user doesn't have LOS. Find the player with A*
+			else {
+				this.aiAgent.findaStarPathToPlayer();
 			}
 
 			this.checkTimer = 0;
 		}
 
 
-		//moves toward current node (copied from castle seeking state....will be refactored later obviously)
-		if(this.pathValid && !decisionMade)
-		{
+
+
+		//if you currently have a path to travel on, keep traveling on it
+		if(this.aiAgent.nodePathToCastle.length > 0) {
 			var inputChanged = false;
 
 			var finalInput = {
@@ -106,7 +113,6 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 				//if you have reached your current node
 				if(squaredDistance <= this.aiAgent.nodeRadiusSquared)
 				{
-					isCurrentNodeReached = true;
 					this.aiAgent.currentNode++;
 
 					//find the next node in the line of sight
@@ -244,72 +250,14 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 			}
 		}
 
-		//checks for when REACHING the current node
-		if(this.pathValid && !decisionMade && isCurrentNodeReached)
-		{
-			//make all these checks again (these may not have occured this frame)
-			var temp = this.aiAgent.userCharactersInVision.find((x) => {return x.c.id == this.aiAgent.targetCharacter.id;});
-			if(temp !== undefined)
-			{
-				isInSeekRange = true;
-			}
-			
-			//if target is within seeking range, check if they are within attack range
-			if(isInSeekRange)
-			{
-				this.aiAgent.updateTargetCharacterDistance();
-				
-				if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared)
-				{
-					isInAttackRange = true;
-				}
-			}
 
-			//if the target is within attack range, check to see if you have a LOS to them
-			var cpos = this.aiAgent.targetCharacter.getPlanckPosition();
 
-			if(cpos !== null)
-			{
-				isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
-			}
-		
 
-			//make a decision if you can
-			//if the player is simply not in seeking distance anymore, switch to idle
-			if(!isInSeekRange)
-			{
-				this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
-			}
-			//if the player is still within seeking distance, and you have LOS and is within attack range, switch to attacking
-			else if(isInSeekRange && isLOS && isInAttackRange)
-			{
-				this.aiAgent.nextState = new AIAgentAttackPlayerState.AIAgentAttackPlayerState(this.aiAgent);
-			}
-			//if the player is still within seeking distance, and you have LOS, but the the player is NOT within attack range, find path straight to the player
-			else if(isInSeekRange && isLOS && !isInAttackRange)
-			{
-				this.findStraightPathToPlayer();
-			}
-			//if the player is still within seeking distance, but you do NOT have LOS or the player is NOT within attack range, find a new path to the player
-			else if(isInSeekRange && !(isLOS && isInAttackRange))
-			{
-				this.findaStarPathToPlayer();
-			}
-		}
 
-		//just incase anything goes wrong.
-		if(!this.pathValid)
-		{
-			logger.log("info", 'Path is invalid. Switching back to idle.');
-			this.aiAgent.targetCharacter = null;
-			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
-		}
 
-		//any state can be forced into the forced idle state with bForceIdle
-		if(this.aiAgent.bForceIdle)
-		{
-			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
-		}
+
+
+
 
 		this.aiAgent.processPlayingEvents();
 	}
@@ -320,56 +268,15 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 		this.aiAgent.shimmyOveride = false;
 		this.aiAgent.shimmyOverrideAccumulationValue = 0;
+		this.aiAgent.nodePathToCastle = [];
 	}
 
-	findaStarPathToPlayer() {
-		//contact the nav grid to get a path
-		var aiPos = this.aiAgent.characterPos;
-		var userPos = this.aiAgent.targetCharacter.getPlanckPosition();
-
-		if(aiPos !== null && userPos !== null)
-		{
-			var aiNode = this.aiAgent.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
-			var userNode = this.aiAgent.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
-
-			if(aiNode !== null && userNode !== null)
-			{
-				this.aiAgent.nodePathToCastle = this.aiAgent.gs.activeNavGrid.AStarSearch(aiNode, userNode);
-				
-				if(this.aiAgent.nodePathToCastle.length > 0)
-				{
-					this.aiAgent.currentNode = 0;
-
-					this.aiAgent.findNextLOSNode(aiPos);
-					this.pathValid = true;
-				}
-			}
-		}
-	}
-
-	//this is already assuming the ai has LOS to the player
-	findStraightPathToPlayer() {
-		var aiPos = this.aiAgent.characterPos;
-		var userPos = this.aiAgent.targetCharacter.getPlanckPosition();
-
-		this.pathValid = false;
-		this.aiAgent.currentNode = 0;
-
-		if(aiPos !== null && userPos !== null)
-		{
-			var aiNode = this.aiAgent.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
-			var userNode = this.aiAgent.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
-
-			if(aiNode !== null && userNode !== null)
-			{
-				this.aiAgent.nodePathToCastle = [];
-				this.aiAgent.nodePathToCastle.push(userNode);
-
-				this.aiAgent.currentNode = 0;
-				this.pathValid = true;
-			}
-		}
-	}
 }
+
+
+
+
+
+
 
 exports.AIAgentSeekPlayerState = AIAgentSeekPlayerState;

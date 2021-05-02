@@ -1,5 +1,5 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
-const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
+// const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const logger = require("../../../logger.js");
 
@@ -113,10 +113,10 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 	
 				//make a decision if you can
 				//if the castle is not in attacking range and you don't have LOS, switch to seeking castle
-				if(!(isInAttackRange && isLOS))
-				{
-					this.aiAgent.nextState = new AIAgentSeekCastleState.AIAgentSeekCastleState(this.aiAgent);
-				}
+				// if(!(isInAttackRange && isLOS))
+				// {
+				// 	this.aiAgent.nextState = new AIAgentSeekCastleState.AIAgentSeekCastleState(this.aiAgent);
+				// }
 	
 				this.checkTimer = 0;
 			}

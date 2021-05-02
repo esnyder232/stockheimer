@@ -1,5 +1,5 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
-const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
+// const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const {CollisionCategories, CollisionMasks} = require('../../data/collision-data.js');
 const logger = require("../../../logger.js");
@@ -14,6 +14,12 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 	enter(dt) {
 		// logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
+		this.aiAgent.character = null;
+		this.aiAgent.characterPos = null;
+
+		
+		this.aiAgent.assignTargetCharacter(null);
+		
 		super.enter(dt);
 	}
 
@@ -22,7 +28,7 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 		var bContinue = true;
 
 		//check if the user is playing
-		if(!this.aiAgent.user.stateName === "ai-playing-state") {
+		if(this.aiAgent.user.stateName !== "ai-playing-state") {
 			bContinue = false;
 		}
 

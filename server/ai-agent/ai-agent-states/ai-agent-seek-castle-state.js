@@ -1,6 +1,6 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentSeekPlayerState = require('./ai-agent-seek-player-state.js');
-const AIAgentAttackCastleState = require('./ai-agent-attack-castle-state.js');
+// const AIAgentAttackCastleState = require('./ai-agent-attack-castle-state.js');
 const AIAgentAttackPlayerState = require('./ai-agent-attack-player-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const logger = require("../../../logger.js");
@@ -89,7 +89,9 @@ class AIAgentSeekCastleState extends AIAgentBaseState.AIAgentBaseState {
 			//if there is a player within LOS, seek/attack the player
 			if(closestLOSCharacterObject !== null)
 			{
-				this.aiAgent.targetCharacter = closestLOSCharacterObject.c;
+				// this.aiAgent.targetCharacter = closestLOSCharacterObject.c;
+				this.aiAgent.assignTargetCharacter(closestLOSCharacterObject.c);
+
 				this.aiAgent.targetCharacterDistanceSquared = closestLOSCharacterObject.distanceSquared;
 
 				//if the target is within attacking distance, attack the player.
@@ -291,10 +293,10 @@ class AIAgentSeekCastleState extends AIAgentBaseState.AIAgentBaseState {
 
 			//make a decision if you can
 			//if the castle is close enough to attack and you have LOS, attack the castle
-			if(isInAttackRange && isLOS)
-			{
-				this.aiAgent.nextState = new AIAgentAttackCastleState.AIAgentAttackCastleState(this.aiAgent);
-			}
+			// if(isInAttackRange && isLOS)
+			// {
+			// 	this.aiAgent.nextState = new AIAgentAttackCastleState.AIAgentAttackCastleState(this.aiAgent);
+			// }
 		}
 		//castle does not exist. Go to idle
 		else

@@ -442,6 +442,8 @@ class Character {
 			this.state = this.nextState;
 			this.nextState = null;
 		}
+
+		this.em.update(dt);
 	}
 
 	getPlanckPosition() {

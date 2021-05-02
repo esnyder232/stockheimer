@@ -1,5 +1,5 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
-const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
+// const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentSeekPlayerState = require('./ai-agent-seek-player-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const logger = require("../../../logger.js");
@@ -9,7 +9,7 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		super(aiAgent);
 		this.stateName = "ai-agent-attack-player-state";
 		this.checkTimer = 0;
-		this.checkTimerInterval = 1000;	//ms
+		this.checkTimerInterval = 500;	//ms
 	}
 	
 	enter(dt) {
@@ -22,6 +22,12 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		//logger.log("info", this.stateName + ' update');
 		super.update(dt);
 
+		var decisionMade = false;
+		var isLOS = false;
+		var isInAttackRange = false;
+		var inputChanged = false;
+
+
 		var finalInput = {
 			up: false,
 			down: false,
@@ -31,13 +37,60 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 			isFiringAlt: false,
 			characterDirection: 0.0
 		}
-		var inputChanged = false;
+		
+		this.checkTimer += dt;	
+
+
+		//any state can be forced into the forced idle state with bForceIdle
+		if(this.aiAgent.bForceIdle) {
+			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			decisionMade = true;
+		}
+
+		//if you currently do not have a target (either the player was killed/disconnected/whatever), switch back to idle mode
+		if(!decisionMade && this.aiAgent.targetCharacter === null) {
+			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			decisionMade = true;
+		}
+
+
+		
+		//every so often, make checks on the current status of the ai to the target
+		if(!decisionMade && this.checkTimer >= this.checkTimerInterval) {
+			//check if they are within attack range
+			this.aiAgent.updateTargetCharacterDistance();
+			
+			if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared) {
+				isInAttackRange = true;
+			}
+		
+
+			//if the target is within attack range, check to see if you have a LOS to them
+			if(isInAttackRange) {
+				var cpos = this.aiAgent.targetCharacter.getPlanckPosition();
+	
+				if(cpos !== null) {
+					isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+				}
+			}
+
+			//make a decision if you can			
+			//if the player is not within attacking distance or you lose LOS, switch to seek player
+			else if(!(isInAttackRange && isLOS)) {
+				this.aiAgent.nextState = new AIAgentSeekPlayerState.AIAgentSeekPlayerState(this.aiAgent);
+				decisionMade = true;
+			}
+
+			this.checkTimer = 0;
+		}
+
+
 
 
 		//put straffing here if you feel like it
 
 		//fire a bullet
-		if(this.aiAgent.isAttackCurrentTimer <= 0)
+		if(!decisionMade && this.aiAgent.isAttackCurrentTimer <= 0)
 		{
 			var targetCharacterPos = null;
 			targetCharacterPos = this.aiAgent.targetCharacter.getPlanckPosition();
@@ -70,7 +123,7 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 			}
 		}
 
-		if(this.aiAgent.isAttackCurrentTimer > 0)
+		if(!decisionMade && this.aiAgent.isAttackCurrentTimer > 0)
 		{
 			this.aiAgent.isAttackCurrentTimer -= dt;
 			if(this.aiAgent.isAttackCurrentTimer <= 0)
@@ -81,68 +134,11 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		}
 
 		//input the finalInput to the character
-		if(inputChanged)
+		if(!decisionMade && inputChanged)
 		{
 			this.aiAgent.character.inputQueue.push(finalInput);
 		}
 
-
-		this.checkTimer += dt;
-		var isLOS = false;
-		var isInSeekRange = false;
-		var isInAttackRange = false;
-		
-		//check if current target is still in LOS. If not, switch to seeking
-		if(this.checkTimer >= this.checkTimerInterval)
-		{
-			var temp = this.aiAgent.userCharactersInVision.find((x) => {return x.c.id == this.aiAgent.targetCharacter.id;});
-			if(temp !== undefined)
-			{
-				isInSeekRange = true;
-			}
-			
-			//if target is within seeking range, check if they are within attack range
-			if(isInSeekRange)
-			{
-				this.aiAgent.updateTargetCharacterDistance();
-				
-				if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared)
-				{
-					isInAttackRange = true;
-				}
-			}
-
-			//if the target is within attack range, check to see if you have a LOS to them
-			if(isInAttackRange) {
-				var cpos = this.aiAgent.targetCharacter.getPlanckPosition();
-	
-				if(cpos !== null)
-				{
-					isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
-				}
-			}
-
-			//make a decision if you can
-			//if the player is simply not in seeking distance anymore, switch to idle
-			if(!isInSeekRange)
-			{
-				this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
-			}
-			//if the player is not within attacking distance or you lose LOS, switch to seek player
-			else if(isInSeekRange && !(isInAttackRange && isLOS))
-			{
-				this.aiAgent.nextState = new AIAgentSeekPlayerState.AIAgentSeekPlayerState(this.aiAgent);
-			}
-
-			this.checkTimer = 0;
-		}
-
-
-		//any state can be forced into the forced idle state with bForceIdle
-		if(this.aiAgent.bForceIdle)
-		{
-			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
-		}
 
 		this.aiAgent.processPlayingEvents();
 	}
@@ -152,5 +148,12 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		super.exit(dt);
 	}
 }
+
+
+
+
+
+
+
 
 exports.AIAgentAttackPlayerState = AIAgentAttackPlayerState;
