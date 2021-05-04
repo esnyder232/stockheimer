@@ -10,6 +10,7 @@ import UserListMenu from "../ui-classes/user-list-menu.js"
 import RoundMenu from "../ui-classes/round-menu.js"
 import RespawnTimeMenu from "../ui-classes/respawn-timer-menu.js"
 import KillFeedMenu from "../ui-classes/kill-feed-menu.js"
+import RoundResultsMenu from "../ui-classes/round-results-menu.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -105,6 +106,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu = null;
 		this.respawnTimerMenu = null;
 		this.killFeedMenu = null;
+		this.roundResultsMenu = null;
 	}
 
 	init(data) {
@@ -161,6 +163,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu = new RoundMenu();
 		this.respawnTimeMenu = new RespawnTimeMenu();
 		this.killFeedMenu = new KillFeedMenu();
+		this.roundResultsMenu = new RoundResultsMenu();
 		
 
 		this.teamMenu.init(this.gc);
@@ -170,6 +173,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.init(this.gc);
 		this.respawnTimeMenu.init(this.gc);
 		this.killFeedMenu.init(this.gc);
+		this.roundResultsMenu.init(this.gc);
 	}
 
 	gameout(time, e) {
@@ -264,6 +268,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.activate();
 		this.respawnTimeMenu.activate();
 		this.killFeedMenu.activate();
+		this.roundResultsMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -336,6 +341,7 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.mainMenu.closeMenu();
 		this.chatMenu.closeMenu();
 		this.userListMenu.closeMenu();
+		this.roundResultsMenu.closeMenu();
 
 		this.teamMenu.deactivate();
 		this.chatMenu.deactivate();
@@ -344,6 +350,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.deactivate();
 		this.respawnTimeMenu.deactivate();
 		this.killFeedMenu.deactivate();
+		this.roundResultsMenu.deactivate();
 
 		this.teamMenu.deinit();
 		this.chatMenu.deinit();
@@ -352,6 +359,9 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.deinit();
 		this.respawnTimeMenu.deinit();
 		this.killFeedMenu.deinit();
+		this.roundResultsMenu.deinit();
+
+		
 
 		//other stuff
 		this.gc.debugMenu.clearAiControls();

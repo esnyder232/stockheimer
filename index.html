@@ -260,8 +260,68 @@
 						<input type="button" class="hide" id="kill-all-ai-button-template" value="???"/>
 					</div>
 				</div>
-
 			</div>
+
+
+
+			<div class="hide round-results-menu-wrapper" id="round-results-menu">
+				<div class="round-results-menu-container">
+					<div class="menu-close-container">
+						<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-round-results-menu'));">
+							<img class="menu-close-button" src="assets/images/x-mark.png" />
+						</div>
+					</div>
+					<div class="menu-title">
+						<span>Round results:</span>
+					</div>
+					<div class="round-results-winner" id="round-results-winner">
+					</div>
+					<div class="round-results-mvp-container">
+						<div class="round-results-mvp-title">
+							<span>Best Players:</span>
+						</div>
+						<table class="mvp-table">
+							<thead>
+								<tr class="mvp-th">
+									<th class="mvp-team-header">Team</th>
+									<th class="mvp-name-header">Name</th>
+									<th class="mvp-points-header">Points</th>
+									<th class="mvp-deaths-header">Deaths</th>
+								</tr>
+							</thead>
+							<tbody id="mvp-best-tbody">
+							</tbody>
+							<tfoot>
+								<tr class="hide mvp-tr" id="mvp-item-template">
+									<td class="mvp-team-value" name="mvp-team-value"></td>
+									<td class="mvp-name-value" name="mvp-name-value"></td>
+									<td class="mvp-points-value" name="mvp-points-value"></td>
+									<td class="mvp-deaths-value" name="mvp-deaths-value"></td>
+								</tr>
+							</tfoot>
+						</table>
+					</div>
+
+					<div class="round-results-mvp-container">
+						<div class="round-results-mvp-title">
+							<span>Worst Players:</span>
+						</div>
+						<table class="mvp-table">
+							<thead>
+								<tr class="mvp-th">
+									<th class="mvp-team-header">Team</th>
+									<th class="mvp-name-header">Name</th>
+									<th class="mvp-points-header">Points</th>
+									<th class="mvp-deaths-header">Deaths</th>
+								</tr>
+							</thead>
+							<tbody id="mvp-worst-tbody">
+							</tbody>
+						</table>
+					</div>
+				</div>		
+			</div>
+
 
 
 			<div class="quick-menu-wrapper">

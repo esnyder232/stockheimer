@@ -14,6 +14,20 @@ class RoundOver extends RoundBaseState {
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
 		this.round.roundTimer = 10000;
+
+		//calculate and send the results to the users
+		
+
+
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertServerToClientEvent({
+				"eventName": "roundResults",
+				"winningTeamCsv": "2,3",
+				"mvpBestCsv": "0,0,0",
+				"mvpWorstCsv": "0,0"
+			});
+		}
 	}
 
 	update(dt) {

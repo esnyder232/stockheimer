@@ -808,15 +808,110 @@ input.menu-button {
 
 
 
+.round-results-menu-wrapper {
+	position:absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 10;
+}
+
+.round-results-menu-container {
+	width: 510px;
+	background-color: rgba(0, 0, 0, 0.5);
+	overflow-y: auto;
+	border-color:#cccccc;
+	border-radius: 20px;
+	border-width: 16px;
+	border-style: solid;
+	padding: 0px 12px 12px 12px;
+	color: #cccccc;
+	position: relative;
+	margin: 10% auto;
+	text-shadow: 1px 1px #000000;
+}
 
 
 
+.round-results-winner {
+	width: 100%;
+	font-size: 32px;
+	text-align: center;
+	margin-top: 12px;
+	margin-top: 12px;
+	font-weight: bold;
+}
 
 
 
+.round-results-mvp-container {
+	width: 100%;
+}
+
+
+.round-results-mvp-title {
+	width: 100%;
+	font-size: 26px;
+	text-align: center;
+	border-width: 0px 0px 1px 0px;
+	border-color: #cccccc;
+	border-style: solid;
+	margin-top: 16px;
+}
+
+.mvp-table {
+	width: 100%;
+
+}
+
+.mvp-th {
+	
+}
+
+
+.mvp-tr {
+	vertical-align: top;
+	font-weight: bold;
+}
+
+
+.mvp-name-header {
+	text-align: left;
+	width: 50%;
+}
+
+.mvp-team-header {
+	text-align: left;
+	width: 25%;
+}
+
+.mvp-points-header {
+	text-align: right;
+	width: 12%;
+}
+
+.mvp-deaths-header {
+	text-align: right;
+	width: 13%;
+}
 
 
 
+.mvp-name-value {
+	text-align: left;
+}
+
+.mvp-team-value {
+	text-align: left;
+}
+
+.mvp-points-value {
+	text-align: right;
+}
+
+.mvp-deaths-value {
+	text-align: right;
+}
 
 
 

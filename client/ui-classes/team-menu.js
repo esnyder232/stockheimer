@@ -68,6 +68,7 @@ export default class TeamMenu {
 
 		if(showTeamMenu) {
 			this.menu.removeClass("hide");
+			//this.menu.addClass("hide"); //temporarily hiding it so i can work on another menu
 		}
 		else {
 			this.menu.addClass("hide");
