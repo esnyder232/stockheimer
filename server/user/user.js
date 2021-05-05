@@ -150,6 +150,12 @@ class User {
 		this.userInfoDirty = true;
 	}
 
+	resetRoundCounts() {
+		this.roundUserKillCount = 0;
+		this.roundUserDeathCount = 0;
+		this.userInfoDirty = true;
+	}
+
 	update(dt) {
 		//update connection state
 		this.state.update();

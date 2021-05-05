@@ -105,8 +105,7 @@ class RoundOver extends RoundBaseState {
 		mvpWorstCsv = finalMvpWrostIds.join(",");
 		////////////////////////////////////////
 
-
-
+		//finally send the event
 		var userAgents = this.gs.uam.getUserAgents();
 		for(var i = 0; i < userAgents.length; i++) {
 			userAgents[i].insertServerToClientEvent({
@@ -131,6 +130,18 @@ class RoundOver extends RoundBaseState {
 
 	exit(dt) {
 		super.exit(dt);
+
+		//reset all users round points and team round points
+		var allUsers = this.gs.um.getUsers();
+		var teams = this.gs.tm.getTeams();
+
+		for(var i = 0; i < allUsers.length; i++) {
+			allUsers[i].resetRoundCounts();
+		}
+
+		for(var i = 0; i < teams.length; i++) {
+			teams[i].setRoundPoints(0);
+		}
 
 		//tell all active users the round is restarting. Let them sort themselves out.
 		this.round.em.emitEvent("round-restarting");

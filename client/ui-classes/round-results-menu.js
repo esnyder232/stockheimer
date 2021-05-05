@@ -76,6 +76,7 @@ export default class RoundResultsMenu {
 			}
 
 			this.roundResultsWinner.text("Stalemate! " + winningTeamNamesArray.join(" & ") + " tied!");
+			this.roundResultsWinner.css("color", "");
 		}
 		
 		//populate the mvp best players

@@ -399,6 +399,10 @@ class UserManager {
 	getPlayingUsers() {
 		return this.playingUserArray;
 	}
+
+	getUsers() {
+		return this.userArray;
+	}
 }
 
 exports.UserManager = UserManager;
