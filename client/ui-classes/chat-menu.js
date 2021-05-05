@@ -30,7 +30,8 @@ export default class ChatMenu {
 		//register window event mapping
 		this.windowsEventMapping = [
 			{event: 'toggle-chat-menu',  func: this.toggleMenu.bind(this)},
-			{event: 'close-chat-menu', func: this.closeMenu.bind(this)}
+			{event: 'close-chat-menu', func: this.closeMenu.bind(this)},
+			{event: 'from-server-chat-message', func: this.fromServerchatMessageEvent.bind(this)}
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -126,7 +127,7 @@ export default class ChatMenu {
 		var newChatName = newChat.find("span[name='chat-history-name']");
 		var newChatMsg = newChat.find("span[name='chat-history-msg']");
 
-		var u = this.gc.um.getUserByServerID(e.userId);
+		var u = this.gc.um.getUserByServerID(e.detail.e.userId);
 		
 		var username = "???";
 		if(u)
@@ -145,7 +146,7 @@ export default class ChatMenu {
 		newChat.removeClass("hide");
 		newChatTs.text(ts);
 		newChatName.text(username + ": ");
-		newChatMsg.text(e.chatMsg);
+		newChatMsg.text(e.detail.e.chatMsg);
 
 		this.chatHistory.append(newChat);
 

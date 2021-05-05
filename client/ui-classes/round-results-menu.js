@@ -35,7 +35,8 @@ export default class RoundResultsMenu {
 	activate() {
 		//register window event mapping
 		this.windowsEventMapping = [
-			{event: 'close-round-results-menu', func: this.closeMenu.bind(this)}
+			{event: 'close-round-results-menu', func: this.closeMenu.bind(this)},
+			{event: 'round-results', func: this.roundResultsEvent.bind(this)},
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -109,8 +110,8 @@ export default class RoundResultsMenu {
 
 			newItemTeam.text(team.name);
 			newItemName.text(user.username);
-			newItemPoints.text(user.userKillCount);
-			newItemDeaths.text(123);
+			newItemPoints.text(user.roundUserKillCount);
+			newItemDeaths.text(user.roundUserDeathCount);
 
 			//color the row the team colors
 			newItem.css("color", team.killFeedTextColor);
@@ -120,7 +121,8 @@ export default class RoundResultsMenu {
 	}
 
 
-	roundResultsEvent(e) {
+	roundResultsEvent(serverEvent) {
+		var e = serverEvent.detail.e;
 		this.winningTeamServerIds = [];
 		this.mvpBestUserServerIds = [];
 		this.mvpWorstUserServerIds = [];
@@ -146,6 +148,9 @@ export default class RoundResultsMenu {
 				this.mvpWorstUserServerIds.push(parseFloat(worstCsvSplit[i]));
 			}
 		}
+
+		this.populateRoundResults();
+		this.openMenu();
 	}
 
 

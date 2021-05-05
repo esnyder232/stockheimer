@@ -17,6 +17,7 @@ export default class AddTeamEvent {
 		t.characterTextFillColor = e.characterTextFillColor;
 		t.killFeedTextColor = e.killFeedTextColor;
 		t.isSpectatorTeam = e.isSpectatorTeam;
+		t.roundPoints = e.roundPoints;
 
 		t.changeCharacterFillColor(e.characterFillColor);
 		t.changeCharacterStrokeColor(e.characterStrokeColor);

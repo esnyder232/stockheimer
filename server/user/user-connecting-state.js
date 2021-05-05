@@ -57,13 +57,7 @@ class UserConnectingState extends UserBaseState {
 		//send the user who just joined a list of the existing teams
 		for(var i = 0; i < teams.length; i++)
 		{
-			this.teamAcks.push({
-				id: teams[i].id,
-				acked: false
-			});
-
-			var addTeamEvent = teams[i].serializeAddTeamEvent();
-			ua.insertServerToClientEvent(addTeamEvent, this.cbAddTeam.bind(this), null, {id: teams[i].id});
+			ua.insertTrackedEntity("team", teams[i].id);
 		}
 
 		super.enter(dt);
@@ -82,16 +76,6 @@ class UserConnectingState extends UserBaseState {
 			for(var i = 0; i < ua.trackedEntities.length; i++)
 			{
 				if(ua.trackedEntities[i].stateName !== "tracked-entity-created-state") {
-					worldStateGood = false;
-					break;
-				}
-			}
-
-			//check if the teams have all been created on the client side
-			for(var i = 0 ; i < this.teamAcks.length; i++)
-			{
-				if(!this.teamAcks[i].acked)
-				{
 					worldStateGood = false;
 					break;
 				}

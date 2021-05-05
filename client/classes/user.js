@@ -10,7 +10,11 @@ export default class User {
 		this.id = null;
 		this.userId = null;
 		this.username = null;
-		this.userKillCount = null;
+		this.userKillCount = 0;		//total kills
+		this.userDeathCount = 0;	//total deaths
+		this.roundUserKillCount = 0;//kills in current round
+		this.roundUserDeathCount = 0;	//deaths in current round
+
 		this.userRtt = 0;
 		this.teamId = null;
 
@@ -66,10 +70,13 @@ export default class User {
 
 	updateUserInfoEvent(e) {
 		this.userKillCount = e.userKillCount;
-		this.userRtt = e.userRtt;
+		// this.userRtt = e.userRtt;
 		this.teamId = e.teamId;
+		this.roundUserKillCount = e.roundUserKillCount;
+		this.userDeathCount = e.userDeathCount;
+		this.roundUserDeathCount = e.roundUserDeathCount;
 
-		var c = this.gc.gom.getActiveGameObjects().find((x) => {return x.ownerType === "user" && x.serverOwnerId === e.userId;});
+		window.dispatchEvent(new CustomEvent("user-info-updated", {detail: {serverId: this.serverId}}));
 	}
 
 	updateUserPlayingState(e) {

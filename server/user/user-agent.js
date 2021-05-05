@@ -31,7 +31,8 @@ class UserAgent {
 		this.trackedEntityTypeIdIndex = {
 			"user": {},
 			"gameobject": {},
-			"round": {}
+			"round": {},
+			"team": {}
 		}; //index for the trackedEntities array
 		this.trackedEntityTransactions = [];
 
@@ -68,7 +69,8 @@ class UserAgent {
 		this.trackedEntityTypeIdIndex = {
 			"user": {},
 			"gameobject": {},
-			"round": {}
+			"round": {},
+			"team": {}
 		}
 	}
 

@@ -9,9 +9,9 @@ export default class UpdateTeamEvent {
 
 	processEvent(e)
 	{
-		console.log('UpdateTeamEvent EVENT called!!!!!');
-		console.log(e);
-
-		//nothing to do yet
+		var t = this.gc.tm.getTeamByServerID(e.id);
+		if(t !== null) {
+			t.seq.insertEvent(e);
+		}
 	}
 }

@@ -42,6 +42,10 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 						break;
 				}
 				break;
+
+			case "team":
+				se = this.trackedEntity.ent.serializeRemoveTeamEvent();
+				break;
 		}
 
 		//try to add it to the wsh so it can be sent out (this is going to be repeated code on the tracked-entity-created-state. So its gonna get pulled out of here most likely in the futur)\

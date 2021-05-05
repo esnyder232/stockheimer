@@ -916,6 +916,39 @@ input.menu-button {
 
 
 
+
+.team-score-menu-container {
+	top: 68px;
+	left: 8px;
+	pointer-events: all;
+	font-size: 32px;
+	padding: 12px 12px 12px 12px;
+	color: #cccccc;
+	text-shadow: 1px 1px #000000;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+.team-score-menu-contents {
+	height: 100%;
+}
+
+.team-score-title { 
+
+}
+
+.team-score-list {
+	
+}
+
+.team-score-item {
+
+}
+
+
+
+
+
+
 a {
 	color: #3391ff;
 }

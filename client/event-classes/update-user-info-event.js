@@ -14,7 +14,5 @@ export default class UpdateUserInfoEvent {
 		{
 			u.seq.insertEvent(e);
 		}
-
-		this.gc.mainScene.userListMenu.updateUserInfoEvent(e);
 	}
 }

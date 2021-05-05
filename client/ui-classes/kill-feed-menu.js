@@ -18,8 +18,9 @@ export default class KillFeedMenu {
 		this.killFeedDefaultTimer = 5000;
 		this.killFeedUserInvolvedTimer = 10000;
 		this.killFeedQueueLimit = 10;
-
 		this.killFeedQueue = [];
+
+		this.windowsEventMapping = [];
 	}
 
 	init(gc) {
@@ -31,7 +32,11 @@ export default class KillFeedMenu {
 
 	activate() {
 		//register window event mapping
-		this.windowsEventMapping = [];
+		this.windowsEventMapping = [
+			{event: 'kill-feed-msg', func: this.killFeedMsgEvent.bind(this)}
+		];
+
+		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 		//grab all the ui elements
 		this.menu = $("#kill-feed-menu");
@@ -71,7 +76,9 @@ export default class KillFeedMenu {
 	}
 
 	
-	killFeedMsgEvent(e) {
+	killFeedMsgEvent(serverEvent) {
+		var e = serverEvent.detail.e
+
 		//console.log(e);
 		var isYourUserInvolved = false;
 

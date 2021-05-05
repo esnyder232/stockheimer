@@ -46,6 +46,10 @@ class TrackedEntity {
 		{
 			this.ent = this.gs.theRound;
 		}
+		else if(entType === "team")
+		{
+			this.ent = this.gs.tm.getTeamByID(this.entId);
+		}
 
 		this.state = new TrackedEntityDestroyedState(this);
 		this.state.enter();

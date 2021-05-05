@@ -27,28 +27,25 @@ class GameServerRunning extends GameServerBaseState {
 		var userAgents = this.gs.uam.getUserAgents();
 		var activeGameObjects = this.gs.gom.getActiveGameObjects();
 		var aiAgents = this.gs.aim.getAIAgents();
+		var teams = this.gs.tm.getTeams();
 		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
-		for(var i = 0; i < userAgents.length; i++)
-		{
+		for(var i = 0; i < userAgents.length; i++) {
 			this.processClientEvents(userAgents[i]);
 		}
 
 		//update users
-		for(var i = 0; i < activeUsers.length; i++)
-		{
+		for(var i = 0; i < activeUsers.length; i++) {
 			activeUsers[i].update(dt);
 		}
 
 		//update ai
-		for(var i = 0; i < aiAgents.length; i++) 
-		{
+		for(var i = 0; i < aiAgents.length; i++) {
 			aiAgents[i].update(dt);
 		}
 
 		//update characters
-		for(var i = 0; i < activeGameObjects.length; i++)
-		{
+		for(var i = 0; i < activeGameObjects.length; i++) {
 			activeGameObjects[i].update(dt);
 		}
 
@@ -56,21 +53,23 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
 
 
+		//update teams
+		for(var i = 0; i < teams.length; i++) {
+			teams[i].update(dt);
+		}
+
 		//update round
 		this.gs.theRound.update(dt);
 
 		//update user agents to fill each user's packet with events
-		for(var i = 0; i < userAgents.length; i++)
-		{
+		for(var i = 0; i < userAgents.length; i++) {
 			userAgents[i].update(dt);
 		}
 
 		//create/send packet for all useragents
-		for(var i = 0; i < userAgents.length; i++)
-		{
+		for(var i = 0; i < userAgents.length; i++) {
 			var wsh = this.gs.wsm.getWebsocketByID(userAgents[i].wsId);
-			if(wsh !== null)
-			{
+			if(wsh !== null) {
 				wsh.createPacketForUser();
 			}
 		}
@@ -436,13 +435,17 @@ class GameServerRunning extends GameServerBaseState {
 				//if the killer is a user, increase that user's killcount
 				if(c.lastHitByOwnerType === "user")
 				{
-					if(killerOwner.id === victimOwner.id && c.ownerType === "user")
-					{
-						killerOwner.updateKillCount(-1);
-					}
-					else
+					if(killerOwner.id !== victimOwner.id && c.ownerType === "user")
 					{
 						killerOwner.updateKillCount(1);
+						victimOwner.updateDeathsCount(1);
+
+						//give a point to the team as well
+						var killerTeam = this.gs.tm.getTeamByID(killerOwner.teamId);
+						if(killerTeam !== null) {
+							killerTeam.modRoundPoints(1);
+						}
+						
 					}
 				}
 

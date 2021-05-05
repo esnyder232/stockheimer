@@ -11,7 +11,6 @@ export default class FromServerChatMessageEvent {
 
 	processEvent(e)
 	{
-		this.gc.mainScene.chatMenu.fromServerchatMessageEvent(e);
-		this.gc.mainScene.chatMenuMinified.fromServerchatMessageEvent(e);
+		window.dispatchEvent(new CustomEvent("from-server-chat-message", {detail: {e: e}}));
 	}
 }

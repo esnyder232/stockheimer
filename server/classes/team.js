@@ -14,12 +14,48 @@ class Team {
 		this.characterTextStrokeColor = "#ffffff";
 		this.characterTextFillColor = "#ffffff";
 		this.killFeedTextColor = "#ffffff";
+		this.roundPoints = 0;
 	}
 
 	teamInit(gameServer) {
 		this.gs = gameServer;
 
 		this.globalfuncs = new GlobalFuncs();
+		this.roundPoints = 0;
+		this.teamDirtyEvent = false;
+	}
+
+	modRoundPoints(modRoundPoints) {
+		this.roundPoints += modRoundPoints;
+		this.teamDirtyEvent = true;
+	}
+
+	setRoundPoints(newRoundPoints) {
+		this.roundPoints = newRoundPoints;
+		this.teamDirtyEvent = true;
+	}
+
+	update(dt) {
+		if(this.teamDirtyEvent) {
+
+			//send the round points update to all user agents
+			var teamUpdateEvent = this.serializeUpdateTeam();
+
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				userAgents[i].insertTrackedEntityEvent("team", this.id, teamUpdateEvent);
+			}
+
+			this.teamDirtyEvent = false;
+		}
+	}
+
+	serializeUpdateTeam() {
+		return {
+			"eventName": "updateTeam",
+			"id": this.id,
+			"roundPoints": this.roundPoints
+		};
 	}
 	
 	serializeAddTeamEvent() {
@@ -33,7 +69,16 @@ class Team {
 			"characterFillColor": this.characterFillColor,
 			"characterTextStrokeColor": this.characterTextStrokeColor,
 			"characterTextFillColor": this.characterTextFillColor,
-			"killFeedTextColor": this.killFeedTextColor
+			"killFeedTextColor": this.killFeedTextColor,
+			"roundPoints": this.roundPoints
+		};
+	}
+
+	//this is never actually used...but its here if needed i guess
+	serializeRemoveTeamEvent() {
+		return {
+			"eventName": "removeTeam",
+			"id": this.id
 		};
 	}
 }

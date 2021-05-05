@@ -11,6 +11,7 @@ import RoundMenu from "../ui-classes/round-menu.js"
 import RespawnTimeMenu from "../ui-classes/respawn-timer-menu.js"
 import KillFeedMenu from "../ui-classes/kill-feed-menu.js"
 import RoundResultsMenu from "../ui-classes/round-results-menu.js"
+import TeamScoreMenu from "../ui-classes/team-score-menu.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -107,6 +108,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimerMenu = null;
 		this.killFeedMenu = null;
 		this.roundResultsMenu = null;
+		this.teamScoreMenu = null;
 	}
 
 	init(data) {
@@ -164,6 +166,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu = new RespawnTimeMenu();
 		this.killFeedMenu = new KillFeedMenu();
 		this.roundResultsMenu = new RoundResultsMenu();
+		this.teamScoreMenu = new TeamScoreMenu();
 		
 
 		this.teamMenu.init(this.gc);
@@ -174,6 +177,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu.init(this.gc);
 		this.killFeedMenu.init(this.gc);
 		this.roundResultsMenu.init(this.gc);
+		this.teamScoreMenu.init(this.gc);
 	}
 
 	gameout(time, e) {
@@ -269,6 +273,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu.activate();
 		this.killFeedMenu.activate();
 		this.roundResultsMenu.activate();
+		this.teamScoreMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -342,6 +347,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.closeMenu();
 		this.userListMenu.closeMenu();
 		this.roundResultsMenu.closeMenu();
+		this.teamScoreMenu.closeMenu();
 
 		this.teamMenu.deactivate();
 		this.chatMenu.deactivate();
@@ -351,6 +357,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu.deactivate();
 		this.killFeedMenu.deactivate();
 		this.roundResultsMenu.deactivate();
+		this.teamScoreMenu.deactivate();
 
 		this.teamMenu.deinit();
 		this.chatMenu.deinit();
@@ -360,8 +367,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimeMenu.deinit();
 		this.killFeedMenu.deinit();
 		this.roundResultsMenu.deinit();
-
-		
+		this.teamScoreMenu.deinit();
 
 		//other stuff
 		this.gc.debugMenu.clearAiControls();
@@ -400,13 +406,10 @@ export default class MainScene extends Phaser.Scene {
 		//console.log("=== Client Framenum " + this.frameNum + " ===")
 
 		//update any dmg texts
-		for(var i = this.damageTexts.length - 1; i >= 0; i--)
-		{
+		for(var i = this.damageTexts.length - 1; i >= 0; i--) {
 			this.damageTexts[i].countdownTimer -= dt;
-			if(this.damageTexts[i].countdownTimer <= 0)
-			{
-				if(this.damageTexts[i].textGraphics !== null)
-				{
+			if(this.damageTexts[i].countdownTimer <= 0) {
+				if(this.damageTexts[i].textGraphics !== null) {
 					this.damageTexts[i].textGraphics.destroy();
 				}
 				this.damageTexts.splice(i, 1);
@@ -414,17 +417,13 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		//update any gravestone timers
-		for(var i = this.gravestones.length - 1; i >= 0; i--)
-		{
+		for(var i = this.gravestones.length - 1; i >= 0; i--) {
 			this.gravestones[i].countdownTimer -= dt;
-			if(this.gravestones[i].countdownTimer <= 0)
-			{
-				if(this.gravestones[i].gravestoneImage !== null)
-				{
+			if(this.gravestones[i].countdownTimer <= 0) {
+				if(this.gravestones[i].gravestoneImage !== null) {
 					this.gravestones[i].gravestoneImage.destroy();
 				}
-				if(this.gravestones[i].gravestoneText !== null)
-				{
+				if(this.gravestones[i].gravestoneText !== null) {
 					this.gravestones[i].gravestoneText.destroy();
 				}
 				this.gravestones.splice(i, 1);
@@ -435,24 +434,25 @@ export default class MainScene extends Phaser.Scene {
 		//update round
 		this.gc.theRound.update(dt);
 
+		var teams = this.gc.tm.getTeams();
+		for(var i = 0; i < teams.length; i++) {
+			teams[i].update(dt);
+		}
 
 		//update users
 		var activeUsers = this.gc.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++)
-		{
+		for(var i = 0; i < activeUsers.length; i++) {
 			activeUsers[i].update(dt);
 		}
 
 		//update gameobjects
 		var activeGameObjects = this.gc.gom.getActiveGameObjects();
-		for(var i = 0; i < activeGameObjects.length; i++)
-		{
+		for(var i = 0; i < activeGameObjects.length; i++) {
 			activeGameObjects[i].update(dt);
 		}
 
 		//if you control your character, read input and send it to the server if its dirty.
-		if(this.gc.myCharacter !== null)
-		{
+		if(this.gc.myCharacter !== null) {
 			this.targetLineGraphic.clear();
 
 			pointer.updateWorldPoint(this.cameras.main);

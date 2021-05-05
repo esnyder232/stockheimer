@@ -31,7 +31,8 @@ export default class ChatMenuMinified {
 		//register window event mapping
 		this.windowsEventMapping = [
 			{event: 'chat-menu-opened', func: this.chatMenuOpened.bind(this)},
-			{event: 'chat-menu-closed', func: this.chatMenuClosed.bind(this)}
+			{event: 'chat-menu-closed', func: this.chatMenuClosed.bind(this)},
+			{event: 'from-server-chat-message', func: this.fromServerchatMessageEvent.bind(this)}
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -71,7 +72,7 @@ export default class ChatMenuMinified {
 		var newChatName = newChat.find("span[name='chat-history-minified-name']");
 		var newChatMsg = newChat.find("span[name='chat-history-minified-msg']");
 
-		var u = this.gc.um.getUserByServerID(e.userId);
+		var u = this.gc.um.getUserByServerID(e.detail.e.userId);
 		
 		var username = "???";
 		if(u)
@@ -90,7 +91,7 @@ export default class ChatMenuMinified {
 		newChat.removeClass("invisible");
 		newChatTs.text(ts);
 		newChatName.text(username + ": ");
-		newChatMsg.text(e.chatMsg);
+		newChatMsg.text(e.detail.e.chatMsg);
 
 		window.setTimeout(() => {
 			newChat.addClass("fade-out");

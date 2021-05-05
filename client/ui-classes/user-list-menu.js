@@ -34,7 +34,8 @@ export default class UserListMenu {
 		//register window event mapping
 		this.windowsEventMapping = [
 			{event: 'toggle-user-list-menu',  func: this.toggleMenu.bind(this)},
-			{event: 'close-user-list-menu', func: this.closeMenu.bind(this)}
+			{event: 'close-user-list-menu', func: this.closeMenu.bind(this)},
+			{event: 'user-info-updated', func: this.userInfoUpdated.bind(this)},
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -102,7 +103,8 @@ export default class UserListMenu {
 
 		var newUserListItem = this.userListItemTemplate.clone();
 		newUserListItem.removeClass("hide");
-		newUserListItem.text("(kills: " + user.userKillCount + ") - " + user.username);
+		newUserListItem.text("(kills: " + user.userKillCount + ", deaths: " + user.userDeathCount + ", ping: " + user.userRtt + ") - " + user.username + " - (team " + user.teamId + ")");
+
 		this.userList.append(newUserListItem);
 
 		this.userIdUserListItemMap[user.serverId] = newUserListItem;
@@ -146,20 +148,42 @@ export default class UserListMenu {
 		}
 	}
 
-	updateUserInfoEvent(e) {
+	userInfoUpdated(e) {
 		if(this.activated)
 		{
-			var u = this.gc.um.getUserByServerID(e.userId);
+			var u = this.gc.um.getUserByServerID(e.detail.serverId);
 
 			if(u !== null)
 			{
 				if(this.userIdUserListItemMap[u.serverId] !== undefined)
 				{
 					//update userListItem
-					var myText = "(kills: " + u.userKillCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
+					var myText = "(kills: " + u.userKillCount + ", deaths: " + u.userDeathCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
 					this.userIdUserListItemMap[u.serverId].text(myText);
 				}
 			}
 		}
+
+		// if(this.gc.myUserServerId!== null && e.detail.serverId === this.gc.myUserServerId)
+		// {
+		// 	this.updateRespawnMessage();
+		// }
 	}
+
+	// updateUserInfoEvent(e) {
+	// 	if(this.activated)
+	// 	{
+	// 		var u = this.gc.um.getUserByServerID(e.userId);
+
+	// 		if(u !== null)
+	// 		{
+	// 			if(this.userIdUserListItemMap[u.serverId] !== undefined)
+	// 			{
+	// 				//update userListItem
+	// 				var myText = "(kills: " + u.userKillCount + ", deaths: " + u.userDeathCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
+	// 				this.userIdUserListItemMap[u.serverId].text(myText);
+	// 			}
+	// 		}
+	// 	}
+	// }
 }

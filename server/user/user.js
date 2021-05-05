@@ -29,7 +29,10 @@ class User {
 		this.inputQueue = [];
 	
 		this.plBody = null; //used for tracking when objects are near the user
-		this.userKillCount = 0;
+		this.userKillCount = 0;		//total kills
+		this.userDeathCount = 0;	//total deaths
+		this.roundUserKillCount = 0;//kills in current round
+		this.roundUserDeathCount = 0;	//deaths in current round
 
 		this.teamId = null;
 
@@ -137,6 +140,13 @@ class User {
 
 	updateKillCount(amt) {
 		this.userKillCount += amt;
+		this.roundUserKillCount += amt;
+		this.userInfoDirty = true;
+	}
+
+	updateDeathsCount(amt) {
+		this.userDeathCount += amt;
+		this.roundUserDeathCount += amt;
 		this.userInfoDirty = true;
 	}
 
@@ -205,8 +215,11 @@ class User {
 			"eventName": "userConnected",
 			"userId": this.id,
 			"username": this.username,
+			"teamId": this.teamId,
 			"userKillCount": this.userKillCount,
-			"teamId": this.teamId
+			"roundUserKillCount": this.roundUserKillCount,
+			"userDeathCount": this.userDeathCount,
+			"roundUserDeathCount": this.roundUserDeathCount
 		};
 	}
 
@@ -221,9 +234,11 @@ class User {
 		return {
 			"eventName": "updateUserInfo",
 			"userId": this.id,
+			"teamId": this.teamId,
 			"userKillCount": this.userKillCount,
-			"userRtt": 0,
-			"teamId": this.teamId
+			"roundUserKillCount": this.roundUserKillCount,
+			"userDeathCount": this.userDeathCount,
+			"roundUserDeathCount": this.roundUserDeathCount
 		};
 	}
 

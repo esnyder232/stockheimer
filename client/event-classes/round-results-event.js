@@ -9,8 +9,6 @@ export default class RoundResultsEvent {
 
 	processEvent(e)
 	{
-		this.gc.mainScene.roundResultsMenu.roundResultsEvent(e);
-		this.gc.mainScene.roundResultsMenu.populateRoundResults();
-		//this.gc.mainScene.roundResultsMenu.openMenu();
+		window.dispatchEvent(new CustomEvent("round-results", {detail: {e: e}}));
 	}
 }
