@@ -21,6 +21,7 @@ export default class AddTeamEvent {
 
 		t.changeCharacterFillColor(e.characterFillColor);
 		t.changeCharacterStrokeColor(e.characterStrokeColor);
+		t.changeProjectileStrokeColor(e.projectileStrokeColor);
 
 		if(e.isSpectatorTeam) {
 			this.gc.tm.assignSpectatorTeamByServerId(t.serverId);

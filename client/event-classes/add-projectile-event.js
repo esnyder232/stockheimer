@@ -16,5 +16,6 @@ export default class AddProjectileEvent {
 		p.angle = e.angle;
 		p.size = e.size;
 		p.speed = e.speed;
+		p.teamId = e.teamId;
 	}
 }

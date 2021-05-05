@@ -15,6 +15,22 @@ class RoundStarting extends RoundBaseState {
 
 		this.round.roundTimeAcc = 0;
 		this.round.roundTimer = 10000;
+
+		//at the start of the round, balance out the teams regarding ai users and human users
+		var activeUsersTeams = this.gs.um.getActiveUsersGroupedByTeams();
+
+		var totalAiUsers = 0;
+		var totalHumanUsers = 0;
+
+		for(var i = 0; i < activeUsersTeams.length; i++) {
+			totalHumanUsers += activeUsersTeams[i].humanUserIds.length;
+			totalAiUsers += activeUsersTeams[i].aiUserIds.length;
+		}
+
+		
+
+
+
 	}
 
 	update(dt) {

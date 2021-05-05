@@ -130,7 +130,8 @@ class Projectile {
 			"y": bodyPos.y,
 			"angle": this.angle,
 			"size": this.size,
-			"speed": this.speed
+			"speed": this.speed,
+			"teamId": this.teamId
 		};
 		
 		return eventData;

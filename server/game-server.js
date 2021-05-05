@@ -68,6 +68,7 @@ class GameServer {
 		this.castleObject = null;
 		this.enemyCap = 100;
 
+		this.minimumUsersPerTeam = 12; //temporary. This is used to fill in each teams with AI if there are no human users playing.
 	}
 
 	init() {
@@ -337,6 +338,8 @@ class GameServer {
 				{
 					logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
 					this.reportTimer = 0;
+					// var temp = this.um.getActiveUsersGroupedByTeams();
+					// console.log(temp);
 				}
 			}
 

@@ -6,6 +6,7 @@ var TeamData = [
 		characterTextStrokeColor: "#ffffff",
 		characterTextFillColor: "#ffffff",
 		killFeedTextColor: "#CCCCCC",
+		projectileStrokeColor: "#000000",
 		slotNum: 0
 	},
 	{
@@ -15,6 +16,7 @@ var TeamData = [
 		characterTextStrokeColor: "#000000",
 		characterTextFillColor: "#ff0000",
 		killFeedTextColor: "#FF1A1A",
+		projectileStrokeColor: "#FF0000",
 		slotNum: 1
 	},
 	{
@@ -24,6 +26,7 @@ var TeamData = [
 		characterTextStrokeColor: "#000000",
 		characterTextFillColor: "#0000ff",
 		killFeedTextColor: "#337DFF",
+		projectileStrokeColor: "#0000FF",
 		slotNum: 2
 	},
 ];

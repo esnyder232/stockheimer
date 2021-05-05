@@ -403,6 +403,37 @@ class UserManager {
 	getUsers() {
 		return this.userArray;
 	}
+	
+	//gets users seperated out
+	getActiveUsersGroupedByTeams() {
+		var arr = [];
+		var teams = this.gs.tm.getTeams();
+		var tempTeamIndex = {};
+
+		for(var i = 0; i < teams.length; i++) {
+			var obj = {
+				teamId: teams[i].id,
+				isSpectatorTeam: teams[i].isSpectatorTeam,
+				humanUserIds: [],
+				aiUserIds : []
+			}
+			arr.push(obj);
+
+			tempTeamIndex[teams[i].id] = obj;
+		}
+
+		for(var i = 0; i < this.activeUserArray.length; i++) {
+			if(this.activeUserArray[i].userType === "user") {
+				tempTeamIndex[this.activeUserArray[i].teamId].humanUserIds.push(this.activeUserArray[i].id);
+			}
+			else if (this.activeUserArray[i].userType === "ai") {
+				tempTeamIndex[this.activeUserArray[i].teamId].aiUserIds.push(this.activeUserArray[i].id);
+			}
+		}
+
+		return arr;
+	}
+
 }
 
 exports.UserManager = UserManager;

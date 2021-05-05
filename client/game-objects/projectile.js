@@ -11,6 +11,7 @@ export default class Projectile {
 		this.type = "character";
 		this.ownerId = null;
 		this.ownerType = "";
+		this.teamId = 0;
 		this.x = 0;
 		this.y = 0;
 		
@@ -33,8 +34,16 @@ export default class Projectile {
 
 	activated() {
 		this.boxGraphics = this.ms.add.graphics();
+		
+		var projectileColor = 0x000000;
+		// this.boxGraphics.lineStyle(1, this.ms.projectileColor, 1);
 
-		this.boxGraphics.lineStyle(1, this.ms.projectileColor, 1);
+		var team = this.gc.tm.getTeamByServerID(this.teamId);
+		if(team !== null) {
+			projectileColor = team.phaserProjectileStrokeColor;
+		}
+		
+		this.boxGraphics.lineStyle(1, projectileColor, 1);
 		this.boxGraphics.moveTo(-this.size * this.ms.planckUnitsToPhaserUnitsRatio, -this.size * this.ms.planckUnitsToPhaserUnitsRatio); //top left
 		this.boxGraphics.lineTo(this.size * this.ms.planckUnitsToPhaserUnitsRatio, -this.size * this.ms.planckUnitsToPhaserUnitsRatio); //top right
 		this.boxGraphics.lineTo(this.size * this.ms.planckUnitsToPhaserUnitsRatio, this.size * this.ms.planckUnitsToPhaserUnitsRatio); //bottom right

@@ -14,6 +14,7 @@ class Team {
 		this.characterTextStrokeColor = "#ffffff";
 		this.characterTextFillColor = "#ffffff";
 		this.killFeedTextColor = "#ffffff";
+		this.projectileStrokeColor = "#000000";
 		this.roundPoints = 0;
 	}
 
@@ -70,6 +71,7 @@ class Team {
 			"characterTextStrokeColor": this.characterTextStrokeColor,
 			"characterTextFillColor": this.characterTextFillColor,
 			"killFeedTextColor": this.killFeedTextColor,
+			"projectileStrokeColor": this.projectileStrokeColor,
 			"roundPoints": this.roundPoints
 		};
 	}
