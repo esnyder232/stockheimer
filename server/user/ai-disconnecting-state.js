@@ -33,8 +33,10 @@ class AiDisconnectingState extends UserBaseState {
 		for(var j = 0; j < userAgents.length; j++)
 		{
 			userAgents[j].insertServerToClientEvent({
-				"eventName": "debugMsg",
-				"debugMsg": "Player '" + this.user.username + "' has disconnected."
+				"eventName": "fromServerChatMessage",
+				"userId": 0,
+				"chatMsg": "Player '" + this.user.username + "' has disconnected.",
+				"isServerMessage": true
 			});
 		}
 

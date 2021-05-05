@@ -143,7 +143,8 @@ class GameServerRunning extends GameServerBaseState {
 								userAgents[j].insertTrackedEntityEvent('user', user.id, {
 									"eventName": "fromServerChatMessage",
 									"userId": user.id,
-									"chatMsg": e.chatMsg
+									"chatMsg": e.chatMsg,
+									"isServerMessage": false
 								})
 							}
 							

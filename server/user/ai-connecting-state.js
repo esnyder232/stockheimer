@@ -26,8 +26,10 @@ class AiConnectingState extends UserBaseState {
 		for(var j = 0; j < userAgents.length; j++)
 		{
 			userAgents[j].insertServerToClientEvent({
-				"eventName": "debugMsg",
-				"debugMsg": "Player '" + this.user.username + "' has connected."
+				"eventName": "fromServerChatMessage",
+				"userId": 0,
+				"chatMsg": "Player '" + this.user.username + "' has connected.",
+				"isServerMessage": true
 			});
 		}
 		

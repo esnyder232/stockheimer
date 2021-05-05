@@ -127,11 +127,20 @@ export default class ChatMenu {
 		var newChatName = newChat.find("span[name='chat-history-name']");
 		var newChatMsg = newChat.find("span[name='chat-history-msg']");
 
-		var u = this.gc.um.getUserByServerID(e.detail.e.userId);
-		
+		//check if its from an actual user or a server message
 		var username = "???";
-		if(u)
-		{
+		var u = null;
+
+		if(e.detail.e.isServerMessage) {
+			u = {
+				username: "[Server]"
+			}
+		}
+		else {
+			var u = this.gc.um.getUserByServerID(e.detail.e.userId);
+		}
+		
+		if(u !== null) {
 			username = u.username;
 		}
 
