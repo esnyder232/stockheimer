@@ -1,9 +1,9 @@
-const {GlobalFuncs} = require('../global-funcs.js');
+const GlobalFuncs = require('../global-funcs.js');
 
 class UserBaseState {
 	constructor(user) {
 		this.user = user;
-		this.globalfuncs = new GlobalFuncs();
+		this.globalfuncs = new GlobalFuncs.GlobalFuncs();
 	}
 
 	enter(dt) {}

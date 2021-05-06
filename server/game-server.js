@@ -68,7 +68,7 @@ class GameServer {
 		this.castleObject = null;
 		this.enemyCap = 100;
 
-		this.minimumUsersPerTeam = 12; //temporary. This is used to fill in each teams with AI if there are no human users playing.
+		this.minimumUsersPlaying = 8; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 	}
 
 	init() {

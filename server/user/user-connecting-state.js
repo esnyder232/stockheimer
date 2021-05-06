@@ -62,6 +62,9 @@ class UserConnectingState extends UserBaseState {
 			ua.insertTrackedEntity("team", teams[i].id);
 		}
 
+		//also balance the ai on the teams
+		this.user.globalfuncs.balanceAiUsersOnTeams(this.user.gs);
+
 		super.enter(dt);
 	}
 

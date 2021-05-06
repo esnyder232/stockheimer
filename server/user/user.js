@@ -116,6 +116,9 @@ class User {
 	}
 
 	userDeinit() {
+		//fucking whatever
+		this.globalfuncs.balanceAiUsersOnTeams(this.gs);
+
 		this.characterId = null;
 		//this.teamId = null; //purposely commented out and left in code to remind you later: don't get rid of the teamId so the game remembers what team you were on.
 		this.bReadyToPlay = false;
