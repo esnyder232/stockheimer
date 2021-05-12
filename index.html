@@ -126,9 +126,69 @@
 								<img class="small-menu-close-button" src="assets/images/x-mark.png" />
 							</div>
 						</div>
-						<div class="small-menu-contents user-list-menu-contents" id="user-list">
-							<div class="user-list-item" id="user-list-player-count">Players: 0/32</div>
-							<div class="user-list-item hide" id="user-list-item-template"></div>
+						<div class="small-menu-contents user-list-menu-contents">
+							<div class="user-list-team-container" id="user-list-team-container">
+
+							</div>
+							
+							<div class="hide user-list-team-contents" id="user-list-team-contents-template">
+								<div class="team-title" name="team-title"> 
+									Team name Here
+								</div>
+								<div class="team-pair"> 
+									<div class="team-pair-label">
+										Players
+									</div>
+									<div class="team-pair-value" name="team-num-players">
+										0
+									</div>
+								</div>
+								<div class="team-pair"> 
+									<div class="team-pair-label">
+										Round Points
+									</div>
+									<div class="team-pair-value" name="team-round-points">
+										0
+									</div>
+								</div>
+
+								<div class="user-list-team-body">
+									<table class="ul-table">
+										<thead>
+											<tr class="ul-head">
+												<th class="ul-ping-header">Ping</th>
+												<th class="ul-name-header">Name</th>
+												<th class="ul-points-header">Points</th>
+												<th class="ul-deaths-header">Deaths</th>
+											</tr>
+										</thead>
+										<tbody id="ul-tbody" name="ul-tbody">
+																						
+										</tbody>
+										<tfoot>
+											<tr class="hide ul-tr" id="ul-item-template">
+												<td class="ul-ping-value" name="ul-ping-value"></td>
+												<td class="ul-name-value" name="ul-name-value"></td>
+												<td class="ul-points-value" name="ul-points-value"></td>
+												<td class="ul-deaths-value" name="ul-deaths-value"></td>
+											</tr>
+										</tfoot>
+									</table>
+								</div>
+							</div>
+						</div>
+						<div class="user-list-footer">
+							<div class="user-list-player-count" id="user-list-player-count">Players: 0/32</div>
+							<div class="user-list-spectator-container">
+								<div class="user-list-spectator-title">
+									Spectators:
+								</div>
+								<div class="user-list-spectator-list" id="user-list-spectator-list">
+									
+								</div>
+								<div class="user-list-spectator-item" id="user-lists-spectator-item-template"></div>
+							</div>
+							
 						</div>
 					</div>
 				</div>

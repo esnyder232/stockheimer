@@ -28,7 +28,9 @@ export default class User {
 		this.seq = null;
 		this.serverEventMapping = {
 			"updateUserInfo": this.updateUserInfoEvent.bind(this),
-			"updateUserPlayingState": this.updateUserPlayingState.bind(this)
+			"updateUserPlayingState": this.updateUserPlayingState.bind(this),
+			"updateUserRtt": this.updateUserRttEvent.bind(this),
+			
 		}
 	}
 	
@@ -70,13 +72,18 @@ export default class User {
 
 	updateUserInfoEvent(e) {
 		this.userKillCount = e.userKillCount;
-		// this.userRtt = e.userRtt;
 		this.teamId = e.teamId;
 		this.roundUserKillCount = e.roundUserKillCount;
 		this.userDeathCount = e.userDeathCount;
 		this.roundUserDeathCount = e.roundUserDeathCount;
 
 		window.dispatchEvent(new CustomEvent("user-info-updated", {detail: {serverId: this.serverId}}));
+	}
+
+	updateUserRttEvent(e) {
+		this.userRtt = e.userRtt;
+		
+		window.dispatchEvent(new CustomEvent("user-rtt-updated", {detail: {serverId: this.serverId}}));
 	}
 
 	updateUserPlayingState(e) {

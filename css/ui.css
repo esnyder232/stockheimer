@@ -472,20 +472,159 @@ input[type="text"]:disabled {
 
 .user-list-menu-container {
 	height: 70%;
-	width: 500px;
-	margin-top: 25px;
+	width: 80%;
+	margin-top: 75px;
+	pointer-events: all;
 }
 
 .user-list-menu-contents {
 	width: 100%;
-	height: 100%;
+	height: 90%;
 	margin: 0% auto;
-	overflow-y: auto;
+	overflow-x: auto;
 }
 
 .user-list-item {
 	width: 100%;
 	float: left;
+}
+
+/*the div that uses this class has its 'width' style attributed modified by javascript*/
+.user-list-team-container {
+	height: 100%;
+	width: 10px;
+	margin: 0% auto;
+	text-align: center;
+	overflow-y: auto;
+	overflow-x: auto;
+}
+
+
+.user-list-team-contents {
+	width: 400px;
+	display: inline-block;
+	margin: 0px 12px;
+	padding: 6px;
+}
+
+
+
+.user-list-footer {
+	height: 10%;
+	width: 100%;
+	overflow: hidden;
+	float:left;
+}
+
+.user-list-player-count {
+	height: 100%;
+	width: 20%;
+	border-width: 4px 1px 0px 0px;
+	border-style: solid;
+	border-color: #cccccc;
+	float: left;
+	font-size:32px;
+	white-space: nowrap;
+}
+
+.user-list-spectator-container {
+	height: 100%;
+	width: 79%;
+	border-width: 4px 0px 0px 0px;
+	border-style: solid;
+	border-color: #cccccc;
+	float: left;
+	overflow: hidden;
+}
+
+.user-list-spectator-title {
+	font-size:32px;
+	float: left;
+}
+.user-list-spectator-item {
+	font-size:16px;
+	float: left;
+	margin:4px 8px;
+}
+
+.team-title {
+	font-size: 36px;
+	font-weight: bold;
+	text-align: center;
+	height: 10%;
+}
+
+
+.ul-table {
+	border: 1px solid white;
+}
+
+.ul-head {
+	font-weight: bold;
+}
+
+.user-list-team-body {
+	height: 90%;
+}
+
+
+.ul-name-header {
+	width:85%;
+}
+
+.ul-points-header {
+	width: 5%;
+}
+
+.ul-deaths-header {
+	width: 5%;
+}
+
+.ul-ping-header {
+	width: 5%;
+}
+
+
+.ul-tr {
+	vertical-align: top;
+}
+
+
+.ul-name-value {
+	
+text-align: left;
+}
+
+.ul-points-value {
+	
+}
+
+.ul-deaths-value {
+	
+}
+
+.ul-ping-value {
+	
+}
+
+
+
+
+.team-pair {
+	width:50%;
+	float:left;
+}
+
+.team-pair-label {
+	width:100%;
+	float:left;
+	text-align: center;
+}
+
+.team-pair-value {
+	width:100%;
+	float:left;
+	text-align: center;
 }
 
 

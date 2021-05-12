@@ -25,7 +25,7 @@ import UpdateRoundStateEvent from "../event-classes/update-round-state-event.js"
 import UpdateUserPlayingStateEvent from "../event-classes/update-user-playing-state.js"
 import KillFeedMsgEvent from "../event-classes/kill-feed-msg-event.js"
 import RoundResultsEvent from "../event-classes/round-results-event.js"
-
+import UpdateUserRttEvent from "../event-classes/update-user-rtt-event.js"
 
 
 
@@ -80,7 +80,7 @@ export default class EventProcessor {
 			{eventName: "updateUserPlayingState", eventClass: new UpdateUserPlayingStateEvent()},
 			{eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent()},
 			{eventName: "roundResults", eventClass: new RoundResultsEvent()},
-			
+			{eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent()}
 		];
 
 	}

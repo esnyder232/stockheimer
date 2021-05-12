@@ -265,22 +265,15 @@ class UserAgent {
 		if(this.rttCalcTimer >= this.rttCalcThreshold)
 		{
 			this.rtt = this.wsh.calcRTT();
-			// this.userInfoDirty = true;
 			this.rttCalcTimer = 0;
+
+			//tell all user agents about the new rtt
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++)
+			{
+				userAgents[i].insertTrackedEntityEvent("user", this.userId, this.serializeUpdateUserRttEvent());
+			}
 		}
-
-		//REDO this for user-agent
-		//tell all users about the new info if its dirty
-		// if(this.userInfoDirty) {
-
-		// 	var activeUsers = this.gs.um.getActiveUsers();
-		// 	for(var i = 0; i < activeUsers.length; i++)
-		// 	{
-		// 		activeUsers[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
-		// 	}
-
-		// 	this.userInfoDirty = false;
-		// }
 
 		//first, see if there are any fragmented messages that need to go to the client
 		if(this.fragmentedServerToClientEvents.length > 0)
@@ -546,6 +539,15 @@ class UserAgent {
 
 		return result;
 	}
+
+	serializeUpdateUserRttEvent() {
+		return {
+			"eventName": "updateUserRtt",
+			"userId": this.userId,
+			"userRtt": this.rtt
+		}
+	}
+
 }
 
 exports.UserAgent = UserAgent;

@@ -55,8 +55,8 @@ export default class Team {
 
 	updateTeamEvent(e) {
 		this.roundPoints = e.roundPoints;
-
-		window.dispatchEvent(new CustomEvent("team-points-updated"), {detail: {serverId: this.serverId}});
+		
+		window.dispatchEvent(new CustomEvent("team-points-updated", {detail: {serverId: this.serverId}}));
 	}
 
 	changeCharacterFillColor(newColor) {
