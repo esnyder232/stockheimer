@@ -70,7 +70,7 @@ export default class UserListMenu {
 		this.userListTeamContainer.css("width", finalWidth + "px");
 
 		//reset to initial state
-		// this.menu.addClass("hide");
+		this.menu.addClass("hide");
 		this.isVisible = false;
 		this.activated = true;
 
