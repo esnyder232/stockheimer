@@ -475,6 +475,7 @@ input[type="text"]:disabled {
 	width: 80%;
 	margin-top: 75px;
 	pointer-events: all;
+	text-shadow: 1px 1px #000000;
 }
 
 .user-list-menu-contents {
@@ -589,10 +590,12 @@ input[type="text"]:disabled {
 	vertical-align: top;
 }
 
+.ul-tr-highlight {
+	background-color: #8a8546;
+}
 
 .ul-name-value {
-	
-text-align: left;
+	text-align: left;
 }
 
 .ul-points-value {
@@ -606,6 +609,7 @@ text-align: left;
 .ul-ping-value {
 	
 }
+
 
 
 

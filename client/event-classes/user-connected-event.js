@@ -14,9 +14,9 @@ export default class UserConnectedEvent {
 		u.username = e.username;
 		u.userKillCount = e.userKillCount;
 		u.teamId = e.teamId;
-		u.roundUserKillCount - e.roundUserKillCount;
-		u.userDeathCount - e.userDeathCount;
-		u.roundUserDeathCount - e.roundUserDeathCount;
+		u.roundUserKillCount = e.roundUserKillCount;
+		u.userDeathCount = e.userDeathCount;
+		u.roundUserDeathCount = e.roundUserDeathCount;
 
 		if(!this.gc.foundMyUser)
 		{

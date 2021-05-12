@@ -24,6 +24,7 @@ export default class UserListMenu {
 		this.windowsEventMapping = [];
 		this.userIdUserListItemMap = {}; //key: userId. value: object containing jquery objects for the user in the list
 		this.teamIdUserItemMap = {}; //key: teamId. value: object containing user information regarding their ordering in the user list
+		this.userListItemOrdered = [];
 		this.currentUsers = 0;
 	}
 
@@ -72,7 +73,6 @@ export default class UserListMenu {
 		//reset to initial state
 		this.menu.addClass("hide");
 		this.isVisible = false;
-		this.activated = true;
 
 		//build team contents
 		var teams = this.gc.tm.getTeams();
@@ -89,10 +89,16 @@ export default class UserListMenu {
 		}
 
 		//update other things initially
-		//update player numbers
-		for(var i = 0; i < teams.length; i++) {
-			this.updateTeamNumPlayers(teams[i].serverId)
+		for (const key in this.teamIdUserItemMap) {
+			if (this.teamIdUserItemMap.hasOwnProperty(key)) {
+				//this.removeTeamContents(this.teamIdUserItemMap[key]);
+				this.updateTeamNumPlayers(this.teamIdUserItemMap[key].teamId)
+				this.reorderTeamList(this.teamIdUserItemMap[key]);
+				this.redrawTeamList(this.teamIdUserItemMap[key]);
+			}
 		}
+
+		this.activated = true;
 	}
 
 	addTeamContents(team) {
@@ -107,7 +113,8 @@ export default class UserListMenu {
 			divNumPlayers: newTeam.find("div[name='team-num-players']"),
 			divRoundPoints: newTeam.find("div[name='team-round-points']"),
 			tbody: newTeam.find("tbody[name='ul-tbody']"),
-			numPlayers: 0
+			numPlayers: 0,
+			userListItemOrdered: []
 		};
 
 		obj.divTitle.text(team.name);
@@ -120,7 +127,6 @@ export default class UserListMenu {
 	}
 
 	removeTeamContents(teamObj) {
-		console.log('Now removing team contents ' + teamObj.teamId)
 		teamObj.divTitle.remove();
 		teamObj.divNumPlayers.remove();
 		teamObj.divRoundPoints.remove();
@@ -133,6 +139,7 @@ export default class UserListMenu {
 		teamObj.divRoundPoints = null;
 		teamObj.tbody = null;
 		teamObj.teamContents = null;
+		teamObj.userListItemOrdered = [];
 
 		delete this.userListTeamContainer[teamObj.teamId];
 	}
@@ -160,11 +167,20 @@ export default class UserListMenu {
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+		this.activated = false;
 
 		//remove user list items from javascript memory
 		for (const key in this.userIdUserListItemMap) {
 			if (this.userIdUserListItemMap.hasOwnProperty(key)) {
 				this.removeUserListItem(this.userIdUserListItemMap[key]);
+			}
+		}
+
+		//redraw for the last time
+		for (const key in this.teamIdUserItemMap) {
+			if (this.teamIdUserItemMap.hasOwnProperty(key)) {
+				this.reorderTeamList(this.teamIdUserItemMap[key]);
+				this.redrawTeamList(this.teamIdUserItemMap[key]);
 			}
 		}
 
@@ -197,7 +213,9 @@ export default class UserListMenu {
 
 		var obj = {
 			serverId: user.serverId,
-			teamId: user.teamId, //serves as the "old" teamId when
+			teamId: user.teamId, //serves as the "old" teamId when looking up stuff later
+			userKillCount: user.userKillCount,	//stored on here for sorting later
+			userDeathCount: user.userDeathCount,//stored on here for sorting later
 			listItem: newUserListItem,
 			tdName: newUserListItem.find("td[name='ul-name-value']"),
 			tdPoints: newUserListItem.find("td[name='ul-points-value']"),
@@ -212,6 +230,12 @@ export default class UserListMenu {
 		obj.tdPing.text(user.userRtt);
 		obj.divSpectator.text(user.username);
 
+		//if the user is your own, highlight it
+		if(user.serverId === this.gc.myUserServerId) {
+			obj.listItem.addClass("ul-tr-highlight");
+			obj.divSpectator.addClass("ul-tr-highlight");
+		}
+
 		this.userIdUserListItemMap[user.serverId] = obj;
 
 		var team = this.gc.tm.getTeamByServerID(user.teamId);
@@ -221,12 +245,16 @@ export default class UserListMenu {
 			if(team.isSpectatorTeam) {
 				this.userListSpectatorList.append(obj.divSpectator)
 			}
-			//append the listitem to the team
+			//update the team list
 			else if(teamItem !== undefined) {
-				teamItem.tbody.append(obj.listItem);
 				teamItem.numPlayers++;
-				obj.divSpectator.detach();
-				this.updateTeamNumPlayers(teamItem.teamId);
+
+				//only redraw if this is currently activated, otherwise its going to resort/redraw 30 or so times on the initial join
+				if(this.activated) {
+					this.updateTeamNumPlayers(teamItem.teamId);
+					this.reorderTeamList(teamItem);
+					this.redrawTeamList(teamItem);
+				}
 			}
 		}
 
@@ -239,9 +267,18 @@ export default class UserListMenu {
 		{
 			//update team player number if the user was part of a playing team
 			var teamObj = this.teamIdUserItemMap[userObj.teamId];
+
 			if(teamObj !== undefined) {
 				teamObj.numPlayers--;
-				this.updateTeamNumPlayers(teamObj.teamId);
+				userObj.teamId = null; //updateing teamId here so the teamListing draws correctly
+
+				//only redraw if this is currently activated, otherwise its going to resort/redraw 30 or so times on the initial join
+				if(this.activated) {
+					this.updateTeamNumPlayers(teamObj.teamId);
+					this.reorderTeamList(teamObj);
+					this.redrawTeamList(teamObj);
+				}
+				
 			}
 			
 			userObj.listItem.remove();
@@ -299,41 +336,31 @@ export default class UserListMenu {
 			}
 
 			if(u !== null && userObj !== undefined) {
-				//update score
-				userObj.tdPoints.text(u.userKillCount);
+				var oldTeamObj = undefined;
+				var newTeamObj = undefined;
+				var newTeam = null;
 
-				//update death
-				userObj.tdDeaths.text(u.userDeathCount);
+				oldTeamObj = this.teamIdUserItemMap[userObj.teamId];
 
-				//update ping
-				userObj.tdPing.text(u.userRtt);
+				newTeam = this.gc.tm.getTeamByServerID(u.teamId);
+				newTeamObj = this.teamIdUserItemMap[u.teamId];
 
-				//if the team has changed, move the user tr around to the new team
+				//update stats
+				userObj.userKillCount = u.userKillCount;
+				userObj.userDeathCount = u.userDeathCount;
+
+				//if the team has changed, update the number of players and hide/unhide the spectator div
 				if(u.teamId !== userObj.teamId) {
 					//first, reset everything so its all hidden or detached
 					userObj.listItem.detach();
 					userObj.divSpectator.detach();
-					
-					var newTeam = null;
-					var oldTeamObj = undefined;
-					var newTeamObj = undefined;
 
-					oldTeamObj = this.teamIdUserItemMap[userObj.teamId];
-
-					newTeam = this.gc.tm.getTeamByServerID(u.teamId);
-					newTeamObj = this.teamIdUserItemMap[u.teamId];
-
-
-					//if the user is no longer on the spectator team, add to new team (extra checks for safety)
-					if(!newTeam.isSpectatorTeam && newTeamObj !== undefined) {
-						newTeamObj.tbody.append(userObj.listItem);
-					}
-					//if the user IS on the spectator team
-					else if(newTeam.isSpectatorTeam) {
+					//if the user is on the spectator team, show them on the spectator list
+					if(newTeam.isSpectatorTeam) {
 						this.userListSpectatorList.append(userObj.divSpectator);
 					}
-					
-					//update the player count on the teams that changed
+
+					//update the player count on the new and old teams if applicable
 					if(newTeamObj !== undefined) {
 						newTeamObj.numPlayers++;
 						this.updateTeamNumPlayers(newTeamObj.teamId);
@@ -343,11 +370,26 @@ export default class UserListMenu {
 						oldTeamObj.numPlayers--;
 						this.updateTeamNumPlayers(oldTeamObj.teamId);
 					}
-				
 				}
 
-				//update teamId
+				//update teamId now (this needs to be updated before we reorder and redraw the team list)
 				userObj.teamId = u.teamId;
+
+				//update the user list on the new team
+				if(newTeamObj !== undefined) {
+					this.reorderTeamList(newTeamObj);
+					this.redrawTeamList(newTeamObj);
+				}
+
+				//update the user list on the old team if the id is different
+				if(oldTeamObj !== undefined && newTeamObj !== undefined && newTeamObj.teamId !== oldTeamObj.teamId) {
+					this.reorderTeamList(oldTeamObj);
+					this.redrawTeamList(oldTeamObj);
+				}
+				
+				//update dom
+				userObj.tdPoints.text(userObj.userKillCount);
+				userObj.tdDeaths.text(userObj.userDeathCount);
 			}
 		}
 	}
@@ -385,6 +427,46 @@ export default class UserListMenu {
 			if(u !== null && userObj !== undefined) {
 				//update ping
 				userObj.tdPing.text(u.userRtt);
+			}
+		}
+	}
+
+	reorderTeamList(teamObj) {
+		var arrTeamMembers = [];
+
+		//find the team members for the teamObj
+		for (const key in this.userIdUserListItemMap) {
+			if (this.userIdUserListItemMap.hasOwnProperty(key)) {
+				if(this.userIdUserListItemMap[key].teamId === teamObj.teamId) {
+					arrTeamMembers.push({
+						serverId: this.userIdUserListItemMap[key].serverId,
+						userKillCount: this.userIdUserListItemMap[key].userKillCount,
+						userDeathCount: this.userIdUserListItemMap[key].userDeathCount,
+					})
+				}
+			}
+		}
+
+		//sort by points desc, then death asc
+		teamObj.userListItemOrdered = arrTeamMembers.sort((a, b) => {return b.userKillCount - a.userKillCount || a.userDeathCount - b.userDeathCount});
+	}
+
+	redrawTeamList(teamObj) {
+		//first, detach everything from the tbody for users on that team
+		for (const key in this.userIdUserListItemMap) {
+			if (this.userIdUserListItemMap.hasOwnProperty(key)) {
+				if(this.userIdUserListItemMap[key].teamId === teamObj.teamId) {
+					this.userIdUserListItemMap[key].listItem.detach();
+				}
+			}
+		}
+
+		//second, attach everything to the tbody for users on that team IN ORDER
+		for(var i = 0; i < teamObj.userListItemOrdered.length; i++) {
+			var serverId = teamObj.userListItemOrdered[i].serverId;
+			var userObj = this.userIdUserListItemMap[serverId];
+			if(userObj !== undefined) {
+				teamObj.tbody.append(userObj.listItem);
 			}
 		}
 	}
