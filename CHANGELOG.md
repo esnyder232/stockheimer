@@ -1,5 +1,26 @@
 # Change log
 
+## Version - 2021.5.19
+* Lots of logic added
+  - Rounds added
+    - Each round lasts for 1 minute. The team with the most points at the end of the round wins.
+    - A round results screen is shown at the end of each round, then the round resets.
+  - Respawn Timer added to top of screen
+  - Teams Added
+  - AI Users
+    - Users can now controlled with AI agents. This is used to make AI "users" log in and play the game.
+* Some things removed
+  - Removed PvP flag on characters (obsolete)
+  - Removed most debug buttons at the bottom of the screen
+* Front end updates
+  - Added Lerping to characters on front end (smoother walking for characters)
+  - Killfeed added to top right of screen
+  - User connection and disconnection messages show up in chat now.
+  - Changed Projectile colors to match team color
+  - User list updated
+    - now sorts based on points descending, then deaths descending. Also categorizes based on team.
+  - Added really professional control instructions to panel
+
 ## Version - 2021.3.29
 * Lots of UI work done.
    - Quick menu added to bottom left.
