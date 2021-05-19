@@ -259,7 +259,7 @@ export default class MainScene extends Phaser.Scene {
 		});
 
 		this.targetLine = new Phaser.Geom.Line(0, 0, 0, 0);		
-		this.targetLineGraphic.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		this.targetLineGraphic.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
 
 		//this.cameras.main.roundPixels = true;
 		this.cameras.main.setRoundPixels(true);

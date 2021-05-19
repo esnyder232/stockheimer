@@ -14,6 +14,11 @@ export default class Projectile {
 		this.teamId = 0;
 		this.x = 0;
 		this.y = 0;
+		this.size = 1;
+		this.sizeScaleFactor = 0.05/0.1; //scales the image based on the size given from the server
+		this.offsetFactor = -50; //offsets the image based on the velocity trajectory. Units are: pixels/velocity
+		this.offsetX = 0;
+		this.offsetY = 0;
 		
 		this.globalfuncs = null;
 
@@ -24,6 +29,7 @@ export default class Projectile {
 		this.isDirty = false;
 
 		this.boxGraphics = null;
+		this.fireballGraphics = null;
 	}
 
 	projectileInit(gameClient) {
@@ -34,6 +40,15 @@ export default class Projectile {
 
 	activated() {
 		this.boxGraphics = this.ms.add.graphics();
+		this.fireballGraphics = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "fireball");
+		this.fireballGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		this.fireballGraphics.setScale(this.size * this.sizeScaleFactor, this.size * this.sizeScaleFactor);
+		this.fireballGraphics.setAngle(this.angle * (180/Math.PI));
+
+		this.offsetX = this.size * this.sizeScaleFactor * this.offsetFactor * Math.cos(this.angle);
+		this.offsetY = this.size * this.sizeScaleFactor * this.offsetFactor * Math.sin(this.angle);
+		
+		console.log('ANGLE: ' + this.angle + ", spriteAngle: " + this.fireballGraphics.angle + ", size: " + this.size);
 		
 		var projectileColor = 0x000000;
 		// this.boxGraphics.lineStyle(1, this.ms.projectileColor, 1);
@@ -63,11 +78,15 @@ export default class Projectile {
 		this.boxGraphics.setX(this.x);
 		this.boxGraphics.setY(this.y);
 
-		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
 	}
 
 	deactivated() {
 		this.boxGraphics.destroy();
+		this.fireballGraphics.destroy();
+
+		this.boxGraphics = null;
+		this.fireballGraphics = null;
 	}
 
 	deinit() {
@@ -83,5 +102,8 @@ export default class Projectile {
 
 		this.boxGraphics.setX(this.x);
 		this.boxGraphics.setY(this.y);
+
+		this.fireballGraphics.setX(this.x + this.offsetX);
+		this.fireballGraphics.setY(this.y + this.offsetY);
 	}
 }
