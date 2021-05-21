@@ -1,0 +1,70 @@
+[
+	{
+		"name": "Black Mage",
+		"hp": 100,
+		"speed": 10,
+		"animationSets": [
+			{
+				"name": "idle",
+				"spriteKey": "slime",
+				"up": "idle-up",
+				"down": "idle-down",
+				"left": "idle-left",
+				"right": "idle-right"
+			},
+			{
+				"name": "move",
+				"spriteKey": "slime",
+				"up": "move-up",
+				"down": "move-down",
+				"left": "move-left",
+				"right": "move-right"
+			},
+			{
+				"name": "attack",
+				"spriteKey": "slime",
+				"up": "attack-up",
+				"down": "attack-down",
+				"left": "attack-left",
+				"right": "attack-right"
+			}
+		],
+		"idleAnimationSet":"idle",
+		"movementAnimationSet":"move"
+	},
+	{
+		"name": "White Mage",
+		"hp": 100,
+		"speed": 10,
+		"animationSets": [
+			{
+				"name": "idle",
+				"spriteKey": "slime",
+				"up": "idle-up",
+				"down": "idle-down",
+				"left": "idle-left",
+				"right": "idle-right"
+			},
+			{
+				"name": "move",
+				"spriteKey": "slime",
+				"up": "move-up",
+				"down": "move-down",
+				"left": "move-left",
+				"right": "move-right"
+			},
+			{
+				"name": "attack",
+				"spriteKey": "slime",
+				"up": "attack-up",
+				"down": "attack-down",
+				"left": "attack-left",
+				"right": "attack-right"
+			}
+		],
+		"idleAnimationSet":"idle",
+		"movementAnimationSet":"move",
+		"fireStateKey": "fireball",
+		"altFireStateKey": "big-fireball"
+	}
+]

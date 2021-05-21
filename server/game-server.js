@@ -19,6 +19,7 @@ const {ProcessManager} = require('./managers/process-manager.js');
 const GameConstants = require('../shared_files/game-constants.json');
 const path = require('path');
 const logger = require("../logger.js");
+const fs = require('fs');
 
 class GameServer {
 	constructor() {
@@ -69,6 +70,7 @@ class GameServer {
 		this.enemyCap = 100;
 
 		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
+
 	}
 
 	init() {
@@ -134,7 +136,24 @@ class GameServer {
 		// }, 3000)
 		
 
+		//fs.readFile("./assets/game-data/sprite-data.json", this.fileReadComplete.bind(this));
+
+
 	}
+
+
+	// fileReadComplete(err, data) {
+	// 	if(err)
+	// 	{
+			
+	// 	}
+	// 	else
+	// 	{
+	// 		var temp = JSON.parse(data.toString())
+	// 	}
+	// }
+
+
 
 	getGlobalGameObjectID() {
 		return this.globalGameObjectIDCounter++;

@@ -1,7 +1,7 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerRunning} = require('./game-server-running.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
-var {TeamData, SpectatorTeamSlotNum} = require("../data/team-data.js");
+var {TeamData, SpectatorTeamSlotNum} = require("../../assets/game-data/team-data.js");
 
 const path = require('path');
 const fs = require('fs');

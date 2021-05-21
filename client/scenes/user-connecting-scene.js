@@ -33,7 +33,7 @@ export default class UserConnectingScene extends Phaser.Scene {
 		//other assets
 		this.load.image("gravestone", "assets/sprites/gravestone.png");
 		this.load.image("castle", "assets/sprites/castle.png");
-		this.load.image("fireball", "assets/images/fireball.png");
+		this.load.image("fireball", "assets/sprites/fireball.png");
 	}
 	  
 	create() {

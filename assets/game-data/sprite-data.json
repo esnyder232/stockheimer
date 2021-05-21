@@ -1,0 +1,32 @@
+[
+	{
+		"key": "castle",
+		"imagePath": "./assets/game-data/castle.png",
+		"animationPath": ""
+	},
+	{
+		"key": "gravestone",
+		"imagePath": "./assets/game-data/gravestone.png",
+		"animationPath": ""
+	},
+	{
+		"key": "slime",
+		"imagePath": "./assets/game-data/slime.png",
+		"animationPath": "./assets/game-data/slime.json"
+	},
+	{
+		"key": "fireball",
+		"imagePath": "./assets/game-data/fireball.png",
+		"animationPath": ""
+	},
+	{
+		"key": "healing-bolt",
+		"imagePath": "./assets/game-data/healing-bolt.png",
+		"animationPath": ""
+	},
+	{
+		"key": "too-angry-to-die-1",
+		"imagePath": "./assets/game-data/too-angry-to-die-1.png",
+		"animationPath": ""
+	}
+]

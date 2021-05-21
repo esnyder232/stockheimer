@@ -17,6 +17,7 @@ export default class Projectile {
 		this.size = 1;
 		this.sizeScaleFactor = 0.05/0.1; //scales the image based on the size given from the server
 		this.offsetFactor = -50; //offsets the image based on the velocity trajectory. Units are: pixels/velocity
+		this.pngUnitsToPlanckUnitsRatio = 1/150;
 		this.offsetX = 0;
 		this.offsetY = 0;
 		
@@ -42,16 +43,10 @@ export default class Projectile {
 		this.boxGraphics = this.ms.add.graphics();
 		this.fireballGraphics = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "fireball");
 		this.fireballGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.fireballGraphics.setScale(this.size * this.sizeScaleFactor, this.size * this.sizeScaleFactor);
+		this.fireballGraphics.setScale(this.size*2 * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio, this.size*2 * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio);
 		this.fireballGraphics.setAngle(this.angle * (180/Math.PI));
-
-		this.offsetX = this.size * this.sizeScaleFactor * this.offsetFactor * Math.cos(this.angle);
-		this.offsetY = this.size * this.sizeScaleFactor * this.offsetFactor * Math.sin(this.angle);
-		
-		console.log('ANGLE: ' + this.angle + ", spriteAngle: " + this.fireballGraphics.angle + ", size: " + this.size);
-		
+		this.fireballGraphics.setOrigin(0.70, 0.5);
 		var projectileColor = 0x000000;
-		// this.boxGraphics.lineStyle(1, this.ms.projectileColor, 1);
 
 		var team = this.gc.tm.getTeamByServerID(this.teamId);
 		if(team !== null) {
@@ -103,7 +98,7 @@ export default class Projectile {
 		this.boxGraphics.setX(this.x);
 		this.boxGraphics.setY(this.y);
 
-		this.fireballGraphics.setX(this.x + this.offsetX);
-		this.fireballGraphics.setY(this.y + this.offsetY);
+		this.fireballGraphics.setX(this.x);
+		this.fireballGraphics.setY(this.y);
 	}
 }
