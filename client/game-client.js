@@ -7,6 +7,8 @@ import EventProcessor from "./classes/event-processor.js"
 import GameObjectManager from "./managers/game-object-manager.js"
 import UserManager from "./managers/user-manager.js"
 import TeamManager from "./managers/team-manager.js"
+import SpriteResourceManager from "./managers/sprite-resource-manager.js"
+import ResourceLoadingScene from "./scenes/resource-loading-scene.js"
 import Marked from "marked";
 import ModalMenu from "./ui-classes/modal-menu.js"
 import ConfirmMenu from "./ui-classes/confirm-menu.js"
@@ -55,6 +57,7 @@ export default class GameClient {
 		this.mainScene = null;
 		this.userConnectingScene = null;
 		this.userDisconnectingScene = null;
+		this.resourceLoadingScene = null;
 
 		//menus
 		this.quickMenu = null;
@@ -65,6 +68,13 @@ export default class GameClient {
 
 		this.gameConstants = {};
 		this.gameConstantsInverse = {};
+
+		////////////////////////////////////
+		// api end points for resources
+		//probably temporary place for these api end points to live
+		this.spriteResourceDataApi = "./assets/game-data/sprite-resource-data.json";
+		this.spriteResourceData = [];
+		////////////////////////////////////
 	}
 
 	init() {
@@ -75,12 +85,14 @@ export default class GameClient {
 		this.gom = new GameObjectManager();
 		this.um = new UserManager();
 		this.tm = new TeamManager();
+		this.srm = new SpriteResourceManager();
 
 		this.wsh.init(this, this.ep);
 		this.ep.init(this, this.wsh);
 		this.gom.init(this);
 		this.um.init(this);
 		this.tm.init(this);
+		this.srm.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -109,11 +121,20 @@ export default class GameClient {
 				keyboard: true,
 				mouse: true,
 				windowEvents: false
+			},
+			callbacks: {
+				postBoot: this.cbPostBoot.bind(this)
 			}
 		}
 
-
 		this.phaserGame = new Phaser.Game(this.phaserConfig);
+
+
+		//add the resource loading scene and hide it.
+		this.phaserGame.scene.add("resource-loading-scene", ResourceLoadingScene, true, {
+			gc: this
+		});
+		
 
 		this.phaserEventMapping = [];
 		this.windowsEventMapping = [];
@@ -232,9 +253,13 @@ export default class GameClient {
 
 
 
-	// cbTest(answer) {
-	// 	console.log("answer: " + answer);
-	// }
+
+
+	cbPostBoot() {
+		console.log("PHASER IS READY");
+		this.resourceLoadingScene = this.phaserGame.scene.getScene("resource-loading-scene");
+		this.lobbyScene = this.phaserGame.scene.getScene("lobby-scene");
+	}
 
 	debugPrintFunc() {
 		console.log('team array length: ' + this.tm.getTeams().length);
@@ -260,6 +285,22 @@ export default class GameClient {
 		}
 	}
 
+	//cb gets called like this: 
+	// "cb(error)" - error is true if an error occured. false if successful.
+	getSpriteResourceData(cb) {
+		$.ajax({url: this.spriteResourceDataApi, method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.spriteResourceData = this.globalfuncs.getDataArray(responseData);
+			cb(false);
+		})
+		.fail((xhr) => {
+			var msg = 'Failed to get sprite resource data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
+			this.globalfuncs.appendToLog(msg);
+			this.modalMenu.openMenu("error", msg);
+			cb(true);
+		})
+	}
+
 
 
 	reset() {
@@ -268,6 +309,7 @@ export default class GameClient {
 		this.myUser = null;
 		this.foundMyUser = false;
 		this.foundMyCharacter = false;
+		this.spriteResourceData = [];
 		this.ep.reset();
 	}
 

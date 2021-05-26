@@ -345,7 +345,6 @@ export default class MainScene extends Phaser.Scene {
 		this.userListMenu.closeMenu();
 		this.gc.mainMenu.closeMenu();
 		this.chatMenu.closeMenu();
-		this.userListMenu.closeMenu();
 		this.roundResultsMenu.closeMenu();
 		this.teamScoreMenu.closeMenu();
 

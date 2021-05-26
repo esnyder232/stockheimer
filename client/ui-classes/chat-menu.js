@@ -10,6 +10,7 @@ export default class ChatMenu {
 		this.gc = null;
 		this.globalfuncs = null;
 		this.isVisible = false;
+		this.activated = false;
 
 		this.menu = null;
 		this.chatHistory = null;
@@ -48,7 +49,7 @@ export default class ChatMenu {
 
 		//custom event registration
 		this.chatInput.on("keyup", this.tbChatInputKeyup.bind(this));
-
+		this.activated = true;
 	}
 
 	toggleMenu() {
@@ -105,16 +106,22 @@ export default class ChatMenu {
 
 
 	closeMenu() {
-		this.menu.addClass("hide");
+		if(this.activated) {
+			this.menu.addClass("hide");
 
-		window.dispatchEvent(new CustomEvent("chat-menu-closed"));
-		this.isVisible = false;
+			window.dispatchEvent(new CustomEvent("chat-menu-closed"));
+			this.isVisible = false;
+		}
 	}
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 
-		this.chatInput.off("keyup");
+		if(this.activated) {
+			this.chatInput.off("keyup");
+		}
+		
+		this.activated = false;
 	}
 
 	deinit() {

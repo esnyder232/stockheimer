@@ -14,6 +14,7 @@ export default class MainMenu {
 		this.menu = null;
 
 		this.windowsEventMapping = [];
+		this.activated = false;
 	}
 
 	init(gc) {
@@ -39,6 +40,7 @@ export default class MainMenu {
 		//reset to initial state
 		this.menu.addClass("hide");
 		this.isVisible = false;
+		this.activated = true;
 	}
 
 	toggleMenu() {
@@ -69,13 +71,16 @@ export default class MainMenu {
 	}
 
 	closeMenu() {
-		this.menu.addClass("hide");
-		window.dispatchEvent(new CustomEvent("main-menu-closed"));
-		this.isVisible = false;
+		if(this.activated) {
+			this.menu.addClass("hide");
+			window.dispatchEvent(new CustomEvent("main-menu-closed"));
+			this.isVisible = false;
+		}
 	}
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+		this.activated = false;
 	}
 
 	deinit() {

@@ -71,6 +71,10 @@ class GameServer {
 
 		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 
+		this.gameResourceData = {
+			"spriteResourceData": "./assets/game-data/sprite-resource-data.json",
+			"classData": "./assets/class-data.json"
+		}
 	}
 
 	init() {
@@ -532,7 +536,7 @@ class GameServer {
 	//This is where we can do checks for if the players are at maximum capicity, or player name filtering, etc.
 	//If the player is allowed to connect and they don't have a user setup yet, this also creates the user for them in UserManager and sets the user-session cookie on the client.
 	joinRequest(req, res) {
-		logger.log("info", "join request called")
+		logger.log("info", "join request called");
 		var bError = false;
 		var data = {};
 		var main = [];
@@ -622,6 +626,33 @@ class GameServer {
 			userMessage = "Internal server error.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
 			logger.log("info", ex);
+			bError = true;
+		}
+
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		data.main = main;
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
+	//used to get the list of resources the client will need to load the game
+	getGameResourceData(req, res) {
+		logger.log("info", "get game resource data called");
+		var bError = false;
+		var data = {};
+		var main = [];
+		var userMessage = "";
+
+		try {
+			//just send the hard coded json for now
+			main.push(this.gameResourceData);
+		}
+		catch(ex) {
+			userMessage = "Internal server error.";
+			logger.log("error", ex);
 			bError = true;
 		}
 

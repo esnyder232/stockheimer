@@ -160,40 +160,45 @@ export default class UserListMenu {
 	}
 
 	closeMenu() {
-		this.menu.addClass("hide");
-		window.dispatchEvent(new CustomEvent("user-list-menu-closed"));
-		this.isVisible = false;
+		if(this.activated) {
+			this.menu.addClass("hide");
+			window.dispatchEvent(new CustomEvent("user-list-menu-closed"));
+			this.isVisible = false;
+		}
 	}
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+
+		if(this.activated) {
+			//remove user list items from javascript memory
+			for (const key in this.userIdUserListItemMap) {
+				if (this.userIdUserListItemMap.hasOwnProperty(key)) {
+					this.removeUserListItem(this.userIdUserListItemMap[key]);
+				}
+			}
+
+			//redraw for the last time
+			for (const key in this.teamIdUserItemMap) {
+				if (this.teamIdUserItemMap.hasOwnProperty(key)) {
+					this.reorderTeamList(this.teamIdUserItemMap[key]);
+					this.redrawTeamList(this.teamIdUserItemMap[key]);
+				}
+			}
+
+			//remove team items from javascript memory
+			for (const key in this.teamIdUserItemMap) {
+				if (this.teamIdUserItemMap.hasOwnProperty(key)) {
+					this.removeTeamContents(this.teamIdUserItemMap[key]);
+				}
+			}
+
+			//clear out user list
+			this.userListTeamContainer.empty();
+			this.userListSpectatorList.empty();
+		}
+
 		this.activated = false;
-
-		//remove user list items from javascript memory
-		for (const key in this.userIdUserListItemMap) {
-			if (this.userIdUserListItemMap.hasOwnProperty(key)) {
-				this.removeUserListItem(this.userIdUserListItemMap[key]);
-			}
-		}
-
-		//redraw for the last time
-		for (const key in this.teamIdUserItemMap) {
-			if (this.teamIdUserItemMap.hasOwnProperty(key)) {
-				this.reorderTeamList(this.teamIdUserItemMap[key]);
-				this.redrawTeamList(this.teamIdUserItemMap[key]);
-			}
-		}
-
-		//remove team items from javascript memory
-		for (const key in this.teamIdUserItemMap) {
-			if (this.teamIdUserItemMap.hasOwnProperty(key)) {
-				this.removeTeamContents(this.teamIdUserItemMap[key]);
-			}
-		}
-
-		//clear out user list
-		this.userListTeamContainer.empty();
-		this.userListSpectatorList.empty();
 	}
 
 	deinit() {

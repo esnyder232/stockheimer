@@ -44,9 +44,15 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		}
 
 
+		//unload sprite resources
+		var spriteResources = this.gc.srm.getSpriteResources();
+		for(var i = 0; i < spriteResources.length; i++) {
+			spriteResources[i].unloadSpriteResource();
+			this.gc.srm.destroySpriteResource(spriteResources[i].id);
+		}
+
 		//reset the game client
 		this.gc.reset();
-
 
 		//this is just to give a few update loops so the managers can clear themselves out
 		this.updateCounter = 0;
@@ -60,6 +66,7 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		this.gc.um.update(dt);
 		this.gc.gom.update(dt);
 		this.gc.tm.update(dt);
+		this.gc.srm.update(dt);
 
 		this.updateCounter++;
 

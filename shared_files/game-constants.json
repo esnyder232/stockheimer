@@ -21,5 +21,14 @@
 		"DEAD": 1,
 		"RESPAWNING": 2,
 		"PLAYING": 3
+	},
+
+
+	"UserConnectingInternalStates": {
+		"WEBSOCKET_CONNECTION": 0,
+		"RECIEVE_WORLD_STATE": 1,
+		"RETRIEVE_SPRITE_RESOURCE_DATA": 2,
+		"LOAD_SPRITE_RESOURCES": 3,
+		"START_PLAYING": 4
 	}
 }

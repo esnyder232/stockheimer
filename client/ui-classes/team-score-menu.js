@@ -60,13 +60,18 @@ export default class TeamScoreMenu {
 	}
 
 	closeMenu() {
-		this.menu.addClass("hide");
-		this.isVisible = false;
+		if(this.activated) {
+			this.menu.addClass("hide");
+			this.isVisible = false;
+		}
 	}
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
-		this.teamScoreList.empty();
+		if(this.activated) {
+			this.teamScoreList.empty();
+		}
+		this.activated = false;
 	}
 
 	deinit() {

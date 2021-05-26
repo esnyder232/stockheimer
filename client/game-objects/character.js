@@ -46,6 +46,10 @@ export default class Character {
 		this.usernameText = "???";
 		this.circleShape = null;
 
+		// this.spriteGraphics = null;
+		// this.spriteKey = "slime";
+		// this.animationKey = "slime-idle-down";
+
 	}
 
 	characterInit(gameClient) {
@@ -74,6 +78,11 @@ export default class Character {
 
 		//now fill in the graphics colors
 		this.drawGraphics();
+
+		//testing sprite graphics
+		// this.spriteGraphics = this.ms.add.sprite(this.x*this.ms.planckUnitsToPhaserUnitsRatio, this.y*this.ms.planckUnitsToPhaserUnitsRatio, this.spriteKey);
+		// this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		// this.spriteGraphics.anims.play(this.animationKey);
 
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
@@ -153,6 +162,7 @@ export default class Character {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
 		this.hpTextGraphics.destroy();
+		// this.spriteGraphics.destroy();
 
 		//put gravestone where the character was removed
 		var gravestone = {
@@ -289,5 +299,8 @@ export default class Character {
 		this.hpTextGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
 		this.hpTextGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 34)
 		this.hpTextGraphics.setText(this.hpCur + "/" + this.hpMax);
+
+		// this.spriteGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
+		// this.spriteGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
 	}
 }

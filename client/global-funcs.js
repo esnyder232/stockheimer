@@ -70,17 +70,19 @@ export default class GlobalFuncs {
 		}
 	}
 
+	createAnimsFromAseprite(phaserGame, asepriteSpritesheetKey, asepriteJsonKey) {
+		//console.log('now creating anims for ' + asepriteSpritesheetKey);
+		//console.log(phaserGame);
 
-	createSceneAnimsFromAseprite(scene, asepriteSpritesheetKey, asepriteJsonKey) {
 		//find the aseprite json file to parse from
-		var json = scene.cache.json.get(asepriteJsonKey);
-		var anims = scene.anims;
+		var json = phaserGame.cache.json.get(asepriteJsonKey);
+		var anims = phaserGame.anims;
+
+		//console.log(sprite);
+		// console.log(anims);
 
 		//parse through the frameTags for the animations and create an animation for each one
-		for(var i = 0; i < json.meta.frameTags.length; i++)
-		{
-
-
+		for(var i = 0; i < json.meta.frameTags.length; i++) {
 			var f = json.meta.frameTags[i];
 			var key = asepriteSpritesheetKey + "-" + f.name;
 			var frames = anims.generateFrameNumbers(asepriteSpritesheetKey, {start: f.from, end: f.to});
@@ -95,6 +97,29 @@ export default class GlobalFuncs {
 			anims.create(animObject);
 		}
 	}
+
+	removeAnimsFromAseprite(phaserGame, asepriteSpritesheetKey, asepriteJsonKey) {
+		//console.log('now removing anims for ' + asepriteSpritesheetKey);
+
+		//find the aseprite json file to parse from
+		var json = phaserGame.cache.json.get(asepriteJsonKey);
+		var anims = phaserGame.anims;
+
+		//console.log(sprite);
+		// console.log(anims);
+
+		//parse through the frameTags for the animations and create an animation for each one
+		for(var i = 0; i < json.meta.frameTags.length; i++) {
+			var f = json.meta.frameTags[i];
+			var key = asepriteSpritesheetKey + "-" + f.name;
+
+			//console.log(animObject);
+			anims.remove(key);
+		}
+	}
+
+
+
 
 	//9/10/2020 - This is to fix the arcade sprite when the sprite is created in the update function instead of the create function.
 	//This basically realligns the sprite body's hitbox so it doesn't get out of sync with the sprite game object.

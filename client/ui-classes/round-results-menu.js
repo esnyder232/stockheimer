@@ -10,6 +10,7 @@ export default class RoundResultsMenu {
 		this.gc = null;
 		this.globalfuncs = null;
 		this.isVisible = false;
+		this.activated = false;
 
 		this.menu = null;
 
@@ -50,6 +51,7 @@ export default class RoundResultsMenu {
 
 		//reset to initial state
 		this.menu.addClass("hide");
+		this.activated = true;
 	}
 
 	populateRoundResults() {
@@ -167,13 +169,18 @@ export default class RoundResultsMenu {
 	}
 
 	closeMenu() {
-		this.menu.addClass("hide");
-		this.isVisible = false;
+		if(this.activated) {
+			this.menu.addClass("hide");
+			this.isVisible = false;
+		}
 	}
 	
 	deactivate() {
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
-		this.clearRoundResults();
+		if(this.activated) {
+			this.clearRoundResults();
+		}
+		this.activated = false;
 	}
 
 	deinit() {

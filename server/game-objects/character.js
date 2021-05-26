@@ -206,9 +206,7 @@ class Character {
 							angle: this.inputQueue[i].characterDirection,
 							type: 'bigBullet'
 						}
-	
-						this.bigBulletCounter = 5000;
-	
+		
 						this.eventQueue.push(fireEvent);
 					}
 				}
@@ -394,6 +392,7 @@ class Character {
 						if(e.type == "bigBullet")
 						{
 							o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000, 7.0);
+							this.bigBulletCounter = 5000;
 						}
 						else //small normal bullet
 						{
