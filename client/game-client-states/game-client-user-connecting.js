@@ -2,6 +2,7 @@ import GameClientBaseState from './game-client-base-state.js';
 import GameClientUserDisconnecting from './game-client-user-disconnecting.js';
 import GameClientUserPlaying from './game-client-user-playing.js';
 import UserConnectingScene from "../scenes/user-connecting-scene.js"
+import TilemapResource from "../classes/tilemap-resource.js"
 import MainScene from "../scenes/main-scene.js"
 
 export default class GameClientUserConnecting extends GameClientBaseState {
@@ -50,6 +51,9 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		this.gc.mainScene.scene.sleep();
 
 		this.gc.mainMenu.enableExitServerButton();
+		
+		//create a tile map resource for later when we load the tilemap
+		this.gc.theTilemapResource = new TilemapResource();
 	}
 
 	update(dt) {
@@ -87,9 +91,42 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				//if all sprites are done loading, move onto the next state
 				if(bSpritesFinised) {
 					this.globalfuncs.appendToLog("Loading sprite resources done.")
-					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"];
-					this.gc.userConnectingScene.updateConnectingMessage("Starting game");
+					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_GAME_RESOURCE_DATA"];
+					this.gc.userConnectingScene.updateConnectingMessage("Getting game resource data");
+					this.gc.getGameResourceData(this.cbGetGameResourceData.bind(this));
 				}
+
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+				break;
+			case this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_GAME_RESOURCE_DATA"]:
+
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+				break;
+			case this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_TILEMAP_RESOURCES"]:
+
+				//check if the tilemap resource is done loading
+				//if there is no error, move on to the next state
+				if(this.gc.theTilemapResource.tilemapLoadFinished && !this.gc.theTilemapResource.tilemapLoadError) {
+					this.globalfuncs.appendToLog("Loading tilemap resources done.")
+					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"];
+					this.gc.userConnectingScene.updateConnectingMessage("Loading tileset resources");
+					//this.gc.getGameResourceData(this.cbGetGameResourceData.bind(this));
+				}
+				//if there is an error, tell the user and disconnect
+				else if (this.gc.theTilemapResource.tilemapLoadFinished && this.gc.theTilemapResource.tilemapLoadError) {
+					var msg = this.gc.theTilemapResource.tilemapLoadErrorMessage + ". Disconnecting.";
+					this.globalfuncs.appendToLog(msg);
+					this.gc.modalMenu.openMenu("error", msg);
+					this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+				}
+				
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+				break;
+
+			case this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_TILESET_RESOURCES"]:
 
 				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
@@ -142,10 +179,10 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		this.gc.userConnectingScene.updateConnectingMessage("Getting sprite resource data");
 		this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_SPRITE_RESOURCE_DATA"];
 
-		this.gc.getSpriteResourceData(this.cbGetGameResourceData.bind(this))
+		this.gc.getSpriteResourceData(this.cbGetSpriteResourceData.bind(this));
 	}
 
-	cbGetGameResourceData(error) {
+	cbGetSpriteResourceData(error) {
 		//if an error occured, just disconnect
 		if(error) {
 			this.globalfuncs.appendToLog("An Error has occured when retreiving sprite resource data. Disconnecting.");
@@ -157,6 +194,7 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			this.globalfuncs.appendToLog("Loading sprite resources...");
 			this.gc.userConnectingScene.updateConnectingMessage("Loading sprite resources");
 			this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_SPRITE_RESOURCES"];
+
 			for(var i = 0; i < this.gc.spriteResourceData.length; i++) {
 				var sr = this.gc.srm.createSpriteResource(this.gc.spriteResourceData[i].key, this.gc.spriteResourceData[i].imagePath, this.gc.spriteResourceData[i].animationPath);
 
@@ -167,9 +205,33 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			}
 
 			//hard coded tilemaps for now
-			this.gc.resourceLoadingScene.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
+			// this.gc.resourceLoadingScene.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
 			this.gc.resourceLoadingScene.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
 			
+			this.gc.resourceLoadingScene.load.start();
+		}
+	}
+
+	cbGetGameResourceData(error) {
+		//if an error occured, just disconnect
+		if(error) {
+			this.globalfuncs.appendToLog("An Error has occured when retreiving game resource data. Disconnecting.");
+			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+		}
+		else {
+			//get the map that is loaded
+			this.globalfuncs.appendToLog("Getting game resource data done.");
+			this.globalfuncs.appendToLog("Loading tilemap resources...");
+			this.gc.userConnectingScene.updateConnectingMessage("Loading tilemap resources");
+			this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_TILEMAP_RESOURCES"];
+
+			//create tilemap resource here
+			var key = this.globalfuncs.getFilenameFromUrl(this.gc.gameResourceData.map_relpath);
+			this.gc.theTilemapResource.key = key;
+			this.gc.theTilemapResource.tilemapPath = this.gc.gameResourceData.map_relpath;
+			this.gc.theTilemapResource.tilemapResourceInit(this.gc);
+			this.gc.theTilemapResource.loadTilemapResource();
+
 			this.gc.resourceLoadingScene.load.start();
 		}
 	}

@@ -72,8 +72,8 @@ class GameServer {
 		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 
 		this.gameResourceData = {
-			"spriteResourceData": "./assets/game-data/sprite-resource-data.json",
-			"classData": "./assets/class-data.json"
+			"map_relpath": serverConfig.map_relpath,
+			"tilesets_dir_relpath": serverConfig.tilesets_dir_relpath
 		}
 	}
 
@@ -640,7 +640,6 @@ class GameServer {
 
 	//used to get the list of resources the client will need to load the game
 	getGameResourceData(req, res) {
-		logger.log("info", "get game resource data called");
 		var bError = false;
 		var data = {};
 		var main = [];

@@ -51,6 +51,9 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 			this.gc.srm.destroySpriteResource(spriteResources[i].id);
 		}
 
+		//unload tilemap resource
+		this.gc.theTilemapResource.unloadTilemapResource();
+
 		//reset the game client
 		this.gc.reset();
 
@@ -91,6 +94,8 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 
 		this.gc.mainMenu.disableExitServerButton();
 		
+		this.gc.theTilemapResource = null;
+
 		this.gc.wsh.reset();
 	}
 }

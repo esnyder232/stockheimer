@@ -1,6 +1,7 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerRunning} = require('./game-server-running.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
+const ServerConfig = require("../server-config.json");
 var {TeamData, SpectatorTeamSlotNum} = require("../../assets/game-data/team-data.js");
 
 const path = require('path');
@@ -15,7 +16,8 @@ class GameServerStarting extends GameServerBaseState {
 		this.tilemapFailedToLoad = false;
 		this.tilemapId = null;
 		// this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
-		this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-techdemo.json");
+		this.path = path.join(this.gs.appRoot, ServerConfig.map_relpath);
+
 	}
 	
 	enter(dt) {

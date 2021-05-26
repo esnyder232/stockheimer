@@ -69,11 +69,17 @@ export default class GameClient {
 		this.gameConstants = {};
 		this.gameConstantsInverse = {};
 
+		//probably temporary until there are more
+		this.theRound = null;
+		this.theTilemapResource = null;
+
 		////////////////////////////////////
 		// api end points for resources
 		//probably temporary place for these api end points to live
 		this.spriteResourceDataApi = "./assets/game-data/sprite-resource-data.json";
 		this.spriteResourceData = [];
+		this.gameResourceDataApi = "./api/get-game-resource-data"
+		this.gameResourceData = {};
 		////////////////////////////////////
 	}
 
@@ -301,6 +307,24 @@ export default class GameClient {
 		})
 	}
 
+	//cb gets called like this: 
+	// "cb(error)" - error is true if an error occured. false if successful.
+	getGameResourceData(cb) {
+		$.ajax({url: this.gameResourceDataApi, method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.gameResourceData = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
+			cb(false);
+		})
+		.fail((xhr) => {
+			var msg = 'Failed to get game resource data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
+			this.globalfuncs.appendToLog(msg);
+			this.modalMenu.openMenu("error", msg);
+			cb(true);
+		})
+	}
+	
+
+
 
 
 	reset() {
@@ -311,6 +335,7 @@ export default class GameClient {
 		this.foundMyCharacter = false;
 		this.spriteResourceData = [];
 		this.ep.reset();
+		this.theRound = null;
 	}
 
 	gameLoop() {

@@ -47,7 +47,7 @@ export default class ResourceLoadingScene extends Phaser.Scene {
 		// window.dispatchEvent(new CustomEvent("load", {detail: {file: file}}));
 	}
 
-	fileLoadError(file, a, b, c) {
+	fileLoadError(file) {
 		// console.log('!========================= fileLoadError called! =================================');
 		// console.log(file);
 		window.dispatchEvent(new CustomEvent("loaderror", {detail: {file: file}}));

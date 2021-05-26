@@ -8,5 +8,8 @@
 	"fps": 30,
 	"max_players": 32,
 	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",
-	"log_level": "debug"
+	"log_level": "debug",
+	
+	"map_relpath": "assets/tilemaps/stockheimer-techdemo.json",
+	"tilesets_dir_relpath": "assets/tilesets"
 }

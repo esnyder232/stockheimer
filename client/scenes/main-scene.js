@@ -281,7 +281,7 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	createMap() {
-		this.map = this.make.tilemap({key: "my-tilemap"});
+		this.map = this.make.tilemap({key: this.gc.theTilemapResource.key});
 
 		//load tileset
 		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 2, 4);

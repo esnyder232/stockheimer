@@ -173,6 +173,12 @@ export default class GlobalFuncs {
 		return result;
 	}
 
+	//https://stackoverflow.com/questions/511761/js-function-to-get-filename-from-url/48554885
+	//sick
+	getFilenameFromUrl(url) {
+		return url.split('/').pop();
+	}
+	
 
 	
 	appendToLog(msg) {		

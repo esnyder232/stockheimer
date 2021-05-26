@@ -4,7 +4,7 @@ const websocket = require('ws');
 const cookieParser = require('cookie-parser');
 const {GameServer} = require("./server/game-server.js");
 const serverConfig = require('./server/server-config.json');
-const {GlobalFuncs}= require('./server/global-funcs');
+const {GlobalFuncs}= require('./server/global-funcs.js');
 const logger = require("./logger.js");
 
 const globalfuncs = new GlobalFuncs();
