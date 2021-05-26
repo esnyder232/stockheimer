@@ -130,6 +130,9 @@ export default class WebsocketHandler {
 		var msg = "WebsocketHandler: Websocket error:" + e;
 		this.globalfuncs.appendToLog(msg);
 		this.gc.modalMenu.openMenu("error", msg);
+
+		console.log('WEB SOCKET ERRROR:')
+		console.log(e);
 		
 		this.gc.gameState.websocketErrored();
 	}
