@@ -109,6 +109,9 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu = null;
 		this.roundResultsMenu = null;
 		this.teamScoreMenu = null;
+
+		this.tilesetArray = [];
+		this.layerArray = [];
 	}
 
 	init(data) {
@@ -281,17 +284,38 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	createMap() {
+		var tilemapData = this.cache.tilemap.get(this.gc.theTilemapResource.key);
+
+		//create tilemap in phaser
 		this.map = this.make.tilemap({key: this.gc.theTilemapResource.key});
 
-		//load tileset
-		this.tileset = this.map.addTilesetImage("stockheimer-test-tileset-extruded", "stockheimer-test-tileset-extruded", 16, 16, 2, 4);
-		
-		//create layers
-		var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-		this.layer1 = this.map.createLayer("Tile Layer 1", this.tileset, xOffset, yOffset).setScale(2);
+		//for each layer, create a tileset and a tile later in phaser
+		for(var i = 0; i < tilemapData.data.tilesets.length; i++) {
+			var ts = tilemapData.data.tilesets[i];
 
-		this.layer1.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
+			//create tileset
+			var key = this.globalfuncs.getFilenameFromUrl(ts.image);
+			var newTileset = this.map.addTilesetImage(ts.name, key, ts.tilewidth, ts.tileheight, ts.margin, ts.spacing);
+
+			//add tileset to the pile
+			this.tilesetArray.push(newTileset);
+		}
+
+		for(var i = 0; i < tilemapData.data.layers.length; i++) {
+			var l = tilemapData.data.layers[i];
+
+			if(l.type === "tilelayer") {
+				//create layer
+				var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+				var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
+				var newLayer = this.map.createLayer(l.name, this.tilesetArray, xOffset, yOffset).setScale(2);
+
+				newLayer.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
+
+				//add layer to the pile
+				this.layerArray.push(newLayer);
+			}
+		}
 	}
 
 	setCameraZoom() {

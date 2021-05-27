@@ -7,7 +7,6 @@ export default class TilemapResource {
 		this.key = "";
 		this.tilemapPath = "";
 		
-		this.tiledDataJson = {};
 		this.tilemapLoaded = false;
 
 		this.tilemapLoadFinished = false;

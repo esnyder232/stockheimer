@@ -8,6 +8,7 @@ import GameObjectManager from "./managers/game-object-manager.js"
 import UserManager from "./managers/user-manager.js"
 import TeamManager from "./managers/team-manager.js"
 import SpriteResourceManager from "./managers/sprite-resource-manager.js"
+import TilesetResourceManager from "./managers/tileset-resource-manager.js"
 import ResourceLoadingScene from "./scenes/resource-loading-scene.js"
 import Marked from "marked";
 import ModalMenu from "./ui-classes/modal-menu.js"
@@ -92,6 +93,7 @@ export default class GameClient {
 		this.um = new UserManager();
 		this.tm = new TeamManager();
 		this.srm = new SpriteResourceManager();
+		this.trm = new TilesetResourceManager();
 
 		this.wsh.init(this, this.ep);
 		this.ep.init(this, this.wsh);
@@ -99,6 +101,7 @@ export default class GameClient {
 		this.um.init(this);
 		this.tm.init(this);
 		this.srm.init(this);
+		this.trm.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,

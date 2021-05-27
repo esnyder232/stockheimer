@@ -94,7 +94,7 @@ export default class SpriteResource {
 
 		var baseMessage = "Failed to load image for: " + this.imagePath + " (key: " + this.key + ") : " + e.detail.file.xhrLoader.statusText;
 		this.globalfuncs.appendToLog("Sprite-Resource: " + baseMessage);
-		window.dispatchEvent(new CustomEvent("sprite-resource-load-error", {detail: {"result": "fail", "message": baseMessage}}));
+		window.dispatchEvent(new CustomEvent("resource-load-error", {detail: {"result": "fail", "message": baseMessage}}));
 		this.spriteLoadFinished = true;
 	}
 
@@ -104,7 +104,7 @@ export default class SpriteResource {
 
 		var baseMessage = "Failed to load animation data for: " + this.animationPath + " (key: " + this.animationKey + ") : " + e.detail.file.xhrLoader.statusText;
 		this.globalfuncs.appendToLog("Sprite-Resource: " + baseMessage);
-		window.dispatchEvent(new CustomEvent("sprite-resource-load-error", {detail: {"result": "fail", "message": baseMessage}}));
+		window.dispatchEvent(new CustomEvent("resource-load-error", {detail: {"result": "fail", "message": baseMessage}}));
 		this.spriteLoadFinished = true;
 	}
 
@@ -162,7 +162,7 @@ export default class SpriteResource {
 		catch(ex) {
 			var baseMessage = "Exception caught when loading animation data for: " + this.animationPath + " (key: " + this.animationKey + ")";
 			this.globalfuncs.appendToLog("Sprite-Resource: " + baseMessage + ": " + ex + ex.trace);
-			window.dispatchEvent(new CustomEvent("sprite-resource-load-error", {detail: {"message": baseMessage}}));
+			window.dispatchEvent(new CustomEvent("resource-load-error", {detail: {"message": baseMessage}}));
 			this.spriteLoadFinished = true;
 		}
 	}
@@ -174,7 +174,7 @@ export default class SpriteResource {
 		catch(ex) {
 			var baseMessage = "Exception caught when creating the sprite sheet for: " + this.imagePath + " (key: " + this.key + ")";
 			this.globalfuncs.appendToLog("Sprite-Resource: " + baseMessage + ": " + ex);
-			window.dispatchEvent(new CustomEvent("sprite-resource-load-error", {detail: {"message": baseMessage}}));
+			window.dispatchEvent(new CustomEvent("resource-load-error", {detail: {"message": baseMessage}}));
 			this.spriteLoadFinished = true;
 		}
 		

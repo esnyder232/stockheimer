@@ -79,17 +79,17 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 
 				//check if the sprite resources have all been loaded (success or failure, doesn't matter here)
 				var spriteResourceArray = this.gc.srm.getSpriteResources();
-				var bSpritesFinised = true;
+				var bFinished = true;
 
 				for(var i = 0; i < spriteResourceArray.length; i++) {
 					if(!spriteResourceArray[i].spriteLoadFinished) {
-						bSpritesFinised = false;
+						bFinished = false;
 						break;
 					}
 				}
 
 				//if all sprites are done loading, move onto the next state
-				if(bSpritesFinised) {
+				if(bFinished) {
 					this.globalfuncs.appendToLog("Loading sprite resources done.")
 					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_GAME_RESOURCE_DATA"];
 					this.gc.userConnectingScene.updateConnectingMessage("Getting game resource data");
@@ -110,9 +110,9 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				//if there is no error, move on to the next state
 				if(this.gc.theTilemapResource.tilemapLoadFinished && !this.gc.theTilemapResource.tilemapLoadError) {
 					this.globalfuncs.appendToLog("Loading tilemap resources done.")
-					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"];
+					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_TILESET_RESOURCES"];
 					this.gc.userConnectingScene.updateConnectingMessage("Loading tileset resources");
-					//this.gc.getGameResourceData(this.cbGetGameResourceData.bind(this));
+					this.loadTilesetResources();
 				}
 				//if there is an error, tell the user and disconnect
 				else if (this.gc.theTilemapResource.tilemapLoadFinished && this.gc.theTilemapResource.tilemapLoadError) {
@@ -127,6 +127,24 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				break;
 
 			case this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_TILESET_RESOURCES"]:
+
+				//check if the tileset resources have all been loaded (success or failure, doesn't matter here)
+				var tilesetResourceArray = this.gc.trm.getTilesetResources();
+				var bFinished = true;
+
+				for(var i = 0; i < tilesetResourceArray.length; i++) {
+					if(!tilesetResourceArray[i].tilesetLoadFinished) {
+						bFinished = false;
+						break;
+					}
+				}
+
+				//if all tilesets are done loading, move onto the next state
+				if(bFinished) {
+					this.globalfuncs.appendToLog("Loading tileset resources done.")
+					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"];
+					this.gc.userConnectingScene.updateConnectingMessage("Starting game.");
+				}
 
 				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
@@ -144,6 +162,7 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 		this.gc.um.update(dt);
 		this.gc.tm.update(dt);
 		this.gc.srm.update(dt);
+		this.gc.trm.update(dt);
 	}
 
 	exit(dt) {
@@ -204,10 +223,6 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				}
 			}
 
-			//hard coded tilemaps for now
-			// this.gc.resourceLoadingScene.load.tilemapTiledJSON("my-tilemap", "assets/tilemaps/stockheimer-techdemo.json");
-			this.gc.resourceLoadingScene.load.image("stockheimer-test-tileset-extruded", "assets/tilesets/stockheimer-test-tileset-extruded.png");
-			
 			this.gc.resourceLoadingScene.load.start();
 		}
 	}
@@ -233,6 +248,30 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			this.gc.theTilemapResource.loadTilemapResource();
 
 			this.gc.resourceLoadingScene.load.start();
+		}
+	}
+
+	loadTilesetResources() {
+		this.globalfuncs.appendToLog("Loading tileset resources...");
+		//create a tileset resource for each layer in the loaded map
+		var tilemapData = this.gc.phaserGame.cache.tilemap.get(this.gc.theTilemapResource.key);
+
+		if(tilemapData !== undefined) {
+			for(var i = 0; i < tilemapData.data.tilesets.length; i++) {
+				var filename = this.globalfuncs.getFilenameFromUrl(tilemapData.data.tilesets[i].image)
+				var path = this.gc.gameResourceData.tilesets_dir_relpath + "/" + filename;
+
+				var ts = this.gc.trm.createTilesetResource(filename, path);
+				ts.tilesetResourceInit(this.gc);
+				ts.loadTilesetResource();
+			}
+
+			this.gc.resourceLoadingScene.load.start();
+		}
+		else {
+			//something VERY wierd happened here
+			this.globalfuncs.appendToLog("A VERY wierd error has occured when reading tilemap data: could not find the tilemap. Disconnecting.");
+			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
 		}
 	}
 }

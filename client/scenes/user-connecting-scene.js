@@ -20,7 +20,7 @@ export default class UserConnectingScene extends Phaser.Scene {
 		];
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
-			{event: 'sprite-resource-load-error', func: this.spriteResourceLoadError.bind(this)}
+			{event: 'resource-load-error', func: this.resourceLoadError.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -62,7 +62,7 @@ export default class UserConnectingScene extends Phaser.Scene {
 		this.gc.gameState.exitGameClick();
 	}
 
-	spriteResourceLoadError(e) {
+	resourceLoadError(e) {
 		//if the event is an error, put the error somewhere on the screen here
 		var newItem = this.connectingErrorItemTemplate.clone();
 		newItem.removeClass("hide");

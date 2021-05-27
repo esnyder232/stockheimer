@@ -54,6 +54,13 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		//unload tilemap resource
 		this.gc.theTilemapResource.unloadTilemapResource();
 
+		//unload tileset resources
+		var tilesetResources = this.gc.trm.getTilesetResources();
+		for(var i = 0; i < tilesetResources.length; i++) {
+			tilesetResources[i].unloadTilesetResource();
+			this.gc.trm.destroyTilesetResource(tilesetResources[i].id);
+		}
+
 		//reset the game client
 		this.gc.reset();
 
@@ -70,6 +77,7 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		this.gc.gom.update(dt);
 		this.gc.tm.update(dt);
 		this.gc.srm.update(dt);
+		this.gc.trm.update(dt);
 
 		this.updateCounter++;
 
