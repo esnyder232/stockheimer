@@ -11,5 +11,6 @@
 	"log_level": "debug",
 	
 	"map_relpath": "assets/tilemaps/stockheimer-techdemo.json",
-	"tilesets_dir_relpath": "assets/tilesets"
+	"tilesets_dir_relpath": "assets/tilesets",
+	"character_class_relpath": "assets/game-data/character-class-data.json"
 }

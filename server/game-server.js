@@ -16,6 +16,7 @@ const {UserAgentManager} = require ('./managers/user-agent-manager.js');
 const serverConfig = require('./server-config.json');
 const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
+const {CharacterClassManager} = require('./managers/character-class-manager.js');
 const GameConstants = require('../shared_files/game-constants.json');
 const path = require('path');
 const logger = require("../logger.js");
@@ -58,6 +59,7 @@ class GameServer {
 		this.tm = null;
 		this.pm = null;
 		this.uam = null;
+		this.ccm = null;
 
 		this.appRoot = path.join(__dirname, "..");
 
@@ -90,6 +92,7 @@ class GameServer {
 		this.tm = new TeamManager();
 		this.pm = new ProcessManager();
 		this.uam = new UserAgentManager();
+		this.ccm = new CharacterClassManager();
 
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -110,6 +113,7 @@ class GameServer {
 		this.tm.init(this);
 		this.pm.init(this);
 		this.uam.init(this);
+		this.ccm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 
