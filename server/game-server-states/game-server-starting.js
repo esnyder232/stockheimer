@@ -141,6 +141,7 @@ class GameServerStarting extends GameServerBaseState {
 				var c = this.gs.ccm.createCharacterClass();
 				
 				//MMMM HMMMM.....
+				c.key = this.characterClassJsonData[i].key;
 				c.name = this.characterClassJsonData[i].name;
 				c.hp = this.characterClassJsonData[i].hp;
 				c.speed = this.characterClassJsonData[i].speed;

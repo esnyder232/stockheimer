@@ -1,5 +1,6 @@
 [
 	{
+		"key": "black-mage",
 		"name": "Black Mage",
 		"hp": 100,
 		"speed": 10,
@@ -27,6 +28,7 @@
 		"altFireStateKey": ""
 	},
 	{
+		"key": "white-mage",
 		"name": "White Mage",
 		"hp": 100,
 		"speed": 10,

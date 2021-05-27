@@ -9,6 +9,7 @@ import UserManager from "./managers/user-manager.js"
 import TeamManager from "./managers/team-manager.js"
 import SpriteResourceManager from "./managers/sprite-resource-manager.js"
 import TilesetResourceManager from "./managers/tileset-resource-manager.js"
+import CharacterClassManager from "./managers/character-class-manager.js"
 import ResourceLoadingScene from "./scenes/resource-loading-scene.js"
 import Marked from "marked";
 import ModalMenu from "./ui-classes/modal-menu.js"
@@ -81,6 +82,10 @@ export default class GameClient {
 		this.spriteResourceData = [];
 		this.gameResourceDataApi = "./api/get-game-resource-data"
 		this.gameResourceData = {};
+		this.characterClassMappingDataApi = "./api/get-character-class-mapping-data"
+		this.characterClassMappingData = {};
+
+		this.characterClassData = [];
 		////////////////////////////////////
 	}
 
@@ -94,6 +99,7 @@ export default class GameClient {
 		this.tm = new TeamManager();
 		this.srm = new SpriteResourceManager();
 		this.trm = new TilesetResourceManager();
+		this.ccm = new CharacterClassManager();
 
 		this.wsh.init(this, this.ep);
 		this.ep.init(this, this.wsh);
@@ -102,6 +108,7 @@ export default class GameClient {
 		this.tm.init(this);
 		this.srm.init(this);
 		this.trm.init(this);
+		this.ccm.init(this);
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
@@ -325,9 +332,36 @@ export default class GameClient {
 			cb(true);
 		})
 	}
-	
 
+	//cb gets called like this: 
+	// "cb(error)" - error is true if an error occured. false if successful.
+	getCharacterClassMappingData(cb) {
+		$.ajax({url: this.characterClassMappingDataApi, method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.characterClassMappingData = this.globalfuncs.getDataArray(responseData.data.main);
+			cb(false);
+		})
+		.fail((xhr) => {
+			var msg = 'Failed to get character class mapping data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
+			this.globalfuncs.appendToLog(msg);
+			this.modalMenu.openMenu("error", msg);
+			cb(true);
+		})
+	}
 
+	getCharacterClassData(cb) {
+		$.ajax({url: this.gameResourceData.character_class_relpath, method: "GET"})
+		.done((responseData, textStatus, xhr) => {
+			this.characterClassData = this.globalfuncs.getDataArray(responseData);
+			cb(false);
+		})
+		.fail((xhr) => {
+			var msg = 'Failed to get character class mapping data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
+			this.globalfuncs.appendToLog(msg);
+			this.modalMenu.openMenu("error", msg);
+			cb(true);
+		})
+	}
 
 
 	reset() {

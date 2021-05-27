@@ -75,7 +75,8 @@ class GameServer {
 
 		this.gameResourceData = {
 			"map_relpath": serverConfig.map_relpath,
-			"tilesets_dir_relpath": serverConfig.tilesets_dir_relpath
+			"tilesets_dir_relpath": serverConfig.tilesets_dir_relpath,
+			"character_class_relpath": serverConfig.character_class_relpath,
 		}
 	}
 
@@ -652,6 +653,38 @@ class GameServer {
 		try {
 			//just send the hard coded json for now
 			main.push(this.gameResourceData);
+		}
+		catch(ex) {
+			userMessage = "Internal server error.";
+			logger.log("error", ex);
+			bError = true;
+		}
+
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		data.main = main;
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
+	//used to get the mapping of character class "keys" to "ids"
+	getCharacterClassMappingData(req, res) {
+		var bError = false;
+		var data = {};
+		var main = [];
+		var userMessage = "";
+
+		try {
+			var characterClasses = this.ccm.getCharacterClasses();
+			for(var i = 0; i < characterClasses.length; i++) {
+				var obj = {
+					key: characterClasses[i].key,
+					serverId: characterClasses[i].id
+				}
+				main.push(obj);	
+			}
 		}
 		catch(ex) {
 			userMessage = "Internal server error.";

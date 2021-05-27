@@ -127,7 +127,6 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				break;
 
 			case this.gc.gameConstants["UserConnectingInternalStates"]["LOAD_TILESET_RESOURCES"]:
-
 				//check if the tileset resources have all been loaded (success or failure, doesn't matter here)
 				var tilesetResourceArray = this.gc.trm.getTilesetResources();
 				var bFinished = true;
@@ -142,13 +141,28 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 				//if all tilesets are done loading, move onto the next state
 				if(bFinished) {
 					this.globalfuncs.appendToLog("Loading tileset resources done.")
-					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"];
-					this.gc.userConnectingScene.updateConnectingMessage("Starting game.");
+					this.globalfuncs.appendToLog("Getting character class mapping data...")
+					this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_CHARACTER_CLASS_MAPPING"];
+					this.gc.userConnectingScene.updateConnectingMessage("Getting character Class mapping data.");
+					this.gc.getCharacterClassMappingData(this.cbGetCharacterClassMappingData.bind(this));
 				}
 
 				this.gc.wsh.createPacketForUser();
 				this.gc.wsh.update(dt);
 				break;
+
+			case this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_CHARACTER_CLASS_MAPPING"]:
+				
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+				break;
+
+			case this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_CHARACTER_CLASS_DATA"]:
+				
+				this.gc.wsh.createPacketForUser();
+				this.gc.wsh.update(dt);
+				break;
+
 			case this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"]:
 				this.gc.nextGameState = new GameClientUserPlaying(this.gc);
 
@@ -274,4 +288,94 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
 		}
 	}
+
+
+	cbGetCharacterClassMappingData(error) {
+		//if an error occured, just disconnect
+		if(error) {
+			this.globalfuncs.appendToLog("An Error has occured when retreiving character class mapping data. Disconnecting.");
+			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+		}
+		else {
+			this.globalfuncs.appendToLog("Getting character class mapping data done.");
+			var bError = false;
+
+			//create a character class for each object in the character class map. (this will be filled in with actual data later)
+			//if ANYTHING errors here, just disconnect
+			try {
+				for(var i = 0; i < this.gc.characterClassMappingData.length; i++) {
+					var c = this.gc.ccm.createCharacterClass(this.gc.characterClassMappingData[i].serverId);
+					c.key = this.gc.characterClassMappingData[i].key;
+				}
+			} catch (ex) {
+				console.log("Exception caught when processing character class mapping data: " + ex);
+				console.log(ex.trace);
+				this.globalfuncs.appendToLog("Exception caught when processing character class mapping data: " + ex);
+				this.gc.modalMenu.openMenu("error", "An error occurred when processing character class mapping data. See the console for more details.");
+				this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+				bError = true;
+			}
+
+			if(!bError) {
+				this.globalfuncs.appendToLog("Getting character class data...");
+				this.gc.userConnectingScene.updateConnectingMessage("Getting character class data.");
+				this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["RETRIEVE_CHARACTER_CLASS_DATA"];
+				this.gc.getCharacterClassData(this.cbGetCharacterClassData.bind(this));
+			}
+		}
+	}
+
+	cbGetCharacterClassData(error) {
+		//if an error occured, just disconnect
+		if(error) {
+			this.globalfuncs.appendToLog("An Error has occured when retreiving character class data. Disconnecting.");
+			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+		}
+		else {
+			this.globalfuncs.appendToLog("Getting character class data done.");
+			var bError = false;
+			var errorMessage = "";
+
+			//NOW fill in the character class data
+			//if ANYTHING errors here, just disconnect
+			try {
+				var characterClassArray = this.gc.ccm.getCharacterClasses()
+				for(var i = 0; i < characterClassArray.length; i++) {
+					var cdata = this.gc.characterClassData.find((x) => {return x.key === characterClassArray[i].key;});
+
+					if(cdata === undefined) {
+						bError = true;
+						errorMessage = "Error when processing character class data: Character class with key '" + characterClassArray[i].key + "' was not found in the character class data. Character class could not be created. Disconnecting.";
+					}
+					else {
+						characterClassArray[i].name = cdata.name;
+						characterClassArray[i].hp = cdata.hp;
+						characterClassArray[i].speed = cdata.speed;
+						characterClassArray[i].animationSets = cdata.animationSets;
+						characterClassArray[i].idleAnimationSet = cdata.idleAnimationSet;
+						characterClassArray[i].movementAnimationSet = cdata.movementAnimationSet;
+						characterClassArray[i].fireStateKey = cdata.fireStateKey;
+						characterClassArray[i].altFireStateKey = cdata.altFireStateKey;
+					}
+				}
+			} catch (ex) {
+				bError = true;
+				errorMessage = "Exception caught when processing character class data: " + ex;
+				this.globalfuncs.appendToLog(errorMessage);
+				console.log(ex.trace);
+			}
+
+			if(bError) {
+				this.gc.modalMenu.openMenu("error", errorMessage);
+				this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
+			} else {
+				this.globalfuncs.appendToLog("Starting game.");
+				this.gc.userConnectingScene.updateConnectingMessage("Starting game.");
+				this.connectionState = this.gc.gameConstants["UserConnectingInternalStates"]["START_PLAYING"];
+			}
+		}
+	}
+
+
+
 }

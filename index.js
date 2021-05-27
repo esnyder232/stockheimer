@@ -53,6 +53,8 @@ app.get('/api/get-server-details', gs.getServerDetails.bind(gs));
 app.post('/api/join-request', gs.joinRequest.bind(gs));
 app.post('/api/clear-user-session', gs.clearUserSession.bind(gs));
 app.get('/api/get-game-resource-data', gs.getGameResourceData.bind(gs));
+app.get('/api/get-character-class-mapping-data', gs.getCharacterClassMappingData.bind(gs));
+
 
 
 

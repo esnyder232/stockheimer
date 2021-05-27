@@ -2,6 +2,7 @@
 class CharacterClass {
 	constructor() {
 		this.id = null;
+		this.key = "";
 		this.name = "";
 		this.hp = "";
 		this.speed = "";

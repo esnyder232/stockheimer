@@ -61,6 +61,9 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 			this.gc.trm.destroyTilesetResource(tilesetResources[i].id);
 		}
 
+		//destroy all character classes
+		this.gc.ccm.destroyAllCharacterClasses();
+
 		//reset the game client
 		this.gc.reset();
 

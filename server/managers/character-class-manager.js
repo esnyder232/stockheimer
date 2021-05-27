@@ -57,6 +57,10 @@ class CharacterClassManager {
 			return null;
 		}
 	}
+
+	getCharacterClasses() {
+		return this.characterClassArray;
+	}
 }
 
 exports.CharacterClassManager = CharacterClassManager;
