@@ -1,0 +1,8 @@
+{
+	"spriteKey": "assets/sprites/slime.png",
+	"animationKey": "assets/sprite-animations/slime.json",
+	"frameTagUp": "move-up",
+	"frameTagDown": "move-down",
+	"frameTagLeft": "move-left",
+	"frameTagRight": "move-right"
+}

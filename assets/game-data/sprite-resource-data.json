@@ -1,7 +1,7 @@
 [
 	{
 		"key": "castle",
-		"imagePath": "./assets/sprites/castle1.png",
+		"imagePath": "./assets/sprites/castle.png",
 		"animationPath": ""
 	},
 	{
@@ -12,17 +12,17 @@
 	{
 		"key": "slime",
 		"imagePath": "./assets/sprites/slime.png",
-		"animationPath": "./assets/sprites/slime.json"
+		"animationPath": "./assets/sprite-animations/slime.json"
 	},
 	{
 		"key": "white-slime",
 		"imagePath": "./assets/sprites/white-slime.png",
-		"animationPath": "./assets/sprites/white-slime.json"
+		"animationPath": "./assets/sprite-animations/white-slime.json"
 	},
 	{
 		"key": "black-slime",
 		"imagePath": "./assets/sprites/black-slime.png",
-		"animationPath": "./assets/sprites/black-slime.json"
+		"animationPath": "./assets/sprite-animations/black-slime.json"
 	},
 	{
 		"key": "fireball",
@@ -42,6 +42,6 @@
 	{
 		"key": "black-slime2",
 		"imagePath": "./assets/sprites/black-slime.png",
-		"animationPath": "./assets/sprites/black-slime.json"
+		"animationPath": "./assets/sprite-animations/black-slime.json"
 	}
 ]

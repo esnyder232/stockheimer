@@ -1,0 +1,7 @@
+{
+	"name": "Slime Attack",
+	"animationSet": "attack",
+	"canLook": false,
+	"canMove": false,
+	"timeLength": 700
+}

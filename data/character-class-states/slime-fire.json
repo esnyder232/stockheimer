@@ -1,0 +1,7 @@
+{
+	"name": "Slime Fire",
+	"animationSet": "cast",
+	"canLook": true,
+	"canMove": false,
+	"timeLength": 400
+}
