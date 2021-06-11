@@ -11,27 +11,56 @@ const logger = require('../../logger.js');
 class GameServerStarting extends GameServerBaseState {
 	constructor(gs) {
 		super(gs);
+		//////////////////////////
+		//OLD
 		this.tilemapError = false;
 		this.tilemapFinished = false;
 		this.tilemapId = null;
-		// this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
+		this.path = path.join(this.gs.appRoot, "assets/tilemaps/stockheimer-path-testing.json");
 		this.path = path.join(this.gs.appRoot, ServerConfig.map_relpath);
 		
 		this.characterClassPath = path.join(this.gs.appRoot, ServerConfig.character_class_relpath);
 		this.characterClassJsonData = [];
 		this.characterClassError = false;
 		this.characterClassFinished = false;
+		//////////////////////////
+
+		this.characterClassesToLoad = [];
+		this.tilemapToLoad = "";
+
+		this.loadDone = false;
+		this.loadError = false;
 	}
 	
 	enter(dt) {
 		logger.log("info", 'Game loop starting.');
 		super.enter(dt);
 		
+		//STOPPED HERE: Need to redo all this so I can push the slime-mage class key to the resource-manager so i can test....and without breaking the existing architecture.
+
+		//////////////////////
+		//OLD
 		//read in the tile map
 		this.gs.tmm.loadTilemap(this.path, this.mapLoadFinished.bind(this), this.mapLoadFailed.bind(this));
 
 		//read in the class data by itself
 		fs.readFile(this.characterClassPath, this.characterClassFileReadFinished.bind(this));
+		//////////////////////
+
+
+
+		//load classes
+		for(var i = 0; i < this.gs.classKeyList.length; i++) {
+			this.characterClassesToLoad.push(this.gs.classKeyList[i])
+			this.gs.rm.loadResource(this.gs.classKeyList[i], "character-class");
+		}
+		
+		//load map
+		this.tilemapToLoad = this.gs.mapKey;
+		this.gs.rm.loadResource(this.gs.mapKey, "tilemap");
+
+		//start the resource manager
+		//this.gs.rm.start(this.cbResourcesComplete.bind(this), this.cbResourceFailed.bind(this));
 	}
 
 	update(dt) {
@@ -47,16 +76,109 @@ class GameServerStarting extends GameServerBaseState {
 		this.gs.tmm.update(dt);
 		this.gs.ngm.update(dt);
 		this.gs.tm.update(dt);
+		this.gs.rm.update(dt);
 
 		super.update(dt);
+
+
+
+		////////////////////////////////////
+		// old
+		// if(this.tilemapFinished && this.characterClassFinished) {
+		// 	this.gs.nextGameState = new GameServerRunning(this.gs);
+		// }
+
+		// if(this.tilemapError || this.characterClassError) {
+		// 	this.gs.nextGameState = new GameServerStopping(this.gs);
+		// }
+
+		// //update some managers
+		// this.gs.tmm.update(dt);
+		// this.gs.ngm.update(dt);
+		// this.gs.tm.update(dt);
+
+		// super.update(dt);
+		////////////////////////////////////
 	}
 
 	exit(dt) {
 		super.exit(dt);
 	}
 
-	mapLoadFinished(tilemapId)
-	{
+	cbResourceComplete(resource) {
+		console.log("Resources Load Complete!");
+
+		// //create nav grid
+		// this.tilemap = this.gs.rm.getResourceByKey(this.gs.mapKey);
+		// var ng = this.gs.ngm.createNavGrid();
+		// ng.init(this.gs, tm.id);
+
+		// this.gs.activeNavGrid = ng; //temporary
+		
+		// //create teams
+		// //just incase idk
+		// if(TeamData === undefined)
+		// {
+		// 	TeamData = [];
+		// }
+
+		// //detect if a "spectator" team doesn't exist. If the users don't have a team to join, its going to break stuff on the server.
+		// var spectatorTeamExists = true;
+
+		// if(TeamData.length === 0)
+		// {
+		// 	spectatorTeamExists = false;
+		// }
+		// else if(SpectatorTeamSlotNum === undefined || TeamData[SpectatorTeamSlotNum] === undefined)
+		// {
+		// 	spectatorTeamExists = false;
+		// }
+
+		// //create a default "specator" team if one doesn't exist or things get screwed up somehow
+		// if(!spectatorTeamExists)
+		// {
+		// 	var specSlotNum = TeamData.length + 1;
+		// 	TeamData.push({
+		// 		name: "Spectator",
+		// 		slotNum: specSlotNum
+		// 	});
+
+		// 	SpectatorTeamSlotNum = specSlotNum;
+		// }
+
+		// //create teams
+		// for(var i = 0; i < TeamData.length; i++)
+		// {
+		// 	var temp = this.gs.tm.createTeam();
+		// 	temp.teamInit(this.gs);
+		// 	temp.name = TeamData[i].name;
+		// 	temp.slotNum = TeamData[i].slotNum;
+		// 	temp.characterStrokeColor = TeamData[i].characterStrokeColor;
+		// 	temp.characterFillColor = TeamData[i].characterFillColor;
+		// 	temp.characterTextStrokeColor = TeamData[i].characterTextStrokeColor;
+		// 	temp.characterTextFillColor = TeamData[i].characterTextFillColor;
+		// 	temp.killFeedTextColor = TeamData[i].killFeedTextColor;
+		// 	temp.projectileStrokeColor = TeamData[i].projectileStrokeColor;
+
+		// 	if(TeamData[i].slotNum === SpectatorTeamSlotNum)
+		// 	{
+		// 		this.gs.tm.assignSpectatorTeamById(temp.id);
+		// 	}
+		// }
+
+		// this.tilemapFinished = true;
+
+
+
+		
+	}
+
+	cbResourceFailed(resourceKey, resourceType, error) {
+		logger.log("Resource load failure: ");
+	}
+
+
+	mapLoadFinished(tilemapId) {
 		this.tilemapId = tilemapId;
 		
 		//at this point, the tile map is loaded in data. Now process the tilemap to create the game map on the server

@@ -12,5 +12,16 @@
 	
 	"map_relpath": "assets/tilemaps/stockheimer-techdemo.json",
 	"tilesets_dir_relpath": "assets/tilesets",
-	"character_class_relpath": "assets/game-data/character-class-data.json"
+	"character_class_relpath": "assets/game-data/character-class-data.json",
+
+	"data_dir_sprites": "assets/sprites",
+	"data_dir_sprite_animations": "assets/sprite-animations",
+	"data_dir_tilemaps": "assets/tilemaps",
+	"data_dir_tilesets": "assets/tilesets",
+	"data_dir_audio": "assets/audio",
+
+	"data_dir_character_classes": "data/character-classes",
+	"data_dir_character_class_states": "data/character-class-states",
+	"data_dir_animation_sets": "data/animation-sets",
+	"data_dir_projectiles": "data/projectiles"
 }

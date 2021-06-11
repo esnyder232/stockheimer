@@ -13,6 +13,7 @@ class Character {
 		this.id = null;
 		this.isActive = false;
 		this.type = "character";
+		this.resourceId = null;
 		this.globalfuncs = null;
 
 		this.ownerId = null;

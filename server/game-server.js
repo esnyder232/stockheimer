@@ -13,10 +13,12 @@ const {TilemapManager} = require ('./managers/tilemap-manager.js');
 const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const {UserAgentManager} = require ('./managers/user-agent-manager.js');
-const serverConfig = require('./server-config.json');
 const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
 const {CharacterClassManager} = require('./managers/character-class-manager.js');
+const {ResourceManager} = require('./managers/resource-manager.js');
+
+const serverConfig = require('./server-config.json');
 const GameConstants = require('../shared_files/game-constants.json');
 const path = require('path');
 const logger = require("../logger.js");
@@ -78,6 +80,13 @@ class GameServer {
 			"tilesets_dir_relpath": serverConfig.tilesets_dir_relpath,
 			"character_class_relpath": serverConfig.character_class_relpath,
 		}
+
+		////////////////////////////////////////////////////////////////////////
+		//This decides what classes/map gets loaded.
+		//This is hard coded for now, but can be passed in on the lobby phase
+		this.classKeyList = ["data/character-classes/slime-mage.json"];
+		this.mapKey = "assets/tilemaps/stockheimer-techdemo.json";
+		////////////////////////////////////////////////////////////////////////
 	}
 
 	init() {
@@ -94,6 +103,7 @@ class GameServer {
 		this.pm = new ProcessManager();
 		this.uam = new UserAgentManager();
 		this.ccm = new CharacterClassManager();
+		this.rm = new ResourceManager();
 
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -115,6 +125,7 @@ class GameServer {
 		this.pm.init(this);
 		this.uam.init(this);
 		this.ccm.init(this);
+		this.rm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 
@@ -146,8 +157,11 @@ class GameServer {
 		
 
 		//fs.readFile("./assets/game-data/sprite-data.json", this.fileReadComplete.bind(this));
+		// var key = "data/character-classes/slime-mage.json";
 
+		// this.path = path.join(this.appRoot, key);
 
+		// var stophere = true;
 	}
 
 

@@ -23,6 +23,62 @@ class GameObjectManager {
 		this.globalfuncs = new GlobalFuncs();
 	}
 
+
+	// createGameObject(gameObjectResource) {
+	// 	var o = null;
+
+	// 	if(gameObjectResource !== null) {
+
+	// 		/*
+	// 			{
+	// 				"id": 12,
+	// 				"resourceType": "character-class",
+	// 				"name": "Slime Mage",
+	// 				"hp": 100,
+	// 				"speed": 19,
+	// 				"animationSets": [
+	// 					{"idle": "data/animation-sets/slime-idle-set.json"},
+	// 					{"move": "data/animation-sets/slime-move-set.json"},
+	// 					{"attack": "data/animation-sets/slime-attack-set.json"},
+	// 					{"cast": "data/animation-sets/slime-fire-set.json"}
+	// 				],
+	// 				"fireStateKey": "data/character-class-states/slime-attack.json",
+	// 				"altFireStateKey": "data/character-class-states/slime-fire.json"
+	// 			}
+	// 		*/
+
+
+	// 		switch(gameObjectResource.resourceType)
+	// 		{
+	// 			case "character-class":
+	// 				o = new Character();
+	// 				break;
+	// 			case "projectile":
+	// 				o = new Projectile();
+	// 				break;
+	// 			case "castle":
+	// 				o = new Castle();
+	// 				break;
+	// 		}
+	// 	}
+		
+	// 	if(o !== null) {
+	// 		o.id = this.gs.getGlobalGameObjectID();
+	// 		o.isActive = false;
+	// 		o.type = r.resourceType;
+	// 		o.resourceId = r.id;
+	
+	// 		this.gameObjectArray.push(o);
+	// 		this.updateIndex(o.id, o, 'create');
+	
+	// 		//go ahead and put in the activate transaction as well
+	// 		this.activateGameObjectId(o.id);
+	// 	}
+		
+	// 	return o;
+	// }
+
+
 	createGameObject(type) {
 		var o = null;
 
