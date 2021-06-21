@@ -30,6 +30,11 @@ class GameServerStarting extends GameServerBaseState {
 
 		this.loadDone = false;
 		this.loadError = false;
+
+		//temporary for debugging
+		this.fileLoadTotal = 0;
+		this.fileLoadComplete = 0;
+		this.fileLoadDone = false;
 	}
 	
 	enter(dt) {
@@ -61,10 +66,21 @@ class GameServerStarting extends GameServerBaseState {
 
 		//start the resource manager
 		//this.gs.rm.start(this.cbResourcesComplete.bind(this), this.cbResourceFailed.bind(this));
+
+
+		this.gs.fm.loadFile("data/character-classes/slime-mage.json", this.fileReadComplete.bind(this));
+		this.gs.fm.loadFile("data/animation-sets/slime-attack-set.json", this.fileReadComplete.bind(this));
+		this.gs.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
+		this.gs.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
+		this.gs.fm.loadFile("data/animation-sets/slime-idle-set2.json", this.fileReadComplete.bind(this));
+		this.gs.fm.loadFile("assets/tilemaps/stockheimer-techdemo.json", this.fileReadComplete.bind(this));
+		this.fileLoadTotal = 6;
+		this.fileLoadComplete = 0;
+		this.fileLoadDone = false;
 	}
 
 	update(dt) {
-		if(this.tilemapFinished && this.characterClassFinished) {
+		if(this.tilemapFinished && this.characterClassFinished && this.fileLoadDone) {
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}
 
@@ -77,6 +93,8 @@ class GameServerStarting extends GameServerBaseState {
 		this.gs.ngm.update(dt);
 		this.gs.tm.update(dt);
 		this.gs.rm.update(dt);
+		this.gs.fm.update(dt);
+
 
 		super.update(dt);
 
@@ -105,8 +123,17 @@ class GameServerStarting extends GameServerBaseState {
 		super.exit(dt);
 	}
 
+	//debugging...also to make sure the existing architecture doesn't break
+	fileReadComplete(file) {
+		this.fileLoadComplete++;
+		if(this.fileLoadComplete === this.fileLoadTotal) {
+			logger.log('File Load is done.');
+			this.fileLoadDone = true;
+		}
+	}
+
 	cbResourceComplete(resource) {
-		console.log("Resources Load Complete!");
+		logger.log("Resources Load Complete!");
 
 		// //create nav grid
 		// this.tilemap = this.gs.rm.getResourceByKey(this.gs.mapKey);

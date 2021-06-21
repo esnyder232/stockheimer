@@ -17,6 +17,7 @@ const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
 const {CharacterClassManager} = require('./managers/character-class-manager.js');
 const {ResourceManager} = require('./managers/resource-manager.js');
+const {FileManager} = require('./managers/file-manager.js');
 
 const serverConfig = require('./server-config.json');
 const GameConstants = require('../shared_files/game-constants.json');
@@ -104,6 +105,7 @@ class GameServer {
 		this.uam = new UserAgentManager();
 		this.ccm = new CharacterClassManager();
 		this.rm = new ResourceManager();
+		this.fm = new FileManager();
 
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -126,11 +128,17 @@ class GameServer {
 		this.uam.init(this);
 		this.ccm.init(this);
 		this.rm.init(this);
+		this.fm.init(this);
 
 		this.gameState = new GameServerStopped(this);
 
 		//debug stuff here
-		// var p1 = this.uam.createUserAgent();
+		// this.fm.loadFile("data/character-classes/slime-mage.json", this.fileReadComplete.bind(this));
+		// this.fm.loadFile("data/animation-sets/slime-attack-set.json", this.fileReadComplete.bind(this));
+		// this.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
+		// this.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
+		// this.fm.loadFile("data/animation-sets/slime-idle-set2.json", this.fileReadComplete.bind(this));
+
 		// var p2 = this.uam.createUserAgent();
 		// var p3 = this.uam.createUserAgent();
 		// var p4 = this.uam.createUserAgent();
@@ -165,16 +173,28 @@ class GameServer {
 	}
 
 
-	// fileReadComplete(err, data) {
-	// 	if(err)
-	// 	{
-			
-	// 	}
-	// 	else
-	// 	{
-	// 		var temp = JSON.parse(data.toString())
-	// 	}
-	// }
+	fileReadComplete(file) {
+		// console.log("!!! FileReadComplete !!!");
+		// console.log(" - key: " + file.key);
+		// console.log(" - id: " + file.id);
+		// console.log(" - status: " + file.status);
+		// console.log(" - errorMsg: " + file.errorMsg);
+		// console.log(" - data: " + JSON.stringify(file.data));
+
+		this.fm.loadFile("data/animation-sets/slime-move-set.json", this.fileReadComplete2.bind(this));
+		this.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete2.bind(this));
+		this.fm.loadFile("data/animation-sets/slime-idle-set2.json", this.fileReadComplete2.bind(this));
+
+	}
+
+	fileReadComplete2(file) {
+		// console.log("!!! FileReadComplete2222 !!!");
+		// console.log(" - key: " + file.key);
+		// console.log(" - id: " + file.id);
+		// console.log(" - status: " + file.status);
+		// console.log(" - errorMsg: " + file.errorMsg);
+		// console.log(" - data: " + file.data);
+	}
 
 
 
