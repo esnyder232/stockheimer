@@ -127,7 +127,7 @@ class GameServerStarting extends GameServerBaseState {
 	fileReadComplete(file) {
 		this.fileLoadComplete++;
 		if(this.fileLoadComplete === this.fileLoadTotal) {
-			logger.log('File Load is done.');
+			logger.log("info", 'File Load is done.');
 			this.fileLoadDone = true;
 		}
 	}
