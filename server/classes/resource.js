@@ -4,9 +4,11 @@ class Resource {
 	constructor() {
 		this.id = null;
 		this.status = "";
+		this.errorMsg = "";
 		this.key = "";
 		this.data = null;
 		this.resourceType = "";
+		this.filesToLoad = []; //list of files to load for this resource
 	}
 
 

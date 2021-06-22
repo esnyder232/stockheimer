@@ -1,0 +1,24 @@
+{
+	"name": "Slime Big Fire",
+	"planckData": {
+		"plShape": "circle",
+		"radius": 4
+	},
+	"phaserData": {
+		"originX": 0.7,
+		"originY": 0.5,
+		"pngUnitsToPhaserUnitsRatio": 0.07
+	},
+	"size": 4,
+	"spriteKey": "assets/sprites/fireball.png",
+	"animationKey": "",
+	"frameTag": "",
+	"lifeTimeLength": 7000,
+	"collisionFilters": {
+		"sameTeamCharacters": false,
+		"sameTeamProjectiles": false,
+		"otherTeamCharacters": true,
+		"otherTeamProjectiles": true,
+		"walls": true
+	}
+}

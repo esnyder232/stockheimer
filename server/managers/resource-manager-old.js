@@ -16,7 +16,7 @@ State 2: build
  - combine the resources into 1 coherent json object
 */
 
-class ResourceManager {
+class ResourceManagerOld {
 	constructor() {
 		this.gs = null;
 		
@@ -469,4 +469,4 @@ class ResourceManager {
 
 }
 
-exports.ResourceManager = ResourceManager;
+exports.ResourceManagerOld = ResourceManagerOld;

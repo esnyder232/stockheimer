@@ -6,6 +6,8 @@ var {TeamData, SpectatorTeamSlotNum} = require("../../assets/game-data/team-data
 const path = require('path');
 const fs = require('fs');
 const logger = require('../../logger.js');
+const {CharacterClassResourceRedoDefinition} = require('../resource-definition/character-class-resource-redo-definition.js');
+const {Resource} = require('../classes/resource.js');
 
 //do anything here that involves starting the game, Like loading the map, pools, loading saved games, sessions, anything.
 class GameServerStarting extends GameServerBaseState {
@@ -35,6 +37,9 @@ class GameServerStarting extends GameServerBaseState {
 		this.fileLoadTotal = 0;
 		this.fileLoadComplete = 0;
 		this.fileLoadDone = false;
+
+		this.myResource = null;
+		this.myResourceDefinition = null;
 	}
 	
 	enter(dt) {
@@ -68,15 +73,28 @@ class GameServerStarting extends GameServerBaseState {
 		//this.gs.rm.start(this.cbResourcesComplete.bind(this), this.cbResourceFailed.bind(this));
 
 
-		this.gs.fm.loadFile("data/character-classes/slime-mage.json", this.fileReadComplete.bind(this));
-		this.gs.fm.loadFile("data/animation-sets/slime-attack-set.json", this.fileReadComplete.bind(this));
-		this.gs.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
-		this.gs.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
-		this.gs.fm.loadFile("data/animation-sets/slime-idle-set2.json", this.fileReadComplete.bind(this));
-		this.gs.fm.loadFile("assets/tilemaps/stockheimer-techdemo.json", this.fileReadComplete.bind(this));
-		this.fileLoadTotal = 6;
+		// this.gs.fm.loadFile("data/character-classes/slime-mage.json", this.fileReadComplete.bind(this));
+		// this.gs.fm.loadFile("data/animation-sets/slime-attack-set.json", this.fileReadComplete.bind(this));
+		// this.gs.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
+		// this.gs.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete.bind(this));
+		// this.gs.fm.loadFile("data/animation-sets/slime-idle-set2.json", this.fileReadComplete.bind(this));
+		// this.gs.fm.loadFile("assets/tilemaps/stockheimer-techdemo.json", this.fileReadComplete.bind(this));
+		this.fileLoadTotal = 0;
 		this.fileLoadComplete = 0;
-		this.fileLoadDone = false;
+		this.fileLoadDone = true;
+
+		
+		// this.myResource = new Resource();
+		// this.myResource.key = "data/character-classes/slime-mage.json";
+		// this.myResource.resourceType = "character-class";
+		// this.myResource.status = "open";
+
+		// this.myResourceDefinition = new CharacterClassResourceRedoDefinition();
+		// this.myResourceDefinition.init(this.gs);
+
+		// this.myResourceDefinition.startLoadingResource(this.myResource);
+
+		this.gs.rmd.loadResource("data/character-classes/slime-mage.json", "character-class", this.cbResourceComplete.bind(this))
 	}
 
 	update(dt) {
@@ -94,7 +112,7 @@ class GameServerStarting extends GameServerBaseState {
 		this.gs.tm.update(dt);
 		this.gs.rm.update(dt);
 		this.gs.fm.update(dt);
-
+		this.gs.rmd.update(dt);
 
 		super.update(dt);
 
@@ -133,8 +151,8 @@ class GameServerStarting extends GameServerBaseState {
 	}
 
 	cbResourceComplete(resource) {
-		logger.log("Resources Load Complete!");
-
+		// console.log("!!!! Resources Load Complete !!!!");
+		// console.log(resource);
 		// //create nav grid
 		// this.tilemap = this.gs.rm.getResourceByKey(this.gs.mapKey);
 		// var ng = this.gs.ngm.createNavGrid();

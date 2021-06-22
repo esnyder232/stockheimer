@@ -3,5 +3,6 @@
 	"animationSet": "cast",
 	"canLook": true,
 	"canMove": false,
-	"timeLength": 400
+	"timeLength": 400,
+	"projectileKey": "data/projectiles/slime-fire.json"
 }

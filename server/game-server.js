@@ -16,7 +16,8 @@ const {UserAgentManager} = require ('./managers/user-agent-manager.js');
 const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
 const {CharacterClassManager} = require('./managers/character-class-manager.js');
-const {ResourceManager} = require('./managers/resource-manager.js');
+const {ResourceManagerOld} = require('./managers/resource-manager-old.js');
+const {ResourceManagerRedo} = require('./managers/resource-manager-redo.js');
 const {FileManager} = require('./managers/file-manager.js');
 
 const serverConfig = require('./server-config.json');
@@ -63,6 +64,9 @@ class GameServer {
 		this.pm = null;
 		this.uam = null;
 		this.ccm = null;
+		this.rm = null;
+		this.fm = null;
+		this.rmd = null;
 
 		this.appRoot = path.join(__dirname, "..");
 
@@ -104,8 +108,9 @@ class GameServer {
 		this.pm = new ProcessManager();
 		this.uam = new UserAgentManager();
 		this.ccm = new CharacterClassManager();
-		this.rm = new ResourceManager();
+		this.rm = new ResourceManagerOld();
 		this.fm = new FileManager();
+		this.rmd = new ResourceManagerRedo();
 
 		const Vec2 = this.pl.Vec2;
 		if(!this.world) {
@@ -129,6 +134,7 @@ class GameServer {
 		this.ccm.init(this);
 		this.rm.init(this);
 		this.fm.init(this);
+		this.rmd.init(this);
 
 		this.gameState = new GameServerStopped(this);
 

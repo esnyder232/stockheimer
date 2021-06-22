@@ -2,12 +2,12 @@
 	"name": "Slime Mage",
 	"hp": 100,
 	"speed": 19,
-	"animationSets": [
-		{"idle": "data/animation-sets/slime-idle-set.json"},
-		{"move": "data/animation-sets/slime-move-set.json"},
-		{"attack": "data/animation-sets/slime-attack-set.json"},
-		{"cast": "data/animation-sets/slime-fire-set.json"}
-	],
+	"animationSets": {
+		"idle": "data/animation-sets/slime-idle-set.json",
+		"move": "data/animation-sets/slime-move-set.json",
+		"attack": "data/animation-sets/slime-attack-set.json",
+		"cast": "data/animation-sets/slime-fire-set.json"
+	},
 	"fireStateKey": "data/character-class-states/slime-attack.json",
 	"altFireStateKey": "data/character-class-states/slime-fire.json"
 }
