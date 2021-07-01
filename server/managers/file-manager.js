@@ -22,6 +22,7 @@ class FileManager {
 		this.pendingTransactionQueue = [];
 		this.successTransactionQueue = [];
 		this.failedTransactionQueue = [];
+		this.unloadTransactionQueue = [];
 	}
 
 	init(gameServer) {
@@ -47,9 +48,15 @@ class FileManager {
 			o.fullFilePath = fullFilepath;
 			o.key = key;
 			o.status = "open";
-			
+
 			this.fileArray.push(o);
 			this.updateIndex(o.id, o.key, o, "create");
+		}
+
+		//this is to handle cases where the file is trying to be unloaded/loaded in the same frame. 
+		//This will basically just force the file manager to read from disk again.
+		if(o.status === "unload") {
+			o.status = "open";
 		}
 
 		//queue transaction
@@ -66,6 +73,36 @@ class FileManager {
 		this.isDirty = true;
 
 		return o;
+	}
+
+	unloadFile(id) {
+		var f = this.getFileByID(id);
+		if(f !== null && f.status !== "unload") {
+			f.status = "unload";
+			var transactionObj = {
+				"transaction": "unload",
+				"id": f.id,
+				"statusMessage": ""
+			}
+			
+			this.unloadTransactionQueue.push(transactionObj);
+			this.isDirty = true;
+		}
+	}
+	
+	unloadFileByKey(key) {
+		var f = this.getFileByKey(key);
+		if(f !== null) {
+			this.unloadFile(f.id);
+		}
+	}
+
+	unloadAllFiles() {
+		for(var i = 0; i < this.fileArray.length; i++) {
+			this.unloadFile(this.fileArray[i].id);
+		}
+		
+		this.isDirty = true;
 	}
 
 	getFileByID(id) {
@@ -101,18 +138,10 @@ class FileManager {
 		}
 	}
 
-	loadNextTransactions() {
-		for(var i = 0; i < this.nextTransactionQueue.length; i++) {
-			this.transactionQueue.push(this.nextTransactionQueue[i]);
-		}
-
-		this.nextTransactionQueue = [];
-	}
-
 	/*
 	A file "status" goes in this order:
 	1: open - the transaction is queued, but not started yet
-	2: pending - the transaction has started, but not finished yet 
+	2: pending - the transaction has started, but not finished yet  
 	3a: success - the transaction has finished, and is successful
 	3b: failed - the transaction has finished, and has failed
 	*/
@@ -124,10 +153,9 @@ class FileManager {
 				var tr = this.openTransactionQueue.shift();
 				var f = this.getFileByID(tr.id);
 
-				//not sure how it would ever error here, but just incase
-				if(f === null) {
+				if(f === null || f.status === "unload") {
 					tr.status = "failed";
-					tr.statusMessage = "File '" + tr.key + "' was never created internally.";
+					tr.statusMessage = "File was not found or has been previously unloaded.";
 				}
 
 				//process
@@ -176,10 +204,9 @@ class FileManager {
 				var tr = this.pendingTransactionQueue[i];
 				var f = this.getFileByID(tr.id);
 
-				//not sure how it would ever error here, but just incase
-				if(f === null) {
+				if(f === null || f.status === "unload") {
 					tr.status = "failed";
-					tr.statusMessage = "File '" + tr.key + "' was never created internally.";
+					tr.statusMessage = "File was not found or has been previously unloaded.";
 				}
 
 				//check if the file has completed/failed
@@ -218,10 +245,9 @@ class FileManager {
 				var tr = this.successTransactionQueue.shift();
 				var f = this.getFileByID(tr.id);
 
-				//not sure how it would ever error here, but just incase
-				if(f === null) {
+				if(f === null || f.status === "unload") {
 					tr.status = "failed";
-					tr.statusMessage = "File '" + tr.key + "' was never created internally.";
+					tr.statusMessage = "File was not found or has been previously unloaded.";
 				}
 
 				//call the callback if it exists
@@ -249,15 +275,31 @@ class FileManager {
 
 				//call the callback if it exists
 				if(f !== null) {
-					if(typeof tr.cbComplete === "function") {
+					//only call the callback if the file officially 'failed'. It could have been 'unloaded' as well, and we don't want to call the call back in that case.
+					if(f.status === "failed" && typeof tr.cbComplete === "function") {
 						tr.cbComplete(f);
 					}
-
+					
 					//log failures
-					logger.log("error", "File-manager error: File failed to load. FullFilePath: '" + f.fullFilePath + "'. Key: '" + f.key + "'. FileErrorMsg: " + f.errorMsg);
+					logger.log("error", "File-manager error: File failed to load. Key: '" + f.key + "'. File Error Message: " + f.errorMsg + ". Transaction Error Message: " + tr.statusMessage);
 				} else {
 					//log failures
-					logger.log("error", "Fil-manager internal transaction error: " + tr.statusMessage);
+					logger.log("error", "File-manager error: File failed to load.Key: '" + tr.key + ". Transaction Error Message: " + tr.statusMessage);
+				}
+			}
+
+			//process unload transactions
+			while(this.unloadTransactionQueue.length > 0) {
+				var tr = this.unloadTransactionQueue.shift();
+				var f = this.getFileByID(tr.id);
+
+				if(f !== null && f.status === "unload") {
+					var findex = this.fileArray.findIndex((x) => {return x.id === f.id;});
+
+					if(findex >= 0) {
+						this.updateIndex(f.id, f.key, f, "delete");
+						this.fileArray.splice(findex, 1);
+					}
 				}
 			}
 
@@ -277,10 +319,14 @@ class FileManager {
 	fileReadComplete(tr, err, data) {
 		var f = this.getFileByID(tr.id);
 
-		//not sure how it would ever error here, but just incase
-		if(f === null) {
+		//testing unloading
+		// if(f !== null) {
+		// 	this.unloadFile(f.id);
+		// }
+
+		if(f === null || f.status === "unload") {
 			tr.status = "failed";
-			tr.statusMessage = "File '" + tr.key + "' was never created internally.";
+			tr.statusMessage = "File was not found or has been previously unloaded."; 
 		}
 
 		if(tr.status === "pending") {

@@ -87,7 +87,7 @@ class GameServerRunning extends GameServerBaseState {
 
 		//temporary for debugging
 		this.gs.fm.update(dt);
-		this.gs.rmd.update(dt);
+		this.gs.rm.update(dt);
 
 		this.gs.frameNum++;
 

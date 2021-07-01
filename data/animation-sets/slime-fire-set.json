@@ -1,6 +1,5 @@
 {
-	"spriteKey": "assets/sprites/slime.png",
-	"animationKey": "assets/sprite-animations/slime.json",
+	"spriteKey": "data/sprites/slime-mage.json",
 	"frameTagUp": "cast-up",
 	"frameTagDown": "cast-down",
 	"frameTagLeft": "cast-left",
