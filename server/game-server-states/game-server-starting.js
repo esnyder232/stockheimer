@@ -1,6 +1,7 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
 const {GameServerRunning} = require('./game-server-running.js');
 const {GameServerStopping} = require('./game-server-stopping.js');
+const path = require("path");
 var {TeamData, SpectatorTeamSlotNum} = require("../../assets/game-data/team-data.js");
 const logger = require('../../logger.js');
 
@@ -53,30 +54,76 @@ class GameServerStarting extends GameServerBaseState {
 
 	cbCharacterClassComplete(resource) {
 		// console.log("!!!! Character Class Load Complete !!!!");
-		// console.log(resource);
+		var bError = false;
+		var errorMessage = "";
 
 		//need to create sprites, sounds, projectile resources here
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading character class '" + resource.key + "': No data found.";
+		}
 
+		//load sprite resources
+		if(!bError) {
+			//from animation sets
+			if(resource.data.animationSets) {
+				for (const key in resource.data.animationSets) {
+					if (resource.data.animationSets.hasOwnProperty(key)) {
+						var animationSet = resource.data.animationSets[key]
+						if(animationSet["spriteKey"]) {
+							this.gs.rm.loadResource(animationSet["spriteKey"], "sprite");
+						}
+					}
+				}
+			}
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
+		}
 	}
 
 	cbTilemapComplete(resource) {
 		// console.log("!!!! Tilemap resource load complete !!!!");
+		var bError = false;
+		var errorMessage = "";
+		var tm = null;
 
-		var tm = this.gs.tmm.createTilemap(resource.id);
-		tm.init(this.gs);
-		var bError = tm.createTilemapAndNavgrid();
-
-		if(!bError) {
-			this.gs.activeTilemap = tm;
-			this.gs.activeNavGrid = tm.getNavGrid();
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading tilemap '" + resource.key + "': No data found.";
 		}
-		else {
-			console.log("Error occured when creating tilemap and navgrid.");
+
+		//create the tilemap and navgrid
+		if(!bError) {
+			tm = this.gs.tmm.createTilemap(resource.id);
+			tm.init(this.gs);
+			bError = tm.createTilemapAndNavgrid();
+
+			if(!bError) {
+				this.gs.activeTilemap = tm;
+				this.gs.activeNavGrid = tm.getNavGrid();
+			}
+			else {
+				errorMessage = "Error occured when creating tilemap and navgrid for tilemap '" + resource.key + "'.";
+			}
+		}
+
+		//create tileset resources
+		if(!bError) {
+			for(var i = 0; i < resource.data.tilesets.length; i++) {
+				var currentTileset = resource.data.tilesets[i];
+				var tilesetKey = path.join(resource.key, "..", currentTileset.image);
+				tilesetKey = tilesetKey.replace(/\\/g, "/");
+
+				this.gs.rm.loadResource(tilesetKey, "tileset");
+			}
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
 			this.tilemapError = true;
 		}
-
-		//need to create tileset resources here
-		
 	}
 	
 	createTeams() {

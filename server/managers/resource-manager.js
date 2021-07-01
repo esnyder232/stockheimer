@@ -2,10 +2,12 @@ const {GlobalFuncs} = require('../global-funcs.js');
 const fs = require('fs');
 const logger = require('../../logger.js');
 const path = require('path');
-const {Resource} = require("../classes/resource.js")
-const {CharacterClassResourceDefinition} = require("../resource-definition/character-class-resource-definition.js")
-const {TilemapResourceDefinition} = require("../resource-definition/tilemap-resource-definition.js")
-// const {CharacterClassResourceRedoRedoDefinition} = require("../resource-definition/character-class-resource-redo-redo-definition.js")
+const {Resource} = require("../classes/resource.js");
+const {CharacterClassResourceDefinition} = require("../resource-definition/character-class-resource-definition.js");
+const {TilemapResourceDefinition} = require("../resource-definition/tilemap-resource-definition.js");
+const {TilesetResourceDefinition} = require("../resource-definition/tileset-resource-definition.js");
+const {SpriteResourceDefinition} = require("../resource-definition/sprite-resource-definition.js");
+
 
 class ResourceManager {
 	constructor() {
@@ -31,6 +33,9 @@ class ResourceManager {
 
 		this.resourceDefinitions["character-class"] = new CharacterClassResourceDefinition();
 		this.resourceDefinitions["tilemap"] = new TilemapResourceDefinition();
+		this.resourceDefinitions["tileset"] = new TilesetResourceDefinition();
+		this.resourceDefinitions["sprite"] = new SpriteResourceDefinition();
+		
 		
 		for(var key in this.resourceDefinitions) {
 			if (this.resourceDefinitions.hasOwnProperty(key)) {
@@ -211,29 +216,28 @@ class ResourceManager {
 					}
 				}
 
-				//process
-				if(tr.status === "open") {
-					//resource has never been loaded. So lets load it.
-					if(r.status === "open") {
-						//debug
-						//logger.log("info", "Resource-Manager: Now loading file. Key: '" + r.key + "', fullFilePath: '" + r.fullFilePath + "'.");
-						rd.startLoadingResource(r);
+				//resource has never been loaded. So lets load it.
+				if(tr.status === "open" && r.status === "open") {
+					//debug
+					//logger.log("info", "Resource-Manager: Now loading file. Key: '" + r.key + "', fullFilePath: '" + r.fullFilePath + "'.");
+					
+					r.status = "pending";
+					tr.status = "pending";
+					
+					rd.startLoadingResource(r);
+				}
 
-						r.status = "pending";
-						tr.status = "pending";
-					}
-					//resource is currently being read, caused by a previous transaction. Change the transaction to "pending" and just wait until its done.
-					else if (r.status === "pending") {
-						tr.status = "pending";
-					}
-					//resource has already been read, and was successful. change the transaction to "success".
-					else if (r.status === "success") {
-						tr.status = "success";
-					}
-					//resource has already been read, and unloaded. change the transaction to "unload".
-					else if (r.status === "unload") {
-						tr.status = "unload";
-					}
+				//resource is currently being read, caused by a previous transaction. Change the transaction to "pending" and just wait until its done.
+				if (r.status === "pending") {
+					tr.status = "pending";
+				}
+				//resource has already been read, and was successful. change the transaction to "success".
+				else if (r.status === "success") {
+					tr.status = "success";
+				}
+				//resource has already been read, and unloaded. change the transaction to "unload".
+				else if (r.status === "unload") {
+					tr.status = "unload";
 				}
 
 				//push transaction on pending/successful/unloaded
@@ -350,10 +354,6 @@ class ResourceManager {
 
 	checkIfResourceComplete(resourceId) {
 		var r = this.gs.rm.getResourceByID(resourceId);
-
-		if(r.filesToLoad.length === 0) {
-			var stophere = true;
-		}
 
 		if(r !== null && r.status !== "unload") {
 			if( r.filesToLoad.length === 0) {
