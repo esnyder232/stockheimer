@@ -6,8 +6,6 @@ class NavGrid {
 	constructor() {
 		this.gs = null;
 		this.globalfuncs = null;
-		this.id = null;
-		this.tmId = null; //tilemap id
 		this.tm = null; //direct reference to the tile map itself
 		this.nodes = []; //2d array [y][x]
 		this.edges = []; //1d array
@@ -25,14 +23,13 @@ class NavGrid {
 		this.walls = [];
 	}
 
-	init(gameServer, tmId) {
+
+	init(gameServer) {
 		this.gs = gameServer;
-		this.tmId = tmId;
-
 		this.globalfuncs = new GlobalFuncs();
+	}
 
-		this.tm = this.gs.tmm.getTilemapByID(this.tmId);
-
+	create() {
 		//create nodes/edges
 		if(this.tm !== null && this.tm.navGridLayer)
 		{
@@ -163,6 +160,147 @@ class NavGrid {
 			}
 		}
 	}
+
+
+
+	// init(gameServer, tmId) {
+	// 	this.gs = gameServer;
+	// 	this.tmId = tmId;
+
+	// 	this.globalfuncs = new GlobalFuncs();
+
+	// 	this.tm = this.gs.tmm.getTilemapByID(this.tmId);
+
+	// 	//create nodes/edges
+	// 	if(this.tm !== null && this.tm.navGridLayer)
+	// 	{
+	// 		//make a node for each coordinate in the tilemap
+	// 		for(var j = 0; j < this.tm.height; j++)
+	// 		{
+	// 			this.nodes.push([]);
+	// 			for(var i = 0; i < this.tm.width; i++)
+	// 			{
+	// 				var tileIndex = (j * this.tm.width) + i;
+	// 				var tileType = this.tm.tileset[this.tm.navGridLayer.data[tileIndex]];
+
+	// 				var n = {
+	// 					id: this.nodeIdCounter++,
+	// 					x: i,
+	// 					y: j,
+	// 					edges: [],
+	// 					impassable: tileType.impassable === true ? true : false,
+	// 					movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
+	// 					castle: tileType.castle === true ? true : false
+	// 				}
+	
+	// 				this.nodes[j].push(n);
+	// 			}
+	// 		}
+			
+	// 		//create edges for each node
+	// 		for(var j = 0; j < this.nodes.length; j++)
+	// 		{
+	// 			for(var i = 0; i < this.nodes[j].length; i++)
+	// 			{
+	// 				var currentNode = this.nodes[j][i];
+	// 				var potentialNeighbors = [];
+	// 				var coordSum = currentNode.x + currentNode.y;
+	// 				var isEven = (coordSum % 2) == 0 ? true : false;
+		
+	// 				//order the neighbors differently depending if the manhattan distance is even or odd (for some reason to paths just come out better this way)
+	// 				//even nodes, do CCW, N, W, S E
+	// 				if(isEven)
+	// 				{
+	// 					potentialNeighbors.push({x: currentNode.x, y:currentNode.y-1, dir:'north'});
+	// 					potentialNeighbors.push({x: currentNode.x-1, y:currentNode.y, dir:'west'});
+	// 					potentialNeighbors.push({x: currentNode.x, y:currentNode.y+1, dir:'south'});
+	// 					potentialNeighbors.push({x: currentNode.x+1, y:currentNode.y, dir:'east'});
+	// 				}
+	// 				//odd nodes, do CW, E, S, W, N
+	// 				else
+	// 				{
+	// 					potentialNeighbors.push({x: currentNode.x+1, y:currentNode.y, dir:'east'});
+	// 					potentialNeighbors.push({x: currentNode.x, y:currentNode.y+1, dir:'south'});
+	// 					potentialNeighbors.push({x: currentNode.x-1, y:currentNode.y, dir:'west'});
+	// 					potentialNeighbors.push({x: currentNode.x, y:currentNode.y-1, dir:'north'});
+	// 				}
+		
+	// 				for(var k = 0; k < potentialNeighbors.length; k++)
+	// 				{
+	// 					var neigh = potentialNeighbors[k];
+						
+	// 					//check to see if the node exists
+	// 					if(neigh.y >= 0 
+	// 						&& neigh.y < this.nodes.length 
+	// 						&& neigh.x >= 0 
+	// 						&& neigh.x < this.nodes[neigh.y].length)
+	// 					{
+	// 						var e = {
+	// 							id: this.edgeIdCounter++,
+	// 							nodeFromId: currentNode.id,
+	// 							nodeToId: this.nodes[neigh.y][neigh.x].id,
+	// 							dir: neigh.dir
+	// 						};
+
+	// 						this.edges.push(e);
+	// 						currentNode.edges.push(e.id);
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+
+	// 		this.buildIndex();
+
+	// 		//find the castle node, and create the node map to cache
+	// 		var bCastleFound = false;
+	// 		for(var i = 0; i < this.nodes.length; i++)
+	// 		{
+	// 			 var temp = this.nodes[i].find((x) => {return x.castle;});
+	// 			if(temp)
+	// 			{
+	// 				this.castleNode = temp;
+	// 				bCastleFound = true;
+	// 			}
+	// 		}
+
+	// 		if(bCastleFound)
+	// 		{
+	// 			this.toCastleNodeMap = this.breadthFirstNodeMap(this.castleNode);
+	// 		}
+
+	// 		//fuck it, we'll just make the walls here
+	// 		const Vec2 = this.gs.pl.Vec2;
+	// 		var wallShape = this.gs.pl.Box(this.tiledUnitsToPlanckUnits/2, this.tiledUnitsToPlanckUnits/2, Vec2(0,0));
+
+	// 		for(var j = 0; j < this.nodes.length; j++)
+	// 		{
+	// 			for(var i = 0; i < this.nodes[j].length; i++)
+	// 			{
+	// 				if(this.nodes[j][i].impassable)
+	// 				{
+	// 					var xPlanck = i * this.tiledUnitsToPlanckUnits;
+	// 					var yPlanck = (j * this.tiledUnitsToPlanckUnits) * -1;
+
+	// 					var w = this.gs.world.createBody({
+	// 						position: Vec2(xPlanck, yPlanck),
+	// 						type: this.gs.pl.Body.STATIC,
+	// 						userData: {type:"wall", id: this.gs.getGlobalGameObjectID()}
+	// 					});
+
+	// 					w.createFixture({
+	// 						shape: wallShape,
+	// 						density: 0.0,
+	// 						friction: 0.0,
+	// 						filterCategoryBits: CollisionCategories["wall_body"],
+	// 						filterMaskBits: CollisionMasks["wall_body"]
+	// 					});
+
+	// 					this.walls.push(w);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	//just deletes the old indexes if there was any, and builds the indexes
 	buildIndex() {

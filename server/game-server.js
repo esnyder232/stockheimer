@@ -10,7 +10,6 @@ const {UserConnectingState} = require('./user/user-connecting-state.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
 const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const {TilemapManager} = require ('./managers/tilemap-manager.js');
-const {NavGridManager} = require ('./managers/nav-grid-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const {UserAgentManager} = require ('./managers/user-agent-manager.js');
 const {TeamManager} = require('./managers/team-manager.js');
@@ -70,6 +69,7 @@ class GameServer {
 		this.appRoot = path.join(__dirname, "..");
 
 		this.activeNavGrid = null; //temporary
+		this.activeTilemap = null; //temporary
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 3000; //ms until this console logs the amount of game objects in the game
@@ -101,7 +101,6 @@ class GameServer {
 		this.gom = new GameObjectManager();
 		this.tmm = new TilemapManager();
 		this.cs = new CollisionSystem();
-		this.ngm = new NavGridManager();
 		this.aim = new AIAgentManager();
 		this.tm = new TeamManager();
 		this.pm = new ProcessManager();
@@ -124,7 +123,6 @@ class GameServer {
 		this.gom.init(this);
 		this.cs.init(this);
 		this.tmm.init(this);
-		this.ngm.init(this);
 		this.aim.init(this);
 		this.tm.init(this);
 		this.pm.init(this);

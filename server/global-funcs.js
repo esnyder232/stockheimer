@@ -113,17 +113,10 @@ class GlobalFuncs {
 				bFail = true;
 			}
 
-			//check if the navgrid exists (to be safe)
-			if(!bFail && gs.activeNavGrid === null)
-			{
-				bFail = true;
-				userMessage = "Player spawn failed. No active nav grid.";
-			}
-
 			//get the tilemap
 			if(!bFail)
 			{
-				tm = gs.tmm.getTilemapByID(gs.activeNavGrid.tmId);
+				tm = gs.activeTilemap;
 				if(tm === null)
 				{
 					bFail = true;

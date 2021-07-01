@@ -4,7 +4,7 @@ const logger = require('../../logger.js');
 const path = require('path');
 const {Resource} = require("../classes/resource.js")
 const {CharacterClassResourceDefinition} = require("../resource-definition/character-class-resource-definition.js")
-// const {CharacterClassResourceRedoDefinition} = require("../resource-definition/character-class-resource-redo-definition.js")
+const {TilemapResourceDefinition} = require("../resource-definition/tilemap-resource-definition.js")
 // const {CharacterClassResourceRedoRedoDefinition} = require("../resource-definition/character-class-resource-redo-redo-definition.js")
 
 class ResourceManager {
@@ -30,6 +30,7 @@ class ResourceManager {
 		this.globalfuncs = new GlobalFuncs();
 
 		this.resourceDefinitions["character-class"] = new CharacterClassResourceDefinition();
+		this.resourceDefinitions["tilemap"] = new TilemapResourceDefinition();
 		
 		for(var key in this.resourceDefinitions) {
 			if (this.resourceDefinitions.hasOwnProperty(key)) {
@@ -215,7 +216,7 @@ class ResourceManager {
 					//resource has never been loaded. So lets load it.
 					if(r.status === "open") {
 						//debug
-						logger.log("info", "Resource-Manager: Now loading file. Key: '" + r.key + "', fullFilePath: '" + r.fullFilePath + "'.");
+						//logger.log("info", "Resource-Manager: Now loading file. Key: '" + r.key + "', fullFilePath: '" + r.fullFilePath + "'.");
 						rd.startLoadingResource(r);
 
 						r.status = "pending";
@@ -281,7 +282,7 @@ class ResourceManager {
 
 			//splice off any completed pending transactions
 			for(var i = pendingTransactionsCompleted.length-1; i >= 0; i--) {
-				this.pendingTransactionQueue.splice(i, 1);
+				this.pendingTransactionQueue.splice(pendingTransactionsCompleted[i], 1);
 			}
 
 			pendingTransactionsCompleted = [];
