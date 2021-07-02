@@ -4,5 +4,5 @@
 	"canLook": true,
 	"canMove": false,
 	"timeLength": 400,
-	"projectileKey": "data/projectiles/slime-fire.json"
+	"projectileKey": "data/projectiles/slime-big-fire.json"
 }

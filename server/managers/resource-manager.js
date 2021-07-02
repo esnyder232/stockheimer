@@ -7,6 +7,8 @@ const {CharacterClassResourceDefinition} = require("../resource-definition/chara
 const {TilemapResourceDefinition} = require("../resource-definition/tilemap-resource-definition.js");
 const {TilesetResourceDefinition} = require("../resource-definition/tileset-resource-definition.js");
 const {SpriteResourceDefinition} = require("../resource-definition/sprite-resource-definition.js");
+const {ProjectileResourceDefinition} = require("../resource-definition/projectile-resource-definition.js");
+
 
 
 class ResourceManager {
@@ -35,7 +37,7 @@ class ResourceManager {
 		this.resourceDefinitions["tilemap"] = new TilemapResourceDefinition();
 		this.resourceDefinitions["tileset"] = new TilesetResourceDefinition();
 		this.resourceDefinitions["sprite"] = new SpriteResourceDefinition();
-		
+		this.resourceDefinitions["projectile"] = new ProjectileResourceDefinition();
 		
 		for(var key in this.resourceDefinitions) {
 			if (this.resourceDefinitions.hasOwnProperty(key)) {

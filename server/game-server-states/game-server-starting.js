@@ -69,7 +69,7 @@ class GameServerStarting extends GameServerBaseState {
 			if(resource.data.animationSets) {
 				for (const key in resource.data.animationSets) {
 					if (resource.data.animationSets.hasOwnProperty(key)) {
-						var animationSet = resource.data.animationSets[key]
+						var animationSet = resource.data.animationSets[key];
 						if(animationSet["spriteKey"]) {
 							this.gs.rm.loadResource(animationSet["spriteKey"], "sprite");
 						}
@@ -77,6 +77,18 @@ class GameServerStarting extends GameServerBaseState {
 				}
 			}
 		}
+
+		//load projectile resources
+		if(!bError) {
+			if(this.globalfuncs.nestedValueCheck(resource, "data.fireStateKey.projectileKey")) {
+				this.gs.rm.loadResource(resource.data.fireStateKey.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			}
+
+			if(this.globalfuncs.nestedValueCheck(resource, "data.altFireStateKey.projectileKey")) {
+				this.gs.rm.loadResource(resource.data.altFireStateKey.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			}
+		}
+
 
 		if(bError) {
 			logger.log("error", errorMessage);
@@ -117,6 +129,31 @@ class GameServerStarting extends GameServerBaseState {
 				tilesetKey = tilesetKey.replace(/\\/g, "/");
 
 				this.gs.rm.loadResource(tilesetKey, "tileset");
+			}
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
+			this.tilemapError = true;
+		}
+	}
+
+	cbProjectileComplete(resource) {
+		// console.log("!!! Projectile Resource Loaded !!!!");
+		// console.log(resource);
+		var bError = false;
+		var errorMessage = "";
+		var tm = null;
+
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading projectile '" + resource.key + "': No data found.";
+		}
+
+		//create sprite resources
+		if(!bError) {
+			if(this.globalfuncs.nestedValueCheck(resource, "data.spriteKey")) {
+				this.gs.rm.loadResource(resource.data.spriteKey, "sprite");
 			}
 		}
 
