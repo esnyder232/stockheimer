@@ -35,6 +35,7 @@ class User {
 		this.roundUserDeathCount = 0;	//deaths in current round
 
 		this.teamId = null;
+		this.characterClassReourceId = null;
 
 		this.playingState = null;
 		this.nextPlayingState = null;
@@ -70,6 +71,14 @@ class User {
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 		if(this.teamId === null && spectatorTeam) {
 			this.teamId = spectatorTeam.id;
+		}
+
+		if(this.characterClassReourceId === null) {
+			var availableClasses = this.gs.rm.getResourceByType("character-class");
+			if(availableClasses.length > 0) {
+				//temporary. Just pick the first one.
+				this.characterClassReourceId = availableClasses[0].id; 
+			}
 		}
 
 		this.playingState = new PlayingSpectatorState.PlayingSpectatorState(this);
@@ -121,6 +130,7 @@ class User {
 
 		this.characterId = null;
 		//this.teamId = null; //purposely commented out and left in code to remind you later: don't get rid of the teamId so the game remembers what team you were on.
+		this.characterClassReourceId = null;
 		this.bReadyToPlay = false;
 		this.bDisconnected = false;
 		this.inputQueue = [];

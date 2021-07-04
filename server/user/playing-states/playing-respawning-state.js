@@ -38,20 +38,17 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 	update(dt) {
 		this.user.respawnTimeAcc += dt;
 
-		if(this.user.respawnTimeAcc >= this.user.respawnTimer)
-		{
-			if(this.user.gs.theRound.getStateEnum() !== GameConstants.RoundStates["OVER"])
-			{
+		//character is done waiting for respawn timer. Respawn him and let him start playing
+		if(this.user.respawnTimeAcc >= this.user.respawnTimer && this.user.characterClassReourceId !== null) {
+			if(this.user.gs.theRound.getStateEnum() !== GameConstants.RoundStates["OVER"]) {
 				this.user.nextPlayingState = new PlayingPlayingState.PlayingPlayingState(this.user);
 			}
 		}
 
-		if(this.user.playingEventQueue.length > 0)
-		{
-			for(var i = 0; i < this.user.playingEventQueue.length; i++)
-			{
-				switch(this.user.playingEventQueue[i].eventName)
-				{
+		//an event has occured
+		if(this.user.playingEventQueue.length > 0) {
+			for(var i = 0; i < this.user.playingEventQueue.length; i++) {
+				switch(this.user.playingEventQueue[i].eventName) {
 					case "round-restarting":
 						//just restart timer
 						this.user.respawnTimer = 100;

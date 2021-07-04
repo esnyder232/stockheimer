@@ -17,8 +17,8 @@ class ResourceManager {
 		this.resourceArray = [];
 		this.idIndex = {};
 		this.keyIndex = {};
+		this.typeIndex = {};
 
-		this.isDirty = false;
 		this.openTransactionQueue = [];
 		this.pendingTransactionQueue = [];
 		this.successTransactionQueue = [];
@@ -67,7 +67,7 @@ class ResourceManager {
 			o.resourceType = resourceType;
 			
 			this.resourceArray.push(o);
-			this.updateIndex(o.id, o.key, o, "create");
+			this.updateIndex(o.id, o.key, o.resourceType, o, "create");
 		}
 
 		
@@ -89,7 +89,6 @@ class ResourceManager {
 		}
 
 		this.openTransactionQueue.push(transactionObj);
-		this.isDirty = true;
 
 		return o;
 	}
@@ -106,7 +105,6 @@ class ResourceManager {
 			}
 			
 			this.unloadTransactionQueue.push(transactionObj);
-			this.isDirty = true;
 		}
 	}
 	
@@ -121,10 +119,7 @@ class ResourceManager {
 		for(var i = 0; i < this.resourceArray.length; i++) {
 			this.unloadResource(this.resourceArray[i].id);
 		}
-		
-		this.isDirty = true;
 	}
-
 
 	getResourceByID(id) {
 		if(this.idIndex[id] !== undefined) {
@@ -144,10 +139,30 @@ class ResourceManager {
 		}
 	}
 
-	updateIndex(id, key, obj, transaction) {
+
+	getResourceByType(resourceType, includeNullData) {
+		var arr = [];
+		if(this.typeIndex[resourceType] !== undefined) {
+			arr = this.typeIndex[resourceType];
+		}
+
+		if(includeNullData !== true) {
+			arr = arr.filter((x) => {return x.data !== null;});
+		}
+
+		return arr;
+	}
+
+
+	updateIndex(id, key, resourceType, obj, transaction) {
 		if(transaction == 'create') {
 			this.idIndex[id] = obj;
 			this.keyIndex[key] = obj;
+
+			if(this.typeIndex[resourceType] === undefined) {
+				this.typeIndex[resourceType] = [];
+			}
+			this.typeIndex[resourceType].push(obj);
 		}
 		else if(transaction == 'delete') {
 			if(this.idIndex[id] !== undefined) {
@@ -155,6 +170,16 @@ class ResourceManager {
 			}
 			if(this.keyIndex[key] !== undefined) {
 				delete this.keyIndex[key];
+			}
+			if(this.typeIndex[resourceType] !== undefined) {
+				var ind = this.typeIndex[resourceType].findIndex((x) => {return x.id === id;});
+				if(ind >= 0) {
+					this.typeIndex[resourceType].splice(ind, 1);
+				}
+
+				if(this.typeIndex[resourceType].length === 0) {
+					delete this.typeIndex[resourceType];
+				}
 			}
 		}
 	}
@@ -177,8 +202,10 @@ class ResourceManager {
 		else if(this.pendingTransactionQueue.length > 0) {
 			resourcesLoading = true;
 		}
-		//capture this one too. Sometimes it could be in the middle of a "success" callback
 		else if(this.successTransactionQueue.length > 0) {
+			resourcesLoading = true;
+		}
+		else if(this.unloadTransactionQueue.length > 0) {
 			resourcesLoading = true;
 		}
 
@@ -210,7 +237,7 @@ class ResourceManager {
 	4: unload - the resource is being unloaded or has unloaded (generally, this is to signal other transactions that they should stop the )
 	*/
 	update() {
-		while(this.isDirty) {
+		if(this.anyResourcesProcessing()) {
 			//process open transactions
 			while(this.openTransactionQueue.length > 0) {
 				var tr = this.openTransactionQueue.shift();
@@ -348,17 +375,6 @@ class ResourceManager {
 					}
 				}
 			}
-
-			//check if the open transaction still has items in it. If it does, redirty the manager and process them again.
-			//This can occur if the cbComplete callback loads more resources.
-			if(this.openTransactionQueue.length > 0) {
-				//debug
-				//logger.log("info", "FOUND OPEN TRANSACTIONS. Resetting the dirty flag.");
-
-				this.isDirty = true;
-			} else {
-				this.isDirty = false;
-			}
 		}
 	}
 
@@ -374,9 +390,6 @@ class ResourceManager {
 		if(r !== null && r.status !== "unload") {
 			if( r.filesToLoad.length === 0) {
 				r.status = "success";
-
-				//dirty the manager so the manager knows to check the status change
-				this.isDirty = true;
 			}
 		}
 	}

@@ -18,6 +18,27 @@ class GameServerRunning extends GameServerBaseState {
 		//start a round
 		this.gs.theRound = new Round();
 		this.gs.theRound.roundInit(this.gs);
+
+		//make a little summary message for the server logs
+		var startSummaryArray = [];
+		startSummaryArray.push("\n");
+		startSummaryArray.push("===== Game has started =====");
+		var mapResource = this.gs.rm.getResourceByID(this.gs.activeTilemap.resourceId);
+		var mapKey = "";
+		if(mapResource !== null) {
+			mapKey = mapResource.key;
+		}
+		
+		startSummaryArray.push("Map: " + mapKey);
+		
+		var availableClasses = this.gs.rm.getResourceByType("character-class");
+		startSummaryArray.push("Available Classes:")
+		for(var i = 0; i < availableClasses.length; i++) {
+			startSummaryArray.push(" - " + availableClasses[i].key);
+		}
+		startSummaryArray.push("============================");
+
+		logger.log("info", startSummaryArray.join("\n"));
 	}
 
 	update(dt) {
