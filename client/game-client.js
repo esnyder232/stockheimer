@@ -7,8 +7,6 @@ import EventProcessor from "./classes/event-processor.js"
 import GameObjectManager from "./managers/game-object-manager.js"
 import UserManager from "./managers/user-manager.js"
 import TeamManager from "./managers/team-manager.js"
-import SpriteResourceManager from "./managers/sprite-resource-manager.js"
-import TilesetResourceManager from "./managers/tileset-resource-manager.js"
 import ResourceManager from "./managers/resource-manager.js"
 import ResourceLoadingScene from "./scenes/resource-loading-scene.js"
 import Marked from "marked";
@@ -79,19 +77,6 @@ export default class GameClient {
 		////////////////////////////////////
 		// api end points for resources
 		//probably temporary place for these api end points to live
-
-		//OLD
-		this.spriteResourceDataApi = "./assets/game-data/sprite-resource-data.json";
-		this.spriteResourceData = [];
-		this.gameResourceDataApi = "./api/get-game-resource-data"
-		this.gameResourceData = {};
-		this.characterClassMappingDataApi = "./api/get-character-class-mapping-data"
-		this.characterClassMappingData = {};
-
-		this.characterClassData = [];
-
-
-		//NEW
 		this.resourcesApi = "./api/get-resources";
 		this.resourcesResults = [];
 		////////////////////////////////////
@@ -105,8 +90,6 @@ export default class GameClient {
 		this.gom = new GameObjectManager();
 		this.um = new UserManager();
 		this.tm = new TeamManager();
-		this.srm = new SpriteResourceManager();
-		this.trm = new TilesetResourceManager();
 		this.rm = new ResourceManager();
 
 		this.wsh.init(this, this.ep);
@@ -114,8 +97,6 @@ export default class GameClient {
 		this.gom.init(this);
 		this.um.init(this);
 		this.tm.init(this);
-		this.srm.init(this);
-		this.trm.init(this);
 		this.rm.init(this);
 
 		this.phaserConfig = {
@@ -276,9 +257,6 @@ export default class GameClient {
 	}
 
 
-
-
-
 	cbPostBoot() {
 		console.log("PHASER IS READY");
 		this.resourceLoadingScene = this.phaserGame.scene.getScene("resource-loading-scene");
@@ -309,22 +287,6 @@ export default class GameClient {
 		}
 	}
 
-	//cb gets called like this: 
-	// "cb(error)" - error is true if an error occured. false if successful.
-	getSpriteResourceData(cb) {
-		$.ajax({url: this.spriteResourceDataApi, method: "GET"})
-		.done((responseData, textStatus, xhr) => {
-			this.spriteResourceData = this.globalfuncs.getDataArray(responseData);
-			cb(false);
-		})
-		.fail((xhr) => {
-			var msg = 'Failed to get sprite resource data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
-			this.globalfuncs.appendToLog(msg);
-			this.modalMenu.openMenu("error", msg);
-			cb(true);
-		})
-	}
-
 	getResources(cb) {
 		$.ajax({url: this.resourcesApi, method: "GET"})
 		.done((responseData, textStatus, xhr) => {
@@ -338,53 +300,6 @@ export default class GameClient {
 			cb(true);
 		})
 	}
-
-	//cb gets called like this: 
-	// "cb(error)" - error is true if an error occured. false if successful.
-	getGameResourceData(cb) {
-		$.ajax({url: this.gameResourceDataApi, method: "GET"})
-		.done((responseData, textStatus, xhr) => {
-			this.gameResourceData = this.globalfuncs.getDataObjectFromArray(responseData.data.main, 0);
-			cb(false);
-		})
-		.fail((xhr) => {
-			var msg = 'Failed to get game resource data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
-			this.globalfuncs.appendToLog(msg);
-			this.modalMenu.openMenu("error", msg);
-			cb(true);
-		})
-	}
-
-	//cb gets called like this: 
-	// "cb(error)" - error is true if an error occured. false if successful.
-	getCharacterClassMappingData(cb) {
-		$.ajax({url: this.characterClassMappingDataApi, method: "GET"})
-		.done((responseData, textStatus, xhr) => {
-			this.characterClassMappingData = this.globalfuncs.getDataArray(responseData.data.main);
-			cb(false);
-		})
-		.fail((xhr) => {
-			var msg = 'Failed to get character class mapping data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
-			this.globalfuncs.appendToLog(msg);
-			this.modalMenu.openMenu("error", msg);
-			cb(true);
-		})
-	}
-
-	getCharacterClassData(cb) {
-		$.ajax({url: this.gameResourceData.character_class_relpath, method: "GET"})
-		.done((responseData, textStatus, xhr) => {
-			this.characterClassData = this.globalfuncs.getDataArray(responseData);
-			cb(false);
-		})
-		.fail((xhr) => {
-			var msg = 'Failed to get character class mapping data. Status: ' + xhr.statusText + '(code ' + xhr.status + ').';
-			this.globalfuncs.appendToLog(msg);
-			this.modalMenu.openMenu("error", msg);
-			cb(true);
-		})
-	}
-
 
 	reset() {
 		this.myUserServerId = null;

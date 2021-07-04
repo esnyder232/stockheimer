@@ -14,7 +14,6 @@ const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
 const {UserAgentManager} = require ('./managers/user-agent-manager.js');
 const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
-const {CharacterClassManager} = require('./managers/character-class-manager.js');
 const {ResourceManager} = require('./managers/resource-manager.js');
 const {FileManager} = require('./managers/file-manager.js');
 
@@ -61,7 +60,6 @@ class GameServer {
 		this.tm = null;
 		this.pm = null;
 		this.uam = null;
-		this.ccm = null;
 		this.rm = null;
 		this.fm = null;
 		this.rmd = null;
@@ -79,17 +77,11 @@ class GameServer {
 
 		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 
-		this.gameResourceData = {
-			"map_relpath": serverConfig.map_relpath,
-			"tilesets_dir_relpath": serverConfig.tilesets_dir_relpath,
-			"character_class_relpath": serverConfig.character_class_relpath,
-		}
-
 		////////////////////////////////////////////////////////////////////////
 		//This decides what classes/map gets loaded.
 		//This is hard coded for now, but can be passed in on the lobby phase
 		this.classKeyList = ["data/character-classes/slime-mage.json"];
-		this.mapKey = "assets/tilemaps/stockheimer-techdemo.json";
+		this.mapKey = serverConfig.map_relpath;
 		////////////////////////////////////////////////////////////////////////
 	}
 
@@ -105,7 +97,6 @@ class GameServer {
 		this.tm = new TeamManager();
 		this.pm = new ProcessManager();
 		this.uam = new UserAgentManager();
-		this.ccm = new CharacterClassManager();
 		this.rm = new ResourceManager();
 		this.fm = new FileManager();
 
@@ -127,7 +118,6 @@ class GameServer {
 		this.tm.init(this);
 		this.pm.init(this);
 		this.uam.init(this);
-		this.ccm.init(this);
 		this.rm.init(this);
 		this.fm.init(this);
 
@@ -681,64 +671,6 @@ class GameServer {
 			userMessage = "Internal server error.";
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
 			logger.log("info", ex);
-			bError = true;
-		}
-
-		//send the response
-		var statusResponse = 200;
-		if(bError)		
-			statusResponse = 500;
-
-		data.main = main;
-		res.status(statusResponse).json({userMessage: userMessage, data: data});
-	}
-
-	//used to get the list of resources the client will need to load the game
-	getGameResourceData(req, res) {
-		var bError = false;
-		var data = {};
-		var main = [];
-		var userMessage = "";
-
-		try {
-			//just send the hard coded json for now
-			main.push(this.gameResourceData);
-		}
-		catch(ex) {
-			userMessage = "Internal server error.";
-			logger.log("error", ex);
-			bError = true;
-		}
-
-		//send the response
-		var statusResponse = 200;
-		if(bError)		
-			statusResponse = 500;
-
-		data.main = main;
-		res.status(statusResponse).json({userMessage: userMessage, data: data});
-	}
-
-	//used to get the mapping of character class "keys" to "ids"
-	getCharacterClassMappingData(req, res) {
-		var bError = false;
-		var data = {};
-		var main = [];
-		var userMessage = "";
-
-		try {
-			var characterClasses = this.ccm.getCharacterClasses();
-			for(var i = 0; i < characterClasses.length; i++) {
-				var obj = {
-					key: characterClasses[i].key,
-					serverId: characterClasses[i].id
-				}
-				main.push(obj);	
-			}
-		}
-		catch(ex) {
-			userMessage = "Internal server error.";
-			logger.log("error", ex);
 			bError = true;
 		}
 
