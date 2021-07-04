@@ -43,26 +43,8 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 			this.gc.tm.destroyTeam(allTeams[i].id);
 		}
 
-
-		//unload sprite resources
-		var spriteResources = this.gc.srm.getSpriteResources();
-		for(var i = 0; i < spriteResources.length; i++) {
-			spriteResources[i].unloadSpriteResource();
-			this.gc.srm.destroySpriteResource(spriteResources[i].id);
-		}
-
-		//unload tilemap resource
-		this.gc.theTilemapResource.unloadTilemapResource();
-
-		//unload tileset resources
-		var tilesetResources = this.gc.trm.getTilesetResources();
-		for(var i = 0; i < tilesetResources.length; i++) {
-			tilesetResources[i].unloadTilesetResource();
-			this.gc.trm.destroyTilesetResource(tilesetResources[i].id);
-		}
-
-		//destroy all character classes
-		this.gc.ccm.destroyAllCharacterClasses();
+		//unload resources
+		this.gc.rm.unloadAllResources();
 
 		//reset the game client
 		this.gc.reset();
@@ -79,8 +61,7 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		this.gc.um.update(dt);
 		this.gc.gom.update(dt);
 		this.gc.tm.update(dt);
-		this.gc.srm.update(dt);
-		this.gc.trm.update(dt);
+		this.gc.rm.update(dt);
 
 		this.updateCounter++;
 
@@ -105,7 +86,7 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 
 		this.gc.mainMenu.disableExitServerButton();
 		
-		this.gc.theTilemapResource = null;
+		this.gc.activeTilemap = null;
 
 		this.gc.wsh.reset();
 	}

@@ -41,7 +41,7 @@ export default class Projectile {
 
 	activated() {
 		this.boxGraphics = this.ms.add.graphics();
-		this.fireballGraphics = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "fireball");
+		this.fireballGraphics = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/fireball.json");
 		this.fireballGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.fireballGraphics.setScale(this.size*2 * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio, this.size*2 * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio);
 		this.fireballGraphics.setAngle(this.angle * (180/Math.PI));

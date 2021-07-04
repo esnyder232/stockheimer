@@ -25,6 +25,9 @@ class GameServerStarting extends GameServerBaseState {
 		this.tilemapToLoad = this.gs.mapKey;
 		this.gs.rm.loadResource(this.gs.mapKey, "tilemap", this.cbTilemapComplete.bind(this));
 
+		//load other static resources that the client needs (temporary until i get it sorted out better)
+		this.gs.rm.loadResource("data/sprites/castle.json", "sprite");
+
 		//create teams
 		this.createTeams();
 	}
@@ -63,7 +66,7 @@ class GameServerStarting extends GameServerBaseState {
 			errorMessage = "Error when loading character class '" + resource.key + "': No data found.";
 		}
 
-		//load sprite resources
+		//load sprite resources from animation sets
 		if(!bError) {
 			//from animation sets
 			if(resource.data.animationSets) {
@@ -77,6 +80,15 @@ class GameServerStarting extends GameServerBaseState {
 				}
 			}
 		}
+
+		//load sprite resources from death sprite
+		if(!bError) {
+			//from animation sets
+			if(this.globalfuncs.nestedValueCheck(resource, "data.deathSpriteKey")) {
+				this.gs.rm.loadResource(resource.data.deathSpriteKey, "sprite");
+			}
+		}
+
 
 		//load projectile resources
 		if(!bError) {
@@ -127,6 +139,9 @@ class GameServerStarting extends GameServerBaseState {
 				var currentTileset = resource.data.tilesets[i];
 				var tilesetKey = path.join(resource.key, "..", currentTileset.image);
 				tilesetKey = tilesetKey.replace(/\\/g, "/");
+
+				//put the tilesetkey on the data as well so the client knows which tilesets to load for phaser
+				currentTileset.tilesetKey = tilesetKey;
 
 				this.gs.rm.loadResource(tilesetKey, "tileset");
 			}

@@ -4,7 +4,6 @@ const {AiConnectingState} = require('../user/ai-connecting-state.js');
 const {Round} = require('../classes/round.js');
 const GameConstants = require('../../shared_files/game-constants.json');
 
-const crypto = require('crypto');
 const logger = require('../../logger.js');
 
 class GameServerRunning extends GameServerBaseState {
@@ -83,10 +82,6 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.tm.update(dt);
 		this.gs.pm.update(dt);
 		this.gs.uam.update(dt);
-
-		//temporary for debugging
-		this.gs.fm.update(dt);
-		this.gs.rm.update(dt);
 
 		this.gs.frameNum++;
 

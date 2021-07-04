@@ -52,9 +52,15 @@ app.get('/api/get-user-session', gs.getUserSession.bind(gs));
 app.get('/api/get-server-details', gs.getServerDetails.bind(gs));
 app.post('/api/join-request', gs.joinRequest.bind(gs));
 app.post('/api/clear-user-session', gs.clearUserSession.bind(gs));
+
+//////////////////////////////////
+// OLD WAY TO GET RESOURCES
 app.get('/api/get-game-resource-data', gs.getGameResourceData.bind(gs));
 app.get('/api/get-character-class-mapping-data', gs.getCharacterClassMappingData.bind(gs));
 
+// NEW WAY TO GET RESOURCES
+app.get('/api/get-resources', gs.getFesources.bind(gs));
+//////////////////////////////////
 
 
 

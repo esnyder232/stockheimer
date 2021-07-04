@@ -9,8 +9,6 @@ const {TilesetResourceDefinition} = require("../resource-definition/tileset-reso
 const {SpriteResourceDefinition} = require("../resource-definition/sprite-resource-definition.js");
 const {ProjectileResourceDefinition} = require("../resource-definition/projectile-resource-definition.js");
 
-
-
 class ResourceManager {
 	constructor() {
 		this.gs = null;
@@ -185,6 +183,22 @@ class ResourceManager {
 		}
 
 		return resourcesLoading;
+	}
+
+	//returns resources serialized for the client
+	getResourcesSerialized() {
+		var finalArray = [];
+		for(var i = 0; i < this.resourceArray.length; i++) {
+			var o = {};
+			o.id = this.resourceArray[i].id;
+			o.key = this.resourceArray[i].key;
+			o.data = JSON.parse(JSON.stringify(this.resourceArray[i].data));
+			o.resourceType = this.resourceArray[i].resourceType;
+
+			finalArray.push(o);
+		}
+
+		return finalArray;
 	}
 
 

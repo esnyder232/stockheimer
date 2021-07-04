@@ -50,7 +50,7 @@ export default class Castle {
 		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 
-		this.castleImage = this.ms.add.image((32 * this.ms.planckUnitsToPhaserUnitsRatio), (-32 * this.ms.planckUnitsToPhaserUnitsRatio * -1), "castle");
+		this.castleImage = this.ms.add.image((32 * this.ms.planckUnitsToPhaserUnitsRatio), (-32 * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/castle.json");
 		this.castleImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		this.castleImage.setScale(2, 2);
 	}

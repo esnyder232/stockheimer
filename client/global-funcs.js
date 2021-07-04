@@ -99,9 +99,10 @@ export default class GlobalFuncs {
 	}
 
 	removeAnimsFromAseprite(phaserGame, asepriteSpritesheetKey, asepriteJsonKey) {
-		//console.log('now removing anims for ' + asepriteSpritesheetKey);
+		//console.log('now removing anims for ' + asepriteSpritesheetKey + ", " + asepriteJsonKey);
 
 		//find the aseprite json file to parse from
+		
 		var json = phaserGame.cache.json.get(asepriteJsonKey);
 		var anims = phaserGame.anims;
 
@@ -109,12 +110,14 @@ export default class GlobalFuncs {
 		// console.log(anims);
 
 		//parse through the frameTags for the animations and create an animation for each one
-		for(var i = 0; i < json.meta.frameTags.length; i++) {
-			var f = json.meta.frameTags[i];
-			var key = asepriteSpritesheetKey + "-" + f.name;
-
-			//console.log(animObject);
-			anims.remove(key);
+		if(json !== undefined) {
+			for(var i = 0; i < json.meta.frameTags.length; i++) {
+				var f = json.meta.frameTags[i];
+				var key = asepriteSpritesheetKey + "-" + f.name;
+	
+				//console.log(animObject);
+				anims.remove(key);
+			}
 		}
 	}
 

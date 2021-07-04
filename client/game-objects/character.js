@@ -48,7 +48,7 @@ export default class Character {
 
 		// this.spriteGraphics = null;
 		// this.spriteKey = "slime";
-		// this.animationKey = "slime-idle-down";
+		// this.animationKey = "data/sprites/slime-mage.json__idle-down";
 
 	}
 
@@ -171,7 +171,7 @@ export default class Character {
 			countdownTimer: 15000 //ms
 		};
 
-		gravestone.gravestoneImage = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "gravestone");
+		gravestone.gravestoneImage = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/gravestone.json");
 		gravestone.gravestoneImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		gravestone.gravestoneImage.setScale(2, 2);
 

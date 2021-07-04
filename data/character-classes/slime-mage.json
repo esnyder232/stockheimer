@@ -8,6 +8,7 @@
 		"attack": "data/animation-sets/slime-attack-set.json",
 		"cast": "data/animation-sets/slime-fire-set.json"
 	},
+	"deathSpriteKey": "data/sprites/gravestone.json",
 	"fireStateKey": "data/character-class-states/slime-attack.json",
 	"altFireStateKey": "data/character-class-states/slime-fire.json"
 }

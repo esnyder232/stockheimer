@@ -751,6 +751,29 @@ class GameServer {
 		res.status(statusResponse).json({userMessage: userMessage, data: data});
 	}
 
+	getFesources(req, res) {
+		var bError = false;
+		var data = [];
+		var userMessage = "";
+
+		try {
+			var r = this.rm.getResourcesSerialized();
+			data = r;
+		}
+		catch(ex) {
+			userMessage = "Internal server error.";
+			logger.log("error", ex);
+			bError = true;
+		}
+
+		//send the response
+		var statusResponse = 200;
+		if(bError)		
+			statusResponse = 500;
+
+		res.status(statusResponse).json({userMessage: userMessage, data: data});
+	}
+
 }
 
 exports.GameServer = GameServer;

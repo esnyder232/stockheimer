@@ -284,25 +284,22 @@ export default class MainScene extends Phaser.Scene {
 	}
 
 	createMap() {
-		var tilemapData = this.cache.tilemap.get(this.gc.theTilemapResource.key);
-
 		//create tilemap in phaser
-		this.map = this.make.tilemap({key: this.gc.theTilemapResource.key});
+		this.map = this.make.tilemap({key: this.gc.activeTilemap.key});
 
 		//for each layer, create a tileset and a tile later in phaser
-		for(var i = 0; i < tilemapData.data.tilesets.length; i++) {
-			var ts = tilemapData.data.tilesets[i];
+		for(var i = 0; i < this.gc.activeTilemap.data.tilesets.length; i++) {
+			var ts = this.gc.activeTilemap.data.tilesets[i];
 
 			//create tileset
-			var key = this.globalfuncs.getFilenameFromUrl(ts.image);
-			var newTileset = this.map.addTilesetImage(ts.name, key, ts.tilewidth, ts.tileheight, ts.margin, ts.spacing);
+			var newTileset = this.map.addTilesetImage(ts.name, ts.tilesetKey, ts.tilewidth, ts.tileheight, ts.margin, ts.spacing);
 
 			//add tileset to the pile
 			this.tilesetArray.push(newTileset);
 		}
 
-		for(var i = 0; i < tilemapData.data.layers.length; i++) {
-			var l = tilemapData.data.layers[i];
+		for(var i = 0; i < this.gc.activeTilemap.data.layers.length; i++) {
+			var l = this.gc.activeTilemap.data.layers[i];
 
 			if(l.type === "tilelayer") {
 				//create layer
