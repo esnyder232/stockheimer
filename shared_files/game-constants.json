@@ -20,6 +20,7 @@
 		"SPECTATING": 0,
 		"DEAD": 1,
 		"RESPAWNING": 2,
-		"PLAYING": 3
+		"PLAYING": 3,
+		"CLASS_PICKING": 4
 	}
 }

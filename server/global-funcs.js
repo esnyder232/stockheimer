@@ -336,6 +336,22 @@ class GlobalFuncs {
 		}
 		return propExists;
 	}
+
+	getRandomClass(gameServer) {
+		var randomClass = null;
+		var availableClasses = gameServer.rm.getResourceByType("character-class");
+		
+		var cIndex = Math.floor(Math.random() * availableClasses.length);
+		if(cIndex === availableClasses.length) {
+			cIndex = availableClasses.length-1
+		}
+
+		if(cIndex >= 0 && cIndex < availableClasses.length) {
+			randomClass = availableClasses[cIndex];
+		}
+		
+		return randomClass;
+	}
 }
 
 

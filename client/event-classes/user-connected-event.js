@@ -17,6 +17,7 @@ export default class UserConnectedEvent {
 		u.roundUserKillCount = e.roundUserKillCount;
 		u.userDeathCount = e.userDeathCount;
 		u.roundUserDeathCount = e.roundUserDeathCount;
+		u.characterClassResourceId = e.characterClassResourceId === 0 ? null : e.characterClassResourceId;
 
 		if(!this.gc.foundMyUser)
 		{

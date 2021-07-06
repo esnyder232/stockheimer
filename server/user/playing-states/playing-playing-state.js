@@ -80,6 +80,11 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
 							this.user.determinePlayingState();
 							break;
+						case "class-changed":
+							//kill the current character, and put user in respawning state
+							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
+							this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
+							break;
 					}
 				}
 

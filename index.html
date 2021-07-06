@@ -93,6 +93,24 @@
 					</div>		
 				</div>
 
+				<div class="hide menu-wrapper" id="character-class-menu">
+					<div class="menu-container">
+						<div class="menu-close-container">
+							<div class="menu-close-button" onclick="window.dispatchEvent(new CustomEvent('close-character-class-menu'));">
+								<img class="menu-close-button" src="assets/images/x-mark.png" />
+							</div>
+						</div>
+						<div class="menu-title">
+							<span>Pick a class</span>
+						</div>
+						<div class="team-button-container" id="character-class-button-container">
+
+							<input type="button" class="hide menu-button" id="character-class-buttom-template" value="???"/>
+						</div>
+					</div>		
+				</div>
+
+
 				<div class="hide small-menu-wrapper" id="chat-menu">
 					<div class="small-menu-container chat-menu-container">
 						<div class="small-menu-close-container">
@@ -401,6 +419,7 @@
 					<div class="quick-menu-container">
 						<img class="quick-menu-icon" id="quick-menu-main-menu" src="assets/images/white-gear-icon4.png" onclick="window.dispatchEvent(new CustomEvent('toggle-main-menu'));"/>
 						<img class="hide quick-menu-icon" id="quick-menu-team" src="assets/images/flag-red.png" onclick="window.dispatchEvent(new CustomEvent('toggle-team-menu'));"/>
+						<img class="hide quick-menu-icon" id="quick-menu-character-class" src="assets/images/sword-brandish.png" onclick="window.dispatchEvent(new CustomEvent('toggle-character-class-menu'));"/>
 						<img class="hide quick-menu-icon" id="quick-menu-chat" src="assets/images/chat-bubble-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-chat-menu'));"/>
 						<img class="hide quick-menu-icon" id="quick-menu-user-list" src="assets/images/person-gray.png" onclick="window.dispatchEvent(new CustomEvent('toggle-user-list-menu'));"/>
 						<img class="quick-menu-icon" id="quick-menu-debug" src="assets/images/command-console-black.png" onclick="window.dispatchEvent(new CustomEvent('toggle-debug-menu'));"/>

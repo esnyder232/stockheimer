@@ -326,6 +326,34 @@ class GameServerRunning extends GameServerBaseState {
 							}
 	
 							break;
+						case "fromClientChangeClass":
+							var existingClassId = user.characterClassResourceId;
+							var newClassId = null;
+							var broadcastMessage = "";
+							var logEventMessage = "";
+	
+							var newClassResource = this.gs.rm.getResourceByID(e.characterClassResourceId);
+							
+							if(newClassResource !== null && newClassResource.resourceType === "character-class") {
+								newClassId = newClassResource.id;
+							}
+	
+							//if the new class is different than the existing, change it, and send an event
+							if(newClassId !== null && newClassId !== existingClassId) {
+								user.updateCharacterClassId(newClassId);
+	
+								broadcastMessage = "Player '" + user.username + "' changed class to " + newClassResource.data.name;
+								logEventMessage = "Player: " + user.username + ", event: fromClientChangeClass: chnaged class to " + newClassResource.data.name;
+							}
+	
+							//send out usermessage and/or broadcast message
+							if(broadcastMessage !== "") {
+								this.broadcastResponseMessage(broadcastMessage, logEventMessage);
+							}
+							
+	
+							break;
+
 	
 						case "fragmentStart":
 						case "fragmentContinue":

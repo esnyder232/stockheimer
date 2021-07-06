@@ -32,6 +32,17 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			bContinue = false;
 		}
 
+		//check if the ai needs to pick a class
+		if(bContinue && this.aiAgent.user.playingStateName === "CLASS_PICKING") {
+			var randomClass = this.globalfuncs.getRandomClass(this.aiAgent.gs);
+			if(randomClass !== null) {
+				this.aiAgent.user.updateCharacterClassId(randomClass.id);
+				logger.log("info", "ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name);
+			}
+
+			bContinue = false;
+		}
+
 		//check if the character the user is controlling is activated
 		if(bContinue) {
 			var c = this.aiAgent.gs.gom.getGameObjectByID(this.aiAgent.user.characterId);

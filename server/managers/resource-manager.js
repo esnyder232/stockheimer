@@ -13,7 +13,7 @@ class ResourceManager {
 	constructor() {
 		this.gs = null;
 
-		this.idCounter = 0; 
+		this.idCounter = 1; 
 		this.resourceArray = [];
 		this.idIndex = {};
 		this.keyIndex = {};
@@ -53,7 +53,7 @@ class ResourceManager {
 		var o = null;
 
 		//check if its already been loaded/pending
-		o = this.getResourceByKey(key);
+		o = this.getResourceByKey(key, true);
 
 		if(o === null) {
 			var fullFilepath = path.join(this.gs.appRoot, key);
@@ -95,7 +95,7 @@ class ResourceManager {
 
 
 	unloadResource(id) {
-		var r = this.getResourceByID(id);
+		var r = this.getResourceByID(id, true);
 		if(r !== null && r.status !== "unload") {
 			r.status = "unload";
 			var transactionObj = {
@@ -109,7 +109,7 @@ class ResourceManager {
 	}
 	
 	unloadResourceByKey(key) {
-		var r = this.getResourceByKey(key);
+		var r = this.getResourceByKey(key, true);
 		if(r !== null) {
 			this.unloadResource(r.id);
 		}
@@ -121,22 +121,34 @@ class ResourceManager {
 		}
 	}
 
-	getResourceByID(id) {
+	//if the "includeNullData" parameter is true, this will return a resource even though the data is null.
+	//It effectively filters out a resource that failed to load or didn't exist for some erronous reason.
+	getResourceByID(id, includeNullData) {
+		var r = null;
+
 		if(this.idIndex[id] !== undefined) {
-			return this.idIndex[id];
+			r = this.idIndex[id];
 		}
-		else {
-			return null;
+
+		if(r !== null && includeNullData !== true && r.data === null) {
+			r = null;
 		}
+
+		return r;
 	}
 
-	getResourceByKey(key) {
+	getResourceByKey(key, includeNullData) {
+		var r = null;
+
 		if(this.keyIndex[key] !== undefined) {
-			return this.keyIndex[key];
+			r = this.keyIndex[key];
 		}
-		else {
-			return null;
+
+		if(r !== null && includeNullData !== true && r.data === null) {
+			r = null;
 		}
+
+		return r;
 	}
 
 
@@ -241,7 +253,7 @@ class ResourceManager {
 			//process open transactions
 			while(this.openTransactionQueue.length > 0) {
 				var tr = this.openTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 				var rd = null;
 
 				if(r === null || r.status === "unload") {
@@ -302,7 +314,7 @@ class ResourceManager {
 			var pendingTransactionsCompleted = []; //list of indices to splice off from "pendingTransactionQueue"
 			for(var i = 0; i < this.pendingTransactionQueue.length; i++) {
 				var tr = this.pendingTransactionQueue[i];
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r === null || r.status === "unload") {
 					tr.status = "unload";
@@ -342,7 +354,7 @@ class ResourceManager {
 
 			while(this.successTransactionQueue.length > 0) {
 				var tr = this.successTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r === null || r.status === "unload") {
 					tr.status = "unload";
@@ -364,7 +376,7 @@ class ResourceManager {
 			//process unload transactions
 			while(this.unloadTransactionQueue.length > 0) {
 				var tr = this.unloadTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r !== null && r.status === "unload") {
 					var rindex = this.resourceArray.findIndex((x) => {return x.id === r.id;});
@@ -385,7 +397,7 @@ class ResourceManager {
 	//...they had to live somewhere
 
 	checkIfResourceComplete(resourceId) {
-		var r = this.gs.rm.getResourceByID(resourceId);
+		var r = this.gs.rm.getResourceByID(resourceId, true);
 
 		if(r !== null && r.status !== "unload") {
 			if( r.filesToLoad.length === 0) {
@@ -396,7 +408,7 @@ class ResourceManager {
 
 	
 	linkFile(resourceId, context, contextKey, fileKey, cbNextFunc) {
-		var r = this.gs.rm.getResourceByID(resourceId);
+		var r = this.gs.rm.getResourceByID(resourceId, true);
 		if(r !== null && r.status !== "unload") {
 			this.gs.fm.loadFile(fileKey, this.cbFileLoadComplete.bind(this, resourceId, context, contextKey, fileKey, cbNextFunc));
 			r.filesToLoad.push(fileKey);
@@ -404,7 +416,7 @@ class ResourceManager {
 	}
 
 	cbFileLoadComplete(resourceId, context, contextKey, fileKey, cbNextFunc, file) {
-		var r = this.gs.rm.getResourceByID(resourceId);
+		var r = this.gs.rm.getResourceByID(resourceId, true);
 		var contextValue = null;
 
 		//exit early if the resource was unloaded

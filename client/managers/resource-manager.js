@@ -15,6 +15,7 @@ export default class ResourceManager {
 		this.keyIndex = {};
 		this.serverIdIndex = {};
 		this.resourceLoaders = {};
+		this.typeIndex = {};
 
 		this.openTransactionQueue = [];
 		this.pendingTransactionQueue = [];
@@ -59,7 +60,7 @@ export default class ResourceManager {
 		var rl = null;
 
 		//check to make sure the file still exists and is not unloaded
-		r = this.getResourceByKey(key);
+		r = this.getResourceByKey(key, true);
 		if(r !== null && r.status !== "unload") {
 
 			//tell the resource loader about it
@@ -74,7 +75,7 @@ export default class ResourceManager {
 		if(this.eventDelegates[key] !== undefined) {
 			//get the resource
 			var id = this.eventDelegates[key].resourceId;
-			r = this.getResourceByID(id);
+			r = this.getResourceByID(id, true);
 			if(r !== null && r.status !== "unload") {
 				//call the resource loaders that registered for the key
 				for(var i = 0; i < this.eventDelegates[key].delegateArray.length; i++) {
@@ -98,7 +99,7 @@ export default class ResourceManager {
 		var rl = null;
 
 		//check to make sure the file still exists and is not unloaded
-		r = this.getResourceByKey(key);
+		r = this.getResourceByKey(key, true);
 		if(r !== null && r.status !== "unload") {
 			//tell the resource loader about it
 			rl = this.getResourceLoader(r.resourceType);
@@ -112,7 +113,7 @@ export default class ResourceManager {
 		if(this.eventDelegates[key] !== undefined) {
 			//get the resource
 			var id = this.eventDelegates[key].resourceId;
-			r = this.getResourceByID(id);
+			r = this.getResourceByID(id, true);
 			if(r !== null && r.status !== "unload") {
 				//call the resource loaders that registered for the key
 				//console.log("=-=- now calling delegates. length: " + this.eventDelegates[key].delegateArray.length);
@@ -129,7 +130,7 @@ export default class ResourceManager {
 		var o = null;
 
 		//check if the resource was already created
-		o = this.getResourceByKey(serverResource.key)
+		o = this.getResourceByKey(serverResource.key, true)
 		if(o === null) {
 			var o = new Resource();
 
@@ -141,7 +142,7 @@ export default class ResourceManager {
 			o.resourceType = serverResource.resourceType;
 			
 			this.resourceArray.push(o);	
-			this.updateIndex(o.id, o.key, o.serverId, o, "create");
+			this.updateIndex(o.id, o.key, o.serverId, o.resourceType, o, "create");
 
 			//queue transaction
 			var transactionObj = {
@@ -160,7 +161,7 @@ export default class ResourceManager {
 	}
 
 	unloadResource(id) {
-		var r = this.getResourceByID(id);
+		var r = this.getResourceByID(id, true);
 		if(r !== null && r.status !== "unload") {
 			r.status = "unload";
 			var transactionObj = {
@@ -189,11 +190,16 @@ export default class ResourceManager {
 		}
 	}
 
-	updateIndex(id, key, serverId, obj, transaction) {
+	updateIndex(id, key, serverId, resourceType, obj, transaction) {
 		if(transaction == 'create') {
 			this.idIndex[id] = obj;
 			this.keyIndex[key] = obj;
 			this.serverIdIndex[serverId] = obj;
+			
+			if(this.typeIndex[resourceType] === undefined) {
+				this.typeIndex[resourceType] = [];
+			}
+			this.typeIndex[resourceType].push(obj);
 		}
 		else if(transaction == 'delete') {
 			if(this.idIndex[id] !== undefined) {
@@ -206,6 +212,17 @@ export default class ResourceManager {
 
 			if(this.serverIdIndex[serverId] !== undefined) {
 				delete this.serverIdIndex[serverId]
+			}
+
+			if(this.typeIndex[resourceType] !== undefined) {
+				var ind = this.typeIndex[resourceType].findIndex((x) => {return x.id === id;});
+				if(ind >= 0) {
+					this.typeIndex[resourceType].splice(ind, 1);
+				}
+
+				if(this.typeIndex[resourceType].length === 0) {
+					delete this.typeIndex[resourceType];
+				}
 			}
 		}
 	}
@@ -257,7 +274,7 @@ export default class ResourceManager {
 			//process open transactions
 			while(this.openTransactionQueue.length > 0) {
 				var tr = this.openTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 				var rd = null;
 
 				if(r === null || r.status === "unload") {
@@ -322,7 +339,7 @@ export default class ResourceManager {
 			var pendingTransactionsCompleted = []; //list of indices to splice off from "pendingTransactionQueue"
 			for(var i = 0; i < this.pendingTransactionQueue.length; i++) {
 				var tr = this.pendingTransactionQueue[i];
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r === null || r.status === "unload") {
 					tr.status = "unload";
@@ -367,7 +384,7 @@ export default class ResourceManager {
 
 			while(this.successTransactionQueue.length > 0) {
 				var tr = this.successTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r === null || r.status === "unload") {
 					tr.status = "unload";
@@ -389,7 +406,7 @@ export default class ResourceManager {
 			//process failed transactions
 			while(this.failedTransactionQueue.length > 0) {
 				var tr = this.failedTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r === null || r.status === "unload") {
 					tr.status = "unload";
@@ -416,7 +433,7 @@ export default class ResourceManager {
 			while(this.unloadTransactionQueue.length > 0) {
 				//console.log("unload resource length: " + this.unloadTransactionQueue.length);
 				var tr = this.unloadTransactionQueue.shift();
-				var r = this.getResourceByID(tr.id);
+				var r = this.getResourceByID(tr.id, true);
 
 				if(r !== null && r.status === "unload") {
 					var rindex = this.resourceArray.findIndex((x) => {return x.id === r.id;});
@@ -429,7 +446,7 @@ export default class ResourceManager {
 							rd.unloadResource(r);
 						}
 
-						this.updateIndex(r.id, r.key, r.serverId, r, "delete");
+						this.updateIndex(r.id, r.key, r.serverId, r.resourceType, r, "delete");
 						this.resourceArray.splice(rindex, 1);
 					}
 				}
@@ -460,35 +477,58 @@ export default class ResourceManager {
 		return resourcesLoading;
 	}
 
+	getResourceByID(id, includeNullData) {
+		var r = null;
 
-	getResources() {
-		return this.resourceArray;
+		if(this.idIndex[id] !== undefined) {
+			r = this.idIndex[id];
+		}
+
+		if(r !== null && includeNullData !== true && r.data === null) {
+			r = null;
+		}
+
+		return r;
 	}
 
-	getResourceByID(id) {
-		if(this.idIndex[id]) {
-			return this.idIndex[id];
+	getResourceByKey(key, includeNullData) {
+		var r = null;
+
+		if(this.keyIndex[key] !== undefined) {
+			r = this.keyIndex[key];
 		}
-		else {
-			return null;
+
+		if(r !== null && includeNullData !== true && r.data === null) {
+			r = null;
 		}
+
+		return r;
+	}
+	
+	getResourceByType(resourceType, includeNullData) {
+		var arr = [];
+		if(this.typeIndex[resourceType] !== undefined) {
+			arr = this.typeIndex[resourceType];
+		}
+
+		if(includeNullData !== true) {
+			arr = arr.filter((x) => {return x.data !== null;});
+		}
+
+		return arr;
 	}
 
-	getResourceByKey(key) {
-		if(this.keyIndex[key]) {
-			return this.keyIndex[key];
-		}
-		else {
-			return null;
-		}
-	}
+	getResourceByServerId(serverId, includeNullData) {
+		var r = null;
 
-	getResourceByServerId(serverId) {
-		if(this.serverIdIndex[serverId]) {
-			return this.serverIdIndex[serverId];
+		if(this.serverIdIndex[serverId] !== undefined) {
+			r = this.serverIdIndex[serverId];
 		}
-		else {
-			return null;
+
+		if(r !== null && includeNullData !== true && r.data === null) {
+			r = null;
 		}
+
+		return r;
 	}
 }

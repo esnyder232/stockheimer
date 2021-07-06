@@ -4,6 +4,7 @@ import config from '../client-config.json';
 import PlayerController from "../classes/player-controller.js"
 import ClientConstants from "../client-constants.js"
 import TeamMenu from "../ui-classes/team-menu.js"
+import CharacterClassMenu from "../ui-classes/character-class-menu.js";
 import ChatMenu from "../ui-classes/chat-menu.js"
 import ChatMenuMinified from "../ui-classes/chat-menu-minified.js"
 import UserListMenu from "../ui-classes/user-list-menu.js"
@@ -101,6 +102,7 @@ export default class MainScene extends Phaser.Scene {
 		this.gravestoneStrokeThickness = 2;
 
 		this.teamMenu = null;
+		this.characterClassMenu = null;
 		this.chatMenu = null;
 		this.chatMenuMinified = null;
 		this.userListMenu = null;
@@ -125,7 +127,8 @@ export default class MainScene extends Phaser.Scene {
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-			{event: 'respawn-castle', func: this.respawnCastle.bind(this)}
+			{event: 'respawn-castle', func: this.respawnCastle.bind(this)},
+			{event: "team-changed", func: this.teamChanged.bind(this)}
 		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
@@ -162,6 +165,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//created menus and small divs
 		this.teamMenu = new TeamMenu();
+		this.characterClassMenu = new CharacterClassMenu();
 		this.chatMenu = new ChatMenu();
 		this.chatMenuMinified = new ChatMenuMinified();
 		this.userListMenu = new UserListMenu();
@@ -173,6 +177,7 @@ export default class MainScene extends Phaser.Scene {
 		
 
 		this.teamMenu.init(this.gc);
+		this.characterClassMenu.init(this.gc);
 		this.chatMenu.init(this.gc);
 		this.chatMenuMinified.init(this.gc);
 		this.userListMenu.init(this.gc);
@@ -228,6 +233,7 @@ export default class MainScene extends Phaser.Scene {
 	closeMenuGroup() {
 		this.gc.mainMenu.closeMenu();
 		this.teamMenu.closeMenu();
+		this.characterClassMenu.closeMenu();
 	}
 
 	preload() {
@@ -269,6 +275,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//activated ui classes
 		this.teamMenu.activate();
+		this.characterClassMenu.activate();
 		this.chatMenu.activate();
 		this.chatMenuMinified.activate();
 		this.userListMenu.activate();
@@ -281,6 +288,8 @@ export default class MainScene extends Phaser.Scene {
 		//other things to create
 		this.gc.mainScene.createMap();
 		this.gc.debugMenu.populateAiControls();
+
+		this.respawnMenuFlowControl(true);
 	}
 
 	createMap() {
@@ -314,6 +323,8 @@ export default class MainScene extends Phaser.Scene {
 			}
 		}
 	}
+
+	
 
 	setCameraZoom() {
 		this.cameraZoom = this.cameraZoom >= this.cameraZoomMax ? this.cameraZoomMax : this.cameraZoom;
@@ -370,6 +381,7 @@ export default class MainScene extends Phaser.Scene {
 		this.teamScoreMenu.closeMenu();
 
 		this.teamMenu.deactivate();
+		this.characterClassMenu.deactivate();
 		this.chatMenu.deactivate();
 		this.chatMenuMinified.deactivate();
 		this.userListMenu.deactivate();
@@ -380,6 +392,7 @@ export default class MainScene extends Phaser.Scene {
 		this.teamScoreMenu.deactivate();
 
 		this.teamMenu.deinit();
+		this.characterClassMenu.deinit();
 		this.chatMenu.deinit();
 		this.chatMenuMinified.deinit();
 		this.userListMenu.deinit();
@@ -695,5 +708,39 @@ export default class MainScene extends Phaser.Scene {
 		});
 	}
 
+	teamChanged(e) {
+		//only call the respawnMenuFlow if the user is the client's user
+		if(this.gc.myUserServerId!== null && e.detail.serverId === this.gc.myUserServerId) {
+			this.respawnMenuFlowControl(false);
+		}
+	}
+
+	//this function drives the process of team/class picker menu. Basically, it opens/closes the team/class picker based on if you belong to a team/have a class picked.
+	//Its to guide the user through the respawning flow
+	respawnMenuFlowControl(bFirstMenuFlow) {
+		var spectatorTeam = this.gc.tm.getSpectatorTeam();
+		var bStop = false;
+
+		//open the team menu if:
+		// - the player has first entered the game, but does not have a teamId
+		if(bFirstMenuFlow && this.gc.myUser.teamId === spectatorTeam.serverId) {
+			this.teamMenu.openMenu();
+			bStop = true;
+		}
+
+		//open the class menu if:
+		// - the player has first entered the game, has a teamId, but does not have a class
+		// - the player has a teamId, but does not have a class
+		if(!bStop) {
+			if(bFirstMenuFlow && this.gc.myUser.teamId !== spectatorTeam.serverId && this.gc.myUser.characterClassResourceId === null) {
+				this.characterClassMenu.openMenu();
+				bStop = true;
+			}
+			else if(this.gc.myUser.teamId !== spectatorTeam.serverId && this.gc.myUser.characterClassResourceId === null) {
+				this.characterClassMenu.openMenu();
+				bStop = true;
+			}
+		}
+	}
 }
 

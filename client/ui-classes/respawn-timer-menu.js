@@ -42,8 +42,7 @@ export default class RoundMenu {
 	}
 
 	userPlayingStateUpdated(e) {
-		if(this.gc.myUserServerId!== null && e.detail.serverId === this.gc.myUserServerId)
-		{
+		if(this.gc.myUserServerId!== null && e.detail.serverId === this.gc.myUserServerId) {
 			this.updateRespawnMessage();
 		}
 	}
@@ -57,10 +56,15 @@ export default class RoundMenu {
 					this.respawnMessage.text("Spectating");
 					this.updateMessageOnUpdate = false;
 					break;
+				case "CLASS_PICKING":
+					this.menu.removeClass("hide");
+					this.respawnMessage.text("Pick a class to respawn");
+					break;
+
 				case "RESPAWNING":
 				case "DEAD":
 					this.menu.removeClass("hide");
-					if(this.gc.theRound.stateName === "PLAYING") {
+					if(this.gc.theRound.stateName === "PLAYING" || this.gc.theRound.stateName === "STARTING") {
 						this.updateMessageOnUpdate = true;
 						var secondsLeft = this.gc.myUser.getRespawnSeconds();
 						if(secondsLeft <= 0) {
@@ -68,7 +72,6 @@ export default class RoundMenu {
 						}
 						
 						this.respawnMessage.text("Respawning in " + secondsLeft + " seconds");
-				
 					}
 					else if (this.gc.theRound.stateName === "OVER") {
 						this.updateMessageOnUpdate = false;

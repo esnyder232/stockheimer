@@ -14,6 +14,7 @@ export default class User {
 		this.userDeathCount = 0;	//total deaths
 		this.roundUserKillCount = 0;//kills in current round
 		this.roundUserDeathCount = 0;	//deaths in current round
+		this.characterClassResourceId = null;
 
 		this.userRtt = 0;
 		this.teamId = null;
@@ -71,13 +72,21 @@ export default class User {
 	}
 
 	updateUserInfoEvent(e) {
+		this.oldTeamId = this.teamId;
+
 		this.userKillCount = e.userKillCount;
 		this.teamId = e.teamId;
 		this.roundUserKillCount = e.roundUserKillCount;
 		this.userDeathCount = e.userDeathCount;
 		this.roundUserDeathCount = e.roundUserDeathCount;
+		this.characterClassResourceId = e.characterClassResourceId === 0 ? null : e.characterClassResourceId;
 
 		window.dispatchEvent(new CustomEvent("user-info-updated", {detail: {serverId: this.serverId}}));
+
+		//release a team-changed specific event
+		if(this.oldTeamId !== this.teamId) {
+			window.dispatchEvent(new CustomEvent("team-changed", {detail: {serverId: this.serverId}}));
+		}
 	}
 
 	updateUserRttEvent(e) {

@@ -1,6 +1,7 @@
 const GlobalFuncs = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
+const PlayingClassPickingState = require('./playing-states/playing-class-picking-state.js');
 const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
 const {EventEmitter} = require('../classes/event-emitter.js');
 const logger = require('../../logger.js');
@@ -35,7 +36,7 @@ class User {
 		this.roundUserDeathCount = 0;	//deaths in current round
 
 		this.teamId = null;
-		this.characterClassReourceId = null;
+		this.characterClassResourceId = null;
 
 		this.playingState = null;
 		this.nextPlayingState = null;
@@ -46,6 +47,8 @@ class User {
 
 		this.respawnTimer = 0;
 		this.respawnTimeAcc = 0;
+
+		this.sendUserPlayingState = false;
 
 		this.roundEventCallbackMapping = [ 
 			{eventName: "round-restarting", cb: this.cbEventEmitted.bind(this), handleId: null},
@@ -73,14 +76,6 @@ class User {
 			this.teamId = spectatorTeam.id;
 		}
 
-		if(this.characterClassReourceId === null) {
-			var availableClasses = this.gs.rm.getResourceByType("character-class");
-			if(availableClasses.length > 0) {
-				//temporary. Just pick the first one.
-				this.characterClassReourceId = availableClasses[0].id; 
-			}
-		}
-
 		this.playingState = new PlayingSpectatorState.PlayingSpectatorState(this);
 		this.playingState.enter();
 
@@ -106,16 +101,23 @@ class User {
 		})
 	}
 
+	updateCharacterClassId(newClassId) {
+		this.characterClassResourceId = newClassId;
+		this.userInfoDirty = true;
+		
+		this.playingEventQueue.push({
+			eventName: "class-changed"
+		})
+	}
+
 	determinePlayingState() {
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 
 		//if the player chose any team except the spectator team, put the player in an initial playing state
-		if(spectatorTeam && this.teamId !== spectatorTeam.id)
-		{
-			this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this);
+		if(spectatorTeam && this.teamId !== spectatorTeam.id) {
+			this.nextPlayingState = new PlayingClassPickingState.PlayingClassPickingState(this);
 		}
-		else
-		{
+		else {
 			this.nextPlayingState = new PlayingSpectatorState.PlayingSpectatorState(this);
 		}
 	}
@@ -130,7 +132,7 @@ class User {
 
 		this.characterId = null;
 		//this.teamId = null; //purposely commented out and left in code to remind you later: don't get rid of the teamId so the game remembers what team you were on.
-		this.characterClassReourceId = null;
+		this.characterClassResourceId = null;
 		this.bReadyToPlay = false;
 		this.bDisconnected = false;
 		this.inputQueue = [];
@@ -173,19 +175,43 @@ class User {
 		//update connection state
 		this.state.update();
 
-		//update plyaing state if they have one
+		//update playing state if they have one
 		this.playingState.update(dt);
-
-		if(this.nextPlayingState !== null)
-		{
+		if(this.nextPlayingState !== null) {
 			this.playingState.exit(dt);
 			this.nextPlayingState.enter(dt);
 
+			this.playingState = this.nextPlayingState;
+			this.nextPlayingState = null;
+
+			this.sendUserPlayingState = true;
+		}
+
+		//update user state
+		if(this.nextState) {
+			this.state.exit();
+			this.nextState.enter();
+
+			this.state = this.nextState;
+			this.nextState = null;
+		}
+
+		//tell all users about the new info if its dirty
+		if(this.userInfoDirty) {
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++)
+			{
+				userAgents[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
+			}
+			this.userInfoDirty = false;
+		}
+		
+		//tell only the connected user if their playing state changed
+		if(this.sendUserPlayingState) {
 			var ua = this.gs.uam.getUserAgentByID(this.userAgentId);
 			if(ua !== null) {
 				var te = ua.findTrackedEntity("user", this.id);
-				if(te !== null)
-				{
+				if(te !== null) {
 					te.insertOrderedEvent({
 						"eventName": "updateUserPlayingState",
 						"userId": this.id,
@@ -196,32 +222,10 @@ class User {
 				}
 			}
 
-
-			this.playingState = this.nextPlayingState;
-			this.nextPlayingState = null;
-		}
-		
-		//tell all users about the new info if its dirty
-		if(this.userInfoDirty) {
-
-			var userAgents = this.gs.uam.getUserAgents();
-			for(var i = 0; i < userAgents.length; i++)
-			{
-				userAgents[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
-			}
-
-
-			this.userInfoDirty = false;
+			this.sendUserPlayingState = false;
 		}
 
-		if(this.nextState)
-		{
-			this.state.exit();
-			this.nextState.enter();
 
-			this.state = this.nextState;
-			this.nextState = null;
-		}
 
 		this.em.update(dt);
 	}
@@ -238,7 +242,8 @@ class User {
 			"userKillCount": this.userKillCount,
 			"roundUserKillCount": this.roundUserKillCount,
 			"userDeathCount": this.userDeathCount,
-			"roundUserDeathCount": this.roundUserDeathCount
+			"roundUserDeathCount": this.roundUserDeathCount,
+			"characterClassResourceId": this.characterClassResourceId
 		};
 	}
 
@@ -257,7 +262,8 @@ class User {
 			"userKillCount": this.userKillCount,
 			"roundUserKillCount": this.roundUserKillCount,
 			"userDeathCount": this.userDeathCount,
-			"roundUserDeathCount": this.roundUserDeathCount
+			"roundUserDeathCount": this.roundUserDeathCount,
+			"characterClassResourceId": this.characterClassResourceId
 		};
 	}
 

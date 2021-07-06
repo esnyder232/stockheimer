@@ -27,6 +27,8 @@ export default class QuickMenu {
 			{event: 'main-menu-closed', func: this.mainMenuClosed.bind(this)},
 			{event: 'team-menu-opened', func: this.teamMenuOpened.bind(this)},
 			{event: 'team-menu-closed', func: this.teamMenuClosed.bind(this)},
+			{event: 'character-class-menu-opened', func: this.characterClassMenuOpened.bind(this)},
+			{event: 'character-class-menu-closed', func: this.characterClassMenuClosed.bind(this)},
 			{event: 'chat-menu-opened', func: this.chatMenuOpened.bind(this)},
 			{event: 'chat-menu-closed', func: this.chatMenuClosed.bind(this)},
 			{event: 'user-list-menu-opened', func: this.userListMenuOpened.bind(this)},
@@ -40,12 +42,14 @@ export default class QuickMenu {
 		//grab all the ui elements
 		this.mainMenuIcon = $("#quick-menu-main-menu");
 		this.teamMenuIcon = $("#quick-menu-team");
+		this.characterClassMenuIcon = $("#quick-menu-character-class")
 		this.chatIcon = $("#quick-menu-chat");
 		this.userListIcon = $("#quick-menu-user-list");
 		this.debugIcon = $("#quick-menu-debug");
 
 		//reset to initial state
 		this.mainMenuClosed();
+		this.characterClassMenuClosed();
 		this.teamMenuClosed();
 		this.chatMenuClosed();
 		this.debugMenuClosed();
@@ -55,12 +59,14 @@ export default class QuickMenu {
 		this.teamMenuIcon.removeClass("hide");
 		this.chatIcon.removeClass("hide");
 		this.userListIcon.removeClass("hide");
+		this.characterClassMenuIcon.removeClass("hide");
 	}
 
 	hideMainSceneIcon() {
 		this.teamMenuIcon.addClass("hide");
 		this.chatIcon.addClass("hide");
 		this.userListIcon.addClass("hide");
+		this.characterClassMenuIcon.addClass("hide");
 	}
 
 
@@ -76,9 +82,6 @@ export default class QuickMenu {
 		this.removeMenuGroupHighlight();
 	}
 
-
-
-
 	teamMenuOpened() {
 		this.removeMenuGroupHighlight();
 		this.teamMenuIcon.addClass("quick-menu-icon-visible");
@@ -87,6 +90,16 @@ export default class QuickMenu {
 	teamMenuClosed() {
 		this.removeMenuGroupHighlight();
 	}
+	
+	characterClassMenuOpened() {
+		this.removeMenuGroupHighlight();
+		this.characterClassMenuIcon.addClass("quick-menu-icon-visible");
+	}
+
+	characterClassMenuClosed() {
+		this.removeMenuGroupHighlight();
+	}
+
 
 
 
@@ -123,6 +136,7 @@ export default class QuickMenu {
 	removeMenuGroupHighlight() {
 		this.mainMenuIcon.removeClass("quick-menu-icon-visible");
 		this.teamMenuIcon.removeClass("quick-menu-icon-visible");
+		this.characterClassMenuIcon.removeClass("quick-menu-icon-visible");
 	}
 
 	

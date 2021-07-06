@@ -36,7 +36,7 @@ class Tilemap {
 		var bError = false;
 
 		var r = this.gs.rm.getResourceByID(this.resourceId);
-		if(r !== null && r.data !== null) {
+		if(r !== null) {
 			this.jsonData = r.data;
 		}
 		else {

@@ -32,14 +32,14 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 				this.user.respawnTimer = 999999;
 				break;
 		} 
-		this.respawnTimeAcc = 0;
+		this.user.respawnTimeAcc = 0;
 	}
 
 	update(dt) {
 		this.user.respawnTimeAcc += dt;
 
-		//character is done waiting for respawn timer. Respawn him and let him start playing
-		if(this.user.respawnTimeAcc >= this.user.respawnTimer && this.user.characterClassReourceId !== null) {
+		//character is done waiting for respawn timer. Check if he has a character class picked, and respawn him and let him start playing
+		if(this.user.respawnTimeAcc >= this.user.respawnTimer && this.user.characterClassResourceId !== null) {
 			if(this.user.gs.theRound.getStateEnum() !== GameConstants.RoundStates["OVER"]) {
 				this.user.nextPlayingState = new PlayingPlayingState.PlayingPlayingState(this.user);
 			}
@@ -55,6 +55,11 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 						break;
 					case "team-changed":
 						this.user.determinePlayingState();
+						break;
+					case "class-changed":
+						//reset respawn timer
+						this.user.respawnTimeAcc = 0;
+						this.user.sendUserPlayingState = true;
 						break;
 				}
 			}

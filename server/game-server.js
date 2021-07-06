@@ -80,7 +80,10 @@ class GameServer {
 		////////////////////////////////////////////////////////////////////////
 		//This decides what classes/map gets loaded.
 		//This is hard coded for now, but can be passed in on the lobby phase
-		this.classKeyList = ["data/character-classes/slime-mage.json"];
+		this.classKeyList = [
+			"data/character-classes/slime-mage.json",
+			"data/character-classes/slime-healer.json",
+		];
 		this.mapKey = serverConfig.map_relpath;
 		////////////////////////////////////////////////////////////////////////
 	}
