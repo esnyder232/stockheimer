@@ -59,6 +59,8 @@ class Character {
 		this.eventQueue = [];
 
 		this.em = null;
+
+		this.characterClassResourceId = null;
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -119,6 +121,12 @@ class Character {
 			filterCategoryBits: collisionCategory,
 			filterMaskBits: collisionMask
 		});
+
+		//get character class
+		var user = this.gs.um.getUserByID(this.ownerId);
+		if(user !== null) {
+			this.characterClassResourceId = user.characterClassResourceId;
+		}
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
@@ -521,7 +529,8 @@ class Character {
 			"characterPosX": bodyPos.x,
 			"characterPosY": bodyPos.y,
 			"characterHpMax": this.hpMax,
-			"characterHpCur": this.hpCur
+			"characterHpCur": this.hpCur,
+			"characterClassResourceId": this.characterClassResourceId
 		};
 		
 		return eventData;

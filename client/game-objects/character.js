@@ -47,9 +47,10 @@ export default class Character {
 		this.circleShape = null;
 
 		// this.spriteGraphics = null;
-		// this.spriteKey = "slime";
-		// this.animationKey = "data/sprites/slime-mage.json__idle-down";
+		// this.spriteKey = "";
+		// this.animationKey = "";
 
+		this.characterClassResourceId = null;
 	}
 
 	characterInit(gameClient) {
@@ -59,7 +60,6 @@ export default class Character {
 		this.seq = new ServerEventQueue();
 		this.seq.serverEventQueueInit(this.gc);
 		this.seq.batchRegisterToEvent(this.serverEventMapping);
-
 	}
 
 	activated() {
@@ -80,9 +80,22 @@ export default class Character {
 		this.drawGraphics();
 
 		//testing sprite graphics
+		// var temp = this.gc.rm.getResourceByServerId(this.characterClassResourceId);
+		// console.log("Activating character. characterClassResourceId: " + this.characterClassResourceId);
+		// console.log(temp);
+
+		// if(temp !== null) {
+		// 	var idleAnimationSet = temp.data.animationSets["idle"];
+		// 	if(idleAnimationSet !== undefined) {
+		// 		this.spriteKey = idleAnimationSet.spriteKey;
+		// 		this.animationKey = this.spriteKey + "-" + idleAnimationSet.frameTagDown;
+		// 	}
+		// }
 		// this.spriteGraphics = this.ms.add.sprite(this.x*this.ms.planckUnitsToPhaserUnitsRatio, this.y*this.ms.planckUnitsToPhaserUnitsRatio, this.spriteKey);
 		// this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 		// this.spriteGraphics.anims.play(this.animationKey);
+
+
 
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
@@ -162,7 +175,7 @@ export default class Character {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
 		this.hpTextGraphics.destroy();
-		// this.spriteGraphics.destroy();
+		//this.spriteGraphics.destroy();
 
 		//put gravestone where the character was removed
 		var gravestone = {
