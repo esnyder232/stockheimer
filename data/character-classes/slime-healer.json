@@ -1,9 +1,22 @@
 {
 	"name": "Slime Healer",
-	"hp": 50,
+	"hp": 25,
 	"speed": 9,
+	"planckData": {
+		"plShape": "circle",
+		"radius": 0.375
+	},
+	"phaserData": {
+		"originX": 0.5,
+		"originY": 0.55,
+		"scaleX": 0.08,
+		"scaleY": 0.08
+	},
+	"size": 1,
+	"idleMsPerFrame": 300,
+	"moveMsPerFrame": 300,
 	"animationSets": {
-		"idle": "data/animation-sets/slime-fire-set.json",
+		"idle": "data/animation-sets/slime-idle-set.json",
 		"move": "data/animation-sets/slime-move-set.json",
 		"attack": "data/animation-sets/slime-attack-set.json",
 		"cast": "data/animation-sets/slime-fire-set.json"

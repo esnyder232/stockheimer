@@ -204,4 +204,39 @@ export default class GlobalFuncs {
 		return !isNaN(parseFloat(n)) && isFinite(n);
 	}
 
+	
+	//Helper function used to check if a nested value in a root object is not undefined or null.
+	//The null conditional operator is not yet implemented in Node as of the current version I'm using. So this is a quick hacky function to accomplish the same thing.
+	nestedValueCheck(root, strNestedValue) {
+		// console.log('inside prop check');
+		// console.log(strNestedValue);
+
+		var propsSplit = strNestedValue.split(".");
+		var propExists = false;
+		
+		if(root) {
+			propExists = true;
+		}
+
+		if(propExists) {
+			var context = root;
+			for(var i = 0; i < propsSplit.length; i++) {
+				var nextContext = context[propsSplit[i]];
+				if(nextContext === undefined || nextContext === null) {
+					propExists = false;
+					break;
+				}
+				else {
+					context = nextContext;
+				}
+			}
+		}
+		return propExists;
+	}
+
+	clamp(num, min, max) {
+		return Math.min(Math.max(num, min), max);
+	};
+
+
 }

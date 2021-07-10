@@ -30,27 +30,81 @@ export default class Character {
 		this.isDirty = false;
 
 		this.boxGraphics = null;
+		this.hpBarGraphics = null;
 		this.textGraphics = null;
-		this.hpTextGraphics = null;
+		this.spriteGraphics = null;
+		this.glowGraphics = null;
+		this.mouseOverHitbox = null;
 
 		this.serverEventMapping = {
 			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this)
 		}
 
 		this.boxGraphicsStrokeColor = 0;
-		this.boxGraphicsFillColor = 0;
-		this.characterBorderThickness = 3;
+		this.characterBorderThickness = 1;
 		this.characterTextStrokeColor = 0;
 		this.characterTextFillColor = 0;
 		this.characterTextStrokeThickness = 1;
+		this.characterFillColor = 0x000000;
 		this.usernameText = "???";
 		this.circleShape = null;
 
-		// this.spriteGraphics = null;
-		// this.spriteKey = "";
-		// this.animationKey = "";
+		this.spriteKey = "";
+		this.animationKey = "";
+		this.animationPlayRate = 1;
 
 		this.characterClassResourceId = null;
+		this.characterClassResource = null;
+
+		//HP Bar variables
+		this.hpBarStrokeThickness = 2;
+		this.hpBarOffsetX = -50;
+		this.hpBarOffsetY = -45;
+		this.hpBarHeight = 10;
+		this.hpBarWidthMax = 50;
+
+		this.hpBarHeightMin = 5;
+		this.hpBarHeightMax = 10;
+		this.hpBarHeightSizeRatio = 3;
+		this.hpBarStrokeMin = 1;
+		this.hpBarStrokeMax = 2;
+		this.hpBarStrokeSizeRatio = 1;
+		this.hpBarOffsetYMin = -30;
+		this.hpBarOffsetYMax = -999;
+		this.hpBarOffsetYSizeRatio = -20;
+
+
+		//Name text variables
+		this.textHeight = 10;
+		this.textOffsetY = 18;
+
+		this.textHeightMin = 18;
+		this.textHeightMax = 32;
+		this.textHeightSizeRatio = 10;
+
+		this.textOffsetYMin = 18;
+		this.textOffsetYMax = 999;
+		this.textOffsetYSizeRatio = 15;
+
+		this.updateHealthBar = true;
+
+		//glow vatiables
+		this.glowRadius = 8;
+		this.glowCenterColor = "#ffffff";
+		this.glowOffsetY = 10;
+
+		//phaser data from resource (default values)
+		this.originX = 0.5;
+		this.originY = 0.5;
+		this.scaleX = 1;
+		this.scaleY = 1;
+		this.size = 1;
+		this.planckRadius = 1;
+		this.idleMsPerFrame = 100;
+		this.moveMsPerFrame = 100;
+
+		//hacky shit for now. Delete this later.
+		this.teamName = "";
 	}
 
 	characterInit(gameClient) {
@@ -63,39 +117,90 @@ export default class Character {
 	}
 
 	activated() {
-		//create the graphics first
-		this.circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * 0.375);
-		this.boxGraphics = this.ms.add.graphics();
-		this.boxGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
-		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
+		//get resource data
+		this.characterClassResource = this.gc.rm.getResourceByServerId(this.characterClassResourceId);
 
-		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18, this.usernameText);
-		this.hpTextGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-18, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 34, this.hpCur + "/" + this.hpMax);
-
-		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.hpTextGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-
-		//now fill in the graphics colors
-		this.drawGraphics();
+		//overwrite the defaults with data from the resource
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.planckData.radius")) {
+			this.planckRadius = this.characterClassResource.data.planckData.radius;
+		}
 
 		//testing sprite graphics
-		// var temp = this.gc.rm.getResourceByServerId(this.characterClassResourceId);
-		// console.log("Activating character. characterClassResourceId: " + this.characterClassResourceId);
-		// console.log(temp);
+		//get phaser data from resource
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.originX")) {
+			this.originX = this.characterClassResource.data.phaserData.originX;
+		}
 
-		// if(temp !== null) {
-		// 	var idleAnimationSet = temp.data.animationSets["idle"];
-		// 	if(idleAnimationSet !== undefined) {
-		// 		this.spriteKey = idleAnimationSet.spriteKey;
-		// 		this.animationKey = this.spriteKey + "-" + idleAnimationSet.frameTagDown;
-		// 	}
-		// }
-		// this.spriteGraphics = this.ms.add.sprite(this.x*this.ms.planckUnitsToPhaserUnitsRatio, this.y*this.ms.planckUnitsToPhaserUnitsRatio, this.spriteKey);
-		// this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		// this.spriteGraphics.anims.play(this.animationKey);
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.originY")) {
+			this.originY = this.characterClassResource.data.phaserData.originY;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.size")) {
+			this.size = this.characterClassResource.data.size;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.scaleX")) {
+			this.scaleX = this.characterClassResource.data.phaserData.scaleX;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.scaleY")) {
+			this.scaleY = this.characterClassResource.data.phaserData.scaleY;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.idleMsPerFrame")) {
+			this.idleMsPerFrame = this.characterClassResource.data.idleMsPerFrame;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.moveMsPerFrame")) {
+			this.moveMsPerFrame = this.characterClassResource.data.moveMsPerFrame;
+		}
 
 
+
+		//hard coding the animation to be idle-down for now
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.animationSets.idle.spriteKey")) {
+			this.spriteKey = this.characterClassResource.data.animationSets.idle.spriteKey;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.animationSets.idle.frameTagDown")) {
+			this.frameTag = this.characterClassResource.data.animationSets.idle.frameTagDown;
+		}
+
+		this.animationKey = this.spriteKey + "-" + this.frameTag;
+
+		// console.log("=== Creating sprite graphics");
+		// console.log(this.characterClassResource);
+		// console.log(this.size);
+		// console.log(this.originX);
+		// console.log(this.originY);
+		// console.log(this.scaleX);
+		// console.log(this.scaleY);
+		// console.log(this.spriteKey);
+		// console.log(this.frameTag);
+		// console.log(this.animationKey);
+
+
+		//get colors sorted out
+		this.calculateColors();
+
+		//create the graphics objects
+		this.createHpBarGraphics();
+		this.createTextGraphics();
+		this.createBoxGraphics();
+		this.createSpriteGraphics();
+		this.createGlowGraphics();
+		this.createMouseoverHitbox();
+
+		//draw the graphics objects on activation
+		this.drawHpBarGraphics();
+		this.drawTextGraphics();
+		this.drawBoxGraphics();
+		this.drawGlowGraphics();
+
+
+		//temporarily play the only animation
+		this.spriteGraphics.anims.play(this.animationKey);
+		this.spriteGraphics.anims.msPerFrame = this.idleMsPerFrame;
 
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
@@ -110,51 +215,140 @@ export default class Character {
 		}
 	}
 
+	increaseAnimation(sprite, dir) {
+		window.setTimeout(() => {
+			var current = sprite.anims.msPerFrame;
+			var future = current;
 
-	//this draws the graphics with the correct team colors and user name text
-	drawGraphics() {
-		//get the colors sorted out
-		//ai gets special treatment because they don't belong to a team yet
+			if(current <= 16) {
+				dir = "increase";
+			}
+			else if (current >= 200) {
+				dir = "decrease";
+			}
+
+			if(dir === "increase") {
+				future = current + 10;
+			} else if (dir === "decrease") {
+				future = current - 10;
+			}
+
+			// console.log("changing msPerFrame from " + current + " to " + future);
+			sprite.anims.msPerFrame = future;
+			
+			this.increaseAnimation(this.spriteGraphics, dir)
+		}, 100)
+	}
+
+	calculateColors() {
+		this.characterTextStrokeThickness = 5;
+
+		var user = this.gc.um.getUserByServerID(this.ownerId);
+
+		if(user !== null) {
+			var team = this.gc.tm.getTeamByServerID(user.teamId);
+		
+			if(team !== null) {
+				this.boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
+				this.characterTextFillColor = team.characterTextFillColor;
+				this.characterTextStrokeColor = team.characterTextStrokeColor;
+				this.characterFillColor = team.phaserCharacterFillColor;
+				this.teamName = team.name;
+			}
+		}
+	}
+
+	createHpBarGraphics() {
+		//calculate hpbar stuff
+		this.hpBarHeight = this.hpBarHeightMin + ((this.size - 1) * this.hpBarHeightSizeRatio);
+		this.hpBarStrokeThickness = this.hpBarStrokeMin + ((this.size - 1) * this.hpBarStrokeSizeRatio)
+		this.hpBarOffsetY= this.hpBarOffsetYMin + ((this.size - 1) * this.hpBarOffsetYSizeRatio)
+
+		this.hpBarHeight = this.globalfuncs.clamp(this.hpBarHeight, this.hpBarHeightMin, this.hpBarHeightMax);
+		this.hpBarStrokeThickness = this.globalfuncs.clamp(this.hpBarStrokeThickness, this.hpBarStrokeMin, this.hpBarStrokeMax);
+		this.hpBarOffsetY = this.globalfuncs.clamp(this.hpBarOffsetY, this.hpBarOffsetYMax, this.hpBarOffsetYMin);
+
+		this.hpBarOffsetX = -this.hpBarWidthMax/2;
+
+		this.hpBarBorderAlpha = 1.0;
+
+		if(this.ownerId !== this.gc.myUserServerId) {
+			this.hpBarBorderAlpha = 0;
+		}
+		
+		this.hpBarGraphics = this.ms.add.graphics();
+		this.hpBarGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.hpBarGraphics.setY((this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + this.hpBarOffsetY);
+
+		//if its your own character, put it on a special layer that is always on top
+		if(this.ownerId === this.gc.myUserServerId) {
+			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
+		}
+		else {
+			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
+		}
+	}
+
+	drawHpBarGraphics() {
+        this.hpBarGraphics.clear();
+
+
+
+        //Background + border
+        this.hpBarGraphics.fillStyle(0xffffff, this.hpBarBorderAlpha);
+        this.hpBarGraphics.fillRect(this.hpBarOffsetX - this.hpBarStrokeThickness, this.hpBarOffsetY - this.hpBarStrokeThickness, this.hpBarWidthMax + (this.hpBarStrokeThickness*2), this.hpBarHeight + (this.hpBarStrokeThickness*2));
+
+
+        this.hpBarGraphics.fillStyle(0x000000);
+        this.hpBarGraphics.fillRect(this.hpBarOffsetX, this.hpBarOffsetY, this.hpBarWidthMax, this.hpBarHeight);
+
+        //Health
+		this.hpBarGraphics.fillStyle(0xFF0000);
+		var hpCurrentWidth = (this.hpCur/this.hpMax) * this.hpBarWidthMax;
+		this.hpBarGraphics.fillRect(this.hpBarOffsetX, this.hpBarOffsetY, hpCurrentWidth, this.hpBarHeight);
+
+		
+	}
+
+	createTextGraphics() {
+		//calculate text height and offset
+		this.textHeight = this.textHeightMin + ((this.size - 1) * this.textHeightSizeRatio);
+		this.textOffsetY= this.textOffsetYMin + ((this.size - 1) * this.textOffsetYSizeRatio);
+
+		this.textHeight = this.globalfuncs.clamp(this.textHeight, this.textHeightMin, this.textHeightMax);
+		this.textOffsetY = this.globalfuncs.clamp(this.textOffsetY, this.textOffsetYMin, this.textOffsetYMax);
+		
+
+		this.textGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18, this.usernameText);
+		this.textGraphics.setOrigin(0.5, 0.5);
+		this.textGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.textGraphics.setY((this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + this.textOffsetY);
+
+		this.textGraphics.setAlpha(0.2);
+
+		//if its your own character, put it on a special layer that is always on top
+		if(this.ownerId === this.gc.myUserServerId) {
+			this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
+		}
+		else {
+			this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
+		}
+	}
+
+	drawTextGraphics() {
 		if(this.ownerType === "ai") {
-			this.boxGraphicsStrokeColor = this.ms.aiColor;
-			this.boxGraphicsFillColor = this.ms.aiFillColor;
-			this.characterTextFillColor = this.ms.aiTextColor;
-			this.characterTextStrokeColor = this.ms.aiStrokeColor;
-			this.characterTextStrokeThickness = this.ms.aiStrokeThickness;
 			this.usernameText = "AI " + this.ownerId
 		}
 		else {
 			var user = this.gc.um.getUserByServerID(this.ownerId);
-
-			if(user !== null)
-			{
-				var team = this.gc.tm.getTeamByServerID(user.teamId);
-			
-				if(team !== null)
-				{
-					this.boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
-					this.boxGraphicsFillColor = team.phaserCharacterFillColor;
-					this.characterTextFillColor = team.characterTextFillColor;
-					this.characterTextStrokeColor = team.characterTextStrokeColor;
-
-				}
-
+			if(user !== null) {
 				this.usernameText = user.username;
 			}
 		}
 
-		//now redraw the graphics
-		if(this.boxGraphics !== null) {
-			this.boxGraphics.fillStyle(this.boxGraphicsFillColor);
-			this.boxGraphics.lineStyle(this.characterBorderThickness, this.boxGraphicsStrokeColor);
-			this.boxGraphics.fillCircleShape(this.circleShape);
-			this.boxGraphics.strokeCircleShape(this.circleShape);
-		}
-
-		
 		var textStyle = {
 			color: this.characterTextFillColor,
-			fontSize: "18px",
+			fontSize: this.textHeight + "px",
 			strokeThickness: this.characterTextStrokeThickness,
 			stroke: this.characterTextStrokeColor
 		}
@@ -163,19 +357,93 @@ export default class Character {
 			this.textGraphics.setStyle(textStyle);
 			this.textGraphics.setText(this.usernameText);
 		}
+	}
+	
+	createBoxGraphics() {
+		this.boxGraphics = this.ms.add.graphics();
+		this.boxGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
+		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
+	}
 
-		if(this.hpTextGraphics !== null) {
+	drawBoxGraphics() {
+		var circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * this.planckRadius * this.size);
+		// this.boxGraphics.fillStyle(this.boxGraphicsFillColor);
+		// this.boxGraphics.lineStyle(this.characterBorderThickness, this.boxGraphicsStrokeColor);
+		// this.boxGraphics.fillCircleShape(circleShape);
+		// this.boxGraphics.strokeCircleShape(circleShape);
+	}
 
-			this.hpTextGraphics.setStyle(textStyle);
-			this.hpTextGraphics.setText(this.hpCur + "/" + this.hpMax);
+	createSpriteGraphics() {
+		this.spriteGraphics = this.ms.add.sprite((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), this.spriteKey);
+		this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		this.spriteGraphics.setOrigin(this.originX, this.originY);
+		this.spriteGraphics.setScale(this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.scaleX, this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.scaleY);
+	}
+
+	createGlowGraphics() {
+		//ELLIPSE
+		this.glowOffsetY = this.glowOffsetY * this.size;
+		this.glowGraphics = this.ms.add.ellipse((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + this.glowOffsetY, 25 * this.size, 10 * this.size, this.characterFillColor);
+		this.glowGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.glowGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
+		this.glowGraphics.setDepth(ClientConstants.PhaserDrawLayers.glowLayer);
+	}
+
+	drawGlowGraphics() {
+
+	}
+
+	createMouseoverHitbox() {
+		var circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * this.planckRadius * this.size);
+		this.mouseOverHitbox = this.ms.add.graphics();
+		this.mouseOverHitbox.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.mouseOverHitbox.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
+		this.mouseOverHitbox.setDepth(this.hitboxLayer);
+		
+		//debugging hitbox
+		// this.mouseOverHitbox.lineStyle(1, 0xff00ff);
+		// this.mouseOverHitbox.strokeCircleShape(circleShape);
+
+		this.mouseOverHitbox.setInteractive(circleShape, Phaser.Geom.Circle.Contains);
+		this.mouseOverHitbox.on('pointerover', this.pointeroverEvent.bind(this));
+		this.mouseOverHitbox.on('pointerout', this.pointeroutEvent.bind(this));
+	}
+
+	pointeroverEvent() {
+		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
+		this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
+		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
+		this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
+		this.glowGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
+
+		this.textGraphics.setAlpha(1.0);
+	}
+
+
+	pointeroutEvent() {
+		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
+		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
+		this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		this.glowGraphics.setDepth(ClientConstants.PhaserDrawLayers.glowLayer);
+		
+		this.textGraphics.setAlpha(0.2);
+
+		if(this.ownerId === this.gc.myUserServerId) {
+			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
+		}
+		else {
+			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
 		}
 	}
 
 	deactivated() {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
-		this.hpTextGraphics.destroy();
-		//this.spriteGraphics.destroy();
+		this.hpBarGraphics.destroy();
+		this.spriteGraphics.destroy();
+		this.glowGraphics.destroy();
+		this.mouseOverHitbox.destroy();
 
 		//put gravestone where the character was removed
 		var gravestone = {
@@ -185,7 +453,7 @@ export default class Character {
 		};
 
 		gravestone.gravestoneImage = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/gravestone.json");
-		gravestone.gravestoneImage.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		gravestone.gravestoneImage.setDepth(ClientConstants.PhaserDrawLayers.gravestoneLayer);
 		gravestone.gravestoneImage.setScale(2, 2);
 
 		if(this.ownerType === "ai")
@@ -208,7 +476,8 @@ export default class Character {
 				stroke: this.ms.gravestoneStrokeColor
 			}
 
-			gravestone.gravestoneText = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio)-16, (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 18 , usernameText, textStyle);
+			gravestone.gravestoneText = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 20 , usernameText, textStyle);
+			gravestone.gravestoneText.setOrigin(0.5, 0.5);
 		}
 
 		this.ms.gravestones.push(gravestone);
@@ -220,7 +489,6 @@ export default class Character {
 		this.ownerType = null;
 		this.boxGraphics = null;
 		this.textGraphics = null;
-		this.hpTextGraphics = null;
 		this.boxGraphicsStrokeColor = 0;
 		this.boxGraphicsFillColor = 0;
 		this.characterBorderThickness = 3;
@@ -231,12 +499,19 @@ export default class Character {
 		this.circleShape = null;
 	}
 
+
+
 	update(dt) {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
 
 		this.updateRenderTarget(dt);
 		this.render(dt);
+
+		if(this.updateHealthBar) {
+			this.drawHpBarGraphics();
+			this.updateHealthBar = false;
+		}
 
 
 		//change state
@@ -253,6 +528,12 @@ export default class Character {
 	activeCharacterUpdateEvent(e) {
 		this.serverX = e.characterPosX;
 		this.serverY = e.characterPosY;
+
+		//temporary way just to flag a hp change
+		if(this.hpCur !== e.characterHpCur) {
+			this.updateHealthBar = true;
+		}
+
 		this.hpCur = e.characterHpCur;
 	}
 
@@ -306,14 +587,21 @@ export default class Character {
 		//just to make it equivalent to the old "architecture"
 		this.boxGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
 		this.boxGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
-		this.textGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
-		this.textGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 18)
-	
-		this.hpTextGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18)
-		this.hpTextGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + 34)
-		this.hpTextGraphics.setText(this.hpCur + "/" + this.hpMax);
 
-		// this.spriteGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
-		// this.spriteGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
+		this.glowGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
+		this.glowGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + this.glowOffsetY);
+		
+		this.textGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio))
+		this.textGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + this.textOffsetY)
+	
+		this.hpBarGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio))
+		this.hpBarGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1))
+
+		this.spriteGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
+		this.spriteGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
+
+		this.mouseOverHitbox.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
+		this.mouseOverHitbox.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
+
 	}
 }

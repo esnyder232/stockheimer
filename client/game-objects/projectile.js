@@ -17,7 +17,7 @@ export default class Projectile {
 		this.size = 1;
 		this.sizeScaleFactor = 0.05/0.1; //scales the image based on the size given from the server
 		this.offsetFactor = -50; //offsets the image based on the velocity trajectory. Units are: pixels/velocity
-		this.pngUnitsToPlanckUnitsRatio = 1/150;
+		this.pngUnitsToPlanckUnitsRatio = 1/75;
 		this.offsetX = 0;
 		this.offsetY = 0;
 		
@@ -43,7 +43,7 @@ export default class Projectile {
 		this.boxGraphics = this.ms.add.graphics();
 		this.fireballGraphics = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/fireball.json");
 		this.fireballGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.fireballGraphics.setScale(this.size*2 * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio, this.size*2 * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio);
+		this.fireballGraphics.setScale(this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio, this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio);
 		this.fireballGraphics.setAngle(this.angle * (180/Math.PI));
 		this.fireballGraphics.setOrigin(0.70, 0.5);
 		var projectileColor = 0x000000;

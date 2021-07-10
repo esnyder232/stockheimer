@@ -14,7 +14,7 @@ var TeamData = [
 		characterStrokeColor: "#ff0000",
 		characterFillColor: "#FF6262",
 		characterTextStrokeColor: "#000000",
-		characterTextFillColor: "#ff0000",
+		characterTextFillColor: "#ffffff",
 		killFeedTextColor: "#FF1A1A",
 		projectileStrokeColor: "#FF0000",
 		slotNum: 1
@@ -24,7 +24,7 @@ var TeamData = [
 		characterStrokeColor: "#0000ff",
 		characterFillColor: "#00ffff",
 		characterTextStrokeColor: "#000000",
-		characterTextFillColor: "#0000ff",
+		characterTextFillColor: "#ffffff",
 		killFeedTextColor: "#337DFF",
 		projectileStrokeColor: "#0000FF",
 		slotNum: 2

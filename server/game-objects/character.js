@@ -61,6 +61,11 @@ class Character {
 		this.em = null;
 
 		this.characterClassResourceId = null;
+		this.characterClassResource = null; //reference to the resource
+
+		//resource data
+		this.size = 1;
+		this.planckRadius = 1;
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -96,8 +101,39 @@ class Character {
 		this.walkingTargetVelVec = Vec2(0, 0);
 		this.walkingAccVec = Vec2(0, 0);
 
-		var circleShape = pl.Circle(Vec2(0, 0), 0.375);
+		
+		//get character class resource Id
+		var user = this.gs.um.getUserByID(this.ownerId);
+		if(user !== null) {
+			this.characterClassResourceId = user.characterClassResourceId;
+		}
 
+		//get resource data
+		this.characterClassResource = this.gs.rm.getResourceByID(this.characterClassResourceId);
+
+		//overwrite the defaults with data from the resource
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.planckData.radius")) {
+			this.planckRadius = this.characterClassResource.data.planckData.radius;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.size")) {
+			this.size = this.characterClassResource.data.size;
+		}
+
+		if(this.planckRadius <= 0) {
+			this.planckRadius = 1;
+		}
+
+		if(this.size <= 0) {
+			this.size = 1;
+		}
+
+		
+
+		//create planck shape
+		var circleShape = pl.Circle(Vec2(0, 0), this.planckRadius * this.size);
+
+		//create planck body
 		this.plBody = world.createBody({
 			position: Vec2(this.xStarting, this.yStarting),
 			type: pl.Body.DYNAMIC,
@@ -114,6 +150,7 @@ class Character {
 			collisionMask = CollisionMasks["ai_body"];
 		}
 		
+		//create planck fixture
 		this.plBody.createFixture({
 			shape: circleShape,
 			density: 2.0,
@@ -121,12 +158,6 @@ class Character {
 			filterCategoryBits: collisionCategory,
 			filterMaskBits: collisionMask
 		});
-
-		//get character class
-		var user = this.gs.um.getUserByID(this.ownerId);
-		if(user !== null) {
-			this.characterClassResourceId = user.characterClassResourceId;
-		}
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
