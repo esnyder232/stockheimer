@@ -29,16 +29,6 @@ class CharacterClassResourceDefinition {
 				this.gs.rm.linkFile(resource.id, contextValue.animationSets, animationSetKey, fileKey, this.cbAnimationSetFileComplete.bind(this));
 			}
 		}
-
-		//fire key
-		if(contextValue["fireStateKey"] !== undefined) {
-			this.gs.rm.linkFile(resource.id, contextValue, "fireStateKey", contextValue["fireStateKey"], this.cbFireStateKeyFileComplete.bind(this));
-		}
-
-		//alt fire key
-		if(contextValue["altFireStateKey"] !== undefined) {
-			this.gs.rm.linkFile(resource.id, contextValue, "altFireStateKey", contextValue["altFireStateKey"], this.cbAltFireStateKeyFileComplete.bind(this));
-		}
 	}
 
 	///////////////////////////////
@@ -52,30 +42,6 @@ class CharacterClassResourceDefinition {
 		
 		//done
 	}
-
-	///////////////////////////////
-	// Fire State key file       //
-	///////////////////////////////
-	cbFireStateKeyFileComplete(resource, context, contextKey, contextValue) {
-		// console.log("=== cbFireStateKeyFileComplete called ===");
-		// console.log(resource);
-		// console.log(file);
-		
-		//done for now
-	}
-
-	///////////////////////////////
-	// Alt Fire State key file   //
-	///////////////////////////////
-	cbAltFireStateKeyFileComplete(resource, context, contextKey, contextValue) {
-		// console.log("=== cbAltFireStateKeyFileComplete called ===");
-		// console.log(resource);
-		// console.log(file);
-		
-		//done for now
-	}
-
-
 }
 
 exports.CharacterClassResourceDefinition = CharacterClassResourceDefinition;

@@ -90,17 +90,17 @@ class GameServerStarting extends GameServerBaseState {
 		}
 
 
-		//load projectile resources
+		//load character class state resources		
 		if(!bError) {
-			if(this.globalfuncs.nestedValueCheck(resource, "data.fireStateKey.projectileKey")) {
-				this.gs.rm.loadResource(resource.data.fireStateKey.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			if(this.globalfuncs.nestedValueCheck(resource, "data.fireStateKey")) {
+				this.gs.rm.loadResource(resource.data.fireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
 			}
 
-			if(this.globalfuncs.nestedValueCheck(resource, "data.altFireStateKey.projectileKey")) {
-				this.gs.rm.loadResource(resource.data.altFireStateKey.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			if(this.globalfuncs.nestedValueCheck(resource, "data.altFireStateKey")) {
+				this.gs.rm.loadResource(resource.data.altFireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
 			}
 		}
-
+		
 
 		if(bError) {
 			logger.log("error", errorMessage);
@@ -177,6 +177,40 @@ class GameServerStarting extends GameServerBaseState {
 			this.tilemapError = true;
 		}
 	}
+
+
+
+	cbCharacterClassStateComplete(resource) {
+		// console.log("!!! Character Class STAte Resource Loaded !!!!");
+		// console.log(resource);
+		
+		var bError = false;
+		var errorMessage = "";
+		var tm = null;
+
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading character class state '" + resource.key + "': No data found.";
+		}
+
+		//load projectile resources
+		if(!bError) {
+			if(this.globalfuncs.nestedValueCheck(resource, "data.projectileKey")) {
+				this.gs.rm.loadResource(resource.data.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			}
+
+			if(this.globalfuncs.nestedValueCheck(resource, "data.projectileKey")) {
+				this.gs.rm.loadResource(resource.data.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			}
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
+			this.tilemapError = true;
+		}
+	}
+	
+
 	
 	createTeams() {
 		//just incase idk

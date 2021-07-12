@@ -8,6 +8,8 @@ const {TilemapResourceDefinition} = require("../resource-definition/tilemap-reso
 const {TilesetResourceDefinition} = require("../resource-definition/tileset-resource-definition.js");
 const {SpriteResourceDefinition} = require("../resource-definition/sprite-resource-definition.js");
 const {ProjectileResourceDefinition} = require("../resource-definition/projectile-resource-definition.js");
+const {CharacterClassStateResourceDefinition} = require("../resource-definition/character-class-state-resource-definition.js");
+
 
 class ResourceManager {
 	constructor() {
@@ -36,6 +38,7 @@ class ResourceManager {
 		this.resourceDefinitions["tileset"] = new TilesetResourceDefinition();
 		this.resourceDefinitions["sprite"] = new SpriteResourceDefinition();
 		this.resourceDefinitions["projectile"] = new ProjectileResourceDefinition();
+		this.resourceDefinitions["character-class-state"] = new CharacterClassStateResourceDefinition();
 		
 		for(var key in this.resourceDefinitions) {
 			if (this.resourceDefinitions.hasOwnProperty(key)) {
