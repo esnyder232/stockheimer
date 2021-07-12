@@ -565,6 +565,12 @@ export default class MainScene extends Phaser.Scene {
 				sendInputEvent = true;
 			}
 
+			//send inputs on EVERY angle change
+			// if(Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
+			// {
+			// 	sendInputEvent = true;
+			// }
+
 			//send the input event this frame if needed
 			if(sendInputEvent)
 			{

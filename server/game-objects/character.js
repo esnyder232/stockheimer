@@ -4,8 +4,7 @@ const GameConstants = require('../../shared_files/game-constants.json');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 const logger = require("../../logger.js");
 const {EventEmitter} = require('../classes/event-emitter.js');
-
-
+const CharacterClassState = require("../classes/character-class-state.js");
 
 class Character {
 	constructor() {
@@ -22,11 +21,14 @@ class Character {
 
 		this.stateName = "";
 		this.state = null;
-		this.nextState = null;
+		this.nextStateData = null;
+		this.exitCurrentState = false;
 
 		this.plBody = null;
 
-		this.inputController = {};
+		this.frameInputController = {};	//input controller used in the frame to calculate physics/bullets/etc. Properties may be overwritten depending on the state of the character
+		this.clientInputController = {}; //actual inputs sent from the client. 
+		this.lockedLookDirection = 0;
 		this.isInputDirty = false;
 		this.speedMag = 4;
 		
@@ -52,6 +54,7 @@ class Character {
 		this.walkingCurrentAccMagx = 0;
 		this.walkingCurrentAccMagy = 0;
 
+		this.bAllowedLook = true;
 		this.bAllowedMove = true;
 		this.bAllowedShoot = true;
 
@@ -76,6 +79,14 @@ class Character {
 		this.bAllowedShoot = bAllowedShoot;
 	}
 
+	changeAllowLook(bAllowedLook) {
+		this.bAllowedLook = bAllowedLook;
+		//record the lockedLookDirection here as well (might as well idk)
+		if(this.bAllowedLook) {
+			this.lockedLookDirection = this.clientInputController.characterDirection.value;
+		}
+	}
+
 	//called only once when the character is first created. This is only called once ever.
 	characterInit(gameServer) {
 		this.gs = gameServer;
@@ -83,13 +94,21 @@ class Character {
 		this.em = new EventEmitter(this);
 
 		//make simple little input controller
-		this.inputController.up = {state: false, prevState: false};
-		this.inputController.down = {state: false, prevState: false};
-		this.inputController.left = {state: false, prevState: false};
-		this.inputController.right = {state: false, prevState: false};
-		this.inputController.isFiring = {state: false, prevState: false};
-		this.inputController.isFiringAlt = {state: false, prevState: false};
-		this.inputController.characterDirection = {value: 0.0, prevValue: 0.0};
+		this.frameInputController.up = {state: false, prevState: false};
+		this.frameInputController.down = {state: false, prevState: false};
+		this.frameInputController.left = {state: false, prevState: false};
+		this.frameInputController.right = {state: false, prevState: false};
+		this.frameInputController.isFiring = {state: false, prevState: false};
+		this.frameInputController.isFiringAlt = {state: false, prevState: false};
+		this.frameInputController.characterDirection = {value: 0.0, prevValue: 0.0};
+
+		this.clientInputController.up = {state: false, prevState: false};
+		this.clientInputController.down = {state: false, prevState: false};
+		this.clientInputController.left = {state: false, prevState: false};
+		this.clientInputController.right = {state: false, prevState: false};
+		this.clientInputController.isFiring = {state: false, prevState: false};
+		this.clientInputController.isFiringAlt = {state: false, prevState: false};
+		this.clientInputController.characterDirection = {value: 0.0, prevValue: 0.0};
 	}
 
 	//called after the character is activated. Put things in here that other systems will depend on.
@@ -182,6 +201,7 @@ class Character {
 	deinit() {
 		this.gs = null;
 		this.inputController = null;
+		this.clientInputController = null;
 		this.forceImpulses.length = 0;
 		this.ownerId = null;
 		this.ownerType = null;
@@ -205,49 +225,31 @@ class Character {
 			{
 				//Step 1 - get the last known input, and THAT is the input this frame
 				var lastKnownInput = this.inputQueue[this.inputQueue.length - 1];
-	
-				//assign states for the controller this frame
-				this.inputController.up.state = lastKnownInput.up;
-				this.inputController.down.state = lastKnownInput.down;
-				this.inputController.left.state = lastKnownInput.left;
-				this.inputController.right.state = lastKnownInput.right;
-				this.inputController.isFiring.state = lastKnownInput.isFiring;
-				this.inputController.isFiringAlt.state = lastKnownInput.isFiringAlt;
-				this.inputController.characterDirection.value = lastKnownInput.characterDirection.prevValue;
+
+				this.clientInputController.up.state = lastKnownInput.up;
+				this.clientInputController.down.state = lastKnownInput.down;
+				this.clientInputController.left.state = lastKnownInput.left;
+				this.clientInputController.right.state = lastKnownInput.right;
+
+				//assign fireing states
+				this.clientInputController.isFiring.state = lastKnownInput.isFiring;
+				this.clientInputController.isFiringAlt.state = lastKnownInput.isFiringAlt;
+
+				//if your allowed to look, assign look state
+				this.clientInputController.characterDirection.value = lastKnownInput.characterDirection;
 	
 				this.isInputDirty = true;
 	
 				
 				//Step 2 - detect any events that occured within the potentially clumped inputs (such as firing a bullet)
-				for(var i = 0; i < this.inputQueue.length; i++)
-				{
+				for(var i = 0; i < this.inputQueue.length; i++) {
 					//the character wants to fire a bullet
-					if(!firingInputFound && this.inputQueue[i].isFiring && !this.inputController.isFiring.prevState)
-					{
-						firingInputFound = true;
-						var pos = this.plBody.getPosition();
-						var fireEvent = {
-							x: pos.x,
-							y: pos.y,
-							angle: this.inputQueue[i].characterDirection,
-							type: 'bullet'
-						}
-	
-						this.eventQueue.push(fireEvent);
+					if(this.inputQueue[i].isFiring && !this.clientInputController.isFiring.prevState) {
+						this.clientInputController.isFiring.state = true;
 					}
 	
-					if(!altFiringInputFound && this.inputQueue[i].isFiringAlt && !this.inputController.isFiringAlt.prevState && this.bigBulletCounter <= 0)
-					{
-						altFiringInputFound = true;
-						var pos = this.plBody.getPosition();
-						var fireEvent = {
-							x: pos.x,
-							y: pos.y,
-							angle: this.inputQueue[i].characterDirection,
-							type: 'bigBullet'
-						}
-		
-						this.eventQueue.push(fireEvent);
+					if(this.inputQueue[i].isFiringAlt && !this.clientInputController.isFiringAlt.prevState) {
+						this.clientInputController.isFiringAlt.state = true;
 					}
 				}
 	
@@ -258,6 +260,73 @@ class Character {
 				/////////////////////////////////////////////////////
 			}
 	
+			//step 2 - apply game logic for the client input controller to get the input for THIS frame
+			//if they are allowed to move, get the latest directional inputs from the client for the frame
+			if(this.bAllowedMove) {
+				this.frameInputController.up.state = this.clientInputController.up.state;
+				this.frameInputController.down.state = this.clientInputController.down.state;
+				this.frameInputController.left.state = this.clientInputController.left.state;
+				this.frameInputController.right.state = this.clientInputController.right.state;
+			}
+			//if they are not allowed to move, treat all directional input for the frame as if nothing was pressed
+			else {
+				this.frameInputController.up.state = false;
+				this.frameInputController.down.state = false;
+				this.frameInputController.left.state = false;
+				this.frameInputController.right.state = false;
+			}
+
+			//if they are allowed to shoot, get the latest shooting buttons from the client for the frame
+			if(this.bAllowedShoot) {
+				this.frameInputController.isFiring.state = this.clientInputController.isFiring.state;
+				this.frameInputController.isFiringAlt.state = this.clientInputController.isFiringAlt.state;
+			}
+			//if they are not allowed to shoot, treat all shooting buttons as if nothing was pressed
+			else {
+				this.frameInputController.isFiring.state = false;
+				this.frameInputController.isFiringAlt.state = false;
+			}
+
+			if(this.bAllowedLook) {
+				this.frameInputController.characterDirection.value = this.clientInputController.characterDirection.value;
+			}
+			else {
+				this.frameInputController.characterDirection.value = this.lockedLookDirection;
+			}
+			
+			
+
+
+
+			//step 3 - translate the inputs for this frame into events
+			//the character wants to fire a bullet
+			if(this.frameInputController.isFiring.state && !this.frameInputController.isFiring.prevState)
+			{
+				var pos = this.plBody.getPosition();
+				var fireEvent = {
+					x: pos.x,
+					y: pos.y,
+					angle: this.frameInputController.characterDirection.value,
+					type: 'bullet'
+				}
+
+				this.eventQueue.push(fireEvent);
+			}
+
+			if(this.frameInputController.isFiringAlt.state && !this.frameInputController.isFiringAlt.prevState)
+			{
+				altFiringInputFound = true;
+				var pos = this.plBody.getPosition();
+				var fireEvent = {
+					x: pos.x,
+					y: pos.y,
+					angle: this.frameInputController.characterDirection.value,
+					type: 'bigBullet'
+				}
+
+				this.eventQueue.push(fireEvent);
+			}
+
 
 
 
@@ -269,8 +338,8 @@ class Character {
 
 
 			//update state
-			this.walkingTargetVelVec.x = ((this.inputController['left'].state ? -1 : 0) + (this.inputController['right'].state ? 1 : 0)) * this.walkingVelMagMax;
-			this.walkingTargetVelVec.y = ((this.inputController['down'].state ? -1 : 0) + (this.inputController['up'].state ? 1 : 0)) * this.walkingVelMagMax;
+			this.walkingTargetVelVec.x = ((this.frameInputController['left'].state ? -1 : 0) + (this.frameInputController['right'].state ? 1 : 0)) * this.walkingVelMagMax;
+			this.walkingTargetVelVec.y = ((this.frameInputController['down'].state ? -1 : 0) + (this.frameInputController['up'].state ? 1 : 0)) * this.walkingVelMagMax;
 
 			this.walkingCurrentAccMagx = this.walkingAccMag;
 			this.walkingCurrentAccMagy = this.walkingAccMag;
@@ -384,7 +453,7 @@ class Character {
 			}
 
 			//process movement
-			if(this.bAllowedMove && (Math.abs(this.walkingAccVec.x) >= 0.001 || Math.abs(this.walkingAccVec.y) >= 0.001))
+			if((Math.abs(this.walkingAccVec.x) >= 0.001 || Math.abs(this.walkingAccVec.y) >= 0.001))
 			{
 				var f = this.plBody.getWorldVector(Vec2(this.walkingAccVec.x, this.walkingAccVec.y));
 				var p = this.plBody.getWorldPoint(Vec2(0.0, 0.0));
@@ -394,7 +463,7 @@ class Character {
 			
 	
 			//process force impulses
-			if(this.bAllowedMove && this.forceImpulses.length > 0)
+			if(this.forceImpulses.length > 0)
 			{
 				for(var i = 0; i < this.forceImpulses.length; i++)
 				{
@@ -411,33 +480,36 @@ class Character {
 		}
 
 		//process events
-		if(this.eventQueue.length > 0)
-		{
-			if(this.bAllowedShoot)
-			{
-				for(var i = 0; i < this.eventQueue.length; i++)
-				{
-					//spawn the bullet
-					var o = this.gs.gom.createGameObject("projectile");
-					
-					if(o)
-					{
-						var e = this.eventQueue[i];
+		if(this.eventQueue.length > 0) {
+			if(this.bAllowedShoot) {
+				for(var i = 0; i < this.eventQueue.length; i++) {
+					var e = this.eventQueue[i];
+
+					if(e.type === "bigBullet" && this.bigBulletCounter <= 0) {
+						//spawn the bullet
+						var o = this.gs.gom.createGameObject("projectile");
+						
 						o.bulletType = e.type;
 						o.characterId = this.id;
 						o.ownerId = this.ownerId;
 						o.ownerType = this.ownerType;
 						o.teamId = this.teamId;
-	
-						if(e.type == "bigBullet")
-						{
-							o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000, 7.0);
-							this.bigBulletCounter = 5000;
-						}
-						else //small normal bullet
-						{
-							o.projectileInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000, 100);
-						}
+						o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000);
+						this.bigBulletCounter = 5000;
+					}
+					else //small normal bullet
+					{
+						this.setNextState(this.characterClassResource.data.fireStateKey);
+
+						//spawn a bullet too
+						var o = this.gs.gom.createGameObject("projectile");
+
+						o.bulletType = e.type;
+						o.characterId = this.id;
+						o.ownerId = this.ownerId;
+						o.ownerType = this.ownerType;
+						o.teamId = this.teamId;
+						o.projectileInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000);
 					}
 				}
 			}
@@ -451,35 +523,57 @@ class Character {
 		}
 		
 
-		//update input
-		if(this.isInputDirty)
-		{
-			for(var key in this.inputController)
-			{
-				this.inputController[key].prevState = this.inputController[key].state;
-				this.inputController[key].prevValue = this.inputController[key].value;
+		//update input controllers for prevState/prevValue
+		if(this.isInputDirty) {
+			for(var key in this.clientInputController) {
+				this.clientInputController[key].prevState = this.clientInputController[key].state;
+				this.clientInputController[key].prevValue = this.clientInputController[key].value;
 			}
 			this.isInputDirty = false;
 		}
 
-		if(this.hpCur <= 0)
-		{
+		for(var key in this.frameInputController) {
+			this.frameInputController[key].prevState = this.frameInputController[key].state;
+			this.frameInputController[key].prevValue = this.frameInputController[key].value;
+		}
+
+
+		if(this.hpCur <= 0) {
 			//tell the user he has killed a character if applicable
 			this.gs.gameState.characterDied(this.id);
 			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
 		}
 
-		//change state
-		if(this.nextState)
-		{
-			this.state.exit();
-			this.nextState.enter();
+		// //update state if there is one
+		// if(this.state !== null) {
+		// 	this.state.update(dt);
 
-			this.state = this.nextState;
-			this.nextState = null;
-		}
+		// 	//exit the state if the flag is set
+		// 	if(this.exitCurrentState) {
+		// 		this.state.exit(dt);
+		// 		this.state = null;
+		// 	}
+		// }
+
+		// //change state if there is a next one
+		// if(this.nextStateData !== null) {
+		// 	var nextState = new CharacterClassState.CharacterClassState(this.gs, this, this.nextStateData);
+
+		// 	nextState.enter(dt);
+			
+		// 	this.state = nextState;
+		// 	this.nextStateData = null;
+		// }
+		
+		// this.exitCurrentState = false;
 
 		this.em.update(dt);
+	}
+
+
+	setNextState(stateData) {
+		this.exitCurrentState = true;
+		this.nextStateData = stateData;
 	}
 
 	getPlanckPosition() {
@@ -581,7 +675,8 @@ class Character {
 			"id": this.id,
 			"characterPosX": bodyPos.x,
 			"characterPosY": bodyPos.y,
-			"characterHpCur": this.hpCur
+			"characterHpCur": this.hpCur,
+			"characterDirection": this.frameInputController.characterDirection.value
 		};
 
 		

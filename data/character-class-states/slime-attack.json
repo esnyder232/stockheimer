@@ -3,6 +3,7 @@
 	"animationSet": "attack",
 	"canLook": false,
 	"canMove": false,
+	"canShoot": false,
 	"timeLength": 700,
 	"projectileKey": "data/projectiles/slime-fire.json"
 }

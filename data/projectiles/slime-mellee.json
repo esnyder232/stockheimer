@@ -1,5 +1,5 @@
 {
-	"name": "Slime Fire",
+	"name": "Slime Mellee",
 	"planckData": {
 		"plShape": "circle",
 		"radius": 4
@@ -9,12 +9,13 @@
 		"originY": 0.5,
 		"pngUnitsToPhaserUnitsRatio": 0.07
 	},
-	"size": 2,
-	"speed": 10,
+	"size": 4,
+	"speed": 0,
 	"acc": 0,
-	"spriteKey": "data/sprites/fireball.json",
-	"frameTag": "",
-	"lifeTimeLength": 2500,
+	"spriteKey": "data/sprites/slime-mellee.json",
+	"frameTag": "swing",
+	"lifeTimeLength": 60,
+	"cooldownTimeLength": 250,
 	"collisionFilters": {
 		"sameTeamCharacters": false,
 		"sameTeamProjectiles": false,

@@ -18,6 +18,7 @@ export default class Character {
 		this.serverY = 0;
 		this.x = 0;
 		this.y = 0;
+		this.serverCharacterDirection = 0.0;
 		
 		this.globalfuncs = null;
 
@@ -35,6 +36,7 @@ export default class Character {
 		this.spriteGraphics = null;
 		this.glowGraphics = null;
 		this.mouseOverHitbox = null;
+		this.directionGraphics = null;
 
 		this.serverEventMapping = {
 			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this)
@@ -190,12 +192,14 @@ export default class Character {
 		this.createSpriteGraphics();
 		this.createGlowGraphics();
 		this.createMouseoverHitbox();
+		//this.createDirectionGraphics();
 
 		//draw the graphics objects on activation
 		this.drawHpBarGraphics();
 		this.drawTextGraphics();
 		this.drawBoxGraphics();
 		this.drawGlowGraphics();
+		//this.drawDirectionGraphics();
 
 
 		//temporarily play the only animation
@@ -437,6 +441,45 @@ export default class Character {
 		}
 	}
 
+	// createDirectionGraphics() {
+	// 	this.directionGraphics = this.ms.add.graphics({
+	// 		lineStyle: {
+	// 			width: 1.5,
+	// 			color: 0xffff00
+	// 		},
+	// 		fillStyle: {
+	// 			color: 0xffff00
+	// 		}
+	// 	});
+
+	// 	this.directionGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
+	// }
+
+	// drawDirectionGraphics() {
+	// 	this.directionGraphics.clear();
+
+	// 	var targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
+	// 	var targetLineLength = 100;
+
+	// 	//redraw the target line
+	// 	var x1 = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
+	// 	var y1 = this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1;
+	// 	// var x2 = targetLineLength * Math.cos(this.serverCharacterDirection);
+	// 	// var y2 = targetLineLength * Math.sin(this.serverCharacterDirection);
+
+	// 	targetLine.x1 = x1;
+	// 	targetLine.y1 = y1;
+	// 	// this.targetLine.x2 = x2;
+	// 	// this.targetLine.y2 = y2;
+
+	// 	// this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
+	// 	// this.angle = (Math.round((this.angle*1000))/1000)
+		
+	// 	Phaser.Geom.Line.SetToAngle(targetLine, x1, y1, this.serverCharacterDirection, targetLineLength);
+
+	// 	this.directionGraphics.strokeLineShape(targetLine);
+	// }
+
 	deactivated() {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
@@ -513,6 +556,8 @@ export default class Character {
 			this.updateHealthBar = false;
 		}
 
+		//this.drawDirectionGraphics();
+
 
 		//change state
 		// if(this.nextState)
@@ -528,6 +573,9 @@ export default class Character {
 	activeCharacterUpdateEvent(e) {
 		this.serverX = e.characterPosX;
 		this.serverY = e.characterPosY;
+		//this.serverCharacterDirection = e.characterDirection;
+		// console.log('Character update event:');
+		// console.log(e.characterDirection);
 
 		//temporary way just to flag a hp change
 		if(this.hpCur !== e.characterHpCur) {
