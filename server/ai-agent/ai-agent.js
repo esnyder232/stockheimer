@@ -60,6 +60,7 @@ class AIAgent {
 
 		this.character = null; 		//direct reference to the character the ai agent is controlling
 		this.characterPos = null;	//direct reference to the character's planck position vector
+		this.angle = 0.0; 			//angle that the ai wants to face in (changes depnding on the state of the ai)
 		this.teamId = 0;
 
 		this.targetCharacterDeactivatedHandleId = null;

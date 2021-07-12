@@ -32,7 +32,7 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 				right: false,
 				isFiring: false,
 				isFiringAlt: false,
-				characterDirection: 0.0
+				characterDirection: this.aiAgent.angle
 			}
 			var inputChanged = false;
 	
@@ -53,16 +53,16 @@ class AIAgentAttackCastleState extends AIAgentBaseState.AIAgentBaseState {
 					{
 						dx = 1
 					}
-					var angle = Math.atan(-dy / dx);
+					this.aiAgent.angle = Math.atan(-dy / dx);
 					
 					//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
 					//this basically just flips the direction of the x and y
 					var radiansToAdd = dx < 0 ? Math.PI : 0;
 	
-					angle += radiansToAdd;
+					this.aiAgent.angle += radiansToAdd;
 	
 					finalInput.isFiring = true;
-					finalInput.characterDirection = angle;
+					finalInput.characterDirection = this.aiAgent.angle;
 					inputChanged = true;
 					
 					this.aiAgent.isAttackCurrentTimer = this.aiAgent.isAttackInterval;

@@ -111,6 +111,10 @@ class Castle {
 		this.prevHpCur = this.hpCur;
 	}
 
+	postWebsocketUpdate() {
+	}
+
+
 	checkDirty() {
 		return this.isDirty;
 	}

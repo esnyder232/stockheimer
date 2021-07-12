@@ -102,6 +102,10 @@ class Projectile {
 		}
 	}
 
+	postWebsocketUpdate() {
+	}
+
+
 	checkDirty() {
 		var result = false;
 		if(this.plBody !== null)

@@ -94,6 +94,12 @@ class GameServerRunning extends GameServerBaseState {
 			}
 		}
 
+		//post packet send update for gameobjects
+		for(var i = 0; i < activeGameObjects.length; i++) {
+			activeGameObjects[i].postWebsocketUpdate(dt);
+		}
+
+
 		//update managers
 		this.gs.wsm.update(dt);
 		this.gs.um.update(dt);

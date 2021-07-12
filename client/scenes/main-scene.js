@@ -560,16 +560,16 @@ export default class MainScene extends Phaser.Scene {
 			}
 
 			//if the user is currently firing, and the angle changes, send the input event
-			if((this.isFiring || this.isFiringAlt) && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
-			{
-				sendInputEvent = true;
-			}
-
-			//send inputs on EVERY angle change
-			// if(Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
+			// if((this.isFiring || this.isFiringAlt) && Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
 			// {
 			// 	sendInputEvent = true;
 			// }
+
+			//send inputs on EVERY angle change
+			if(Math.abs(this.angle - this.prevAngle) >= this.angleSmallestDelta)
+			{
+				sendInputEvent = true;
+			}
 
 			//send the input event this frame if needed
 			if(sendInputEvent)

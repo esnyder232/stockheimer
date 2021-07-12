@@ -21,7 +21,7 @@ class Character {
 
 		this.stateName = "";
 		this.state = null;
-		this.nextStateData = null;
+		this.nextCharacterClassResource = null;
 		this.exitCurrentState = false;
 
 		this.plBody = null;
@@ -30,6 +30,7 @@ class Character {
 		this.clientInputController = {}; //actual inputs sent from the client. 
 		this.lockedLookDirection = 0;
 		this.isInputDirty = false;
+		this.characterDirectionChanged = false;
 		this.speedMag = 4;
 		
 		this.bigBulletCounter = 0;
@@ -80,11 +81,12 @@ class Character {
 	}
 
 	changeAllowLook(bAllowedLook) {
-		this.bAllowedLook = bAllowedLook;
-		//record the lockedLookDirection here as well (might as well idk)
-		if(this.bAllowedLook) {
-			this.lockedLookDirection = this.clientInputController.characterDirection.value;
+		//if your NOT allowed to look anymore, record the last known direction the character was facing (might as well do it here, idk)
+		if(!bAllowedLook) {
+			this.lockedLookDirection = this.frameInputController.characterDirection.value;
 		}
+		
+		this.bAllowedLook = bAllowedLook;
 	}
 
 	//called only once when the character is first created. This is only called once ever.
@@ -215,15 +217,13 @@ class Character {
 
 		const Vec2 = this.gs.pl.Vec2;
 
-		//temporary. The character processes the inputs here.
-		var firingInputFound = false;
-		var altFiringInputFound = false;
-
 		if(this.plBody !== null)
 		{
+			//Step 1 - get the last known input, and THAT is the input this frame
 			if(this.inputQueue.length > 0)
 			{
-				//Step 1 - get the last known input, and THAT is the input this frame
+				//set the dirty flag so the websocket knows to send the update to clients
+				this.isInputDirty = true;
 				var lastKnownInput = this.inputQueue[this.inputQueue.length - 1];
 
 				this.clientInputController.up.state = lastKnownInput.up;
@@ -237,11 +237,8 @@ class Character {
 
 				//if your allowed to look, assign look state
 				this.clientInputController.characterDirection.value = lastKnownInput.characterDirection;
-	
-				this.isInputDirty = true;
-	
-				
-				//Step 2 - detect any events that occured within the potentially clumped inputs (such as firing a bullet)
+
+				//detect any events that occured within the potentially clumped inputs (such as firing a bullet)
 				for(var i = 0; i < this.inputQueue.length; i++) {
 					//the character wants to fire a bullet
 					if(this.inputQueue[i].isFiring && !this.clientInputController.isFiring.prevState) {
@@ -253,11 +250,8 @@ class Character {
 					}
 				}
 	
-				//clear all inputs at the end of the frame
+				//clear all inputs
 				this.inputQueue.length = 0;
-
-				//
-				/////////////////////////////////////////////////////
 			}
 	
 			//step 2 - apply game logic for the client input controller to get the input for THIS frame
@@ -315,7 +309,6 @@ class Character {
 
 			if(this.frameInputController.isFiringAlt.state && !this.frameInputController.isFiringAlt.prevState)
 			{
-				altFiringInputFound = true;
 				var pos = this.plBody.getPosition();
 				var fireEvent = {
 					x: pos.x,
@@ -485,31 +478,34 @@ class Character {
 				for(var i = 0; i < this.eventQueue.length; i++) {
 					var e = this.eventQueue[i];
 
-					if(e.type === "bigBullet" && this.bigBulletCounter <= 0) {
-						//spawn the bullet
-						var o = this.gs.gom.createGameObject("projectile");
+					if(e.type === "bigBullet") {
+						if(this.bigBulletCounter <= 0) {
+							//spawn the bullet
+							var o = this.gs.gom.createGameObject("projectile");
+													
+							o.bulletType = e.type;
+							o.characterId = this.id;
+							o.ownerId = this.ownerId;
+							o.ownerType = this.ownerType;
+							o.teamId = this.teamId;
+							o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000);
+							this.bigBulletCounter = 5000;
+						}
 						
-						o.bulletType = e.type;
-						o.characterId = this.id;
-						o.ownerId = this.ownerId;
-						o.ownerType = this.ownerType;
-						o.teamId = this.teamId;
-						o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000);
-						this.bigBulletCounter = 5000;
 					}
 					else //small normal bullet
 					{
-						this.setNextState(this.characterClassResource.data.fireStateKey);
+						this.setCharacterClassState(this.characterClassResource.data.fireStateKey);
 
-						//spawn a bullet too
-						var o = this.gs.gom.createGameObject("projectile");
+						// //spawn a bullet too
+						// var o = this.gs.gom.createGameObject("projectile");
 
-						o.bulletType = e.type;
-						o.characterId = this.id;
-						o.ownerId = this.ownerId;
-						o.ownerType = this.ownerType;
-						o.teamId = this.teamId;
-						o.projectileInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000);
+						// o.bulletType = e.type;
+						// o.characterId = this.id;
+						// o.ownerId = this.ownerId;
+						// o.ownerType = this.ownerType;
+						// o.teamId = this.teamId;
+						// o.projectileInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000);
 					}
 				}
 			}
@@ -523,13 +519,41 @@ class Character {
 		}
 		
 
+		//tell the user he has killed a character if applicable
+		if(this.hpCur <= 0) {
+			this.gs.gameState.characterDied(this.id);
+			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
+		}
+
+		//update state if there is one
+		if(this.state !== null) {
+			this.state.update(dt);
+
+			//exit the state if the flag is set
+			if(this.exitCurrentState) {
+				this.state.exit(dt);
+				this.state = null;
+			}
+		}
+
+		//change state if there is a next one
+		if(this.nextCharacterClassResource !== null) {
+			var nextState = new CharacterClassState.CharacterClassState(this.gs, this, this.nextCharacterClassResource);
+
+			nextState.enter(dt);
+			
+			this.state = nextState;
+			this.nextCharacterClassResource = null;
+		}
+		
+		this.exitCurrentState = false;
+
 		//update input controllers for prevState/prevValue
 		if(this.isInputDirty) {
 			for(var key in this.clientInputController) {
 				this.clientInputController[key].prevState = this.clientInputController[key].state;
 				this.clientInputController[key].prevValue = this.clientInputController[key].value;
 			}
-			this.isInputDirty = false;
 		}
 
 		for(var key in this.frameInputController) {
@@ -537,43 +561,25 @@ class Character {
 			this.frameInputController[key].prevValue = this.frameInputController[key].value;
 		}
 
-
-		if(this.hpCur <= 0) {
-			//tell the user he has killed a character if applicable
-			this.gs.gameState.characterDied(this.id);
-			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
-		}
-
-		// //update state if there is one
-		// if(this.state !== null) {
-		// 	this.state.update(dt);
-
-		// 	//exit the state if the flag is set
-		// 	if(this.exitCurrentState) {
-		// 		this.state.exit(dt);
-		// 		this.state = null;
-		// 	}
-		// }
-
-		// //change state if there is a next one
-		// if(this.nextStateData !== null) {
-		// 	var nextState = new CharacterClassState.CharacterClassState(this.gs, this, this.nextStateData);
-
-		// 	nextState.enter(dt);
-			
-		// 	this.state = nextState;
-		// 	this.nextStateData = null;
-		// }
-		
-		// this.exitCurrentState = false;
-
 		this.em.update(dt);
 	}
 
+	//reset dirty flags back to false
+	postWebsocketUpdate() {
+		this.isInputDirty = false;
+	}
 
-	setNextState(stateData) {
+
+	setCharacterClassState(characterClassResourceKey) {
+		var r = this.gs.rm.getResourceByKey(characterClassResourceKey);
+		if(r !== null) {
+			this.nextCharacterClassResource = r;
+		}
+		else {
+			this.nextCharacterClassResource = null;
+		}
+		
 		this.exitCurrentState = true;
-		this.nextStateData = stateData;
 	}
 
 	getPlanckPosition() {
@@ -586,9 +592,12 @@ class Character {
 
 	checkDirty() {
 		var result = false;
-		if(this.plBody !== null)
-		{
+		if(this.plBody !== null) {
 			result = this.plBody.isAwake();
+		}
+
+		if(this.isInputDirty) {
+			result = true;
 		}
 
 		return result || this.isDirty;
