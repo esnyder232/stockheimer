@@ -101,6 +101,9 @@ class GlobalFuncs {
 		var logEventMessage = "";
 		var tm = null;
 		var spectatorTeam = gs.tm.getSpectatorTeam();
+		var userTeam = null;
+		var userTeamSlot = null;
+		var arrSpawnZones = [];
 
 		logEventMessage = "Player: " + user.username + ", event: fromClientSpawnCharacter: ";
 		
@@ -108,44 +111,52 @@ class GlobalFuncs {
 		if(user.teamId !== spectatorTeam.id)
 		{
 			//as long as they don't already have a character controlled, create one for the user.
-			if(user.characterId !== null)
-			{
+			if(user.characterId !== null) {
 				bFail = true;
 			}
 
+			//get the team the user's on
+			if(!bFail) {
+				userTeam = gs.tm.getTeamByID(user.teamId);
+				if(userTeam === null) {
+					bFail = true;
+					userMessage = "Player spawn failed. Could not get the user's team.";
+				}
+				else {
+					userTeamSlot = userTeam.slotNum;
+				}
+			}
+
 			//get the tilemap
-			if(!bFail)
-			{
+			if(!bFail) {
 				tm = gs.activeTilemap;
-				if(tm === null)
-				{
+				if(tm === null) {
 					bFail = true;
 					userMessage = "Player spawn failed. Could not get the tilemap.";
 				}
 			}
 			
-			if(!bFail)
-			{
-				if(tm.playerSpawnZones.length === 0)
-				{
+			//quick check if any spawn zones even exist
+			if(!bFail) {
+				arrSpawnZones = tm.getSpawnZonesBySlotnum(userTeamSlot);
+
+				if(arrSpawnZones.length === 0) {
 					bFail = true;
-					userMessage = "Player spawn failed. There are no spawn zones set for players.";
+					userMessage = "Player spawn failed. There are no spawn zones set for that team on this map.";
 				}
 			}
 
-			//spawn the player
-			if(!bFail)
-			{
-				//pick a random spawn zone
-				var zIndex = 0;
 
-				zIndex = Math.floor(Math.random() * tm.playerSpawnZones.length);
-				if(zIndex === tm.playerSpawnZones.length)
-				{
-					zIndex = tm.playerSpawnZones.length-1
+			//at this point, i believe its safe to spawn the player
+			if(!bFail) {
+				//pick a random spawn zone with the appropriate slotnum
+				var zIndex = 0;
+				zIndex = Math.floor(Math.random() * arrSpawnZones.length);
+				if(zIndex === arrSpawnZones.length) {
+					zIndex = arrSpawnZones.length-1
 				}
 
-				var z = tm.playerSpawnZones[zIndex];
+				var z = arrSpawnZones[zIndex];
 
 				var c = gs.gom.createGameObject('character');
 				c.characterInit(gs);
@@ -154,8 +165,6 @@ class GlobalFuncs {
 				c.ownerId = user.id;
 				c.ownerType = "user";
 				user.characterId = c.id;
-				c.hpMax = 25;
-				c.hpCur = 25;
 
 				var xStarting = z.xPlanck + (z.widthPlanck * Math.random());
 				var yStarting = z.yPlanck - (z.heightPlanck * Math.random());

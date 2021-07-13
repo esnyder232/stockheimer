@@ -73,6 +73,7 @@ export default class GameClient {
 		//probably temporary until there are more
 		this.theRound = null;
 		this.activeTilemap = null;
+		this.bDisplayServerSightlines = false;
 
 		////////////////////////////////////
 		// api end points for resources

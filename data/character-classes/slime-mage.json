@@ -1,6 +1,6 @@
 {
 	"name": "Slime Mage",
-	"hp": 100,
+	"hp": 20,
 	"speed": 19,
 	"planckData": {
 		"plShape": "circle",

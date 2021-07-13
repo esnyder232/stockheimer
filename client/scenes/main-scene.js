@@ -127,7 +127,6 @@ export default class MainScene extends Phaser.Scene {
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
-			{event: 'respawn-castle', func: this.respawnCastle.bind(this)},
 			{event: "team-changed", func: this.teamChanged.bind(this)}
 		];
 
@@ -705,13 +704,6 @@ export default class MainScene extends Phaser.Scene {
 			});
 		}
 		$("#kill-character")[0].blur();
-	}
-
-	respawnCastle() {
-		this.gc.ep.insertClientToServerEvent({
-			"eventName": "fromClientSpawnEnemy",
-			"spawnLocation": "respawnCastle"
-		});
 	}
 
 	teamChanged(e) {

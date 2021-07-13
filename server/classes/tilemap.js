@@ -21,6 +21,7 @@ class Tilemap {
 		this.enemySpawnZones = [];
 		this.playerSpawnLayer = null;
 		this.playerSpawnZones = [];
+		this.playerSpawnZonesSlotNumIndex = {};
 
 		this.navGrid = null;
 	}
@@ -143,16 +144,28 @@ class Tilemap {
 			{
 				var xOffset = -this.tilewidth/2;
 				var yOffset = -this.tileheight/2;
-				for(var i = 0; i < this.playerSpawnLayer.objects.length; i++)
-				{
+				for(var i = 0; i < this.playerSpawnLayer.objects.length; i++) {
 					var z = this.playerSpawnLayer.objects[i];
-	
+
 					z.xPlanck = (z.x + xOffset) / this.tilewidth;
 					z.yPlanck = ((z.y + yOffset) / this.tileheight) * -1;
-					z.widthPlanck = z.height / this.tilewidth;
+					z.widthPlanck = z.width / this.tilewidth;
 					z.heightPlanck = z.height / this.tileheight;
-	
+					z.slotNumArr = []; //slotnums assigned to this spawn zone
+
 					this.playerSpawnZones.push(z);
+
+					//look at slotnum for the index
+					if(z.properties) {
+						for(var j = 0; j < z.properties.length; j++) {
+							if(z.properties[j].name
+							&& z.properties[j].name.toLowerCase() === "slotnum"
+							&& z.properties[j].type === "int"
+							&& Number.isInteger(z.properties[j].value)) {
+								this.updateSpawnZoneIndex(z.id, z.properties[j].value, z, "create");
+							}
+						}
+					}
 				}
 			}
 		}
@@ -168,8 +181,45 @@ class Tilemap {
 		return bError;
 	}
 
+	updateSpawnZoneIndex(objId, slotNum, obj, transaction) {
+		if(transaction == 'create') {
+			if(this.playerSpawnZonesSlotNumIndex[slotNum] === undefined) {
+				this.playerSpawnZonesSlotNumIndex[slotNum] = [];
+			}
+			this.playerSpawnZonesSlotNumIndex[slotNum].push(obj);
+		}
+		else if(transaction == 'delete') {
+			if(this.playerSpawnZonesSlotNumIndex[slotNum] !== undefined) {
+				var ind = this.playerSpawnZonesSlotNumIndex[slotNum].findIndex((x) => {return x.objId === objId;});
+				if(ind >= 0) {
+					this.playerSpawnZonesSlotNumIndex[slotNum].splice(ind, 1);
+				}
+
+				if(this.playerSpawnZonesSlotNumIndex[slotNum].length === 0) {
+					delete this.playerSpawnZonesSlotNumIndex[slotNum];
+				}
+			}
+		}
+	}
+
+
 	getNavGrid() {
 		return this.navGrid;
+	}
+
+	getSpawnZonesBySlotnum(slotNum) {
+		var arr = this.playerSpawnZones;
+		
+		if(slotNum !== undefined && Number.isInteger(slotNum)) {
+			if(this.playerSpawnZonesSlotNumIndex[slotNum] !== undefined) {
+				arr = this.playerSpawnZonesSlotNumIndex[slotNum];
+			}
+			else{
+				arr = [];
+			}
+		}
+
+		return arr;
 	}
 
 	createTileForTileset(gid, properties) {

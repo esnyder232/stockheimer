@@ -36,8 +36,8 @@ class Character {
 		this.bigBulletCounter = 0;
 
 		//bullshit variables for tech demo
-		this.hpMax = 100;
-		this.hpCur = 100;
+		this.hpMax = 25;
+		this.hpCur = 25;
 		this.isDirty = false;
 		this.xStarting = 15;
 		this.yStarting = -15.0;
@@ -140,6 +140,13 @@ class Character {
 		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.size")) {
 			this.size = this.characterClassResource.data.size;
 		}
+
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.hp")) {
+			this.hpCur = this.characterClassResource.data.hp;
+			this.hpMax = this.characterClassResource.data.hp;
+		}
+
+
 
 		if(this.planckRadius <= 0) {
 			this.planckRadius = 1;

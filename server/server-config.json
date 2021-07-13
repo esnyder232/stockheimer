@@ -10,5 +10,5 @@
 	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",
 	"log_level": "debug",
 	
-	"map_relpath": "assets/tilemaps/stockheimer-techdemo.json"
+	"map_relpath": "assets/tilemaps/team-map-square.json"
 }

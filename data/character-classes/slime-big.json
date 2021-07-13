@@ -1,6 +1,6 @@
 {
-	"name": "Slime Mage 2",
-	"hp": 50,
+	"name": "Slime Mage 3",
+	"hp": 90,
 	"speed": 9,
 	"planckData": {
 		"plShape": "circle",
@@ -12,7 +12,7 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
-	"size": 2,
+	"size": 4,
 	"idleMsPerFrame": 300,
 	"moveMsPerFrame": 300,
 	"animationSets": {

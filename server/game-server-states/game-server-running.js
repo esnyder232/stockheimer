@@ -265,31 +265,31 @@ class GameServerRunning extends GameServerBaseState {
 							logEventMessage = "Player: " + user.username + ", event: fromClientSpawnEnemy " + e.spawnLocation + ": ";
 	
 							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
-							if (e.spawnLocation === "respawnCastle")
-							{
-								if(this.gs.castleObject !== null)
-								{
-									bFail = true;
-									userMessage = "Only one castle can exist at a time."
-								}
+							// if (e.spawnLocation === "respawnCastle")
+							// {
+							// 	if(this.gs.castleObject !== null)
+							// 	{
+							// 		bFail = true;
+							// 		userMessage = "Only one castle can exist at a time."
+							// 	}
 	
-								if(!bFail)
-								{
-									//create castle object 
-									var castle = this.gs.gom.createGameObject("castle");
-									this.gs.castleObject = castle; //temporary location for it
+							// 	if(!bFail)
+							// 	{
+							// 		//create castle object 
+							// 		var castle = this.gs.gom.createGameObject("castle");
+							// 		this.gs.castleObject = castle; //temporary location for it
 	
-									var xc = this.gs.activeNavGrid.castleNode.x;
-									var yc = -this.gs.activeNavGrid.castleNode.y;
+							// 		var xc = this.gs.activeNavGrid.castleNode.x;
+							// 		var yc = -this.gs.activeNavGrid.castleNode.y;
 									
-									var castleName = user.username + "'s Castle";
+							// 		var castleName = user.username + "'s Castle";
 	
-									castle.castleInit(this.gs, xc, yc, castleName);
+							// 		castle.castleInit(this.gs, xc, yc, castleName);
 	
 	
-									broadcastMessage = "Player '" + user.username + "' spawned '" + castleName + "'";
-								}
-							}
+							// 		broadcastMessage = "Player '" + user.username + "' spawned '" + castleName + "'";
+							// 	}
+							// }
 	
 	
 							//send out usermessage and/or broadcast message

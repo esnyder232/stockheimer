@@ -87,6 +87,8 @@ class GameServer {
 		
 		this.classKeyList = [
 			"data/character-classes/slime-mage.json",
+			"data/character-classes/slime-healer.json",
+			"data/character-classes/slime-big.json"
 		];
 
 		this.mapKey = serverConfig.map_relpath;

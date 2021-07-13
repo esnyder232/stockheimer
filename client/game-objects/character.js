@@ -457,27 +457,21 @@ export default class Character {
 
 	drawDirectionGraphics() {
 		this.directionGraphics.clear();
-
-		var targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
-		var targetLineLength = 100;
-
-		//redraw the target line
-		var x1 = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
-		var y1 = this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1;
-		// var x2 = targetLineLength * Math.cos(this.serverCharacterDirection);
-		// var y2 = targetLineLength * Math.sin(this.serverCharacterDirection);
-
-		targetLine.x1 = x1;
-		targetLine.y1 = y1;
-		// this.targetLine.x2 = x2;
-		// this.targetLine.y2 = y2;
-
-		// this.angle = Phaser.Math.Angle.Between(x1, y1, x2, y2);
-		// this.angle = (Math.round((this.angle*1000))/1000)
-		
-		Phaser.Geom.Line.SetToAngle(targetLine, x1, y1, this.serverCharacterDirection, targetLineLength);
-
-		this.directionGraphics.strokeLineShape(targetLine);
+		if(this.gc.bDisplayServerSightlines) {
+			var targetLine = new Phaser.Geom.Line(0, 0, 0, 0);
+			var targetLineLength = 100;
+	
+			//redraw the target line
+			var x1 = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
+			var y1 = this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1;
+	
+			targetLine.x1 = x1;
+			targetLine.y1 = y1;
+			
+			Phaser.Geom.Line.SetToAngle(targetLine, x1, y1, this.serverCharacterDirection, targetLineLength);
+	
+			this.directionGraphics.strokeLineShape(targetLine);
+		}
 	}
 
 	deactivated() {
@@ -499,6 +493,7 @@ export default class Character {
 		gravestone.gravestoneImage = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/gravestone.json");
 		gravestone.gravestoneImage.setDepth(ClientConstants.PhaserDrawLayers.gravestoneLayer);
 		gravestone.gravestoneImage.setScale(2, 2);
+		//gravestone.gravestoneImage.setScale(this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.scaleX, this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.scaleY);
 
 		if(this.ownerType === "ai")
 		{
@@ -519,8 +514,10 @@ export default class Character {
 				strokeThickness: this.ms.gravestoneStrokeThickness,
 				stroke: this.ms.gravestoneStrokeColor
 			}
+			var offsetY = 25;
 
-			gravestone.gravestoneText = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + 20 , usernameText, textStyle);
+			gravestone.gravestoneText = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + (offsetY), usernameText, textStyle);
+			gravestone.gravestoneText.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
 			gravestone.gravestoneText.setOrigin(0.5, 0.5);
 		}
 

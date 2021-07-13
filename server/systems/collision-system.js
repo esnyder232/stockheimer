@@ -250,6 +250,7 @@ class CollisionSystem {
 					temp.normalize();
 					pushBackVector.xDir = temp.x;
 					pushBackVector.yDir = temp.y;
+					pushBackVector.mag = 25 / c.size;
 
 					//destroy the projectile too
 					p.lifespan = 0; //cheap and easy
@@ -265,7 +266,11 @@ class CollisionSystem {
 					temp.normalize();
 					pushBackVector.xDir = temp.x;
 					pushBackVector.yDir = temp.y;
-					pushBackVector.mag = 40;
+					pushBackVector.mag = 40 / c.size;
+
+					if(c.size >= 4) {
+						p.lifespan = 0;
+					}
 				}
 
 				c.forceImpulses.push(pushBackVector);
