@@ -26,7 +26,8 @@ class GameServerStopped extends GameServerBaseState {
 		this.gs.nextGameState = new GameServerStarting(this.gs);
 		this.gs.runGameLoop = true;
 
-		this.gs.gameLoop();
+		this.gs.tempInterval = setInterval(this.gs.gameLoop.bind(this.gs), this.gs.frameTimeStep);
+		// this.gs.gameLoop();
 	}
 
 	joinRequest() {

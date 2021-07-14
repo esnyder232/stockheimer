@@ -394,58 +394,95 @@ class GameServer {
 		this.gameState.stopGameRequest();
 	}
 
+
+	gameLoop() {
+
+		var nowTime = performance.now();
+		var dt = nowTime - this.previousTick;
+		// console.log("game loop called: " + dt);
+
+		//if its the designated time has passed, run the update function
+		this.previousTick = nowTime;
+		if(this.gameState)
+		{
+			this.gameState.update(this.frameTimeStep);
+
+			//report timer
+			this.reportTimer += this.frameTimeStep;
+			if(this.reportTimer >= this.reportTimerInterval)
+			{
+				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
+				this.reportTimer = 0;
+				// var temp = this.um.getActiveUsersGroupedByTeams();
+				// console.log(temp);
+			}
+		}
+
+		if(this.nextGameState)
+		{
+			this.gameState.exit();
+			this.nextGameState.enter();
+
+			this.gameState = this.nextGameState;
+			this.nextGameState = null;
+		}
+	}
+
+
+
+
 	//the gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
 	//credit: (https://timetocode.tumblr.com/post/71512510386/an-accurate-nodejs-game-loop-inbetween-settimeout)
 	//There is additional tuning parameters (set_timeout_variance) used because setTimeout does NOT have the same variance across operating systems.
 	//For example: setTimeout(..., 50) has +16ms variance on Windows 10, and +1ms variance on Debian 10 
 	//(iow, setimeout will be called between 50-66ms on windows, and 50-51ms on debian 10)
-	gameLoop() {
-		var nowTime = performance.now();
+	// gameLoop() {
+	// 	var nowTime = performance.now();
 
-		//if its the designated time has passed, run the update function
-		if(this.previousTick + (this.frameTimeStep) < nowTime)
-		{
-			this.previousTick = nowTime;
-			if(this.gameState)
-			{
-				this.gameState.update(this.frameTimeStep);
+	// 	//if its the designated time has passed, run the update function
+	// 	if(this.previousTick + (this.frameTimeStep) < nowTime)
+	// 	{
+	// 		this.previousTick = nowTime;
+	// 		if(this.gameState)
+	// 		{
+	// 			this.gameState.update(this.frameTimeStep);
 
-				//report timer
-				this.reportTimer += this.frameTimeStep;
-				if(this.reportTimer >= this.reportTimerInterval)
-				{
-					logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
-					this.reportTimer = 0;
-					// var temp = this.um.getActiveUsersGroupedByTeams();
-					// console.log(temp);
-				}
-			}
+	// 			//report timer
+	// 			this.reportTimer += this.frameTimeStep;
+	// 			if(this.reportTimer >= this.reportTimerInterval)
+	// 			{
+	// 				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
+	// 				this.reportTimer = 0;
+	// 				// var temp = this.um.getActiveUsersGroupedByTeams();
+	// 				// console.log(temp);
+	// 			}
+	// 		}
 
-			if(this.nextGameState)
-			{
-				this.gameState.exit();
-				this.nextGameState.enter();
+	// 		if(this.nextGameState)
+	// 		{
+	// 			this.gameState.exit();
+	// 			this.nextGameState.enter();
 
-				this.gameState = this.nextGameState;
-				this.nextGameState = null;
-			}
-		}
+	// 			this.gameState = this.nextGameState;
+	// 			this.nextGameState = null;
+	// 		}
+	// 	}
 
-		//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
-		if(nowTime - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
-		{
-			//call the sloppy timer
-			if(this.runGameLoop)
-			{
-				setTimeout(this.gameLoop.bind(this), 1);
-			}
-		}
-		else
-		{
-			//call the accurate timer
-			setImmediate(this.gameLoop.bind(this));
-		}
-	}
+	// 	//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
+	// 	if(nowTime - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
+	// 	{
+	// 		//call the sloppy timer
+	// 		if(this.runGameLoop)
+	// 		{
+	// 			setTimeout(this.gameLoop.bind(this), 1);
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		//call the accurate timer
+	// 		setImmediate(this.gameLoop.bind(this));
+	// 	}
+	// }
 
 	/* apis */
 	getServerDetails(req, res) {
