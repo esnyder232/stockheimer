@@ -87,4 +87,4 @@
 * 3 months of additions here...
 
 ## Version - 2020.10.5
-* Initial commit to the stockheimer project.
+* Initial commit to the stockheimer project. 
