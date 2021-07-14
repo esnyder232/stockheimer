@@ -27,12 +27,6 @@ export default class RemoveActiveCharacterEvent {
 
 				//also destroy the target line
 				this.gc.mainScene.targetLineGraphic.clear();
-				var killCharacterBtn = $("#kill-character");
-
-				if(killCharacterBtn.length > 0)
-				{
-					killCharacterBtn.addClass("hide");
-				}
 			}
 		}
 	}

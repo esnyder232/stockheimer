@@ -1,9 +1,9 @@
 {
 	"name": "Slime Attack",
 	"animationSet": "attack",
-	"canLook": false,
-	"canMove": false,
+	"canLook": true,
+	"canMove": true,
 	"canShoot": false,
-	"timeLength": 700,
+	"timeLength": 145,
 	"projectileKey": "data/projectiles/slime-fire.json"
 }

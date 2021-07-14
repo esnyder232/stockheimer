@@ -150,9 +150,6 @@ input[type="text"]:disabled {
 	pointer-events: none;
 }
 
-#kill-character {
-	color:rgb(255, 107, 107);
-}
 
 #exit-game {
 	margin-right: 12px;

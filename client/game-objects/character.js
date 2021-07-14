@@ -105,6 +105,16 @@ export default class Character {
 		this.idleMsPerFrame = 100;
 		this.moveMsPerFrame = 100;
 
+		this.enemyDamageTintColor = 0xffffff;
+		this.enemyDamageTimerLength = 100;
+		this.enemyDamageTimer = 0;
+
+		this.selfDamageTintColor = 0xdd0000;
+		this.selfDamageTimerLength = 100;
+		this.selfDamageTimer = 0;
+
+		this.characterTintColor = 0xffffff;
+
 		//hacky shit for now. Delete this later.
 		this.teamName = "";
 	}
@@ -210,12 +220,6 @@ export default class Character {
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);
-			var killCharacterBtn = $("#kill-character");
-
-			if(killCharacterBtn.length > 0)
-			{
-				killCharacterBtn.removeClass("hide");
-			}
 		}
 	}
 
@@ -257,7 +261,7 @@ export default class Character {
 				this.characterTextFillColor = team.characterTextFillColor;
 				this.characterTextStrokeColor = team.characterTextStrokeColor;
 				this.characterFillColor = team.phaserCharacterFillColor;
-				this.teamName = team.name;
+				this.characterTintColor = team.phaserCharacterTintColor;
 			}
 		}
 	}
@@ -289,7 +293,7 @@ export default class Character {
 			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
 		}
 		else {
-			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
+			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.hpBarLayer);
 		}
 	}
 
@@ -307,7 +311,7 @@ export default class Character {
         this.hpBarGraphics.fillRect(this.hpBarOffsetX, this.hpBarOffsetY, this.hpBarWidthMax, this.hpBarHeight);
 
         //Health
-		this.hpBarGraphics.fillStyle(0xFF0000);
+		this.hpBarGraphics.fillStyle(this.characterFillColor);
 		var hpCurrentWidth = (this.hpCur/this.hpMax) * this.hpBarWidthMax;
 		this.hpBarGraphics.fillRect(this.hpBarOffsetX, this.hpBarOffsetY, hpCurrentWidth, this.hpBarHeight);
 
@@ -437,7 +441,7 @@ export default class Character {
 			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
 		}
 		else {
-			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.textLayer);
+			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.hpBarLayer);
 		}
 	}
 
@@ -540,6 +544,19 @@ export default class Character {
 		this.circleShape = null;
 	}
 
+	showEnemyDamageTint() {
+		this.spriteGraphics.setTintFill(this.enemyDamageTintColor);
+		this.enemyDamageTimer = this.enemyDamageTimerLength;
+	}
+
+	showSelfDamageTint() {
+		this.spriteGraphics.setTintFill(this.selfDamageTintColor);
+		this.selfDamageTimer = this.selfDamageTimerLength;
+	}
+
+	hideDamageTint() {
+		this.spriteGraphics.clearTint();
+	}
 
 
 	update(dt) {
@@ -556,6 +573,20 @@ export default class Character {
 
 		this.drawDirectionGraphics();
 
+		if(this.enemyDamageTimer > 0) {
+			this.enemyDamageTimer -= dt;
+			if(this.enemyDamageTimer <= 0) {
+				this.hideDamageTint();
+			}
+		}
+
+		if(this.selfDamageTimer > 0) {
+			this.selfDamageTimer -= dt;
+			if(this.selfDamageTimer <= 0) {
+				this.hideDamageTint();
+			}
+		}
+		
 
 		//change state
 		// if(this.nextState)

@@ -13,9 +13,10 @@ class CharacterClassState {
 
 	enter(dt) {
 		// console.log("===== ENTERED " + this.characterClassResource.data.name + " STATE");
-		this.character.changeAllowMove(true);
-		this.character.changeAllowShoot(true);
-		this.character.changeAllowLook(true);
+		this.character.changeAllowMove(this.characterClassResource.data.canMove);
+		this.character.changeAllowShoot(this.characterClassResource.data.canShoot);
+		this.character.changeAllowLook(this.characterClassResource.data.canLook);
+		this.tempTimer = this.characterClassResource.data.timeLength >= 0 ? this.characterClassResource.data.timeLength : 1000;
 
 		//spawn a bullet too
 		var o = this.gs.gom.createGameObject("projectile");

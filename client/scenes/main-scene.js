@@ -126,7 +126,6 @@ export default class MainScene extends Phaser.Scene {
 		];
 		this.windowsEventMapping = [
 			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
-			{event: 'kill-character-click', func: this.killCharacterClick.bind(this)},
 			{event: "team-changed", func: this.teamChanged.bind(this)}
 		];
 
@@ -153,14 +152,6 @@ export default class MainScene extends Phaser.Scene {
 		this.debugY = $("#debug-y");
 		this.debugIsDown = $("#debug-is-down");
 		this.debugAngle = $("#debug-angle");
-
-		//always hide the kill character button and show create button
-		var killCharacterBtn = $("#kill-character");
-		
-		if(killCharacterBtn.length > 0)
-		{
-			killCharacterBtn.addClass("hide");
-		}
 
 		//created menus and small divs
 		this.teamMenu = new TeamMenu();
@@ -694,16 +685,6 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.update(dt);
 
 		this.frameNum++;
-	}
-
-	killCharacterClick() {
-		if(this.gc.myCharacter !== null)
-		{
-			this.gc.ep.insertClientToServerEvent({
-				"eventName": "fromClientKillCharacter"
-			});
-		}
-		$("#kill-character")[0].blur();
 	}
 
 	teamChanged(e) {

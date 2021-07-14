@@ -28,6 +28,16 @@ export default class CharacterDamageEvent {
 			dmgText.textGraphics = this.gc.mainScene.add.text((c.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio)-18, (c.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1)-18, "-" + e.damage, textStyle);
 
 			this.gc.mainScene.damageTexts.push(dmgText);
+
+			//show enemy damage tint if it was you that hit an enemy
+			if(e.srcUserId === this.gc.myUserServerId) {
+				c.showEnemyDamageTint();
+			}
+
+			//show self damage tint if it was you that took damage
+			if(c.ownerId === this.gc.myUserServerId) {
+				c.showSelfDamageTint();
+			}
 		}
 	}
 }

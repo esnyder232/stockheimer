@@ -13,7 +13,7 @@ class RoundPlaying extends RoundBaseState {
 		logger.log("info", 'Round playing.');
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 60000;
+		this.round.roundTimer = 90000;
 
 		//tell users that the rouns has started
 		this.round.em.emitEvent("round-started");

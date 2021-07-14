@@ -632,7 +632,8 @@ class Character {
 			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
 				"eventName": "characterDamage",
 				"id": this.id,
-				"damage": dmg
+				"damage": dmg,
+				"srcUserId": ownerIdHitBy
 			});
 		}
 

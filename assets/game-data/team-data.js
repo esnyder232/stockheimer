@@ -7,16 +7,18 @@ var TeamData = [
 		characterTextFillColor: "#ffffff",
 		killFeedTextColor: "#CCCCCC",
 		projectileStrokeColor: "#000000",
+		characterTintColor: "#ffffff",
 		slotNum: 0
 	},
 	{
 		name: "Red Team",
 		characterStrokeColor: "#ff0000",
-		characterFillColor: "#FF6262",
+		characterFillColor: "#FF0000",
 		characterTextStrokeColor: "#000000",
 		characterTextFillColor: "#ffffff",
 		killFeedTextColor: "#FF1A1A",
 		projectileStrokeColor: "#FF0000",
+		characterTintColor: "#ffdddd",
 		slotNum: 1
 	},
 	{
@@ -27,6 +29,7 @@ var TeamData = [
 		characterTextFillColor: "#ffffff",
 		killFeedTextColor: "#337DFF",
 		projectileStrokeColor: "#0000FF",
+		characterTintColor: "#ddddff",
 		slotNum: 2
 	},
 	// {
@@ -37,6 +40,7 @@ var TeamData = [
 	// 	characterTextFillColor: "#00ff00",
 	// 	killFeedTextColor: "#00ff00",
 	// 	projectileStrokeColor: "#00ff00",
+	// 	characterTintColor: "#ffffff",
 	// 	slotNum: 3
 	// },
 	// {
@@ -47,6 +51,7 @@ var TeamData = [
 	// 	characterTextFillColor: "#FFA500",
 	// 	killFeedTextColor: "#FFA500",
 	// 	projectileStrokeColor: "#FFA500",
+	// 	characterTintColor: "#ffffff",
 	// 	slotNum: 4
 	// },
 ];

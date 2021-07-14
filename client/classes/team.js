@@ -19,10 +19,12 @@ export default class Team {
 		this.characterTextFillColor = "#ffffff";
 		this.killFeedTextColor = "#ffffff";
 		this.projectileStrokeColor = "#000000";
+		this.characterTintColor = "#ffffff";
 
 		this.phaserCharacterFillColor = 0xffffff;
 		this.phaserCharacterStrokeColor = 0xffffff;
 		this.phaserProjectileStrokeColor = 0x000000;
+		this.phaserCharacterTintColor = 0xffffff;
 
 		
 		this.serverEventMapping = {
@@ -90,5 +92,17 @@ export default class Team {
 		}
 		
 		this.phaserProjectileStrokeColor = Number.parseInt(newColor, 16);
+	}
+
+
+	changeCharacterTintColor(newColor) {
+		this.characterTintColor = newColor;
+		
+		if(newColor[0] === "#")
+		{
+			newColor = newColor.slice(1, newColor.length);
+		}
+		
+		this.phaserCharacterTintColor = Number.parseInt(newColor, 16);
 	}
 }

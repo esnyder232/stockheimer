@@ -1,6 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
 
-
 class Team {
 	constructor() {
 		this.gs = null;
@@ -15,6 +14,7 @@ class Team {
 		this.characterTextFillColor = "#ffffff";
 		this.killFeedTextColor = "#ffffff";
 		this.projectileStrokeColor = "#000000";
+		this.characterTintColor = "#ffffff";
 		this.roundPoints = 0;
 	}
 
@@ -72,6 +72,7 @@ class Team {
 			"characterTextFillColor": this.characterTextFillColor,
 			"killFeedTextColor": this.killFeedTextColor,
 			"projectileStrokeColor": this.projectileStrokeColor,
+			"characterTintColor": this.characterTintColor,
 			"roundPoints": this.roundPoints
 		};
 	}

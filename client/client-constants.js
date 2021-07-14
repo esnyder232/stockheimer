@@ -4,9 +4,10 @@ var PhaserDrawLayers = {
 	glowLayer: 200,
 	textLayer: 300,
 	spriteLayer: 400,
-	projectileLayer: 500,
-	hitboxLayer: 600,
-	mouseOverLayer: 700,
+	hpBarLayer: 500,
+	projectileLayer: 600,
+	hitboxLayer: 700,
+	mouseOverLayer: 800,
 	myTextLayer: 10000
 };
 
