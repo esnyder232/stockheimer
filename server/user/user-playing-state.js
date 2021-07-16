@@ -2,6 +2,7 @@ const {UserBaseState} = require('./user-base-state.js');
 const {UserDisconnectingState} = require('./user-disconnecting-state.js');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 const logger = require('../../logger.js');
+const ServerConfig = require("../server-config.json");
 
 class UserPlayingState extends UserBaseState {
 	constructor(user) {
@@ -37,7 +38,7 @@ class UserPlayingState extends UserBaseState {
 		});
 
 		//if the name is "beepboop", create an ai for it
-		if(this.user.username.indexOf("beepboop") === 0) {
+		if(ServerConfig.allow_simulated_user_ai_agents && this.user.username.indexOf("beepboop") === 0) {
 			logger.log("info", "Detected a 'beepboop'. Applying ai controls to user '" + this.user.username + "'");
 			var aiAgent = this.user.gs.aim.createAIAgent();
 			aiAgent.aiAgentInit(this.user.gs, this.user.id);
