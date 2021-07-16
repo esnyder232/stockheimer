@@ -30,8 +30,10 @@ class WebsocketManager {
 
 	//this just marks the player for deletion
 	destroyWebsocket(wsh) {
-		wsh.deleteMe = true;
-		this.isDirty = true;
+		if(wsh !== null) {
+			wsh.deleteMe = true;
+			this.isDirty = true;
+		}
 	}
 
 	updateIndex() {

@@ -75,7 +75,7 @@ class GameServer {
 		this.castleObject = null;
 		this.enemyCap = 100;
 
-		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
+		this.minimumUsersPlaying = 0; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 
 		////////////////////////////////////////////////////////////////////////
 		//This decides what classes/map gets loaded.
@@ -352,7 +352,9 @@ class GameServer {
 		var wsh = this.wsm.getWebsocketByID(user.wsId);
 
 		//close the websocket
-		wsh.disconnectClient(1000, failedReason);
+		if(wsh !== null) {
+			wsh.disconnectClient(1000, failedReason);
+		}
 
 		//unsetup the users state
 		user.nextState = null;
@@ -361,9 +363,9 @@ class GameServer {
 		this.um.deactivateUserId(user.id);
 
 		//destroy the userAgent
-		var userAgent = this.gs.uam.getUserAgentByID(user.userAgentId);
+		var userAgent = this.uam.getUserAgentByID(user.userAgentId);
 		if(userAgent !== null) {
-			this.gs.uam.destroyUserAgent(userAgent.id);
+			this.uam.destroyUserAgent(userAgent.id);
 		}
 		
 		//destroy the websocket handler 
