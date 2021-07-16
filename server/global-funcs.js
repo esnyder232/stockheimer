@@ -346,6 +346,29 @@ class GlobalFuncs {
 		return propExists;
 	}
 
+	//returns a team that has the least amount of players on it. If there is a tie, it picks the one with the lowest id. 
+	//It returns the spectator team if there are no teams to join.
+	getRandomOpenTeam(gameServer) {
+		var finalTeam = null;
+		var activeUsersTeams = gameServer.um.getActiveUsersGroupedByTeams();
+
+		if(activeUsersTeams.length === 1) {
+			finalTeam = gameServer.tm.getTeamByID(activeUsersTeams[0].teamId);
+		}
+		else if (activeUsersTeams.length > 1) {
+			//sort by totalUsers asc, then teamId asc
+			var activeUserTeamsSorted = activeUsersTeams.sort((a, b) => {return a.totalUsers-b.totalUsers || a.teamId-b.teamId;});
+			for(var i = 0; i < activeUserTeamsSorted.length; i++) {
+				if(!activeUserTeamsSorted[i].isSpectatorTeam) {
+					finalTeam = gameServer.tm.getTeamByID(activeUserTeamsSorted[i].teamId);
+					break;
+				}
+			}
+		}
+
+		return finalTeam;
+	}
+
 	getRandomClass(gameServer) {
 		var randomClass = null;
 		var availableClasses = gameServer.rm.getResourceByType("character-class");

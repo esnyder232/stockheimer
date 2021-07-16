@@ -28,7 +28,10 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 		var bContinue = true;
 
 		//check if the user is playing
-		if(this.aiAgent.user.stateName !== "ai-playing-state") {
+		if(this.aiAgent.user.stateName === "ai-playing-state" || this.aiAgent.user.stateName === "user-playing-state") {
+			bContinue = true;
+		}
+		else {
 			bContinue = false;
 		}
 

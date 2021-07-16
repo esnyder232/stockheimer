@@ -3,7 +3,7 @@
 	"set_timeout_variance": 16,
 	"session_cookie_secret": "mySecret",
 	"https_enabled": false,
-	"max_allowed_bandwidth_bits": 1000000,
+	"max_allowed_bandwidth_bits": 7000000,
 	"max_packet_event_bytes_until_fragmentation": 30,
 	"fps": 30,
 	"max_players": 32,

@@ -415,7 +415,8 @@ class UserManager {
 				teamId: teams[i].id,
 				isSpectatorTeam: teams[i].isSpectatorTeam,
 				humanUserIds: [],
-				aiUserIds : []
+				aiUserIds : [],
+				totalUsers: 0
 			}
 			arr.push(obj);
 
@@ -425,9 +426,11 @@ class UserManager {
 		for(var i = 0; i < this.activeUserArray.length; i++) {
 			if(this.activeUserArray[i].userType === "user") {
 				tempTeamIndex[this.activeUserArray[i].teamId].humanUserIds.push(this.activeUserArray[i].id);
+				tempTeamIndex[this.activeUserArray[i].teamId].totalUsers++;
 			}
 			else if (this.activeUserArray[i].userType === "ai") {
 				tempTeamIndex[this.activeUserArray[i].teamId].aiUserIds.push(this.activeUserArray[i].id);
+				tempTeamIndex[this.activeUserArray[i].teamId].totalUsers++;
 			}
 		}
 

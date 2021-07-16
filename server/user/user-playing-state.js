@@ -36,6 +36,17 @@ class UserPlayingState extends UserBaseState {
 			filterMaskBits: CollisionMasks["user_sensor"]
 		});
 
+		//if the name is "beepboop", create an ai for it
+		if(this.user.username.indexOf("beepboop") === 0) {
+			logger.log("info", "Detected a 'beepboop'. Applying ai controls to user '" + this.user.username + "'");
+			var aiAgent = this.user.gs.aim.createAIAgent();
+			aiAgent.aiAgentInit(this.user.gs, this.user.id);
+			var team = this.globalfuncs.getRandomOpenTeam(this.user.gs);
+
+			this.user.updateTeamId(team.id);
+		}
+		
+
 		super.enter(dt);
 	}
 
