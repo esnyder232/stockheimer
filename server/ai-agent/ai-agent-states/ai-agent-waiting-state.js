@@ -3,6 +3,9 @@ const AIAgentBaseState = require('./ai-agent-base-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const {CollisionCategories, CollisionMasks} = require('../../data/collision-data.js');
 const logger = require("../../../logger.js");
+const ServerConfig = require("../../server-config.json");
+
+
 
 //this state just waits for the user and character to initialize and become activated.
 class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
@@ -80,9 +83,14 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			});
 			//////////////////////////////////////////
 
+			
+
 			this.aiAgent.character.em.batchRegisterForEvent(this.aiAgent.characterEventCallbackMapping);
 
 			//go to the next state
+			if(ServerConfig.allow_simulated_user_ai_agents && this.aiAgent.user.username.indexOf("beepboop") === 0) {
+				this.aiAgent.bForceIdle = true;
+			}
 			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
 		}
 

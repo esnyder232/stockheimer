@@ -9,7 +9,7 @@
 	"max_players": 32,
 	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",
 	"log_level": "debug",
-	"allow_simulated_user_ai_agents": false,
+	"allow_simulated_user_ai_agents": true,
 	
 	"map_relpath": "assets/tilemaps/team-map-square.json"
 }
