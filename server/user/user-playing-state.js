@@ -18,24 +18,34 @@ class UserPlayingState extends UserBaseState {
 		const pl = this.user.gs.pl;
 		const Vec2 = pl.Vec2;
 
-		//create a tracking sensor
-		var trackingSensor = pl.Circle(Vec2(0, 0), 100);
+		// //create a tracking sensor
+		// var trackingSensor = pl.Circle(Vec2(0, 0), 100);
 
-		this.user.plBody = this.user.gs.world.createBody({
-			position: Vec2(15, -15),
-			type: pl.Body.DYNAMIC,
-			fixedRotation: true,
-			userData: {type:"user", id: this.user.id, userAgentId: this.user.userAgentId}
-		});
+		// this.user.plBody = this.user.gs.world.createBody({
+		// 	position: Vec2(15, -15),
+		// 	type: pl.Body.DYNAMIC,
+		// 	fixedRotation: true,
+		// 	userData: {type:"user", id: this.user.id, userAgentId: this.user.userAgentId}
+		// });
 
-		this.user.plBody.createFixture({
-			shape: trackingSensor,
-			density: 0.0,
-			friction: 1.0,
-			isSensor: true,
-			filterCategoryBits: CollisionCategories["user_sensor"],
-			filterMaskBits: CollisionMasks["user_sensor"]
-		});
+		// this.user.plBody.createFixture({
+		// 	shape: trackingSensor,
+		// 	density: 0.0,
+		// 	friction: 1.0,
+		// 	isSensor: true,
+		// 	filterCategoryBits: CollisionCategories["user_sensor"],
+		// 	filterMaskBits: CollisionMasks["user_sensor"]
+		// });
+
+		//get all the existing gameobjects
+		var gobs = this.user.gs.gom.getActiveGameObjects();
+		var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
+		if(ua !== null) {
+			for(var i = 0; i < gobs.length; i++) {
+				ua.insertTrackedEntity("gameobject", gobs[i].id);
+			}
+		}
+		
 
 		//if the name is "beepboop", create an ai for it
 		if(ServerConfig.allow_simulated_user_ai_agents && this.user.username.indexOf("beepboop") === 0) {
@@ -65,7 +75,7 @@ class UserPlayingState extends UserBaseState {
 
 	exit(dt) {
 		//logger.log("info", this.stateName + ' exit');
-		if(this.plBody !== null)
+		if(this.user.plBody !== null)
 		{
 			this.user.gs.world.destroyBody(this.user.plBody);
 			this.user.plBody = null;

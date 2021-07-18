@@ -66,6 +66,13 @@ class Projectile {
 		//set the velocity
 		var vel = new Vec2(vx, vy);
 		this.plBody.setLinearVelocity(vel);
+
+
+		//tell the user agents about it
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0 ; i < userAgents.length; i++) {
+			userAgents[i].insertTrackedEntity("gameobject", this.id);
+		}
 	}
 
 	//called before the bullet is officially deactivated with the game object manager.
@@ -74,6 +81,12 @@ class Projectile {
 		{
 			this.gs.world.destroyBody(this.plBody);
 			this.plBody = null;
+		}
+
+				
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0 ; i < userAgents.length; i++) {
+			userAgents[i].deleteTrackedEntity("gameobject", this.id);
 		}
 	}
 
