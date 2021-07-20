@@ -11,6 +11,7 @@ class Projectile {
 		this.ownerType = "";
 		this.teamId = null;
 		this.type = "projectile";
+		this.globalfuncs = null;
 
 		this.plBody = null;
 		this.speed = 0.8;
@@ -25,6 +26,7 @@ class Projectile {
 	}
 
 	projectileInit(gameServer, xc, yc, angle, size, speed, lifespan) {
+		this.globalfuncs = new GlobalFuncs();
 		this.gs = gameServer;
 		this.xStarting = xc + ((0.5+(size))*Math.cos(angle));
 		this.yStarting = yc + ((0.5+(size))*Math.sin(angle)*-1);
@@ -68,11 +70,8 @@ class Projectile {
 		this.plBody.setLinearVelocity(vel);
 
 
-		//tell the user agents about it
-		var userAgents = this.gs.uam.getUserAgents();
-		for(var i = 0 ; i < userAgents.length; i++) {
-			userAgents[i].insertTrackedEntity("gameobject", this.id);
-		}
+		//tell the active user agents about it
+		this.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
 	}
 
 	//called before the bullet is officially deactivated with the game object manager.

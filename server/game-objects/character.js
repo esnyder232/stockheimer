@@ -187,11 +187,8 @@ class Character {
 			filterMaskBits: collisionMask
 		});
 
-		//tell the user agents about it
-		var userAgents = this.gs.uam.getUserAgents();
-		for(var i = 0 ; i < userAgents.length; i++) {
-			userAgents[i].insertTrackedEntity("gameobject", this.id);
-		}
+		//tell the active user agents about it
+		this.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
@@ -211,7 +208,7 @@ class Character {
 		this.em.emitEvent("character-deactivated");
 		/////////////////////
 
-		
+
 		var userAgents = this.gs.uam.getUserAgents();
 		for(var i = 0 ; i < userAgents.length; i++) {
 			userAgents[i].deleteTrackedEntity("gameobject", this.id);

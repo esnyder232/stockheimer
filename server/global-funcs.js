@@ -384,6 +384,17 @@ class GlobalFuncs {
 		
 		return randomClass;
 	}
+
+	//function that only inserts tracked entities into user agents with users who are "active" (meaning they are connected and are playing)
+	insertTrackedEntityToPlayingUsers(gameServer, entType, entId) {
+		var playingUsers = gameServer.um.getPlayingUsers();
+		for(var i = 0; i < playingUsers.length; i++) {
+			var ua  = gameServer.uam.getUserAgentByID(playingUsers[i].userAgentId);
+			if(ua !== null) {
+				ua.insertTrackedEntity(entType, entId);
+			}
+		}
+	}
 }
 
 
