@@ -1,5 +1,4 @@
 const planck = require('planck-js');
-const {GlobalFuncs} = require('../global-funcs.js');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 
 class Projectile {
@@ -11,7 +10,6 @@ class Projectile {
 		this.ownerType = "";
 		this.teamId = null;
 		this.type = "projectile";
-		this.globalfuncs = null;
 
 		this.plBody = null;
 		this.speed = 0.8;
@@ -26,7 +24,6 @@ class Projectile {
 	}
 
 	projectileInit(gameServer, xc, yc, angle, size, speed, lifespan) {
-		this.globalfuncs = new GlobalFuncs();
 		this.gs = gameServer;
 		this.xStarting = xc + ((0.5+(size))*Math.cos(angle));
 		this.yStarting = yc + ((0.5+(size))*Math.sin(angle)*-1);
@@ -71,7 +68,7 @@ class Projectile {
 
 
 		//tell the active user agents about it
-		this.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
+		this.gs.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
 	}
 
 	//called before the bullet is officially deactivated with the game object manager.
