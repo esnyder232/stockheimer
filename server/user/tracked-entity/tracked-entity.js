@@ -16,6 +16,7 @@ class TrackedEntity {
 		this.pa = 0.0;//priority accumulator
 		this.paWeight = 1; //original priority weight
 		this.isDirty = false;
+		this.bAlwaysRegisterUpdate = false;
 
 		this.stateName = "";
 		this.state = null;
@@ -62,17 +63,6 @@ class TrackedEntity {
 	insertOrderedEvent(event) {
 		this.orderedEventQueue.push(event);
 	}
-
-	//called when the tracked entity's state is created. 
-	trackedEntityCreated() {
-		//nothing for now
-	}
-
-	//called when the tracked entity's state is destroyed
-	trackedEntityDestroyed() {
-		//this.fragmentEventQueue.length = 0;
-	}
-
 
 	//called when this gets spliced off the user's trackedEntity array. Only ever called once.
 	trackedEntityDeinit() {

@@ -10,7 +10,6 @@ class TrackedEntityDestroyedState extends TrackedEntityBaseState {
 	enter(dt) {
 		super.enter(dt);
 		this.trackedEntity.stateName = this.stateName;
-		this.trackedEntity.trackedEntityDestroyed();
 	}
 
 	update(dt) {

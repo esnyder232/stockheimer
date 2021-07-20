@@ -5,7 +5,6 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 	constructor(trackedEntity) {
 		super(trackedEntity);
 		this.stateName = "tracked-entity-creating-state";
-		//this.isCreateEventFragmented = false;
 	}
 
 	enter(dt) {

@@ -27,21 +27,52 @@ class UserAgent {
 		this.fragmentIdCounter = 0;
 		this.fragmentationLimit = Math.round(serverConfig.max_packet_event_bytes_until_fragmentation);
 
-		this.trackedEntities = []; //entities to keep track of for this particular user. Events will be sent to the client for creation/destruction/updates/etc.
-		this.trackedEntityTypeIdIndex = {
-			"user": {},
-			"gameobject": {},
-			"round": {},
-			"team": {}
-		}; //index for the trackedEntities array
-		this.trackedEntityTransactions = [];
-
 		this.plBody = null; //used for tracking when objects are near the user
 		this.userKillCount = 0;
 
 		this.rtt = 0; //ms
 		this.rttCalcTimer = 0; //ms
-		this.rttCalcThreshold = 1000; //ms
+		this.rttCalcThreshold = 5000; //ms
+
+		//entities to keep track of for this particular user. Events will be sent to the client for creation/destruction/updates/etc.
+		this.trackedEntities = []; 
+
+		//index for the trackedEntities array
+		this.trackedEntityTypeIdIndex = {
+			"user": {},
+			"gameobject": {},
+			"round": {},
+			"team": {}
+		}; 
+
+		//transaction for the trackedEntity entries themselves.
+		this.trackedEntityTransactions = [];
+
+		/*
+		--Optimization--
+		The trackedEntityUpdateList is for optimization. It is a list of trackedEntities, and it serves as the list of update() calls to make on those entities.
+		Before this optimization, the code used to call update() on EVERY tracked entity no matter what.
+		After this optimization, the code only calls the update() on the tracked entities within this list.
+		The motivation behind this optimization is that when the game reaches a large amount of gameobjects, the code was calling update() on every tracked entity that was tracking those gameobjects.
+		This was reflected in the profiling on prod. The user-agent.update() was getting large based on the number of game objects it was keeping track of.
+		
+		The purpose of this optimization is to ONLY call a tracked entity's update() when they actually need it. 
+		Tracked entities are registered for an update when an event occurs (gameobjects created/deleted, teampoints changed, etc).
+		Tracked entities are also registered for an update if they are USUALLY changing through the game. Example:, characters.
+		*/
+		//the list of tracked entities to call update()
+		this.trackedEntityUpdateList = []; 
+
+		//an index to find the tracked entity entries within trackedEntityUpdateList
+		this.trackedEntityUpdateListIndex = {
+			"user": {},
+			"gameobject": {},
+			"round": {},
+			"team": {}
+		}; 
+
+		//a list of transactions to delete entries from trackedEntityUpdateList
+		this.trackedEntityUpdateListDeleteTransactions = [];
 	}
 
 	userAgentInit(gameServer, userId, wsId) {
@@ -72,6 +103,15 @@ class UserAgent {
 			"round": {},
 			"team": {}
 		}
+
+		this.trackedEntityUpdateList.length = 0;
+		this.trackedEntityUpdateListIndex = {
+			"user": {},
+			"gameobject": {},
+			"round": {},
+			"team": {}
+		}; 
+		this.trackedEntityUpdateListDeleteTransactions.length = 0;
 	}
 
 	//inserts the event into the serverToclient array so it can be processed later in the update loop
@@ -95,31 +135,24 @@ class UserAgent {
 			this.updateTrackedEntityIndex(type, id, e, "create");
 
 			//for now, just set priority weights here
-			if(e.entType == "gameobject")
-			{
-				if(e.ent.type == "character")
-				{
+			if(e.entType == "gameobject") {
+				if(e.ent.type == "character") {
 					//if the character belongs to this user, give it a high priority
-					if(e.ent.ownerType === "user" && e.ent.ownerId == this.userId)
-					{
+					if(e.ent.ownerType === "user" && e.ent.ownerId == this.userId) {
 						e.paWeight = 1000;
 					}
-					else
-					{
+					else {
 						e.paWeight = 10;
 					}
 				}
-				else if(e.ent.type == "projectile")
-				{
+				else if(e.ent.type == "projectile") {
 					e.paWeight = 1;
 				}
-				else if(e.ent.type == "castle")
-				{
+				else if(e.ent.type == "castle") {
 					e.paWeight = 1;
 				}
 			}
-			else
-			{
+			else {
 				e.paWeight = 1;
 			}
 
@@ -127,6 +160,9 @@ class UserAgent {
 				"eventName": "createTrackedEntity",
 			});
 		}
+
+		//register for it to be updated
+		this.registerTrackedEntityUpdateList(type, id);
 	}
 
 	fromClientFragmentEvent(e) {
@@ -200,6 +236,10 @@ class UserAgent {
 			e.insertEvent({
 				"eventName": "deleteTrackedEntity",
 			});
+
+			
+			//register the tracked entity for an update call
+			this.registerTrackedEntityUpdateList(type, id);
 		}
 	}
 
@@ -212,18 +252,19 @@ class UserAgent {
 			"id": id
 		});
 
+		
+		//unregister the tracked entity for an update call
+		this.unregisterTrackedEntityUpdateList(type, id);
+
 		//logger.log("info", 'User tracked Entity marked for deletion. User: ' + this.username + ". Entity Type: " + type + ". Entity Id: " + id);
 	}
 
 	updateTrackedEntityIndex(type, id, obj, transaction) {
-		if(transaction == "create")
-		{
+		if(transaction == "create") {
 			this.trackedEntityTypeIdIndex[type][id] = obj;
 		}
-		else if(transaction == "delete")
-		{
-			if(this.trackedEntityTypeIdIndex[type][id] !== undefined)
-			{
+		else if(transaction == "delete") {
+			if(this.trackedEntityTypeIdIndex[type][id] !== undefined) {
 				delete this.trackedEntityTypeIdIndex[type][id];
 			}
 		}
@@ -232,30 +273,98 @@ class UserAgent {
 	insertTrackedEntityEvent(entType, entId, event) {
 		var e = this.findTrackedEntity(entType, entId);
 
-		if(e !== null)
-		{
+		if(e !== null) {
 			e.insertEvent(event);
+
+			//register the tracked entity for an update call
+			this.registerTrackedEntityUpdateList(entType, entId);
 		}
 	}
 
 	insertTrackedEntityOrderedEvent(entType, entId, event) {
 		var e = this.findTrackedEntity(entType, entId);
 
-		if(e !== null)
-		{
+		if(e !== null) {
 			e.insertOrderedEvent(event);
+
+			//register the tracked entity for an update call
+			this.registerTrackedEntityUpdateList(entType, entId);
 		}
 	}
 
 
 	findTrackedEntity(type, id) {
-		if(this.trackedEntityTypeIdIndex[type][id])
-		{
+		if(this.trackedEntityTypeIdIndex[type][id]) {
 			return this.trackedEntityTypeIdIndex[type][id];
 		}
-		else
-		{
+		else {
 			return null;
+		}
+	}
+
+	registerTrackedEntityUpdateList(entType, entId) {
+		var ent = this.findTrackedEntity(entType, entId);
+
+		//make sure the entity actually exists first (not sure why it wouldn't at this point, but just to be safe)
+		if(ent !== null) {
+			var entry = this.findTrackedEntityUpdateList(entType, entId);
+
+			if(entry === null) {
+				entry = {
+					entType: entType,
+					entId: entId,
+					ent: ent,
+					deleteMe: false	
+				}
+	
+				this.trackedEntityUpdateList.push(entry)
+	
+				this.updateTrackedEntityUpdateListIndex(entType, entId, entry, "create");
+			}
+
+			// console.log("user-agent (" + this.user.username + ") - now ADDING tracked entity to UPDATE LIST: " + entType + ", id: " + entId);
+
+			//also reset the deleteMe flag (sometimes tracked entities are unregistered, then reregistered in the same frame)
+			entry.deleteMe = false;
+		}
+	}
+
+	findTrackedEntityUpdateList(entType, entId) {
+		if(this.trackedEntityUpdateListIndex[entType][entId]) {
+			return this.trackedEntityUpdateListIndex[entType][entId];
+		}
+		else {
+			return null;
+		}
+	}
+
+	unregisterTrackedEntityUpdateList(entType, entId) {
+		var ent = this.findTrackedEntity(entType, entId);
+
+		if(ent !== null) {
+			var entry = this.findTrackedEntityUpdateList(entType, entId);
+			if(entry !== null) {
+				entry.deleteMe = true;
+
+				// console.log("user-agent (" + this.user.username + ") - now SUBTRACTING tracked entity from UPDATE LIST: " + entType + ", id: " + entId);
+
+				this.trackedEntityUpdateListDeleteTransactions.push({
+					entType: entType,
+					entId: entId
+				});
+			}
+		}
+	}
+
+	updateTrackedEntityUpdateListIndex(entType, entId, obj, transaction) {
+		if(transaction == "create") {
+			this.trackedEntityUpdateListIndex[entType][entId] = obj;
+			this.trackedEntityUpdateListIndex
+		}
+		else if(transaction == "delete") {
+			if(this.trackedEntityUpdateListIndex[entType][entId] !== undefined) {
+				delete this.trackedEntityUpdateListIndex[entType][entId];
+			}
 		}
 	}
 
@@ -423,46 +532,55 @@ class UserAgent {
 			}
 		}
 
+
+		/////////////////////////////////////////////
+		//Future self: optimize starting here
+
+		//NEW
+		//run through an update for the entities from the tracked entity update list
 		//add to the priority accumulator for tracked entities
-		for(var i = 0; i < this.trackedEntities.length; i++)
-		{
-			if(this.trackedEntities[i].isDirty)
-			{
-				this.trackedEntities[i].pa += dt * this.trackedEntities[i].paWeight;
-			}
+		for(var i = 0; i < this.trackedEntityUpdateList.length; i++) {
+			this.trackedEntityUpdateList[i].ent.pa += dt * this.trackedEntityUpdateList[i].ent.paWeight;
 		}
 
 		//sort tracked entities
-		this.trackedEntities.sort((a, b) => {return b.pa-a.pa});
+		this.trackedEntityUpdateList.sort((a, b) => {return b.ent.pa-a.ent.pa});
 
 		//third, update the tracked entities
-		for(var i = 0; i < this.trackedEntities.length; i++)
-		{
-			this.trackedEntities[i].update(dt);
+		for(var i = 0; i < this.trackedEntityUpdateList.length; i++) {
+			// console.log("user-agent (" + this.user.username + ") - now updating tracked entity: " + this.trackedEntityUpdateList[i].entType + ", id: " + this.trackedEntityUpdateList[i].entId);
+			this.trackedEntityUpdateList[i].ent.update(dt);
 		}
 
-		//fourth, create any update events for the tracked entities
-		for(var i = 0; i < this.trackedEntities.length; i++)
-		{
-			if(this.trackedEntities[i].isDirty)
-			{
-				this.trackedEntities[i].createUpdateEvent(dt);
+		//if there are any tracked entities in the update list that need to be unregistered, do it now
+		while(this.trackedEntityUpdateListDeleteTransactions.length > 0) {
+			var transaction = this.trackedEntityUpdateListDeleteTransactions.shift();
+			var entry = this.findTrackedEntityUpdateList(transaction.entType, transaction.entId);
+			if(entry !== null && entry.deleteMe) {
+				var entryIndex = this.trackedEntityUpdateList.findIndex((x) => {return x.entType === entry.entType && x.entId === entry.entId;});
+				if(entryIndex >= 0) {
+					// console.log("user-agent (" + this.user.username + ") - now splicing tracked entity from UPDATE list: " + entry.entType + ", id: " + entry.entId);
+
+					//update the update list's index
+					this.updateTrackedEntityUpdateListIndex(entry.entType, entry.entId, entry.ent, "delete");
+
+					//finally, splice off the entry from the update list
+					this.trackedEntityUpdateList.splice(entryIndex, 1);
+				}
 			}
 		}
 
 		//if there was any tracked entities that need to be deleted, delete them now
-		if(this.trackedEntityTransactions.length > 0)
-		{
-			for(var i = 0; i < this.trackedEntityTransactions.length; i++)
-			{
-				if(this.trackedEntityTransactions[i].transaction === "permDeleteTrackedEntity")
-				{
+		if(this.trackedEntityTransactions.length > 0) {
+			for(var i = 0; i < this.trackedEntityTransactions.length; i++) {
+				if(this.trackedEntityTransactions[i].transaction === "permDeleteTrackedEntity") {
 					//delete the tracked entity and update index
 					var index = this.trackedEntities.findIndex((x) => {return x.entType === this.trackedEntityTransactions[i].type && x.entId === this.trackedEntityTransactions[i].id;});
 
-					if(index >= 0)
-					{
+					if(index >= 0) {
 						//logger.log("info", 'Splicing off tracked entity. User: ' + this.username + ". Entity type: " + this.trackedEntities[index].entType + ". Entity Id: " + this.trackedEntities[index].entId);
+
+						// console.log("user-agent (" + this.user.username + ") - now splicing tracked entity PERIOD: " + this.trackedEntities[index].entType + ", id: " + this.trackedEntities[index].entId);
 						this.trackedEntities[index].trackedEntityDeinit();
 						this.updateTrackedEntityIndex(this.trackedEntities[index].entType, this.trackedEntities[index].entId, null, "delete");
 						this.trackedEntities.splice(index, 1);
@@ -472,6 +590,71 @@ class UserAgent {
 			
 			this.trackedEntityTransactions.length = 0;
 		}
+
+
+
+
+
+
+
+
+
+
+		// OLD 
+		// //add to the priority accumulator for tracked entities
+		// for(var i = 0; i < this.trackedEntities.length; i++)
+		// {
+		// 	if(this.trackedEntities[i].isDirty)
+		// 	{
+		// 		this.trackedEntities[i].pa += dt * this.trackedEntities[i].paWeight;
+		// 	}
+		// }
+
+		// //sort tracked entities
+		// this.trackedEntities.sort((a, b) => {return b.pa-a.pa});
+
+		// //third, update the tracked entities
+		// for(var i = 0; i < this.trackedEntities.length; i++)
+		// {
+		// 	this.trackedEntities[i].update(dt);
+		// }
+
+		// //fourth, create any update events for the tracked entities
+		// for(var i = 0; i < this.trackedEntities.length; i++)
+		// {
+		// 	if(this.trackedEntities[i].isDirty)
+		// 	{
+		// 		this.trackedEntities[i].createUpdateEvent(dt);
+		// 	}
+		// }
+
+		// //if there was any tracked entities that need to be deleted, delete them now
+		// if(this.trackedEntityTransactions.length > 0)
+		// {
+		// 	for(var i = 0; i < this.trackedEntityTransactions.length; i++)
+		// 	{
+		// 		if(this.trackedEntityTransactions[i].transaction === "permDeleteTrackedEntity")
+		// 		{
+		// 			//delete the tracked entity and update index
+		// 			var index = this.trackedEntities.findIndex((x) => {return x.entType === this.trackedEntityTransactions[i].type && x.entId === this.trackedEntityTransactions[i].id;});
+
+		// 			if(index >= 0)
+		// 			{
+		// 				//logger.log("info", 'Splicing off tracked entity. User: ' + this.username + ". Entity type: " + this.trackedEntities[index].entType + ". Entity Id: " + this.trackedEntities[index].entId);
+		// 				this.trackedEntities[index].trackedEntityDeinit();
+		// 				this.updateTrackedEntityIndex(this.trackedEntities[index].entType, this.trackedEntities[index].entId, null, "delete");
+		// 				this.trackedEntities.splice(index, 1);
+		// 			}
+		// 		}
+		// 	}
+			
+		// 	this.trackedEntityTransactions.length = 0;
+		// }
+
+		
+
+		//
+		/////////////////////////////////////////////
 	}
 
 	insertFragmentEvent(event, info, cbFinalFragmentAck, cbFinalFragmentSend, cbFinalFragmentMiscData) {

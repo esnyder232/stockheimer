@@ -10,6 +10,9 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 	enter(dt) {
 		super.enter(dt);
 		this.trackedEntity.stateName = this.stateName;
+
+		//register for updates until the tracked entity is officially destroyed
+		this.trackedEntity.ua.registerTrackedEntityUpdateList(this.trackedEntity.entType, this.trackedEntity.entId);
 	}
 
 	update(dt) {
