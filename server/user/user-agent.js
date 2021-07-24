@@ -357,11 +357,10 @@ class UserAgent {
 	}
 
 	updateTrackedEntityUpdateListIndex(entType, entId, obj, transaction) {
-		if(transaction == "create") {
+		if(transaction === "create") {
 			this.trackedEntityUpdateListIndex[entType][entId] = obj;
-			this.trackedEntityUpdateListIndex
 		}
-		else if(transaction == "delete") {
+		else if(transaction === "delete") {
 			if(this.trackedEntityUpdateListIndex[entType][entId] !== undefined) {
 				delete this.trackedEntityUpdateListIndex[entType][entId];
 			}
