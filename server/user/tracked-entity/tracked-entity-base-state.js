@@ -1,9 +1,6 @@
-const {GlobalFuncs} = require('../../global-funcs.js');
-
 class TrackedEntityBaseState {
 	constructor(trackedEntity) {
 		this.trackedEntity = trackedEntity;
-		this.globalfuncs = new GlobalFuncs();
 	}
 
 	enter(dt) {}

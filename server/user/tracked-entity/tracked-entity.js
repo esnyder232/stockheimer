@@ -1,4 +1,3 @@
-const {GlobalFuncs} = require('../../global-funcs.js');
 const {TrackedEntityDestroyedState} = require("./tracked-entity-destroyed-state.js");
 
 class TrackedEntity {

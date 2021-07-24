@@ -1,4 +1,3 @@
-const {GlobalFuncs} = require('../global-funcs.js');
 const EventSchema = require('../../shared_files/event-schema.json');
 const serverConfig = require('../server-config.json');
 const {performance} = require('perf_hooks');
@@ -776,67 +775,99 @@ class WebsocketHandler {
 				break;
 			}
 
-			if(this.eventQueues[i].length > 0)
-			{
-				//for each event, envode it into the packet
-				for(var j = 0; j < this.eventQueues[i].length; j++)
+			//for each event, encode it into the packet
+			while(this.eventQueues[i].length > 0) {
+				var e = this.eventQueues[i].shift();
+	
+				//check the length of event to make sure it fits
+				var bytesRequired = this.getEventSize(e);
+
+				if(bytesRequired <= this.currentBytes - n)
 				{
-					var e = this.eventQueues[i][j];
-		
-					//check the length of event to make sure it fits
-					var bytesRequired = this.getEventSize(e);
+					//encode the event
+					var bytesWritten = this.encodeEventInBuffer(e, view, n);
 
-					if(bytesRequired <= this.currentBytes - n)
+					if(bytesWritten > 0)
 					{
-						//encode the event
-						var bytesWritten = this.encodeEventInBuffer(e, view, n);
-
-						if(bytesWritten > 0)
-						{
-							n += bytesWritten;
-							
-							//increase event count
-							m++;
-						}
-						else
-						{
-							logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
-						}
-
-						//mark the event for deletion (used later when double checking that all events made it through)
-						e.isSent = true;
-						this.isEventQueuesDirty = true;
+						n += bytesWritten;
+						
+						//increase event count
+						m++;
 					}
-					//the packet is full
 					else
 					{
-						bcontinue = false;
+						logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
 					}
-				}
-			}
-		}
 
-		//delete events that were processed, and log a warning when they aren't (shouldn't happen, but you never know)
-		for(var i = 0; i < this.eventQueues.length; i++)
-		{
-			if(this.eventQueues[i].length > 0)
-			{
-				for(var j = this.eventQueues[i].length - 1; j >= 0; j--)
+					//mark the event for deletion (used later when double checking that all events made it through)
+					e.isSent = true;
+					this.isEventQueuesDirty = true;
+				}
+				//the packet is full
+				else
 				{
-					//logger.log("info", 'CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
-					//doublecheck - log the events that were not sent
-					if(!this.eventQueues[i][j].isSent)
-					{
-						logger.log("info", '!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
-						logger.log("info", ' - User: ' + user.username);
-						logger.log("info", ' - event: ' + JSON.stringify(this.eventQueues[i][j]));
-					}
-
-					//logger.log("info", 'Splicing');
-					this.eventQueues[i].splice(j, 1);
+					bcontinue = false;
 				}
 			}
+
+			//OLD
+			// for(var j = 0; j < this.eventQueues[i].length; j++)
+			// {
+			// 	var e = this.eventQueues[i][j];
+	
+			// 	//check the length of event to make sure it fits
+			// 	var bytesRequired = this.getEventSize(e);
+
+			// 	if(bytesRequired <= this.currentBytes - n)
+			// 	{
+			// 		//encode the event
+			// 		var bytesWritten = this.encodeEventInBuffer(e, view, n);
+
+			// 		if(bytesWritten > 0)
+			// 		{
+			// 			n += bytesWritten;
+						
+			// 			//increase event count
+			// 			m++;
+			// 		}
+			// 		else
+			// 		{
+			// 			logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
+			// 		}
+
+			// 		//mark the event for deletion (used later when double checking that all events made it through)
+			// 		e.isSent = true;
+			// 		this.isEventQueuesDirty = true;
+			// 	}
+			// 	//the packet is full
+			// 	else
+			// 	{
+			// 		bcontinue = false;
+			// 	}
+			// }			
 		}
+
+		// //delete events that were processed, and log a warning when they aren't (shouldn't happen, but you never know)
+		// for(var i = 0; i < this.eventQueues.length; i++)
+		// {
+		// 	if(this.eventQueues[i].length > 0)
+		// 	{
+		// 		for(var j = this.eventQueues[i].length - 1; j >= 0; j--)
+		// 		{
+		// 			//logger.log("info", 'CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
+		// 			//doublecheck - log the events that were not sent
+		// 			if(!this.eventQueues[i][j].isSent)
+		// 			{
+		// 				logger.log("info", '!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
+		// 				logger.log("info", ' - User: ' + user.username);
+		// 				logger.log("info", ' - event: ' + JSON.stringify(this.eventQueues[i][j]));
+		// 			}
+
+		// 			//logger.log("info", 'Splicing');
+		// 			this.eventQueues[i].splice(j, 1);
+		// 		}
+		// 	}
+		// }
 
 		//check to see if a callback was associated with it (mainly for fragments)
 		if(this.sentPacketHistory[this.localSequence].sendCallbacks.length > 0)
