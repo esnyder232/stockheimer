@@ -84,20 +84,24 @@ class GameServerStarting extends GameServerBaseState {
 		//load sprite resources from death sprite
 		if(!bError) {
 			//from animation sets
-			if(this.globalfuncs.nestedValueCheck(resource, "data.deathSpriteKey")) {
-				this.gs.rm.loadResource(resource.data.deathSpriteKey, "sprite");
+			var sprite = this.globalfuncs.getValueDefault(resource?.data?.deathSpriteKey, null);
+			if(sprite !== null) {
+				this.gs.rm.loadResource(sprite, "sprite");
 			}
 		}
 
 
-		//load character class state resources		
+		//load character class state resources
 		if(!bError) {
-			if(this.globalfuncs.nestedValueCheck(resource, "data.fireStateKey")) {
-				this.gs.rm.loadResource(resource.data.fireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
+			var fireStateKey = this.globalfuncs.getValueDefault(resource?.data?.fireStateKey, null);
+			var altFireStateKey = this.globalfuncs.getValueDefault(resource?.data?.altFireStateKey, null);
+
+			if(fireStateKey !== null) {
+				this.gs.rm.loadResource(fireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
 			}
 
-			if(this.globalfuncs.nestedValueCheck(resource, "data.altFireStateKey")) {
-				this.gs.rm.loadResource(resource.data.altFireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
+			if(altFireStateKey !== null) {
+				this.gs.rm.loadResource(altFireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
 			}
 		}
 		
@@ -167,8 +171,10 @@ class GameServerStarting extends GameServerBaseState {
 
 		//create sprite resources
 		if(!bError) {
-			if(this.globalfuncs.nestedValueCheck(resource, "data.spriteKey")) {
-				this.gs.rm.loadResource(resource.data.spriteKey, "sprite");
+			var spriteKey = this.globalfuncs.getValueDefault(resource?.data?.renderData?.spriteKey, null);
+
+			if(spriteKey !== null) {
+				this.gs.rm.loadResource(spriteKey, "sprite");
 			}
 		}
 
@@ -195,12 +201,10 @@ class GameServerStarting extends GameServerBaseState {
 
 		//load projectile resources
 		if(!bError) {
-			if(this.globalfuncs.nestedValueCheck(resource, "data.projectileKey")) {
-				this.gs.rm.loadResource(resource.data.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
-			}
+			var projectileKey = this.globalfuncs.getValueDefault(resource?.data?.projectileKey, null);
 
-			if(this.globalfuncs.nestedValueCheck(resource, "data.projectileKey")) {
-				this.gs.rm.loadResource(resource.data.projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			if(projectileKey !== null) {
+				this.gs.rm.loadResource(projectileKey, "projectile", this.cbProjectileComplete.bind(this));
 			}
 		}
 

@@ -17,5 +17,6 @@ export default class AddProjectileEvent {
 		p.size = e.size;
 		p.speed = e.speed;
 		p.teamId = e.teamId;
+		p.projectileResourceId = e.projectileResourceId === 0 ? null : e.projectileResourceId;
 	}
 }

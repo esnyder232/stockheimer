@@ -234,6 +234,19 @@ export default class GlobalFuncs {
 		return propExists;
 	}
 
+	getValueDefault(value, defaultValue) {
+		var retVal = null;
+		if(value === undefined || value === null) {
+			retVal = (defaultValue === undefined) ? null : defaultValue;
+		}
+		else {
+			retVal = value;
+		}
+
+		return retVal;
+	}
+	
+	
 	clamp(num, min, max) {
 		return Math.min(Math.max(num, min), max);
 	};

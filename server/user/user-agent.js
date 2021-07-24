@@ -532,11 +532,6 @@ class UserAgent {
 			}
 		}
 
-
-		/////////////////////////////////////////////
-		//Future self: optimize starting here
-
-		//NEW
 		//run through an update for the entities from the tracked entity update list
 		//add to the priority accumulator for tracked entities
 		for(var i = 0; i < this.trackedEntityUpdateList.length; i++) {

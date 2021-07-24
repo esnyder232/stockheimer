@@ -4,7 +4,7 @@
 	"speed": 9,
 	"planckData": {
 		"plShape": "circle",
-		"radius": 0.375
+		"plRadius": 0.375
 	},
 	"phaserData": {
 		"originX": 0.5,
@@ -22,6 +22,6 @@
 		"cast": "data/animation-sets/slime-fire-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
-	"fireStateKey": "data/character-class-states/slime-attack.json",
-	"altFireStateKey": "data/character-class-states/slime-fire.json"
+	"fireStateKey": "data/character-class-states/slime-fire.json",
+	"altFireStateKey": "data/character-class-states/slime-big-fire.json"
 }

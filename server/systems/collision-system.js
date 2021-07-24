@@ -170,7 +170,7 @@ class CollisionSystem {
 			}
 
 			//destroy the projectile
-			p.lifespan = 0; //cheap and easy
+			p.timeLength = 0; //cheap and easy
 		}
 	}
 
@@ -219,61 +219,17 @@ class CollisionSystem {
 		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
 		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
 
-		if(c !== null && p !== null)
-		{
+		if(c !== null && p !== null) {
 			var processDamage = true;
 
-			//let ai shoot through eachother
-			if(p.ownerType === c.ownerType && p.ownerType === "ai" && c.ownerType === "ai")
-			{
-				processDamage = false;
-			}
-
 			//friendly fire check
-			if(p.teamId === c.teamId)
-			{
+			if(p.ownerId === c.ownerId || p.teamId === c.teamId) {
 				processDamage = false;
 			}
 
-			if(processDamage)
-			{
-				//add a push back to the character. For now, just push the character position backward from the center of the bullet
-				var pushBackVector = {xDir: 0, yDir: 0, mag: 25};
-				
-				//simple and stupid
-				if(p.bulletType == "bullet")
-				{
-					c.isHit(2, p.ownerId, p.ownerType);
-					const Vec2 = this.pl.Vec2;
-					var pVel = p.plBody.getLinearVelocity();
-					var temp = Vec2(pVel.x, pVel.y);
-					temp.normalize();
-					pushBackVector.xDir = temp.x;
-					pushBackVector.yDir = temp.y;
-					pushBackVector.mag = 25 / c.size;
-
-					//destroy the projectile too
-					p.lifespan = 0; //cheap and easy
-				}
-				else if(p.bulletType == "bigBullet")
-				{
-					c.isHit(8, p.ownerId, p.ownerType);
-					const Vec2 = this.pl.Vec2;
-					var cPos = c.plBody.getPosition();
-					var pPos = p.plBody.getPosition();
-
-					var temp = Vec2(cPos.x - pPos.x, cPos.y - pPos.y);
-					temp.normalize();
-					pushBackVector.xDir = temp.x;
-					pushBackVector.yDir = temp.y;
-					pushBackVector.mag = 40 / c.size;
-
-					if(c.size >= 4) {
-						p.lifespan = 0;
-					}
-				}
-
-				c.forceImpulses.push(pushBackVector);
+			if(processDamage) {
+				p.collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA);
+				c.collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA);
 			}
 		}
 	}
@@ -332,12 +288,12 @@ class CollisionSystem {
 			//destroy if the bullet is small
 			if(p1.bulletType == "bullet")
 			{
-				p1.lifespan = 0; //cheap and easy
+				p1.timeLength = 0; //cheap and easy
 			}
 
 			if(p2.bulletType == "bullet")
 			{
-				p2.lifespan = 0;
+				p2.timeLength = 0;
 			}
 		}
 	}
@@ -356,7 +312,7 @@ class CollisionSystem {
 		if(p !== null)
 		{
 			//destroy the projectile
-			p.lifespan = 0; //cheap and easy
+			p.timeLength = 0; //cheap and easy
 		}
 
 	}

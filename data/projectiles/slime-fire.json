@@ -1,25 +1,35 @@
 {
 	"name": "Slime Fire",
+	"size": 0.1,
 	"planckData": {
 		"plShape": "circle",
-		"radius": 4
+		"plRadius": 1
 	},
 	"phaserData": {
-		"originX": 0.7,
+		"originX": 0.70,
 		"originY": 0.5,
-		"pngUnitsToPhaserUnitsRatio": 0.07
+		"scaleX": 0.42,
+		"scaleY": 0.42
 	},
-	"size": 2,
-	"speed": 10,
-	"acc": 0,
-	"spriteKey": "data/sprites/fireball.json",
-	"frameTag": "",
-	"lifeTimeLength": 2500,
-	"collisionFilters": {
+	"physicsData": {
+		"speed": 8,
+		"mass": 100
+	},
+	"renderData": {
+		"spriteKey": "data/sprites/fireball.json",
+		"frameTag": ""
+	},
+	"collisionData": {
 		"sameTeamCharacters": false,
-		"sameTeamProjectiles": false,
 		"otherTeamCharacters": true,
-		"otherTeamProjectiles": true,
 		"walls": true
-	}
+	},
+	"projectileData": {
+		"spawnLocationType": "mouse-direction",
+		"spawnOffsetLength": 0,
+		"damage": 2,
+		"timeLength": 1000,
+		"pushbackVecMagnitude": 25,
+		"destroyOnContact": true
+	} 
 }

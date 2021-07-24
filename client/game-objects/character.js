@@ -132,9 +132,24 @@ export default class Character {
 		//get resource data
 		this.characterClassResource = this.gc.rm.getResourceByServerId(this.characterClassResourceId);
 
+
+		// TODO: update webpack to version 5 so I can use the optional chaining
+		// this.planckRadius = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.planckData?.plRadius, this.planckRadius);
+		// this.originX = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.originX, this.originX);
+		// this.originY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.originY, this.originY);
+		// this.size = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.size, this.size);
+		// this.scaleX = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleX, this.scaleX);
+		// this.scaleY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleY, this.scaleY);
+		// this.idleMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.idleMsPerFrame, this.idleMsPerFrame);
+		// this.moveMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.moveMsPerFrame, this.moveMsPerFrame);
+		// this.spriteKey = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.spriteKey, this.spriteKey);
+		// this.frameTag = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.frameTagDown, this.frameTag);
+
+
+
 		//overwrite the defaults with data from the resource
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.planckData.radius")) {
-			this.planckRadius = this.characterClassResource.data.planckData.radius;
+		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.planckData.plRadius")) {
+			this.planckRadius = this.characterClassResource.data.planckData.plRadius;
 		}
 
 		//testing sprite graphics

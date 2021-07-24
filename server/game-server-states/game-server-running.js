@@ -70,7 +70,7 @@ class GameServerRunning extends GameServerBaseState {
 		}
 
 		//physics update
-		this.gs.world.step(this.gs.physicsTimeStep, this.gs.velocityIterations, this.gs.positionIterations);
+		this.gs.world.step(dt/1000, this.gs.velocityIterations, this.gs.positionIterations);
 
 
 		//update teams

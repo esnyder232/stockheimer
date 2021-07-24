@@ -2,7 +2,7 @@
 	"name": "Slime Mellee",
 	"planckData": {
 		"plShape": "circle",
-		"radius": 4
+		"plRadius": 4
 	},
 	"phaserData": {
 		"originX": 0.7,
@@ -18,9 +18,7 @@
 	"cooldownTimeLength": 250,
 	"collisionFilters": {
 		"sameTeamCharacters": false,
-		"sameTeamProjectiles": false,
 		"otherTeamCharacters": true,
-		"otherTeamProjectiles": true,
 		"walls": true
 	}
 }

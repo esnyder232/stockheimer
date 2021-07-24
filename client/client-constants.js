@@ -7,8 +7,10 @@ var PhaserDrawLayers = {
 	hpBarLayer: 500,
 	projectileLayer: 600,
 	hitboxLayer: 700,
-	mouseOverLayer: 800,
-	myTextLayer: 10000
+	serverHitboxLayer: 800,
+	mouseOverLayer: 900,
+	myTextLayer: 10000,
+	
 };
 
 export default {

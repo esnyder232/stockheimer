@@ -1,0 +1,10 @@
+{
+	"name": "Slime Big Fire",
+	"animationSet": "cast",
+	"canLook": true,
+	"canMove": true,
+	"timeLength": 0,
+	"projectileKey": "data/projectiles/slime-big-fire.json",
+	"projectileTime": 0,
+	"cooldownTimeLength": 6000
+}

@@ -20,6 +20,7 @@ export default class Projectile {
 		this.pngUnitsToPlanckUnitsRatio = 1/75;
 		this.offsetX = 0;
 		this.offsetY = 0;
+		this.angle = 0;
 		
 		this.globalfuncs = null;
 
@@ -31,6 +32,27 @@ export default class Projectile {
 
 		this.boxGraphics = null;
 		this.fireballGraphics = null;
+
+		this.projectileResourceId = null;
+		this.projectileResource = null;
+
+		this.boxGraphics = null;
+		this.boxGraphicsStrokeColor = 0;
+		this.boxGraphicsBorderThickness = 1;
+
+		this.spriteGraphics = null;
+
+		//resource variables
+		this.plShape = "circle";
+		this.plRadius = 1;
+		this.originX = 0.5;
+		this.originY = 0.5;
+		this.scaleX = 1;
+		this.scaleY = 1;
+		this.size = 1;
+		this.spriteKey = "";
+		
+
 	}
 
 	projectileInit(gameClient) {
@@ -40,65 +62,139 @@ export default class Projectile {
 	}
 
 	activated() {
-		this.boxGraphics = this.ms.add.graphics();
-		this.fireballGraphics = this.ms.add.image((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "data/sprites/fireball.json");
-		this.fireballGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.fireballGraphics.setScale(this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio, this.size * this.ms.planckUnitsToPhaserUnitsRatio * this.pngUnitsToPlanckUnitsRatio);
-		this.fireballGraphics.setAngle(this.angle * (180/Math.PI));
-		this.fireballGraphics.setOrigin(0.70, 0.5);
-		var projectileColor = 0x000000;
+		//get resource data
+		this.projectileResource = this.gc.rm.getResourceByServerId(this.projectileResourceId);
 
-		var team = this.gc.tm.getTeamByServerID(this.teamId);
-		if(team !== null) {
-			projectileColor = team.phaserProjectileStrokeColor;
+		//overwrite the defaults with data from the resource
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.planckData.plShape")) {
+			this.plShape = this.projectileResource.data.planckData.plShape;
 		}
-		
-		this.boxGraphics.lineStyle(1, projectileColor, 1);
-		this.boxGraphics.moveTo(-this.size * this.ms.planckUnitsToPhaserUnitsRatio, -this.size * this.ms.planckUnitsToPhaserUnitsRatio); //top left
-		this.boxGraphics.lineTo(this.size * this.ms.planckUnitsToPhaserUnitsRatio, -this.size * this.ms.planckUnitsToPhaserUnitsRatio); //top right
-		this.boxGraphics.lineTo(this.size * this.ms.planckUnitsToPhaserUnitsRatio, this.size * this.ms.planckUnitsToPhaserUnitsRatio); //bottom right
-		this.boxGraphics.lineTo(-this.size * this.ms.planckUnitsToPhaserUnitsRatio, this.size * this.ms.planckUnitsToPhaserUnitsRatio); //bottom left
-		this.boxGraphics.lineTo(-this.size * this.ms.planckUnitsToPhaserUnitsRatio, -this.size * this.ms.planckUnitsToPhaserUnitsRatio); //top left
 
-		this.boxGraphics.closePath();
-		this.boxGraphics.strokePath();
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.planckData.plRadius")) {
+			this.plRadius = this.projectileResource.data.planckData.plRadius;
+		}
 
-		//calculate the xSpeed and ySpeed components (in phaser units)
-		this.xSpeedPhaser = (this.speed * this.ms.planckUnitsToPhaserUnitsRatio) * Math.cos(this.angle);
-		this.ySpeedPhaser = (this.speed * this.ms.planckUnitsToPhaserUnitsRatio) * Math.sin(this.angle);
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.originX")) {
+			this.originX = this.projectileResource.data.phaserData.originX;
+		}
 
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.originY")) {
+			this.originY = this.projectileResource.data.phaserData.originY;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.scaleX")) {
+			this.scaleX = this.projectileResource.data.phaserData.scaleX;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.scaleY")) {
+			this.scaleY = this.projectileResource.data.phaserData.scaleY;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.size")) {
+			this.size = this.projectileResource.data.size;
+		}
+
+		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.renderData.spriteKey")) {
+			this.spriteKey = this.projectileResource.data.renderData.spriteKey;
+		}
+
+		//calculate stuff
 		this.x = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
 		this.y = this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1
 
-		this.boxGraphics.setX(this.x);
-		this.boxGraphics.setY(this.y);
+		//calculate the xSpeed and ySpeed components for phaser units
+		this.xSpeedPhaser = (this.speed * this.ms.planckUnitsToPhaserUnitsRatio) * Math.cos(this.angle);
+		this.ySpeedPhaser = (this.speed * this.ms.planckUnitsToPhaserUnitsRatio) * Math.sin(this.angle);
 
+		//get colors sorted out
+		this.calculateColors();
+
+		//create the graphics objects
+		this.createBoxGraphics();
+		this.createSpriteGraphics();
+
+		//draw the graphics objects on activation
+		this.drawBoxGraphics();
+		this.drawSpriteGraphics();
+	}
+
+
+	calculateColors() {
+		var team = this.gc.tm.getTeamByServerID(this.teamId);
+	
+		if(team !== null) {
+			this.boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
+		}
+	}
+
+
+	createBoxGraphics() {
+		this.boxGraphics = this.ms.add.graphics();
+		this.boxGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
 		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
 	}
 
-	deactivated() {
-		this.boxGraphics.destroy();
-		this.fireballGraphics.destroy();
+	drawBoxGraphics() {
+		// var circleShape = new Phaser.Geom.Circle(0, 0, this.ms.planckUnitsToPhaserUnitsRatio * this.plRadius * this.size);
+		// this.boxGraphics.lineStyle(this.boxGraphicsBorderThickness, this.boxGraphicsStrokeColor);
+		// this.boxGraphics.strokeCircleShape(circleShape);
+	}
 
-		this.boxGraphics = null;
-		this.fireballGraphics = null;
+	createSpriteGraphics() {
+		this.spriteGraphics = this.ms.add.sprite((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), this.spriteKey);
+		this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+		this.spriteGraphics.setOrigin(this.originX, this.originY);
+		this.spriteGraphics.setScale(this.size * this.scaleX, this.size * this.scaleY);
+		this.spriteGraphics.setAngle(this.angle * (180/Math.PI));
+	}
+
+	drawSpriteGraphics() {
+		
+	}
+
+
+	deactivated() {
+		if(this.boxGraphics !== null) {
+			this.boxGraphics.destroy();
+			this.boxGraphics = null;
+		}
+		if(this.spriteGraphics !== null) {
+			this.spriteGraphics.destroy();
+			this.spriteGraphics = null;
+		}
+
+		////////////////////////////////////////
+		//temp for debugging hitbox
+		// var debugCircle = this.ms.debugServerCircles.find((x) => {return x.gameObjectId === this.serverId;});
+		// if(debugCircle !== undefined) {
+		// 	console.log("===FOUND DEBUG CIRCLE===");
+		// 	// console.log("serverId: " + this.serverId + ", x: " + this.x + ", serverX: " + debugCircle.x + ", diff: " + this.x - debugCircle.x);
+		// 	var diff = this.x - debugCircle.x;
+		// 	console.log("serverId: " + this.serverId);
+		// 	console.log("x: " + this.x);
+		// 	console.log("serverX: " + debugCircle.x);
+		// 	console.log("diff: " + diff);
+		// }
+		//
+		////////////////////////////////////////
 	}
 
 	deinit() {
 		this.gc = null;
 		this.ownerId = null;
 		this.ownerType = null;
+		this.projectileResource = null;
 	}
 
 	update(dt) {
-
 		this.x += this.xSpeedPhaser * (dt/1000);
 		this.y += this.ySpeedPhaser * (dt/1000);
 
-		this.boxGraphics.setX(this.x);
-		this.boxGraphics.setY(this.y);
+		// this.boxGraphics.setX(this.x);
+		// this.boxGraphics.setY(this.y);
 
-		this.fireballGraphics.setX(this.x);
-		this.fireballGraphics.setY(this.y);
+		this.spriteGraphics.setX(this.x);
+		this.spriteGraphics.setY(this.y);
 	}
 }

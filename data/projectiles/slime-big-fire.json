@@ -1,23 +1,35 @@
 {
 	"name": "Slime Big Fire",
+	"size": 1.5,
 	"planckData": {
 		"plShape": "circle",
-		"radius": 4
+		"plRadius": 1
 	},
 	"phaserData": {
-		"originX": 0.7,
+		"originX": 0.70,
 		"originY": 0.5,
-		"pngUnitsToPhaserUnitsRatio": 0.07
+		"scaleX": 0.42,
+		"scaleY": 0.42
 	},
-	"size": 4,
-	"spriteKey": "data/sprites/fireball.json",
-	"frameTag": "",
-	"lifeTimeLength": 7000,
-	"collisionFilters": {
+	"physicsData": {
+		"speed": 6,
+		"mass": 100
+	},
+	"renderData": {
+		"spriteKey": "data/sprites/fireball.json",
+		"frameTag": ""
+	},
+	"collisionData": {
 		"sameTeamCharacters": false,
-		"sameTeamProjectiles": false,
 		"otherTeamCharacters": true,
-		"otherTeamProjectiles": true,
 		"walls": true
+	},
+	"projectileData": {
+		"spawnLocationType": "mouse-direction",
+		"spawnOffsetLength": 2,
+		"damage": 8,
+		"timeLength": 6000,
+		"pushbackVecMagnitude": 40,
+		"destroyOnContact": false
 	}
 }

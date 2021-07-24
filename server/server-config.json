@@ -11,5 +11,5 @@
 	"log_level": "debug",
 	"allow_simulated_user_ai_agents": true,
 	
-	"map_relpath": "assets/tilemaps/team-map-square-no-walls.json"
+	"map_relpath": "assets/tilemaps/team-map-square.json"
 }

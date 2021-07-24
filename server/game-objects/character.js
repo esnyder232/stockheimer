@@ -6,6 +6,7 @@ const logger = require("../../logger.js");
 const {EventEmitter} = require('../classes/event-emitter.js');
 const CharacterClassState = require("../classes/character-class-state.js");
 
+
 class Character {
 	constructor() {
 		this.gs = null;
@@ -60,12 +61,15 @@ class Character {
 		this.bAllowedShoot = true;
 
 		this.inputQueue = [];
-		this.eventQueue = [];
+		this.frameEventQueue = [];
 
 		this.em = null;
 
 		this.characterClassResourceId = null;
 		this.characterClassResource = null; //reference to the resource
+
+		this.activeStateCooldowns = [];
+		this.stateCooldownsTemplates = {};
 
 		//resource data
 		this.size = 1;
@@ -87,6 +91,16 @@ class Character {
 		}
 		
 		this.bAllowedLook = bAllowedLook;
+	}
+
+
+	activateStateCooldown(characterClassResourceKey) {
+		var obj = this.stateCooldownsTemplates[characterClassResourceKey];
+		if(obj !== undefined) {
+			obj.onCooldown = true;
+			obj.cooldownTimeAcc = 0;
+			this.activeStateCooldowns.push(obj);
+		}
 	}
 
 	//called only once when the character is first created. This is only called once ever.
@@ -133,20 +147,10 @@ class Character {
 		this.characterClassResource = this.gs.rm.getResourceByID(this.characterClassResourceId);
 
 		//overwrite the defaults with data from the resource
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.planckData.radius")) {
-			this.planckRadius = this.characterClassResource.data.planckData.radius;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.size")) {
-			this.size = this.characterClassResource.data.size;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.hp")) {
-			this.hpCur = this.characterClassResource.data.hp;
-			this.hpMax = this.characterClassResource.data.hp;
-		}
-
-
+		this.planckRadius = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.planckData?.plRadius, this.planckRadius);
+		this.size = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.size, this.size);
+		this.hpCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.hp, this.hpCur);
+		this.hpMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.hp, this.hpMax);
 
 		if(this.planckRadius <= 0) {
 			this.planckRadius = 1;
@@ -189,6 +193,29 @@ class Character {
 
 		//tell the active user agents about it
 		this.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
+
+		//create state cooldown objects
+		var fireStateResource = this.gs.rm.getResourceByKey(this.characterClassResource.data.fireStateKey);
+		var altFireStateResource = this.gs.rm.getResourceByKey(this.characterClassResource.data.altFireStateKey);
+		var arrStates = [];
+
+		if(fireStateResource !== null) {
+			arrStates.push(fireStateResource);
+		}
+		if(altFireStateResource !== null) {
+			arrStates.push(altFireStateResource);
+		}
+
+		for(var i = 0; i < arrStates.length; i++) {
+			var obj = {
+				key: arrStates[i].key,
+				cooldownTimeLength: this.globalfuncs.getValueDefault(arrStates[i].data.cooldownTimeLength, 0),
+				cooldownTimeAcc: 0,
+				onCooldown: false
+			}
+
+			this.stateCooldownsTemplates[obj.key] = obj;
+		}
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
@@ -225,6 +252,8 @@ class Character {
 		this.ownerType = null;
 		this.em.eventEmitterDeinit();
 		this.em = null;
+		this.activeStateCooldowns = [];
+		this.stateCooldownsTemplates = {};
 	}
 
 	update(dt) {
@@ -256,7 +285,6 @@ class Character {
 
 				//detect any events that occured within the potentially clumped inputs (such as firing a bullet)
 				for(var i = 0; i < this.inputQueue.length; i++) {
-					//the character wants to fire a bullet
 					if(this.inputQueue[i].isFiring && !this.clientInputController.isFiring.prevState) {
 						this.clientInputController.isFiring.state = true;
 					}
@@ -309,31 +337,17 @@ class Character {
 
 
 			//step 3 - translate the inputs for this frame into events
-			//the character wants to fire a bullet
-			if(this.frameInputController.isFiring.state && !this.frameInputController.isFiring.prevState)
-			{
-				var pos = this.plBody.getPosition();
-				var fireEvent = {
-					x: pos.x,
-					y: pos.y,
-					angle: this.frameInputController.characterDirection.value,
-					type: 'bullet'
+			//cooldowns get applied here
+			if(this.frameInputController.isFiring.state && !this.frameInputController.isFiring.prevState) {
+				if(!this.stateCooldownsTemplates[this.characterClassResource.data.fireStateKey].onCooldown) {
+					this.frameEventQueue.push(this.characterClassResource.data.fireStateKey);
 				}
-
-				this.eventQueue.push(fireEvent);
 			}
 
-			if(this.frameInputController.isFiringAlt.state && !this.frameInputController.isFiringAlt.prevState)
-			{
-				var pos = this.plBody.getPosition();
-				var fireEvent = {
-					x: pos.x,
-					y: pos.y,
-					angle: this.frameInputController.characterDirection.value,
-					type: 'bigBullet'
+			if(this.frameInputController.isFiringAlt.state && !this.frameInputController.isFiringAlt.prevState) {
+				if(!this.stateCooldownsTemplates[this.characterClassResource.data.altFireStateKey].onCooldown) {
+					this.frameEventQueue.push(this.characterClassResource.data.altFireStateKey);
 				}
-
-				this.eventQueue.push(fireEvent);
 			}
 
 
@@ -345,7 +359,7 @@ class Character {
 			// 	var stophere = true;
 			// }
 
-
+			//step 4 - apply frame inputs and events
 			//update state
 			this.walkingTargetVelVec.x = ((this.frameInputController['left'].state ? -1 : 0) + (this.frameInputController['right'].state ? 1 : 0)) * this.walkingVelMagMax;
 			this.walkingTargetVelVec.y = ((this.frameInputController['down'].state ? -1 : 0) + (this.frameInputController['up'].state ? 1 : 0)) * this.walkingVelMagMax;
@@ -489,50 +503,30 @@ class Character {
 		}
 
 		//process events
-		if(this.eventQueue.length > 0) {
-			if(this.bAllowedShoot) {
-				for(var i = 0; i < this.eventQueue.length; i++) {
-					var e = this.eventQueue[i];
+		if(this.frameEventQueue.length > 0) {
+			for(var i = 0; i < this.frameEventQueue.length; i++) {
+				this.setCharacterClassState(this.frameEventQueue[i]);
+			}
+			
+			this.frameEventQueue.length = 0;
+		}
 
-					if(e.type === "bigBullet") {
-						if(this.bigBulletCounter <= 0) {
-							//spawn the bullet
-							var o = this.gs.gom.createGameObject("projectile");
-													
-							o.bulletType = e.type;
-							o.characterId = this.id;
-							o.ownerId = this.ownerId;
-							o.ownerType = this.ownerType;
-							o.teamId = this.teamId;
-							o.projectileInit(this.gs, e.x, e.y, e.angle, 1.4, 5, 6000);
-							this.bigBulletCounter = 5000;
-						}
-						
-					}
-					else //small normal bullet
-					{
-						this.setCharacterClassState(this.characterClassResource.data.fireStateKey);
-
-						// //spawn a bullet too
-						// var o = this.gs.gom.createGameObject("projectile");
-
-						// o.bulletType = e.type;
-						// o.characterId = this.id;
-						// o.ownerId = this.ownerId;
-						// o.ownerType = this.ownerType;
-						// o.teamId = this.teamId;
-						// o.projectileInit(this.gs, e.x, e.y, e.angle, 0.05, 8, 1000);
-					}
+		//add dt to cooldowns
+		if(this.activeStateCooldowns.length > 0) {
+			for(var i = this.activeStateCooldowns.length - 1; i >= 0; i--) {
+				this.activeStateCooldowns[i].cooldownTimeAcc += dt;
+				if(this.activeStateCooldowns[i].cooldownTimeAcc >= this.activeStateCooldowns[i].cooldownTimeLength) {
+					this.stateCooldownsTemplates[this.activeStateCooldowns[i].key].onCooldown = false;
+					this.stateCooldownsTemplates[this.activeStateCooldowns[i].key].cooldownTimeAcc = 0;
+					this.activeStateCooldowns.splice(i, 1);
 				}
 			}
-
-			this.eventQueue.length = 0;
 		}
 
-		if(this.bigBulletCounter >= 0)
-		{
-			this.bigBulletCounter -= dt;
-		}
+		// if(this.bigBulletCounter >= 0)
+		// {
+		// 	this.bigBulletCounter -= dt;
+		// }
 		
 
 		//tell the user he has killed a character if applicable
@@ -619,38 +613,48 @@ class Character {
 		return result || this.isDirty;
 	}
 
-	isHit(dmg, ownerIdHitBy, ownerTypeHitBy) {
-		if(ownerIdHitBy !== null)
-		{
-			this.lastHitByOwnerId = ownerIdHitBy;
-			this.lastHitByOwnerType = ownerTypeHitBy;
-
-			// //debugging
-			// var owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
-			// var ownerHitBy = this.globalfuncs.getOwner(this.gs, this.lastHitByOwnerId, this.lastHitByOwnerType);
-
-			// if(owner !== null && ownerHitBy !== null)
-			// {
-			// 	logger.log("info", owner.username + ' was hit for ' + dmg + ' dmg from ' + ownerHitBy.username);
-			// }
-		}
-
-		//create event for clients to notify them of damage
-		var userAgents = this.gs.uam.getUserAgents();
-		for(var i = 0; i < userAgents.length; i++) {
-			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
-				"eventName": "characterDamage",
-				"id": this.id,
-				"damage": dmg,
-				"srcUserId": ownerIdHitBy
-			});
-		}
-
-		
-		this.hpCur -= dmg;
-		if(this.hpCur < 0)
-		{
+	modHealth(hpChange) {
+		this.hpCur -= hpChange;
+		if(this.hpCur < 0) {
 			this.hpCur = 0;
+		}
+	}
+
+	collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA) {
+		//get resource data
+		var damage = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.projectileData?.damage, 0);
+		var pushbackVecMagnitude = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.projectileData?.pushbackVecMagnitude, 10);
+
+		//add a push back to the character
+		var pushBackVector = {xDir: 0, yDir: 0, mag: pushbackVecMagnitude};
+		
+		var pVel = p.plBody.getLinearVelocity();
+		var temp = this.gs.pl.Vec2(pVel.x, pVel.y);
+		temp.normalize();
+		pushBackVector.xDir = temp.x;
+		pushBackVector.yDir = temp.y;
+		pushBackVector.mag = pushbackVecMagnitude / this.size;
+
+		this.forceImpulses.push(pushBackVector)
+
+		//apply damage to hp
+		this.modHealth(damage);
+
+		//update last hit by
+		if(p.ownerId !== null) {
+			this.lastHitByOwnerId = p.ownerId;
+			this.lastHitByOwnerType = p.ownerType;
+
+			//create event for clients to notify them of damage
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
+					"eventName": "characterDamage",
+					"id": this.id,
+					"damage": damage,
+					"srcUserId": p.ownerId
+				});
+			}
 		}
 	}
 
