@@ -132,66 +132,18 @@ export default class Character {
 		//get resource data
 		this.characterClassResource = this.gc.rm.getResourceByServerId(this.characterClassResourceId);
 
-
-		// TODO: update webpack to version 5 so I can use the optional chaining
-		// this.planckRadius = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.planckData?.plRadius, this.planckRadius);
-		// this.originX = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.originX, this.originX);
-		// this.originY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.originY, this.originY);
-		// this.size = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.size, this.size);
-		// this.scaleX = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleX, this.scaleX);
-		// this.scaleY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleY, this.scaleY);
-		// this.idleMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.idleMsPerFrame, this.idleMsPerFrame);
-		// this.moveMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.moveMsPerFrame, this.moveMsPerFrame);
-		// this.spriteKey = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.spriteKey, this.spriteKey);
-		// this.frameTag = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.frameTagDown, this.frameTag);
-
-
-
-		//overwrite the defaults with data from the resource
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.planckData.plRadius")) {
-			this.planckRadius = this.characterClassResource.data.planckData.plRadius;
-		}
-
-		//testing sprite graphics
-		//get phaser data from resource
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.originX")) {
-			this.originX = this.characterClassResource.data.phaserData.originX;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.originY")) {
-			this.originY = this.characterClassResource.data.phaserData.originY;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.size")) {
-			this.size = this.characterClassResource.data.size;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.scaleX")) {
-			this.scaleX = this.characterClassResource.data.phaserData.scaleX;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.phaserData.scaleY")) {
-			this.scaleY = this.characterClassResource.data.phaserData.scaleY;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.idleMsPerFrame")) {
-			this.idleMsPerFrame = this.characterClassResource.data.idleMsPerFrame;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.moveMsPerFrame")) {
-			this.moveMsPerFrame = this.characterClassResource.data.moveMsPerFrame;
-		}
-
-
-
+		this.planckRadius = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.planckData?.plRadius, this.planckRadius);
+		this.originX = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.originX, this.originX);
+		this.originY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.originY, this.originY);
+		this.size = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.size, this.size);
+		this.scaleX = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleX, this.scaleX);
+		this.scaleY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleY, this.scaleY);
+		this.idleMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.idleMsPerFrame, this.idleMsPerFrame);
+		this.moveMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.moveMsPerFrame, this.moveMsPerFrame);
+		this.spriteKey = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.spriteKey, this.spriteKey);
+		
 		//hard coding the animation to be idle-down for now
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.animationSets.idle.spriteKey")) {
-			this.spriteKey = this.characterClassResource.data.animationSets.idle.spriteKey;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.characterClassResource, "data.animationSets.idle.frameTagDown")) {
-			this.frameTag = this.characterClassResource.data.animationSets.idle.frameTagDown;
-		}
+		this.frameTag = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.frameTagDown, this.frameTag);
 
 		this.animationKey = this.spriteKey + "-" + this.frameTag;
 

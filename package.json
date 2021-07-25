@@ -29,7 +29,7 @@
     "marked": "^1.2.7",
     "phaser": "^3.51.0",
     "planck-js": "^0.3.22",
-    "webpack": "^4.44.1",
+    "webpack": "^5.46.0",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.1.4",
