@@ -31,6 +31,7 @@ class Character {
 		this.clientInputController = {}; //actual inputs sent from the client. 
 		this.lockedLookDirection = 0;
 		this.isInputDirty = false;
+		this.isStateDirty = false;
 		this.characterDirectionChanged = false;
 		this.speedMag = 4;
 		
@@ -543,6 +544,7 @@ class Character {
 			if(this.exitCurrentState) {
 				this.state.exit(dt);
 				this.state = null;
+				this.isStateDirty = true;
 			}
 		}
 
@@ -554,6 +556,8 @@ class Character {
 			
 			this.state = nextState;
 			this.nextCharacterClassResource = null;
+
+			this.isStateDirty = true;
 		}
 		
 		this.exitCurrentState = false;
@@ -571,12 +575,23 @@ class Character {
 			this.frameInputController[key].prevValue = this.frameInputController[key].value;
 		}
 
+		//if the state changed at all, send out an event to all clients to tell them
+		if(this.isStateDirty) {
+			//create event for clients to notify them of damage
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				var eventData = this.serializeUpdateCharacterStateEvent();
+				userAgents[i].insertTrackedEntityOrderedEvent("gameobject", this.id, eventData);
+			}
+		}
+
 		this.em.update(dt);
 	}
 
 	//reset dirty flags back to false
 	postWebsocketUpdate() {
 		this.isInputDirty = false;
+		this.isStateDirty = false;
 	}
 
 
@@ -709,7 +724,6 @@ class Character {
 			"characterDirection": this.frameInputController.characterDirection.value
 		};
 
-		
 		return eventData;
 	}
 
@@ -718,6 +732,26 @@ class Character {
 			"eventName": "removeActiveCharacter",
 			"id": this.id
 		};
+	}
+
+	serializeUpdateCharacterStateEvent() {
+		//get current character state. If the character isn't in a state, the resource Id will be 0.
+		var characterClassStateResourceid = 0;
+		var stateTimeAcc = 0;
+		
+		if(this.state !== null) {
+			characterClassStateResourceid = this.state.characterClassStateResourceId;
+			stateTimeAcc = this.state.timeAcc;
+		}
+
+		var eventData = {
+			"eventName": "updateCharacterState",
+			"characterId": this.id,
+			"characterClassStateResourceId": characterClassStateResourceid,
+			"stateTimeAcc": stateTimeAcc
+		};
+
+		return eventData;
 	}
 
 }

@@ -2,6 +2,7 @@ import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 import ClientConstants from "../client-constants.js"
 import ServerEventQueue from "../classes/server-event-queue.js"
+import CharacterClassState from "../classes/character-class-state.js"
 
 export default class Character {
 	constructor() {
@@ -22,9 +23,10 @@ export default class Character {
 		
 		this.globalfuncs = null;
 
-		this.stateName = "";
 		this.state = null;
 		this.nextState = null;
+		this.exitCurrentState = false;
+		this.nextCharacterClassResource = null;
 
 		this.hpMax = 100;
 		this.hpCur = 100;
@@ -39,7 +41,8 @@ export default class Character {
 		this.directionGraphics = null;
 
 		this.serverEventMapping = {
-			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this)
+			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this),
+			"updateCharacterState": this.updateCharacterStateEvent.bind(this)
 		}
 
 		this.boxGraphicsStrokeColor = 0;
@@ -509,6 +512,9 @@ export default class Character {
 		this.characterTextStrokeThickness = 1;
 		this.usernameText = "???";
 		this.circleShape = null;
+		this.state = null;
+		this.nextState = null;
+		this.nextCharacterClassResource = null;
 	}
 
 	showEnemyDamageTint() {
@@ -530,8 +536,7 @@ export default class Character {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
 
-		this.updateRenderTarget(dt);
-		this.render(dt);
+
 
 		if(this.updateHealthBar) {
 			this.drawHpBarGraphics();
@@ -553,16 +558,33 @@ export default class Character {
 				this.hideDamageTint();
 			}
 		}
-		
 
-		//change state
-		// if(this.nextState)
-		// {
-		// 	this.state.exit();
-		// 	this.nextState.enter();
-		// 	this.state = this.nextState;
-		// 	this.nextState = null;
-		// }
+		//update state if there is one
+		if(this.state !== null) {
+			this.state.update(dt);
+
+			//exit the state if the flag is set
+			if(this.exitCurrentState) {
+				this.state.exit(dt);
+				this.state = null;
+			}
+		}
+
+		//change state if there is a next one
+		if(this.nextCharacterClassResource !== null) {
+			var nextState = new CharacterClassState(this.gc, this, this.nextCharacterClassResource);
+
+			nextState.enter(dt);
+			
+			this.state = nextState;
+			this.nextCharacterClassResource = null;
+		}
+		
+		this.exitCurrentState = false;
+
+
+		this.updateRenderTarget(dt);
+		this.render(dt);
 	}
 
 
@@ -579,6 +601,19 @@ export default class Character {
 		}
 
 		this.hpCur = e.characterHpCur;
+	}
+
+	updateCharacterStateEvent(e) {
+		// console.log("character update event " + e.characterId)
+		var r = this.gc.rm.getResourceByServerId(e.characterClassStateResourceId);
+		if(r !== null) {
+			this.nextCharacterClassResource = r;
+		}
+		else {
+			this.nextCharacterClassResource = null;
+		}
+		
+		this.exitCurrentState = true;
 	}
 
 	//this lerps the character from the (x,y) to the (serverX, serverY)

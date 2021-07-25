@@ -27,6 +27,8 @@ import KillFeedMsgEvent from "../event-classes/kill-feed-msg-event.js"
 import RoundResultsEvent from "../event-classes/round-results-event.js"
 import UpdateUserRttEvent from "../event-classes/update-user-rtt-event.js"
 import DebugServerCircleEvent from "../event-classes/debug-server-circle-event.js"
+import UpdateCharacterStateEvent from "../event-classes/update-character-state-event.js"
+
 
 
 
@@ -82,7 +84,9 @@ export default class EventProcessor {
 			{eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent()},
 			{eventName: "roundResults", eventClass: new RoundResultsEvent()},
 			{eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent()},
-			{eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent()}
+			{eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent()},
+			{eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent()},
+			
 		];
 
 	}

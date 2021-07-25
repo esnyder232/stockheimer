@@ -1,4 +1,3 @@
-
 const planck = require('planck-js');
 const logger = require("../../logger.js");
 
@@ -7,9 +6,9 @@ class CharacterClassState {
 		this.gs = gameServer;
 		this.character = character;
 		this.characterClassStateResource = characterClassStateResource;
+		this.characterClassStateResourceId = 0;
 		this.timeAcc = 0;
 
-		this.animationSet = null;
 		this.timeLength = 1000;
 		this.canMove = false;
 		this.canLook = false;
@@ -23,7 +22,7 @@ class CharacterClassState {
 	enter(dt) {
 		// console.log("===== ENTERED " + this.characterClassStateResource.data.name + " STATE");
 		//get data from resource
-		this.animationSet = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.animationSet);
+		this.characterClassStateResourceId = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.id);
 		this.canLook = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canLook, this.canLook);
 		this.canMove = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canMove, this.canMove);
 		this.timeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.timeLength, this.timeLength);
