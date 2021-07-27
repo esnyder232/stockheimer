@@ -52,6 +52,9 @@ export default class LobbyScene extends Phaser.Scene {
 		//If the user clicks enter, click the play button if its enabled.
 		//apparently "keyCode" is obsolete. Whatever.
 		if(this.enablePlayButton && (e.code == "NumpadEnter" || e.code == "Enter")) {
+			//firefox unfocus bug fix
+			document.activeElement.blur();
+			
 			this.playerSubmitClick();
 		}
 		else {

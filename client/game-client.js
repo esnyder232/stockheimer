@@ -339,7 +339,6 @@ export default class GameClient {
 			catch(ex) {
 				this.globalfuncs.appendToLog("Exception caught in game loop: " + ex)
 				console.log(ex);
-				var stopHere = true;
 			}
 		}
 

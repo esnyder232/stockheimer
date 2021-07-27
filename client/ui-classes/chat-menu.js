@@ -111,6 +111,9 @@ export default class ChatMenu {
 
 			window.dispatchEvent(new CustomEvent("chat-menu-closed"));
 			this.isVisible = false;
+
+			//firefox unfocus bug fix
+			document.activeElement.blur();
 		}
 	}
 	
