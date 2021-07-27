@@ -22,12 +22,8 @@ export default class Character {
 		this.serverCharacterDirection = 0.0;
 		
 		this.globalfuncs = null;
-
 		this.state = null;
 		this.nextState = null;
-		this.exitCurrentState = false;
-		this.nextCharacterClassResource = null;
-		this.isStateDirty = false;
 
 		this.hpMax = 100;
 		this.hpCur = 100;
@@ -54,18 +50,6 @@ export default class Character {
 		this.characterFillColor = 0x000000;
 		this.usernameText = "???";
 		this.circleShape = null;
-
-		//sprite rendering stuff
-		this.currentAnimationSetKey = "";
-		this.frameTagDirection = "";
-		this.spriteKey = "";
-		this.animationPlayRate = 1;
-		this.isSpriteDirty = false;
-		this.preserveAnimationTiming = false;
-		this.repeatNum = -1;
-		this.preserveAnimationProgress = false;
-		
-
 
 		this.characterClassResourceId = null;
 		this.characterClassResource = null;
@@ -152,24 +136,6 @@ export default class Character {
 		this.scaleY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleY, this.scaleY);
 		this.idleMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.idleMsPerFrame, this.idleMsPerFrame);
 		this.moveMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.moveMsPerFrame, this.moveMsPerFrame);
-		// this.spriteKey = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.spriteKey, this.spriteKey);
-		
-		//hard coding the animation to be idle-down for now
-		// this.frameTag = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.animationSets?.idle?.frameTagDown, this.frameTag);
-
-		// this.animationFullKey = this.spriteKey + "-" + this.frameTag;
-
-		// console.log("=== Creating sprite graphics");
-		// console.log(this.characterClassResource);
-		// console.log(this.size);
-		// console.log(this.originX);
-		// console.log(this.originY);
-		// console.log(this.scaleX);
-		// console.log(this.scaleY);
-		// console.log(this.spriteKey);
-		// console.log(this.frameTag);
-		// console.log(this.animationFullKey);
-
 
 		//get colors sorted out
 		this.calculateColors();
@@ -190,15 +156,8 @@ export default class Character {
 		this.drawGlowGraphics();
 		this.drawDirectionGraphics();
 
-		//set the animation to be idle in the beginning
-		this.changeAnimationSetKey("idle");
-		this.updateLookDirection();
-		this.isSpriteDirty = true;
-
-
-		//temporarily play the only animation
-		// this.spriteGraphics.anims.play(this.animationFullKey);
-		// this.spriteGraphics.anims.msPerFrame = this.idleMsPerFrame;
+		this.state = new CharacterClassState(this.gc, this, null, 0);
+		this.state.enter(0);
 
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
@@ -463,81 +422,6 @@ export default class Character {
 		}
 	}
 
-	updateLookDirection() {
-		var newFrameTagDirection = this.frameTagDirection;
-		var xDirection = Math.cos(this.serverCharacterDirection);
-		var yDirection = Math.sin(-this.serverCharacterDirection);
-
-		//yup, this. There is a probably a better way to do this though. One that doesn't require any if statements.
-		if(xDirection >= 0.707) {
-			newFrameTagDirection = "frameTagRight";
-		} else if (xDirection <= -0.707) {
-			newFrameTagDirection = "frameTagLeft";
-		} else if (yDirection >= 0.707) {
-			newFrameTagDirection = "frameTagUp";
-		} else {
-			newFrameTagDirection = "frameTagDown";
-		}
-
-		//see if the direction of the sprite needs to change
-		if(this.frameTagDirection !== newFrameTagDirection) {
-			this.frameTagDirection = newFrameTagDirection;
-			this.isSpriteDirty = true;
-		}
-	}
-
-	changeAnimationSetKey(newAnimationSetKey, timeLength, repeatNum, preserveAnimationProgress) {
-		if(repeatNum === undefined) {
-			repeatNum = -1;
-		}
-
-		this.currentAnimationSetKey = newAnimationSetKey;
-		this.spriteKey = this?.characterClassResource?.data?.animationSets?.[this.currentAnimationSetKey]?.spriteKey
-		this.updateLookDirection();
-		this.repeatNum = repeatNum;
-		this.isSpriteDirty = true;
-		this.isAnimationKeyChanged = true; //fucking stupid. Just used as a flag for updateAnimation.
-		this.preserveAnimationProgress = preserveAnimationProgress;
-		this.timeLength = timeLength;
-
-		// console.log("Changing animation set key to: " + newAnimationSetKey + ", msPerFrame: " + msPerFrame + ", repeatNum: " + repeatNum);
-	}
-
-	updateAnimation() {
-		// console.log("=== updateing animation ===");
-		var frameTag = this?.characterClassResource?.data?.animationSets?.[this.currentAnimationSetKey]?.[this.frameTagDirection];
-		var progress = this.spriteGraphics.anims.getProgress();
-		var msPerFrame = 1000;
-		this.spriteGraphics.anims.play(this.spriteKey + "-" + frameTag);
-		
-		//this is the worst thing in the world. If the state is null, make the animation speeds the defaults
-		if(this.state === null) {
-			msPerFrame = this.idleMsPerFrame;
-		} else {
-			//calculate msPerFrame by the new animation playing and timeLength
-			var totalFrames = this.spriteGraphics.anims.getTotalFrames();
-			if(totalFrames <= 0) {
-				totalFrames = 1
-			}
-			msPerFrame = this.timeLength/totalFrames;
-		}
-
-		this.spriteGraphics.anims.msPerFrame = msPerFrame;
-		this.spriteGraphics.anims.setRepeat(this.repeatNum);
-
-		//fucking stupid
-		if(this.isAnimationKeyChanged) {
-			this.spriteGraphics.anims.restart();
-			this.isAnimationKeyChanged = false;
-		}
-		else if(this.preserveAnimationProgress) {
-			this.spriteGraphics.anims.setProgress(progress);
-		} else {
-			this.spriteGraphics.anims.restart();
-		}
-		
-	}
-
 	deactivated() {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
@@ -604,7 +488,6 @@ export default class Character {
 		this.circleShape = null;
 		this.state = null;
 		this.nextState = null;
-		this.nextCharacterClassResource = null;
 	}
 
 	showEnemyDamageTint() {
@@ -626,8 +509,18 @@ export default class Character {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
 
+		//update state
+		this.state.update(dt);
 
+		if(this.nextState !== null) {
+			this.state.exit(dt);
+			this.nextState.enter(dt);
 
+			this.state = this.nextState;
+			this.nextState = null;
+		}
+
+		//update other graphic stuff
 		if(this.updateHealthBar) {
 			this.drawHpBarGraphics();
 			this.updateHealthBar = false;
@@ -649,39 +542,8 @@ export default class Character {
 			}
 		}
 
-		// //update state if there is one
-		// if(this.state !== null) {
-		// 	this.state.update(dt);
-
-		// 	//exit the state if the flag is set
-		// 	if(this.exitCurrentState) {
-		// 		this.state.exit(dt);
-		// 		this.state = null;
-		// 	}
-		// }
-
-		// //change state if there is a next one
-		// if(this.nextCharacterClassResource !== null) {
-		// 	var nextState = new CharacterClassState(this.gc, this, this.nextCharacterClassResource);
-
-		// 	nextState.enter(dt);
-			
-		// 	this.state = nextState;
-		// 	this.nextCharacterClassResource = null;
-		// }
-		
-		//check if sprite is dirty and needs to change animation
-		if(this.isSpriteDirty) {
-			this.updateAnimation();
-			this.isSpriteDirty = false;
-		}
-
 		this.updateRenderTarget(dt);
 		this.render(dt);
-
-		// console.log(this.spriteGraphics.anims.getProgress());
-
-		this.exitCurrentState = false;
 	}
 
 
@@ -696,21 +558,12 @@ export default class Character {
 		}
 
 		this.hpCur = e.characterHpCur;
-
-		this.updateLookDirection();
 	}
 
 	updateCharacterStateEvent(e) {
 		// console.log("character update event " + e.characterId)
-		// var r = this.gc.rm.getResourceByServerId(e.characterClassStateResourceId);
-		// if(r !== null) {
-		// 	this.nextCharacterClassResource = r;
-		// }
-		// else {
-		// 	this.nextCharacterClassResource = null;
-		// }
-		
-		// this.exitCurrentState = true;
+		var r = this.gc.rm.getResourceByServerId(e.characterClassStateResourceId);
+		this.nextState = new CharacterClassState(this.gc, this, r, 0);
 	}
 	
 	//this lerps the character from the (x,y) to the (serverX, serverY)

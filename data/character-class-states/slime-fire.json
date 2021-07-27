@@ -1,10 +1,10 @@
 {
 	"name": "Slime Fire",
-	"animationSet": "cast",
+	"animationSet": "idle",
 	"canLook": true,
 	"canMove": true,
-	"timeLength": 140,
+	"timeLength": 150,
 	"projectileKey": "data/projectiles/slime-fire.json",
 	"projectileTime": 0,
-	"cooldownTimeLength": 140
+	"cooldownTimeLength": 150
 }
