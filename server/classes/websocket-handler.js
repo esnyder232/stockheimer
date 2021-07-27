@@ -29,7 +29,7 @@ class WebsocketHandler {
 		this.remoteSequence = 0;	//most recent remote sequence number
 		this.ack = -1;				//most current ack returned by the client
 		
-		this.localSequenceMaxValue = 65535;
+		this.localSequenceMaxValue = 600;
 
 		this.maxPacketSize = 100; //bytes. Dynamically set based on current number of players and max bandwidth set in server config.
 		this.MTU = 1000; //bytes. following Glenn Fiedler's advice. 1000 bytes for MTU just to be safe from IP fragmentation
