@@ -702,7 +702,7 @@ class GameServer {
 					signed: true,
 					maxAge: 60000 * 60 * 24 * expireDays,
 					httpOnly: true,
-					sameSite: serverConfig.sameSite,
+					sameSite: serverConfig.cookie_same_site,
 					secure: serverConfig.https_enabled
 				};
 				
