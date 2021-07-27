@@ -79,16 +79,10 @@ class GameServer {
 
 		////////////////////////////////////////////////////////////////////////
 		//This decides what classes/map gets loaded.
-		//This is hard coded for now, but can be passed in on the lobby phase
-		// this.classKeyList = [
-		// 	"data/character-classes/slime-mage.json",
-		// 	"data/character-classes/slime-healer.json",
-		// ];
-		
 		this.classKeyList = [
 			"data/character-classes/slime-mage.json",
-			"data/character-classes/slime-healer.json",
-			"data/character-classes/slime-big.json"
+			"data/character-classes/slime-mage-2.json",
+			"data/character-classes/slime-mage-3.json"
 		];
 
 		this.mapKey = serverConfig.map_relpath;
@@ -708,7 +702,7 @@ class GameServer {
 					signed: true,
 					maxAge: 60000 * 60 * 24 * expireDays,
 					httpOnly: true,
-					sameSite: "strict",
+					sameSite: serverConfig.sameSite,
 					secure: serverConfig.https_enabled
 				};
 				
