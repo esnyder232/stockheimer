@@ -33,7 +33,6 @@ class Character {
 		this.isInputDirty = false;
 		this.isStateDirty = false;
 		this.characterDirectionChanged = false;
-		this.speedMag = 4;
 		
 		this.bigBulletCounter = 0;
 
@@ -152,6 +151,8 @@ class Character {
 		this.size = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.size, this.size);
 		this.hpCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.hp, this.hpCur);
 		this.hpMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.hp, this.hpMax);
+		this.walkingVelMagMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.speed, this.walkingVelMagMax);
+		
 
 		if(this.planckRadius <= 0) {
 			this.planckRadius = 1;

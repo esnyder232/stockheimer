@@ -1,6 +1,6 @@
 {
-	"name": "Big Slime Mage",
-	"hp": 90,
+	"name": "Slime Mage Classic",
+	"hp": 20,
 	"speed": 4,
 	"planckData": {
 		"plShape": "circle",
@@ -12,14 +12,14 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
-	"size": 4,
+	"size": 1,
 	"idleMsPerFrame": 300,
 	"moveMsPerFrame": 300,
 	"animationSets": {
-		"idle": "data/animation-sets/slime-mage-idle-set.json",
-		"move": "data/animation-sets/slime-mage-move-set.json",
-		"attack": "data/animation-sets/slime-mage-attack-set.json",
-		"cast": "data/animation-sets/slime-mage-fire-set.json"
+		"idle": "data/animation-sets/slime-mage-classic-idle-set.json",
+		"move": "data/animation-sets/slime-mage-classic-move-set.json",
+		"attack": "data/animation-sets/slime-mage-classic-attack-set.json",
+		"cast": "data/animation-sets/slime-mage-classic-fire-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
 	"fireStateKey": "data/character-class-states/slime-fire.json",

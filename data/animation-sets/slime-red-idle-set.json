@@ -1,0 +1,7 @@
+{
+	"spriteKey": "data/sprites/slime-red.json",
+	"frameTagUp": "idle-up",
+	"frameTagDown": "idle-down",
+	"frameTagLeft": "idle-left",
+	"frameTagRight": "idle-right"
+}

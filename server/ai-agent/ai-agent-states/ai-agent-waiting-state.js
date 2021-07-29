@@ -83,6 +83,40 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			});
 			//////////////////////////////////////////
 
+
+			//calculate attack range of ai (probably a shitty way to do this, oh well)
+			this.aiAgent.attackingRangeSquared = 10;
+
+			//get the projectile that the character can shoot
+			var cr = this.aiAgent.character.characterClassResource;
+			var fireStateResource = null;
+			var projectileResource = null;
+
+			if(cr !== null) {
+				fireStateResource = this.aiAgent.gs.rm.getResourceByKey(cr?.data?.fireStateKey);
+				if(fireStateResource !== null) {
+					projectileResource = this.aiAgent.gs.rm.getResourceByKey(fireStateResource?.data?.projectileKey);
+				}
+			}
+
+			if(projectileResource !== null) {
+				var speed = projectileResource?.data?.physicsData?.speed;
+				var spawnOffsetLength = projectileResource?.data?.projectileData?.spawnOffsetLength;
+				var timeLength = projectileResource?.data?.projectileData?.timeLength;
+
+				if(speed !== undefined && spawnOffsetLength !== undefined && timeLength !== undefined) {
+					var temp = speed*(timeLength/1000) + spawnOffsetLength;
+					this.aiAgent.attackingRangeSquared = temp*temp;
+
+					if(this.aiAgent.attackingRangeSquared < 1) {
+						this.aiAgent.attackingRangeSquared = 1;
+					}
+
+					// console.log("AIAgent for character class '" +cr?.data?.name + "', range calculated to be: " + this.aiAgent.attackingRangeSquared);
+				}
+			}
+			
+
 			
 
 			this.aiAgent.character.em.batchRegisterForEvent(this.aiAgent.characterEventCallbackMapping);

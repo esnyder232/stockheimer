@@ -1,6 +1,6 @@
 {
-	"name": "Slime Fire",
-	"size": 0.1,
+	"name": "Slime Big Fire",
+	"size": 1.5,
 	"planckData": {
 		"plShape": "circle",
 		"plRadius": 1
@@ -12,7 +12,7 @@
 		"scaleY": 0.42
 	},
 	"physicsData": {
-		"speed": 8,
+		"speed": 6,
 		"mass": 100
 	},
 	"renderData": {
@@ -26,10 +26,10 @@
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 0,
-		"damage": 2,
-		"timeLength": 1000,
-		"pushbackVecMagnitude": 10,
-		"destroyOnContact": true
-	} 
+		"spawnOffsetLength": 2,
+		"damage": 8,
+		"timeLength": 6000,
+		"pushbackVecMagnitude": 40,
+		"destroyOnContact": false
+	}
 }

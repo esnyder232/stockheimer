@@ -51,8 +51,7 @@ export default class Projectile {
 		this.scaleY = 1;
 		this.size = 1;
 		this.spriteKey = "";
-		
-
+		this.hideSprite = false;
 	}
 
 	projectileInit(gameClient) {
@@ -65,38 +64,15 @@ export default class Projectile {
 		//get resource data
 		this.projectileResource = this.gc.rm.getResourceByServerId(this.projectileResourceId);
 
-		//overwrite the defaults with data from the resource
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.planckData.plShape")) {
-			this.plShape = this.projectileResource.data.planckData.plShape;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.planckData.plRadius")) {
-			this.plRadius = this.projectileResource.data.planckData.plRadius;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.originX")) {
-			this.originX = this.projectileResource.data.phaserData.originX;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.originY")) {
-			this.originY = this.projectileResource.data.phaserData.originY;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.scaleX")) {
-			this.scaleX = this.projectileResource.data.phaserData.scaleX;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.phaserData.scaleY")) {
-			this.scaleY = this.projectileResource.data.phaserData.scaleY;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.size")) {
-			this.size = this.projectileResource.data.size;
-		}
-
-		if(this.globalfuncs.nestedValueCheck(this.projectileResource, "data.renderData.spriteKey")) {
-			this.spriteKey = this.projectileResource.data.renderData.spriteKey;
-		}
+		this.plShape = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plShape, this.plShape);
+		this.plRadius = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plRadius, this.plRadius);
+		this.originX = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.phaserData?.originX, this.originX);
+		this.originY = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.phaserData?.originY, this.originY);
+		this.scaleX = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.phaserData?.scaleX, this.scaleX);
+		this.scaleY = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.phaserData?.scaleY, this.scaleY);
+		this.size = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.size, this.size);
+		this.spriteKey = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.spriteKey, this.spriteKey);
+		this.hideSprite = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.hideSprite, this.hideSprite);
 
 		//calculate stuff
 		this.x = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
@@ -142,11 +118,13 @@ export default class Projectile {
 	}
 
 	createSpriteGraphics() {
-		this.spriteGraphics = this.ms.add.sprite((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), this.spriteKey);
-		this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
-		this.spriteGraphics.setOrigin(this.originX, this.originY);
-		this.spriteGraphics.setScale(this.size * this.scaleX, this.size * this.scaleY);
-		this.spriteGraphics.setAngle(this.angle * (180/Math.PI));
+		if(!this.hideSprite) {
+			this.spriteGraphics = this.ms.add.sprite((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), this.spriteKey);
+			this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
+			this.spriteGraphics.setOrigin(this.originX, this.originY);
+			this.spriteGraphics.setScale(this.size * this.scaleX, this.size * this.scaleY);
+			this.spriteGraphics.setAngle(this.angle * (180/Math.PI));
+		}
 	}
 
 	drawSpriteGraphics() {
@@ -168,7 +146,7 @@ export default class Projectile {
 		//temp for debugging hitbox
 		// var debugCircle = this.ms.debugServerCircles.find((x) => {return x.gameObjectId === this.serverId;});
 		// if(debugCircle !== undefined) {
-		// 	console.log("===FOUND DEBUG CIRCLE===");
+		// 	// console.log("===FOUND DEBUG CIRCLE===");
 		// 	// console.log("serverId: " + this.serverId + ", x: " + this.x + ", serverX: " + debugCircle.x + ", diff: " + this.x - debugCircle.x);
 		// 	var diff = this.x - debugCircle.x;
 		// 	console.log("serverId: " + this.serverId);
@@ -176,7 +154,7 @@ export default class Projectile {
 		// 	console.log("serverX: " + debugCircle.x);
 		// 	console.log("diff: " + diff);
 		// }
-		//
+		
 		////////////////////////////////////////
 	}
 
@@ -193,8 +171,10 @@ export default class Projectile {
 
 		// this.boxGraphics.setX(this.x);
 		// this.boxGraphics.setY(this.y);
-
-		this.spriteGraphics.setX(this.x);
-		this.spriteGraphics.setY(this.y);
+		
+		if(this.spriteGraphics !== null) {
+			this.spriteGraphics.setX(this.x);
+			this.spriteGraphics.setY(this.y);
+		}
 	}
 }

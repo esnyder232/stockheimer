@@ -220,14 +220,17 @@ class CollisionSystem {
 		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
 
 		if(c !== null && p !== null) {
-			var processDamage = true;
-
-			//friendly fire check
-			if(p.ownerId === c.ownerId || p.teamId === c.teamId) {
-				processDamage = false;
+			var processCollision = false;
+	
+			//team collision check
+			if(p.collideSameTeamCharacters && p.teamId === c.teamId) {
+				processCollision = true;
 			}
-
-			if(processDamage) {
+			else if(p.collideOtherTeamCharacters && p.teamId !== c.teamId) {
+				processCollision = true;
+			}
+	
+			if(processCollision) {
 				p.collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA);
 				c.collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA);
 			}
@@ -306,13 +309,12 @@ class CollisionSystem {
 
 	beginProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)
 	{
-		//logger.log("info", 'begin projectile wall Collision: A: ' + projectileUserData.type + " " + projectileUserData.id + "==== B: " + wallUserData.type + " " + wallUserData.id + "=== isProjectileA: " + isProjectileA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
 		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
 
-		if(p !== null)
-		{
-			//destroy the projectile
-			p.timeLength = 0; //cheap and easy
+		if(p !== null) {
+			if(p.collideWalls) {
+				p.collisionWall(projectileUserData, wallUserData, contactObj, isProjectileA);
+			}
 		}
 
 	}

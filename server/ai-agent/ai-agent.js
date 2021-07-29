@@ -43,7 +43,7 @@ class AIAgent {
 		this.targetCharacterIdToAttack = null;
 		this.targetCharacter = null;
 		this.targetCharacterDistanceSquared = 0;
-		this.attackingRangeSquared = 49;
+		this.attackingRangeSquared = 1;
 		this.playerSeekingRange = 10;
 
 		this.castleDistanceSquared = 0;

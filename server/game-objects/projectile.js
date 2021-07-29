@@ -35,6 +35,10 @@ class Projectile {
 
 		this.tempTimerLength = 0;
 		this.tempTimerAcc = 0;
+
+		this.collideSameTeamCharacters = false;
+		this.collideOtherTeamCharacters = false;
+		this.collideWalls = false;
 	}
 
 
@@ -59,6 +63,10 @@ class Projectile {
 		this.timeLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.timeLength);
 		this.spawnOffsetLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnOffsetLength);
 		this.size = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.size);
+		this.collideSameTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSameTeamCharacters, this.collideSameTeamCharacters);
+		this.collideOtherTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideOtherTeamCharacters, this.collideOtherTeamCharacters);
+		this.collideWalls = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideWalls);
+
 
 		//data validation stuff
 		if(this.size <= 0) {
@@ -144,7 +152,7 @@ class Projectile {
 		// 		userAgents[i].insertServerToClientEvent(eventData);
 		// 	}
 		// }
-		//
+		
 		/////////////////////////////////////
 
 		if(this.plBody) {
@@ -153,6 +161,7 @@ class Projectile {
 			}
 		}
 	}
+	
 
 	postWebsocketUpdate() {
 	}
@@ -168,6 +177,7 @@ class Projectile {
 	}
 
 	collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA) {
+		
 		//get resource data
 		var destroyOnContact = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.destroyOnContact, true);
 
@@ -179,6 +189,10 @@ class Projectile {
 		if(c.size >= 4) {
 			this.timeLength = 0;
 		}
+	}
+
+	collisionWall(projectileUserData, wallUserData, contactObj, isProjectileA) {
+		this.timeLength = 0;
 	}
 	
 	///////////////////////////////////

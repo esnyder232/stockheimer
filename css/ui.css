@@ -1060,7 +1060,7 @@ input.menu-button {
 .team-score-menu-container {
 	top: 68px;
 	left: 8px;
-	pointer-events: all;
+	pointer-events: none;
 	font-size: 32px;
 	padding: 12px 12px 12px 12px;
 	color: #cccccc;

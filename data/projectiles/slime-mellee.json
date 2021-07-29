@@ -1,24 +1,36 @@
 {
 	"name": "Slime Mellee",
+	"size": 0.5,
 	"planckData": {
 		"plShape": "circle",
-		"plRadius": 4
+		"plRadius": 1
 	},
 	"phaserData": {
-		"originX": 0.7,
+		"originX": 0.5,
 		"originY": 0.5,
-		"pngUnitsToPhaserUnitsRatio": 0.07
+		"scaleX": 1.0,
+		"scaleY": 1.0
 	},
-	"size": 4,
-	"speed": 0,
-	"acc": 0,
-	"spriteKey": "data/sprites/slime-mellee.json",
-	"frameTag": "swing",
-	"lifeTimeLength": 60,
-	"cooldownTimeLength": 250,
-	"collisionFilters": {
-		"sameTeamCharacters": false,
-		"otherTeamCharacters": true,
-		"walls": true
-	}
+	"physicsData": {
+		"speed": 0,
+		"mass": 1
+	},
+	"renderData": {
+		"spriteKey": null,
+		"frameTag": null,
+		"hideSprite": true
+	},
+	"collisionData": {
+		"collideSameTeamCharacters": false,
+		"collideOtherTeamCharacters": true,
+		"collideWalls": true
+	},
+	"projectileData": {
+		"spawnLocationType": "mouse-direction",
+		"spawnOffsetLength": 0.5,
+		"damage": 7,
+		"timeLength": 100,
+		"pushbackVecMagnitude": 10,
+		"destroyOnContact": true
+	} 
 }

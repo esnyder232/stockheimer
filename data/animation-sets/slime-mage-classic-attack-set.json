@@ -1,0 +1,7 @@
+{
+	"spriteKey": "data/sprites/slime-mage-classic.json",
+	"frameTagUp": "attack-up",
+	"frameTagDown": "attack-down",
+	"frameTagLeft": "attack-left",
+	"frameTagRight": "attack-right"
+}

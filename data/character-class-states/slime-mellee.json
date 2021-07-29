@@ -1,0 +1,10 @@
+{
+	"name": "Slime Mellee",
+	"animationSet": "attack",
+	"canLook": false,
+	"canMove": true,
+	"timeLength": 300,
+	"projectileKey": "data/projectiles/slime-mellee.json",
+	"projectileTime": 0,
+	"cooldownTimeLength": 300
+}

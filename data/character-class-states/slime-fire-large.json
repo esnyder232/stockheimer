@@ -3,8 +3,8 @@
 	"animationSet": "cast",
 	"canLook": false,
 	"canMove": false,
-	"timeLength": 500,
-	"projectileKey": "data/projectiles/slime-big-fire.json",
-	"projectileTime": 250,
+	"timeLength": 800,
+	"projectileKey": "data/projectiles/slime-fire-large.json",
+	"projectileTime": 200,
 	"cooldownTimeLength": 6000
 }
