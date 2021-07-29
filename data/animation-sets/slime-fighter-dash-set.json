@@ -1,0 +1,7 @@
+{
+	"spriteKey": "data/sprites/slime-fighter.json",
+	"frameTagUp": "dash-up",
+	"frameTagDown": "dash-down",
+	"frameTagLeft": "dash-left",
+	"frameTagRight": "dash-right"
+}

@@ -19,9 +19,10 @@
 		"idle": "data/animation-sets/slime-fighter-idle-set.json",
 		"move": "data/animation-sets/slime-fighter-move-set.json",
 		"attack": "data/animation-sets/slime-fighter-attack-set.json",
-		"cast": "data/animation-sets/slime-fighter-fire-set.json"
+		"cast": "data/animation-sets/slime-fighter-fire-set.json",
+		"dash": "data/animation-sets/slime-fighter-dash-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
 	"fireStateKey": "data/character-class-states/slime-mellee.json",
-	"altFireStateKey": "data/character-class-states/slime-fire-large.json"
+	"altFireStateKey": "data/character-class-states/slime-charge.json"
 }

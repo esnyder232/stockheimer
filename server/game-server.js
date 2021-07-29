@@ -75,14 +75,14 @@ class GameServer {
 		this.castleObject = null;
 		this.enemyCap = 100;
 
-		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
+		this.minimumUsersPlaying = 0; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 
 		////////////////////////////////////////////////////////////////////////
 		//This decides what classes/map gets loaded.
 		this.classKeyList = [
-			// "data/character-classes/slime-mage-classic.json",
+			"data/character-classes/slime-mage-classic.json",
 			"data/character-classes/slime-mage.json",
-			// "data/character-classes/slime-mage-2.json",
+			"data/character-classes/slime-mage-2.json",
 			"data/character-classes/slime-mage-3.json",
 			"data/character-classes/slime-fighter.json",
 		];

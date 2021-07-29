@@ -1,5 +1,6 @@
 {
 	"name": "Slime Mellee",
+	"type": "one-time",
 	"animationSet": "attack",
 	"canLook": false,
 	"canMove": true,

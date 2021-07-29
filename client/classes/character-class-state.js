@@ -13,6 +13,7 @@ export default class CharacterClassState {
 		this.frameTagDirection = "frameTagDown";
 		this.isFrameTagDirectionDirty = false;
 		this.preserveAnimationProgress = false;
+		this.cooldownTimeLength = 0;
 	}
 
 	enter(dt) {
@@ -33,13 +34,20 @@ export default class CharacterClassState {
 			this.isIdleState = false;
 			this.animationSetKey = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.animationSet, this.animationSetKey);
 			this.timeLength = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.timeLength, this.timeLength);
+			this.cooldownTimeLength = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.cooldownTimeLength, this.cooldownTimeLength);
 			this.repeatNum = 0;
 			this.preserveAnimationProgress = true;
 			this.frameTagDirection = "frameTagDown";
+			
+			//Major Hack reporting in, sir!
+			if(this.cooldownTimeLength >= 1500) {
+				this.character.showCooldownGraphics(this.cooldownTimeLength);
+			}
 		}
 
 		this.updateLookDirection();
 		this.setSpriteGraphics(true);
+		
 	}
 
 	update(dt) {

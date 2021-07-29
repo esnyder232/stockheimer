@@ -1,5 +1,6 @@
 {
 	"name": "Slime Big Fire",
+	"type": "one-time",
 	"animationSet": "cast",
 	"canLook": false,
 	"canMove": false,

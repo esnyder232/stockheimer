@@ -1,5 +1,6 @@
 {
 	"name": "Slime Fire",
+	"type": "one-time",
 	"animationSet": "idle",
 	"canLook": true,
 	"canMove": true,

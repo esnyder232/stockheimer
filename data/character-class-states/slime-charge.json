@@ -1,0 +1,12 @@
+{
+	"name": "Slime Charge",
+	"type": "special-charge",
+	"animationSet": "dash",
+	"canLook": true,
+	"canMove": false,
+	"timeLength": 250,
+	"projectileKey": null,
+	"projectileTime": 100,
+	"cooldownTimeLength": 3000,
+	"specialChargeMag": 40
+}

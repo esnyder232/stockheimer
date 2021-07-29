@@ -8,6 +8,7 @@ class CharacterClassState {
 		this.characterClassStateResource = characterClassStateResource;
 		this.characterClassStateResourceId = 0;
 		this.timeAcc = 0;
+		this.type = "one-time";
 
 		this.timeLength = 1000;
 		this.canMove = false;
@@ -17,6 +18,10 @@ class CharacterClassState {
 		
 		this.projectileFired = false;
 		this.cooldownTimeLength = 1000;
+
+		this.updateFunction = null;
+
+		this.specialChargeMag = 0;
 	}
 
 	enter(dt) {
@@ -29,6 +34,9 @@ class CharacterClassState {
 		this.projectileKey = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileKey, this.projectileKey);
 		this.projectileTime = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileTime, this.projectileTime);
 		this.cooldownTimeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.cooldownTimeLength, this.cooldownTimeLength);
+		this.type = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.type, this.type);
+		this.specialChargeMag = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialChargeMag, this.specialChargeMag);
+		
 
 		//set characters stuff from data
 		this.character.changeAllowMove(this.canMove);
@@ -48,9 +56,35 @@ class CharacterClassState {
 		if(this.projectileTime < 0) {
 			this.projectileTime = 0;
 		}
+
+		switch(this.type) {
+			case "one-time":
+				this.updateFunction = this.updateOneTime.bind(this);
+				break;
+			case "special-charge":
+				this.updateFunction = this.updateSpecialCharge.bind(this);
+				break;
+			default:
+				this.updateFunction = this.updateNoType.bind(this);
+				break;
+			
+		}
 	}
 
 	update(dt) {
+		this.updateFunction(dt);
+	}
+
+	exit(dt) {
+		// console.log("===== EXITED " + this.characterClassStateResource.data.name + " STATE");
+		this.character.changeAllowMove(true);
+		this.character.changeAllowShoot(true);
+		this.character.changeAllowLook(true);
+	}
+
+
+	//update function for "one-time" type of states
+	updateOneTime(dt) {
 		this.timeAcc += dt;
 
 		if(!this.projectileFired && this.timeAcc >= this.projectileTime) {
@@ -78,12 +112,64 @@ class CharacterClassState {
 		}
 	}
 
-	exit(dt) {
-		// console.log("===== EXITED " + this.characterClassStateResource.data.name + " STATE");
-		this.character.changeAllowMove(true);
-		this.character.changeAllowShoot(true);
-		this.character.changeAllowLook(true);
+
+	//update function for "channel" type of states
+	// updateChannel(dt) {
+	// 	this.timeAcc += dt;
+
+	// 	if(!this.projectileFired && this.timeAcc >= this.projectileTime) {
+	// 		this.projectileFired = true;
+			
+	// 		//check to make sure the projectile resource actually exists
+	// 		var projectileResource = this.gs.rm.getResourceByKey(this.projectileKey);
+
+	// 		if(projectileResource !== null) {
+	// 			var o = this.gs.gom.createGameObject("projectile");
+
+	// 			o.characterId = this.character.id;
+	// 			o.ownerId = this.character.ownerId;
+	// 			o.ownerType = this.character.ownerType;
+	// 			o.teamId = this.character.teamId;
+	
+	// 			var pos = this.character.plBody.getPosition();
+
+	// 			o.projectileInit(this.gs, projectileResource, pos.x, pos.y, this.character.frameInputController.characterDirection.value);
+	// 		}
+	// 	}
+		
+	// 	if(this.timeAcc >= this.timeLength) {
+	// 		this.character.setCharacterClassState(null);
+	// 	}
+	// }
+
+
+
+	//update function for "special-charge" type of states
+	updateSpecialCharge(dt) {
+		this.timeAcc += dt;
+
+		if(this.timeAcc >= this.projectileTime) {
+			//add an impulse to the character
+			var xDir = Math.cos(this.character.frameInputController.characterDirection.value);
+			var yDir = Math.sin(-this.character.frameInputController.characterDirection.value);
+			this.character.addForceImpulse(xDir, yDir, this.specialChargeMag);
+		}
+
+		if(this.timeAcc >= this.timeLength) {
+			this.character.setCharacterClassState(null);
+		}
 	}
+
+	//update for "no types", meaning the data is bad
+	updateNoType(dt) {
+		this.timeAcc += dt;
+		
+		if(this.timeAcc >= this.timeLength) {
+			this.character.setCharacterClassState(null);
+		}
+	}
+
+
 }
 
 exports.CharacterClassState = CharacterClassState

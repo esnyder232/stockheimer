@@ -51,8 +51,8 @@ class Character {
 		this.walkingAccVec = null;			//control variable (and the PV is the plank velocity)
 		this.walkingVelMagMax = 4;			//maximum walking speed you can get to
 		this.walkingVelTolerance = 1;		//tolerance for when to snap to the walking velocity
-		this.walkingAccMag = 10.0;			//acceleration to apply when trying to reach walking target
-		this.walkingStoppingAccMag = this.walkingAccMag * 1000;
+		this.walkingAccMag = 1000.0;			//acceleration to apply when trying to reach walking target
+		this.walkingStoppingAccMag = this.walkingAccMag;
 		this.walkingCurrentAccMagx = 0;
 		this.walkingCurrentAccMagy = 0;
 
@@ -642,16 +642,14 @@ class Character {
 		var pushbackVecMagnitude = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.projectileData?.pushbackVecMagnitude, 10);
 
 		//add a push back to the character
-		var pushBackVector = {xDir: 0, yDir: 0, mag: pushbackVecMagnitude};
-		
 		var pVel = p.plBody.getLinearVelocity();
 		var temp = this.gs.pl.Vec2(pVel.x, pVel.y);
 		temp.normalize();
-		pushBackVector.xDir = temp.x;
-		pushBackVector.yDir = temp.y;
-		pushBackVector.mag = pushbackVecMagnitude / this.size;
+		var xDir = temp.x;
+		var yDir = temp.y;
+		var mag = pushbackVecMagnitude / this.size;
 
-		this.forceImpulses.push(pushBackVector)
+		this.addForceImpulse(xDir, yDir, mag);
 
 		//apply damage to hp
 		this.modHealth(damage);
@@ -672,6 +670,12 @@ class Character {
 				});
 			}
 		}
+	}
+
+	//add a push back to the character for the one frame
+	addForceImpulse(xDir, yDir, mag) {
+		var pushBackVector = {xDir: xDir, yDir: yDir, mag: mag};
+		this.forceImpulses.push(pushBackVector)
 	}
 
 	///////////////////////////////////

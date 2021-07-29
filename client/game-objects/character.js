@@ -36,6 +36,7 @@ export default class Character {
 		this.glowGraphics = null;
 		this.mouseOverHitbox = null;
 		this.directionGraphics = null;
+		this.cooldownGraphics = null;
 
 		this.serverEventMapping = {
 			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this),
@@ -90,6 +91,33 @@ export default class Character {
 		this.glowRadius = 8;
 		this.glowCenterColor = "#ffffff";
 		this.glowOffsetY = 10;
+
+		//cooldown variables
+		this.cooldownHeight = 10;
+		this.cooldownOffsetY = -18;
+		this.cooldownOffsetX = 36;
+
+		this.cooldownHeightMin = 18;
+		this.cooldownHeightMax = 32;
+		this.cooldownHeightSizeRatio = 10;
+
+		this.cooldownOffsetYMin = -30;
+		this.cooldownOffsetYMax = -999;
+		this.cooldownOffsetYSizeRatio = -20;
+
+		this.cooldownOffsetXMin = 32;
+		this.cooldownOffsetXMax = 128;
+		this.cooldownOffsetXSizeRatio = 0;
+		
+		this.bShowCooldownGraphics = false;
+		this.cooldownTimeLength = 0;
+		this.cooldownUpdateInterval = 200;
+		this.cooldownUpdateAcc = 0;
+		this.cooldownTimeAcc = 0;
+
+		
+
+
 
 		//phaser data from resource (default values)
 		this.originX = 0.5;
@@ -148,6 +176,7 @@ export default class Character {
 		this.createGlowGraphics();
 		this.createMouseoverHitbox();
 		this.createDirectionGraphics();
+		this.createCooldownGraphics();
 
 		//draw the graphics objects on activation
 		this.drawHpBarGraphics();
@@ -155,6 +184,9 @@ export default class Character {
 		this.drawBoxGraphics();
 		this.drawGlowGraphics();
 		this.drawDirectionGraphics();
+		this.drawCooldownGraphics();
+
+		this.hideCooldownGraphics();
 
 		this.state = new CharacterClassState(this.gc, this, null, 0);
 		this.state.enter(0);
@@ -361,6 +393,44 @@ export default class Character {
 		this.mouseOverHitbox.on('pointerout', this.pointeroutEvent.bind(this));
 	}
 
+	createCooldownGraphics() {
+		if(this.ownerId === this.gc.myUserServerId) {			
+			//calculate cooldown height and offset
+			this.cooldownHeight = this.cooldownHeightMin + ((this.size - 1) * this.cooldownHeightSizeRatio);
+			this.cooldownOffsetY = this.cooldownOffsetYMin + ((this.size - 1) * this.cooldownOffsetYSizeRatio);
+			this.cooldownOffsetX = this.cooldownOffsetXMin + ((this.size - 1) * this.cooldownOffsetXSizeRatio);
+
+			this.cooldownHeight = this.globalfuncs.clamp(this.cooldownHeight, this.cooldownHeightMin, this.cooldownHeightMax);
+			this.cooldownOffsetY = this.globalfuncs.clamp(this.cooldownOffsetY, this.cooldownOffsetYMax, this.cooldownOffsetYMin);
+			this.cooldownOffsetX = this.globalfuncs.clamp(this.cooldownOffsetX, this.cooldownOffsetXMin, this.cooldownOffsetXMax);
+
+			this.cooldownGraphics = this.ms.add.text((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), "9");
+			this.cooldownGraphics.setX((this.x * this.ms.planckUnitsToPhaserUnitsRatio) + this.cooldownOffsetX);
+			this.cooldownGraphics.setY((this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + this.cooldownOffsetY);
+
+			this.cooldownGraphics.setAlpha(1.0);
+
+			//if its your own character, put it on a special layer that is always on top
+			this.cooldownGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
+		}
+	}
+
+	drawCooldownGraphics() {
+		if(this.cooldownGraphics !== null) {
+			var textStyle = {
+				color: this.characterTextFillColor,
+				fontSize: this.textHeight + "px",
+				strokeThickness: this.characterTextStrokeThickness,
+				stroke: this.characterTextStrokeColor
+			}
+	
+			if(this.cooldownGraphics !== null) {
+				this.cooldownGraphics.setStyle(textStyle);
+				this.cooldownGraphics.setText("9");
+			}
+		}
+	}
+
 	pointeroverEvent() {
 		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
 		this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
@@ -430,6 +500,11 @@ export default class Character {
 		this.glowGraphics.destroy();
 		this.mouseOverHitbox.destroy();
 		this.directionGraphics.destroy();
+
+		if(this.cooldownGraphics !== null) {
+			this.cooldownGraphics.destroy();
+			this.cooldownGraphics = null;
+		}
 
 		//put gravestone where the character was removed
 		var gravestone = {
@@ -505,6 +580,36 @@ export default class Character {
 	}
 
 
+	showCooldownGraphics(cooldownTimeLength) {
+		if(this.cooldownGraphics !== null) {
+			this.bShowCooldownGraphics = true;
+			this.cooldownTimeAcc = 0;
+			this.cooldownUpdateAcc = 200;
+			this.cooldownTimeLength = cooldownTimeLength;
+	
+			//also unhide the phaser graphics here somehow
+			this.cooldownGraphics.setVisible(true);
+		}
+	}
+
+	updateCooldownGraphics() {
+		if(this.cooldownGraphics !== null) {
+			var secondsLeft = Math.floor((this.cooldownTimeLength - this.cooldownTimeAcc)/1000);
+			this.cooldownGraphics.setText(secondsLeft);
+		}
+	}
+
+	hideCooldownGraphics() {
+		if(this.cooldownGraphics !== null) {
+			this.bShowCooldownGraphics = false;
+
+			//also hide the phaser graphics here somehow
+			this.cooldownGraphics.setVisible(false);
+		}
+	}
+
+
+
 	update(dt) {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
@@ -542,6 +647,20 @@ export default class Character {
 			}
 		}
 
+		if(this.bShowCooldownGraphics) {
+			this.cooldownTimeAcc += dt;
+			this.cooldownUpdateAcc += dt;
+
+			if(this.cooldownUpdateAcc >= this.cooldownUpdateInterval) {
+				this.cooldownUpdateAcc = 0;
+				this.updateCooldownGraphics();
+			}
+
+			if(this.cooldownTimeAcc >= this.cooldownTimeLength) {
+				this.hideCooldownGraphics();
+			}
+		}
+
 		this.updateRenderTarget(dt);
 		this.render(dt);
 	}
@@ -574,38 +693,10 @@ export default class Character {
 		var targety = this.serverY;
 		var actualx = targetx;
 		var actualy = targety;
-		var tolerance = 0.07;
-		var maxTolerance = 2.00;
 		var mySpeed = 0.25;
 
-		//if the target is too far away, snap to the target instead of slowly panning (this avoids a "zoop" across the screen)
-		//snap to target if its too far away (above max tolerance)
-		if(curx <= targetx - maxTolerance || curx >= targetx + maxTolerance) {
-			actualx = targetx;
-		}
-		//slowly pan to the target
-		else if (curx <= targetx - tolerance || curx >= targetx + tolerance) {
-			actualx = ((targetx - curx) * mySpeed) + curx;
-		}
-		//snap to the target if your close enough (within tolerance)
-		else {
-			actualx = targetx;
-		}
-
-
-		//snap to target if its too far away (above max tolerance)
-		if(cury <= targety - maxTolerance || cury >= targety + maxTolerance ) {
-			actualy = targety
-		}
-		//slowly pan to the target
-		else if (cury <= targety - tolerance || cury >= targety + tolerance) {
-			actualy = ((targety - cury) * mySpeed) + cury;
-		}
-		//snap to the target if your close enough (within tolerance)
-		else {
-			actualy = targety;
-		}
-
+		actualx = ((targetx - curx) * mySpeed) + curx;
+		actualy = ((targety - cury) * mySpeed) + cury;
 
 		this.x = actualx;
 		this.y = actualy;
@@ -632,5 +723,9 @@ export default class Character {
 		this.mouseOverHitbox.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
 		this.mouseOverHitbox.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
 
+		if(this.bShowCooldownGraphics && this.cooldownGraphics !== null) {
+			this.cooldownGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio) + this.cooldownOffsetX);
+			this.cooldownGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + this.cooldownOffsetY);
+		}
 	}
 }
