@@ -1,6 +1,6 @@
 {
-	"name": "Slime Charge",
-	"type": "special-charge",
+	"name": "Slime Dash",
+	"type": "special-dash",
 	"animationSet": "dash",
 	"canLook": true,
 	"canMove": false,
@@ -8,5 +8,5 @@
 	"projectileKey": null,
 	"projectileTime": 100,
 	"cooldownTimeLength": 3000,
-	"specialChargeMag": 40
+	"specialDashMag": 40
 }

@@ -115,10 +115,6 @@ export default class Character {
 		this.cooldownUpdateAcc = 0;
 		this.cooldownTimeAcc = 0;
 
-		
-
-
-
 		//phaser data from resource (default values)
 		this.originX = 0.5;
 		this.originY = 0.5;

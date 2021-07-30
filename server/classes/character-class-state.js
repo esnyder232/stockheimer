@@ -20,8 +20,7 @@ class CharacterClassState {
 		this.cooldownTimeLength = 1000;
 
 		this.updateFunction = null;
-
-		this.specialChargeMag = 0;
+		this.specialDashMag = 0;
 	}
 
 	enter(dt) {
@@ -35,7 +34,7 @@ class CharacterClassState {
 		this.projectileTime = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileTime, this.projectileTime);
 		this.cooldownTimeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.cooldownTimeLength, this.cooldownTimeLength);
 		this.type = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.type, this.type);
-		this.specialChargeMag = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialChargeMag, this.specialChargeMag);
+		this.specialDashMag = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashMag, this.specialDashMag);
 		
 
 		//set characters stuff from data
@@ -61,8 +60,8 @@ class CharacterClassState {
 			case "one-time":
 				this.updateFunction = this.updateOneTime.bind(this);
 				break;
-			case "special-charge":
-				this.updateFunction = this.updateSpecialCharge.bind(this);
+			case "special-dash":
+				this.updateFunction = this.updateSpecialDash.bind(this);
 				break;
 			default:
 				this.updateFunction = this.updateNoType.bind(this);
@@ -144,15 +143,15 @@ class CharacterClassState {
 
 
 
-	//update function for "special-charge" type of states
-	updateSpecialCharge(dt) {
+	//update function for "special-dash" type of states
+	updateSpecialDash(dt) {
 		this.timeAcc += dt;
 
 		if(this.timeAcc >= this.projectileTime) {
 			//add an impulse to the character
 			var xDir = Math.cos(this.character.frameInputController.characterDirection.value);
 			var yDir = Math.sin(-this.character.frameInputController.characterDirection.value);
-			this.character.addForceImpulse(xDir, yDir, this.specialChargeMag);
+			this.character.addForceImpulse(xDir, yDir, this.specialDashMag);
 		}
 
 		if(this.timeAcc >= this.timeLength) {
