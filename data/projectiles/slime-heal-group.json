@@ -1,44 +1,44 @@
 {
-	"name": "Slime Heal Bolt",
-	"size": 0.3,
+	"name": "Slime Heal Group",
+	"size": 4.0,
 	"planckData": {
 		"plShape": "circle",
 		"plRadius": 1
 	},
 	"phaserData": {
-		"originX": 0.70,
+		"originX": 0.5,
 		"originY": 0.5,
-		"scaleX": 5.0,
-		"scaleY": 5.0
+		"scaleX": 3.0,
+		"scaleY": 3.0
 	},
 	"physicsData": {
-		"speed": 8,
+		"speed": 0,
 		"mass": 100
 	},
 	"renderData": {
-		"spriteKey": "data/sprites/heal-bolt.json",
-		"frameTag": "",
+		"spriteKey": "data/sprites/heal-group-smear.json",
+		"frameTag": "main",
 		"hideSprite": false,
-		"animationTimeLength": 0,
+		"animationTimeLength": 100,
 		"repeatNum": 0
 	},
 	"collisionData": {
 		"collideSameTeamCharacters": true,
 		"collideOtherTeamCharacters": false,
-		"collideSelf": false,
-		"collideWalls": true
+		"collideSelf": true,
+		"collideWalls": false
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 0.8,
-		"timeLength": 1000,
+		"spawnOffsetLength": 0.0,
+		"timeLength": 100,
 		"pushbackVecMagnitude": 0,
 		"destroyOnContact": false
 	},
 	"characterEffectData": [
 		{
 			"type": "heal",
-			"value": 2
+			"value": 10
 		}
 	]
 }

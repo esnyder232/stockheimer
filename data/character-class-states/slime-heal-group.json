@@ -1,0 +1,11 @@
+{
+	"name": "Slime Heal Group",
+	"type": "one-time",
+	"animationSet": "cast",
+	"canLook": true,
+	"canMove": false,
+	"timeLength": 400,
+	"projectileKey": "data/projectiles/slime-heal-group.json",
+	"projectileTime": 100,
+	"cooldownTimeLength": 8000
+}

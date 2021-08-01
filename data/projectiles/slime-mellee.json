@@ -31,15 +31,14 @@
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 1.0,
-		"damage": 6,
 		"timeLength": 100,
-		"pushbackVecMagnitude": 90,
+		"pushbackVecMagnitude": 50,
 		"destroyOnContact": true
 	},
 	"characterEffectData": [
 		{
 			"type": "damage",
-			"value": 7
+			"value": 4
 		}
 	]
 }
