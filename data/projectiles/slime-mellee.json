@@ -6,19 +6,21 @@
 		"plRadius": 1
 	},
 	"phaserData": {
-		"originX": 0.5,
+		"originX": 0.4,
 		"originY": 0.5,
-		"scaleX": 1.0,
-		"scaleY": 1.0
+		"scaleX": 10.0,
+		"scaleY": 10.0
 	},
 	"physicsData": {
 		"speed": 0.1,
 		"mass": 1
 	},
 	"renderData": {
-		"spriteKey": null,
-		"frameTag": null,
-		"hideSprite": true
+		"spriteKey": "data/sprites/slime-melee-smear.json",
+		"frameTag": "main",
+		"hideSprite": false,
+		"animationTimeLength": 100,
+		"repeatNum": 0
 	},
 	"collisionData": {
 		"collideSameTeamCharacters": false,
@@ -28,7 +30,7 @@
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 0.5,
+		"spawnOffsetLength": 1.0,
 		"damage": 6,
 		"timeLength": 100,
 		"pushbackVecMagnitude": 90,

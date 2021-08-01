@@ -51,7 +51,10 @@ export default class Projectile {
 		this.scaleY = 1;
 		this.size = 1;
 		this.spriteKey = "";
+		this.frameTag = "";
 		this.hideSprite = false;
+		this.animationTimeLength = 1000;
+		this.repeatNum = -1;
 	}
 
 	projectileInit(gameClient) {
@@ -72,8 +75,11 @@ export default class Projectile {
 		this.scaleY = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.phaserData?.scaleY, this.scaleY);
 		this.size = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.size, this.size);
 		this.spriteKey = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.spriteKey, this.spriteKey);
+		this.frameTag = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.frameTag, this.frameTag);
 		this.hideSprite = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.hideSprite, this.hideSprite);
-
+		this.animationTimeLength = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.animationTimeLength, this.animationTimeLength);
+		this.repeatNum = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.repeatNum, this.repeatNum);
+		
 		//calculate stuff
 		this.x = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
 		this.y = this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1
@@ -119,11 +125,25 @@ export default class Projectile {
 
 	createSpriteGraphics() {
 		if(!this.hideSprite) {
+			
 			this.spriteGraphics = this.ms.add.sprite((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), this.spriteKey);
 			this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 			this.spriteGraphics.setOrigin(this.originX, this.originY);
 			this.spriteGraphics.setScale(this.size * this.scaleX, this.size * this.scaleY);
 			this.spriteGraphics.setAngle(this.angle * (180/Math.PI));
+
+			if(this.frameTag) {
+				this.spriteGraphics.anims.play(this.spriteKey + "-" + this.frameTag);
+
+				//calculate msPerFrame by the new animation playing and timeLength
+				var totalFrames = this.spriteGraphics.anims.getTotalFrames();
+				if(totalFrames > 0) {
+					var msPerFrame = this.animationTimeLength/totalFrames;
+					
+					this.spriteGraphics.anims.msPerFrame = msPerFrame;
+					this.spriteGraphics.anims.setRepeat(this.repeatNum);
+				}
+			}
 		}
 	}
 
