@@ -12,7 +12,7 @@
 		"scaleY": 1.0
 	},
 	"physicsData": {
-		"speed": 0,
+		"speed": 0.1,
 		"mass": 1
 	},
 	"renderData": {
@@ -29,9 +29,9 @@
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 0.5,
-		"damage": 7,
+		"damage": 6,
 		"timeLength": 100,
-		"pushbackVecMagnitude": 10,
+		"pushbackVecMagnitude": 90,
 		"destroyOnContact": true
 	},
 	"characterEffectData": [

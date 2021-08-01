@@ -4,9 +4,11 @@
 	"animationSet": "dash",
 	"canLook": true,
 	"canMove": false,
-	"timeLength": 250,
+	"timeLength": 400,
 	"projectileKey": null,
 	"projectileTime": 100,
 	"cooldownTimeLength": 3000,
-	"specialDashMag": 40
+	"specialDashMag": 40,
+	"specialDashTimeStop": 250,
+	"contactDmg": 5
 }

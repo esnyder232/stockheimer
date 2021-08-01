@@ -20,7 +20,7 @@ class CollisionSystem {
 			// {type1: "ai-agent", 	type2:"aibody", 	beginFunc: this.beginAIAgentAiBodyCollision.bind(this), 		endFunc: this.endAIAgentAiBodyCollision.bind(this)},
 			{type1: "castle", 		type2:"projectile",	beginFunc: this.beginCastleProjectileCollision.bind(this), 		endFunc: this.endCastleProjectileCollision.bind(this)},
 			{type1: "castle", 		type2:"user", 		beginFunc: this.beginCastleUserCollision.bind(this), 			endFunc: this.endCastleUserCollision.bind(this)},
-			// {type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
+			{type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
 			{type1: "character", 	type2:"projectile", beginFunc: this.beginCharacterProjectileCollision.bind(this), 	endFunc: this.endCharacterProjectileCollision.bind(this)},
 			// {type1: "character", 	type2:"wall", 		beginFunc: this.beginCharacterWallCollision.bind(this), 		endFunc: this.endCharacterWallCollision.bind(this)},
 			{type1: "character", 	type2:"user", 		beginFunc: this.beginCharacterUserCollision.bind(this), 		endFunc: this.endCharacterUserCollision.bind(this)},
@@ -232,6 +232,23 @@ class CollisionSystem {
 	beginCharacterCharacterCollision(characterUserData1, characterUserData2, contactObj, isCharacterA)
 	{
 		//logger.log("info", 'begin character character Collision: A: ' + characterUserData1.type + " " + characterUserData1.id + "==== B: " + characterUserData2.type + " " + characterUserData2.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var c1 = this.gs.gom.getGameObjectByID(characterUserData1.id);
+		var c2 = this.gs.gom.getGameObjectByID(characterUserData2.id);
+
+		if(c1 !== null && c2 !== null) {
+			var processCollision = false;
+	
+			//team collision check (i only have a need to detect opposite teams...makes this part easier lol)
+			if(c1.teamId !== c2.teamId && (c1.collideOtherTeamCharacters || c2.collideOtherTeamCharacters)) {
+				processCollision = true;
+			}
+				
+			if(processCollision) {
+				c1.collisionCharacter(c2);
+				c2.collisionCharacter(c1);
+			}
+		}
+
 	}
 
 	endCharacterCharacterCollision(characterUserData1, characterUserData2, contactObj, isCharacterA)

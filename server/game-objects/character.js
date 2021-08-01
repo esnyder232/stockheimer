@@ -71,6 +71,8 @@ class Character {
 		this.activeStateCooldowns = [];
 		this.stateCooldownsTemplates = {};
 
+		this.collideOtherTeamCharacters = false;
+
 		//resource data
 		this.size = 1;
 		this.planckRadius = 1;
@@ -669,6 +671,16 @@ class Character {
 
 		this.addForceImpulse(xDir, yDir, mag);
 	}
+	
+	collisionCharacter(otherCharacter) {
+		//apply contact damage
+		if(otherCharacter.collideOtherTeamCharacters) {
+			var u = this.gs.um.getUserByID(otherCharacter.ownerId);
+			if(u !== null) {
+				this.applyDamageEffect(u.id, otherCharacter.contactDamage);
+			}
+		}
+	}
 
 	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(damage);
@@ -707,6 +719,17 @@ class Character {
 		var pushBackVector = {xDir: xDir, yDir: yDir, mag: mag};
 		this.forceImpulses.push(pushBackVector)
 	}
+
+	startContactDamage(contactDamage) {
+		this.collideOtherTeamCharacters = true;
+		this.contactDamage = contactDamage;
+	}
+
+	stopContactDamage() {
+		this.collideOtherTeamCharacters = false;
+		this.contactDamage = 0;
+	}
+
 
 	///////////////////////////////////
 	// EVENT SERIALIZATION FUNCTIONS //

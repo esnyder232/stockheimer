@@ -14,13 +14,15 @@ class CharacterClassState {
 		this.canMove = false;
 		this.canLook = false;
 		this.projectileKey = null;
-		this.projectileTime = null;
+		this.projectileTime = 0;
 		
 		this.projectileFired = false;
 		this.cooldownTimeLength = 1000;
 
 		this.updateFunction = null;
 		this.specialDashMag = 0;
+		this.specialDashTimeStop = 0;
+		this.contactDmg = 0;
 	}
 
 	enter(dt) {
@@ -35,7 +37,8 @@ class CharacterClassState {
 		this.cooldownTimeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.cooldownTimeLength, this.cooldownTimeLength);
 		this.type = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.type, this.type);
 		this.specialDashMag = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashMag, this.specialDashMag);
-		
+		this.specialDashTimeStop = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashTimeStop, this.specialDashTimeStop);
+		this.contactDmg = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.contactDmg, this.contactDmg);
 
 		//set characters stuff from data
 		this.character.changeAllowMove(this.canMove);
@@ -61,6 +64,7 @@ class CharacterClassState {
 				this.updateFunction = this.updateOneTime.bind(this);
 				break;
 			case "special-dash":
+				this.character.startContactDamage(this.contactDmg);
 				this.updateFunction = this.updateSpecialDash.bind(this);
 				break;
 			default:
@@ -79,6 +83,7 @@ class CharacterClassState {
 		this.character.changeAllowMove(true);
 		this.character.changeAllowShoot(true);
 		this.character.changeAllowLook(true);
+		this.character.stopContactDamage();
 	}
 
 
@@ -147,7 +152,7 @@ class CharacterClassState {
 	updateSpecialDash(dt) {
 		this.timeAcc += dt;
 
-		if(this.timeAcc >= this.projectileTime) {
+		if(this.timeAcc >= this.projectileTime && this.timeAcc <= this.specialDashTimeStop) {
 			//add an impulse to the character
 			var xDir = Math.cos(this.character.frameInputController.characterDirection.value);
 			var yDir = Math.sin(-this.character.frameInputController.characterDirection.value);
