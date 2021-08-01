@@ -1,6 +1,6 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
-// const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
+const AIAgentHealIdleState = require('./ai-agent-heal-idle-state.js');
 const {CollisionCategories, CollisionMasks} = require('../../data/collision-data.js');
 const logger = require("../../../logger.js");
 const ServerConfig = require("../../server-config.json");
@@ -63,6 +63,56 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			this.aiAgent.character = this.aiAgent.gs.gom.getGameObjectByID(this.aiAgent.user.characterId);
 			this.aiAgent.characterPos = this.aiAgent.character.plBody.getPosition();
 
+
+
+
+			//calculate attack range of ai (probably a shitty way to do this, oh well)
+			this.aiAgent.attackingRangeSquared = 10;
+
+			//get the projectile that the character can shoot
+			var cr = this.aiAgent.character.characterClassResource;
+			var fireStateResource = null;
+			var projectileResource = null;
+
+			if(cr !== null) {
+				fireStateResource = this.aiAgent.gs.rm.getResourceByKey(cr?.data?.fireStateKey);
+				if(fireStateResource !== null) {
+					projectileResource = this.aiAgent.gs.rm.getResourceByKey(fireStateResource?.data?.projectileKey);
+				}
+			}
+
+			//calculate the range of the primary projectile
+			if(projectileResource !== null) {
+				var speed = projectileResource?.data?.physicsData?.speed;
+				var spawnOffsetLength = projectileResource?.data?.projectileData?.spawnOffsetLength;
+				var timeLength = projectileResource?.data?.projectileData?.timeLength;
+
+				if(speed !== undefined && spawnOffsetLength !== undefined && timeLength !== undefined) {
+					var temp = speed*(timeLength/1000) + spawnOffsetLength;
+					this.aiAgent.attackingRangeSquared = temp*temp;
+
+					if(this.aiAgent.attackingRangeSquared < 1) {
+						this.aiAgent.attackingRangeSquared = 1;
+					}
+
+					// console.log("AIAgent for character class '" +cr?.data?.name + "', range calculated to be: " + this.aiAgent.attackingRangeSquared);
+				}
+			}
+
+			//determine if you are a healing or an attacking role (for now, just look at the primary projectile)
+			if(projectileResource !== null) {
+				var characterEffects = this.globalfuncs.getValueDefault(projectileResource?.data?.characterEffectData, []);
+
+				//if you find any healing, you are for sure a healing class. Thats the law.
+				var healingEffect = characterEffects.find((x) => {return x.type === "heal";});
+
+				if(healingEffect !== undefined) {
+					this.aiAgent.characterRole = "heal";
+				} else {
+					this.aiAgent.characterRole = "damage";
+				}
+			}
+
 			//////////////////////////////////////////
 			// old (may be removed completely later)
 			//create a aiVision body for the ai agent
@@ -84,39 +134,6 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			//////////////////////////////////////////
 
 
-			//calculate attack range of ai (probably a shitty way to do this, oh well)
-			this.aiAgent.attackingRangeSquared = 10;
-
-			//get the projectile that the character can shoot
-			var cr = this.aiAgent.character.characterClassResource;
-			var fireStateResource = null;
-			var projectileResource = null;
-
-			if(cr !== null) {
-				fireStateResource = this.aiAgent.gs.rm.getResourceByKey(cr?.data?.fireStateKey);
-				if(fireStateResource !== null) {
-					projectileResource = this.aiAgent.gs.rm.getResourceByKey(fireStateResource?.data?.projectileKey);
-				}
-			}
-
-			if(projectileResource !== null) {
-				var speed = projectileResource?.data?.physicsData?.speed;
-				var spawnOffsetLength = projectileResource?.data?.projectileData?.spawnOffsetLength;
-				var timeLength = projectileResource?.data?.projectileData?.timeLength;
-
-				if(speed !== undefined && spawnOffsetLength !== undefined && timeLength !== undefined) {
-					var temp = speed*(timeLength/1000) + spawnOffsetLength;
-					this.aiAgent.attackingRangeSquared = temp*temp;
-
-					if(this.aiAgent.attackingRangeSquared < 1) {
-						this.aiAgent.attackingRangeSquared = 1;
-					}
-
-					// console.log("AIAgent for character class '" +cr?.data?.name + "', range calculated to be: " + this.aiAgent.attackingRangeSquared);
-				}
-			}
-			
-
 			
 
 			this.aiAgent.character.em.batchRegisterForEvent(this.aiAgent.characterEventCallbackMapping);
@@ -125,7 +142,12 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			if(ServerConfig.allow_simulated_user_ai_agents && this.aiAgent.user.username.indexOf("beepboop") === 0) {
 				this.aiAgent.bForceIdle = true;
 			}
-			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+
+			if(this.aiAgent.characterRole === "heal") {
+				this.aiAgent.nextState = new AIAgentHealIdleState.AIAgentHealIdleState(this.aiAgent);
+			} else {
+				this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			}
 		}
 
 		this.aiAgent.processPlayingEvents();

@@ -133,10 +133,11 @@ export default class Character {
 		this.selfDamageTimerLength = 100;
 		this.selfDamageTimer = 0;
 
-		this.characterTintColor = 0xffffff;
+		this.healTintColor = 0xADD8E6;
+		this.healTimerLength = 100;
+		this.healTimer = 0;
 
-		//hacky shit for now. Delete this later.
-		this.teamName = "";
+		this.characterTintColor = 0xffffff;
 	}
 
 	characterInit(gameClient) {
@@ -576,6 +577,16 @@ export default class Character {
 	}
 
 
+	showHealTint() {
+		this.spriteGraphics.setTintFill(this.healTintColor);
+		this.healTimer = this.healTimerLength;
+	}
+
+	hideHealTint() {
+		this.spriteGraphics.clearTint();
+	}
+
+
 	showCooldownGraphics(cooldownTimeLength) {
 		if(this.cooldownGraphics !== null) {
 			this.bShowCooldownGraphics = true;
@@ -642,6 +653,16 @@ export default class Character {
 				this.hideDamageTint();
 			}
 		}
+
+
+		if(this.healTimer > 0) {
+			this.healTimer -= dt;
+			if(this.healTimer <= 0) {
+				this.hideHealTint();
+			}
+		}
+
+
 
 		if(this.bShowCooldownGraphics) {
 			this.cooldownTimeAcc += dt;

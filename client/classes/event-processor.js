@@ -3,7 +3,8 @@ import ClientConfig from '../client-config.json';
 import AddActiveCharacterEvent from "../event-classes/add-active-character-event.js"
 import RemoveActiveCharacterEvent from "../event-classes/remove-active-character-event.js"
 import ActiveCharacterUpdateEvent from "../event-classes/active-character-update-event.js"
-import CharacterDamageEvent from "../event-classes/character-damage-event.js"
+import CharacterDamageEffectEvent from "../event-classes/character-damage-effect-event.js"
+import CharacterHealEffectEvent from "../event-classes/character-heal-effect-event.js"
 import UpdateUserInfoEvent from "../event-classes/update-user-info-event.js"
 import UserConnectedEvent from "../event-classes/user-connected-event.js"
 import UserDisconnectedEvent from "../event-classes/user-disconnected-event.js"
@@ -61,7 +62,8 @@ export default class EventProcessor {
 			{eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent()},
 			{eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent()},
 			{eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent()},
-			{eventName: "characterDamage", eventClass: new CharacterDamageEvent()},
+			{eventName: "characterDamageEffect", eventClass: new CharacterDamageEffectEvent()},
+			{eventName: "characterHealEffect", eventClass: new CharacterHealEffectEvent()},
 			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()},
 			{eventName: "userConnected", eventClass: new UserConnectedEvent()},
 			{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent()},

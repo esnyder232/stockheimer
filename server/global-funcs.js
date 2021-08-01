@@ -366,6 +366,16 @@ class GlobalFuncs {
 		if(cIndex >= 0 && cIndex < availableClasses.length) {
 			randomClass = availableClasses[cIndex];
 		}
+
+		//temp - only return ONE healing class, for testing ai healing
+		// if(!gameServer.healerChosen) {
+		// 	gameServer.healerChosen = true;
+		// 	randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-healer.json"});
+		// }
+		// else if (randomClass.key === "data/character-classes/slime-healer.json") {
+		// 	//default it to slime-mage
+		// 	randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-mage.json"});
+		// }
 		
 		return randomClass;
 	}

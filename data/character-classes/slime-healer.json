@@ -21,6 +21,6 @@
 		"cast": "data/animation-sets/slime-healer-fire-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
-	"fireStateKey": "data/character-class-states/slime-fire.json",
+	"fireStateKey": "data/character-class-states/slime-heal-bolt.json",
 	"altFireStateKey": "data/character-class-states/slime-fire-small.json"
 }

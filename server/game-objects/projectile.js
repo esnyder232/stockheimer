@@ -21,7 +21,6 @@ class Projectile {
 		this.size = 1;
 
 		this.spawnLocationType = "mouse-direction";
-		this.damage = 1;
 		this.timeLength = 1000; //ms
 		this.spawnOffsetLength = 0;
 
@@ -39,6 +38,8 @@ class Projectile {
 		this.collideSameTeamCharacters = false;
 		this.collideOtherTeamCharacters = false;
 		this.collideWalls = false;
+		this.collideSelf = false;
+		this.characterEffectData = [];
 	}
 
 
@@ -59,14 +60,14 @@ class Projectile {
 		this.speed = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.speed);
 		this.mass = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.mass);
 		this.spawnLocationType = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnLocationType);
-		this.damage = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.damage);
 		this.timeLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.timeLength);
 		this.spawnOffsetLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnOffsetLength);
 		this.size = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.size);
 		this.collideSameTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSameTeamCharacters, this.collideSameTeamCharacters);
 		this.collideOtherTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideOtherTeamCharacters, this.collideOtherTeamCharacters);
 		this.collideWalls = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideWalls);
-
+		this.collideSelf = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSelf);
+		this.characterEffectData = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.characterEffectData);
 
 		//data validation stuff
 		if(this.size <= 0) {
@@ -182,11 +183,6 @@ class Projectile {
 		var destroyOnContact = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.destroyOnContact, true);
 
 		if(destroyOnContact) {
-			this.timeLength = 0;
-		}
-
-		//temporary. Just a special case for the big boy to be useful for something
-		if(c.size >= 4) {
 			this.timeLength = 0;
 		}
 	}

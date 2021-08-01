@@ -1,7 +1,7 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
-// const AIAgentSeekCastleState = require('./ai-agent-seek-castle-state.js');
 const AIAgentSeekPlayerState = require('./ai-agent-seek-player-state.js');
 const AIAgentIdleState = require('./ai-agent-idle-state.js');
+const AIAgentHealIdleState = require('./ai-agent-heal-idle-state.js');
 const logger = require("../../../logger.js");
 
 class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
@@ -43,15 +43,49 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 		//any state can be forced into the forced idle state with bForceIdle
 		if(this.aiAgent.bForceIdle) {
-			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			if(this.aiAgent.characterRole === "heal") {
+				this.aiAgent.nextState = new AIAgentHealIdleState.AIAgentHealIdleState(this.aiAgent);
+			} else {
+				this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			}
+			
 			decisionMade = true;
 		}
 
 		//if you currently do not have a target (either the player was killed/disconnected/whatever), switch back to idle mode
 		if(!decisionMade && this.aiAgent.targetCharacter === null) {
-			this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			if(this.aiAgent.characterRole === "heal") {
+				this.aiAgent.nextState = new AIAgentHealIdleState.AIAgentHealIdleState(this.aiAgent);
+			} else {
+				this.aiAgent.nextState = new AIAgentIdleState.AIAgentIdleState(this.aiAgent);
+			}
+			
 			decisionMade = true;
 		}
+
+		
+
+
+		//hacky as shit. if your healing, check your current allies and switch targets to the lowest hp
+		if(!decisionMade && this.aiAgent.characterRole === "heal" && this.checkTimer >= this.checkTimerInterval) {
+			this.aiAgent.sortAllyCharactersInVision();
+			var lowestHpAlly = null;
+			if(this.aiAgent.allyCharactersInVision.length > 0) {
+				lowestHpAlly = this.aiAgent.allyCharactersInVision[0];
+			}
+
+			//if the lowestHpAlly's hpDiff is actually 0, that means everyone around the healer is fully healed. The healer needs to find a new target in this case.
+			//Generally, this happens at the beginning of the round, and there are 2 or more healers stuck at spawn healing eachother.
+			if(lowestHpAlly !== null && lowestHpAlly.hpDiff === 0) {
+				lowestHpAlly =  this.aiAgent.findAllyToHeal();
+			}
+
+			if(lowestHpAlly !== null) {
+				// console.log("--- lowesthpAlly detected. assigning target to character with ownerId " + lowestHpAlly.c.ownerId);
+				this.aiAgent.assignTargetCharacter(lowestHpAlly.c);
+			}
+		}
+
 
 
 		

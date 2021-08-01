@@ -1,4 +1,4 @@
-export default class CharacterDamageEvent {
+export default class CharacterDamageEffectEvent {
 	constructor() {
 		this.gc = null;
 	}

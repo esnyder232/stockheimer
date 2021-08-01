@@ -177,12 +177,6 @@ class Character {
 
 		var collisionCategory = CollisionCategories["character_body"];
 		var collisionMask = CollisionMasks["character_body"];
-
-		if(this.ownerType === "ai")
-		{
-			collisionCategory = CollisionCategories["ai_body"];
-			collisionMask = CollisionMasks["ai_body"];
-		}
 		
 		//create planck fixture
 		this.plBody.createFixture({
@@ -634,12 +628,36 @@ class Character {
 		if(this.hpCur < 0) {
 			this.hpCur = 0;
 		}
+		else if(this.hpCur > this.hpMax) {
+			this.hpCur = this.hpMax;
+		}
 	}
 
 	collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA) {
 		//get resource data
-		var damage = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.projectileData?.damage, 0);
 		var pushbackVecMagnitude = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.projectileData?.pushbackVecMagnitude, 10);
+		var characterEffectData = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.characterEffectData, []);
+
+		//update last hit by
+		if(p.ownerId !== null) {
+			this.lastHitByOwnerId = p.ownerId;
+			this.lastHitByOwnerType = p.ownerType;
+		}
+
+		//go through each character hit effect
+		for(var i = 0; i < characterEffectData.length; i++) {
+			switch(characterEffectData[i].type) {
+				case "damage":
+					var value = this.gs.globalfuncs.getValueDefault(characterEffectData[i].value, 0);
+					this.applyDamageEffect(p.ownerId, value);
+					break;
+				case "heal":
+					var value = this.gs.globalfuncs.getValueDefault(characterEffectData[i].value, 0);
+					this.applyHealEffect(p.ownerId, value);
+					break;
+			}
+		}
+
 
 		//add a push back to the character
 		var pVel = p.plBody.getLinearVelocity();
@@ -650,27 +668,39 @@ class Character {
 		var mag = pushbackVecMagnitude / this.size;
 
 		this.addForceImpulse(xDir, yDir, mag);
+	}
 
-		//apply damage to hp
+	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(damage);
 
-		//update last hit by
-		if(p.ownerId !== null) {
-			this.lastHitByOwnerId = p.ownerId;
-			this.lastHitByOwnerType = p.ownerType;
-
-			//create event for clients to notify them of damage
-			var userAgents = this.gs.uam.getUserAgents();
-			for(var i = 0; i < userAgents.length; i++) {
-				userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
-					"eventName": "characterDamage",
-					"id": this.id,
-					"damage": damage,
-					"srcUserId": p.ownerId
-				});
-			}
+		//create event for clients to notify them of damage
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
+				"eventName": "characterDamageEffect",
+				"id": this.id,
+				"damage": damage,
+				"srcUserId": srcUserId
+			});
 		}
 	}
+
+	applyHealEffect(srcUserId, healAmount) {
+		this.modHealth(-healAmount);
+
+		//create event for clients to notify them of damage
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
+				"eventName": "characterHealEffect",
+				"id": this.id,
+				"heal": healAmount,
+				"srcUserId": srcUserId
+			});
+		}
+	}
+
+
 
 	//add a push back to the character for the one frame
 	addForceImpulse(xDir, yDir, mag) {

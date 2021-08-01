@@ -48,7 +48,8 @@ class AIAgent {
 
 		this.castleDistanceSquared = 0;
 
-		this.userCharactersInVision = [];
+		this.allyCharactersInVision = [];
+		this.enemyCharactersInVision = [];
 		this.isAttackInterval = 500; //ms
 		this.isAttackCurrentTimer = 0; //ms
 
@@ -72,6 +73,9 @@ class AIAgent {
 		this.userEventCallbackMapping = [ 
 			{eventName: "user-deactivated", cb: this.cbEventEmitted.bind(this), handleId: null}
 		]
+
+		//just assume your a damage dealing role in the beginning
+		this.characterRole = "damage";
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -134,37 +138,65 @@ class AIAgent {
 
 
 	characterEnteredVision(c) {
-		var a = this.userCharactersInVision.find((x) => {return x.c === c});
-		if(c.id !== this.characterId && a === undefined && c.ownerType === "user")
-		{
-			//quick hack to filter out anyone who is not on the ai agent's team
-			var u = this.gs.um.getUserByID(c.ownerId);
-			if(u !== null && u.teamId !== this.user.teamId) {
-				var characterDistanceObj = {
-					c: c,
-					distanceSquared: 99999
-				};
+		//make sure it is not yourself
+		if(c.id !== this.characterId) {
+
+			//enemy
+			if(c.teamId !== this.user.teamId) {
+				//make sure the character is not already in vision		
+				var existing = this.enemyCharactersInVision.find((x) => {return x.c === c});
+				if(existing === undefined) {
+					var characterDistanceObj = {
+						c: c,
+						distanceSquared: 99999
+					};
 	
-				this.userCharactersInVision.push(characterDistanceObj);	
+					this.enemyCharactersInVision.push(characterDistanceObj);
+				}
+			} 
+			//ally
+			else {
+				//make sure the character is not already in vision		
+				var existing = this.allyCharactersInVision.find((x) => {return x.c === c});
+				if(existing === undefined) {
+					var characterHealthObj = {
+						c: c,
+						distanceSquared: 99999,
+						hpDiff: 0,
+						hpPerc: 0,
+						hpMax: 1
+					};
+	
+					this.allyCharactersInVision.push(characterHealthObj);
+				}
 			}
 		}
 	}
 
 	characterExitedVision(c) {
-		var i = this.userCharactersInVision.findIndex((x) => {return x.c === c});
-		if(i >= 0)
-		{
-			this.userCharactersInVision.splice(i, 1);
+		//enemy
+		if(c.teamId !== this.user.teamId) {
+			var index = this.enemyCharactersInVision.findIndex((x) => {return x.c === c});
+			if(index >= 0) {
+				this.enemyCharactersInVision.splice(index, 1);
+			}
+		} 
+		//ally
+		else {
+			var index = this.allyCharactersInVision.findIndex((x) => {return x.c === c});
+			if(index >= 0) {
+				this.allyCharactersInVision.splice(index, 1);
+			}
 		}
 	}
 
-	sortUserCharactersInVision() {
-		if(this.characterPos !== null && this.userCharactersInVision.length > 0)
+	sortEnemyCharactersInVision() {
+		if(this.characterPos !== null && this.enemyCharactersInVision.length > 0)
 		{
 			//first get the squared distance for each user character
-			for(var i = 0; i < this.userCharactersInVision.length; i++)
+			for(var i = 0; i < this.enemyCharactersInVision.length; i++)
 			{
-				var co = this.userCharactersInVision[i];
+				var co = this.enemyCharactersInVision[i];
 				var cop = co.c.getPlanckPosition();
 				if(cop !== null)
 				{
@@ -179,20 +211,61 @@ class AIAgent {
 			}
 
 			//next, sort
-			this.userCharactersInVision.sort((a, b) => {return a.distanceSquared - b.distanceSquared;});
+			this.enemyCharactersInVision.sort((a, b) => {return a.distanceSquared - b.distanceSquared;});
 
 			// //debug
 			// logger.log("info", "+++" + this.username + " distances: ");
-			// for(var i = 0; i < this.userCharactersInVision.length; i++)
+			// for(var i = 0; i < this.enemyCharactersInVision.length; i++)
 			// {
-			// 	var u = this.gs.um.getUserByID(this.userCharactersInVision[i].c.ownerId);
+			// 	var u = this.gs.um.getUserByID(this.enemyCharactersInVision[i].c.ownerId);
 			// 	if(u !== null)
 			// 	{
-			// 		logger.log("info", "User: " + u.username + " distance squared is: " + this.userCharactersInVision[i].distanceSquared)
+			// 		logger.log("info", "User: " + u.username + " distance squared is: " + this.enemyCharactersInVision[i].distanceSquared)
 			// 	}
 			// }
 		}
 	}
+
+
+	sortAllyCharactersInVision() {
+		if(this.characterPos !== null && this.allyCharactersInVision.length > 0)
+		{
+			//first calculate the hp diff and distance saquared
+			for(var i = 0; i < this.allyCharactersInVision.length; i++) {
+				this.allyCharactersInVision[i].hpDiff = this.allyCharactersInVision[i].c.hpMax - this.allyCharactersInVision[i].c.hpCur;
+				this.allyCharactersInVision[i].hpPerc = this.allyCharactersInVision[i].c.hpCur /  this.allyCharactersInVision[i].c.hpMax;
+				this.allyCharactersInVision[i].hpMax = this.allyCharactersInVision[i].c.hpMax;
+
+				var cop = this.allyCharactersInVision[i].c.getPlanckPosition();
+				if(cop !== null)
+				{
+					var dx = cop.x - this.characterPos.x;
+					var dy = cop.y - this.characterPos.y;
+					this.allyCharactersInVision[i].distanceSquared = dx*dx + dy*dy;
+				}
+				else
+				{
+					this.allyCharactersInVision[i].distanceSquared = 999999;
+				}
+			}
+
+			//next, sort by hpPerc asc, then hpMax desc
+			this.allyCharactersInVision.sort((a, b) => {return a.hpPerc - b.hpPerc || b.hpMax - a.hpMax;});
+
+			//debug
+			// logger.log("info", "+++" + this.user.username + " hpdiff: ");
+			// for(var i = 0; i < this.allyCharactersInVision.length; i++)
+			// {
+			// 	var u = this.gs.um.getUserByID(this.allyCharactersInVision[i].c.ownerId);
+			// 	if(u !== null) {
+			// 		logger.log("info", "User: " + u.username + " hpdiff is: " + this.allyCharactersInVision[i].hpDiff);
+			// 	}
+
+			// 	var stophere = true;
+			// }
+		}
+	}
+
 
 	updateTargetCharacterDistance() {
 		if(this.characterPos !== null && this.targetCharacter !== null)
@@ -304,7 +377,6 @@ class AIAgent {
 	}
 
 	update(dt) {
-		
 		this.state.update(dt);
 
 		if(this.nextState !== null)
@@ -334,7 +406,7 @@ class AIAgent {
 				&& activeGameObjects[i].teamId !== this.user.teamId
 				&& activeGameObjects[i].id !== this.user.characterId) {
 					opponents.push({
-						character: activeGameObjects[i],
+						c: activeGameObjects[i],
 						distanceSquared: 9999
 					});
 				}
@@ -342,7 +414,7 @@ class AIAgent {
 	
 			//go through opponents, and calculate true distance squared
 			for(var i = 0; i < opponents.length; i++) {
-				var opponentPos = opponents[i].character.plBody.getPosition();
+				var opponentPos = opponents[i].c.plBody.getPosition();
 				var dx = opponentPos.x - this.characterPos.x;
 				var dy = opponentPos.y - this.characterPos.y;
 				opponents[i].distanceSquared = dx*dx + dy*dy;
@@ -356,6 +428,66 @@ class AIAgent {
 
 		return nearestOpponent;
 	}
+
+	//finds an ally that has the lowest hp precentage (hpcur/hpMax). If there are none, it returns the ally with the highest max hp.
+	findAllyToHeal() {
+		var nearestAlly = null;
+
+		if(this.character !== null && this.characterPos !== null) {
+			var allies = [];
+			var activeGameObjects = this.gs.gom.getActiveGameObjects();
+			var spectatorTeamId = this.gs.tm.getSpectatorTeam().id;
+	
+			//get all allies
+			for(var i = 0; i < activeGameObjects.length; i++) {
+				//meh...don't care about the string comparison for now
+				if(activeGameObjects[i].type === "character" 
+				&& activeGameObjects[i].teamId !== spectatorTeamId 
+				&& activeGameObjects[i].teamId === this.user.teamId
+				&& activeGameObjects[i].id !== this.user.characterId) {
+					
+					allies.push({
+						c: activeGameObjects[i],
+						distanceSquared: 9999,
+						hpDiff: 999,
+						hpPerc: 100,
+						hpMax: 1000
+					});
+				}
+			}
+	
+			//go through allies, and calculate true distance squared and hp stuff
+			for(var i = 0; i < allies.length; i++) {
+				allies[i].hpDiff = allies[i].c.hpMax - allies[i].c.hpCur;
+				allies[i].hpPerc = allies[i].c.hpCur /  allies[i].c.hpMax;
+				allies[i].hpMax = allies[i].c.hpMax;
+
+				var allyPos = allies[i].c.plBody.getPosition();
+				var dx = allyPos.x - this.characterPos.x;
+				var dy = allyPos.y - this.characterPos.y;
+				allies[i].distanceSquared = dx*dx + dy*dy;
+			}
+
+			//filter allies that don't have any hp loss
+			var alliesWithHpLoss = allies.filter((x) => {return x.hpDiff > 0;});
+
+			//if there are no allies with hploss, just find the one with the largets maxHp (probably a tank of somekind)
+			if(alliesWithHpLoss.length === 0 && allies.length > 0) {
+				nearestAlly = allies.reduce((acc, cur) => {return  cur.hpMax > acc.hpMax ? cur : acc});
+
+				//debugging
+				// var u = this.gs.um.getUserByID(nearestAlly.c.ownerId);
+				// console.log("+++ ai-agent: " + this.user.username + ": no hploss detected on map. Targeting: " + u.username);
+			}
+			//otherwise, return the ally with the lowest hpPerc
+			else if(alliesWithHpLoss.length > 0) {
+				nearestAlly = alliesWithHpLoss.reduce((acc, cur) => {return  cur.hpPerc < acc.hpPerc ? cur : acc});
+			}
+		}
+
+		return nearestAlly;
+	}
+
 
 
 

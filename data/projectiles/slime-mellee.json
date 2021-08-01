@@ -23,6 +23,7 @@
 	"collisionData": {
 		"collideSameTeamCharacters": false,
 		"collideOtherTeamCharacters": true,
+		"collideSelf": false,
 		"collideWalls": true
 	},
 	"projectileData": {
@@ -32,5 +33,11 @@
 		"timeLength": 100,
 		"pushbackVecMagnitude": 10,
 		"destroyOnContact": true
-	} 
+	},
+	"characterEffectData": [
+		{
+			"type": "damage",
+			"value": 7
+		}
+	]
 }

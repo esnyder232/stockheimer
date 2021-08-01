@@ -86,9 +86,13 @@ export default class MainScene extends Phaser.Scene {
 
 		this.userStrokeThickness = 1;
 
-		this.damageTextColor = "#000000";
-		this.damageStrokeColor = "#ff0000";
+		this.damageTextColor = "#ff0000";
+		this.damageStrokeColor = "#000000";
 		this.damageStrokeThickness = 2;
+
+		this.healTextColor = "#00ff00";
+		this.healStrokeColor = "#000000";
+		this.healStrokeThickness = 2;
 
 		this.projectileColor = 0xff0000;
 				

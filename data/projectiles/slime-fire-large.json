@@ -17,11 +17,13 @@
 	},
 	"renderData": {
 		"spriteKey": "data/sprites/fireball.json",
-		"frameTag": ""
+		"frameTag": "",
+		"hideSprite": false
 	},
 	"collisionData": {
 		"collideSameTeamCharacters": false,
 		"collideOtherTeamCharacters": true,
+		"collideSelf": false,
 		"collideWalls": true
 	},
 	"projectileData": {
@@ -31,5 +33,11 @@
 		"timeLength": 6000,
 		"pushbackVecMagnitude": 40,
 		"destroyOnContact": false
-	}
+	},
+	"characterEffectData": [
+		{
+			"type": "damage",
+			"value": 8
+		}
+	]
 }

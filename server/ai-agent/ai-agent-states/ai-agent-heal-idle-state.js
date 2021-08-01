@@ -3,10 +3,10 @@ const AIAgentSeekPlayerState = require('./ai-agent-seek-player-state.js');
 const AIAgentAttackPlayerState = require('./ai-agent-attack-player-state.js');
 const logger = require("../../../logger.js");
 
-class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
+class AIAgentHealIdleState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
 		super(aiAgent);
-		this.stateName = "ai-agent-idle-state";
+		this.stateName = "ai-agent-heal-idle-state";
 		this.checkTimer = 0;
 		this.checkTimerInterval = 500;	//ms
 	}
@@ -27,82 +27,54 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 		if(!this.aiAgent.bForceIdle) {
 			this.checkTimer += dt;
 
-			//check for "attacked by player" event here, and go to seek player state
-
-			if(this.checkTimer >= this.checkTimerInterval)
-			{
+			if(this.checkTimer >= this.checkTimerInterval) {
 				var bFoundCharacterInLOS = false;
-				//check if any player is within vision
-				if(this.aiAgent.enemyCharactersInVision.length > 0)
-				{
+
+				//check if any ally is within vision
+				if(this.aiAgent.allyCharactersInVision.length > 0) {
 					//check if any player is within seeking range and is in LOS
-					this.aiAgent.sortEnemyCharactersInVision();
+					this.aiAgent.sortAllyCharactersInVision();
 
-					//get the closest person that is in LOS
+					//get the character with the highest hpDiff that is in LOS
 					var closestLOSCharacterObject = null;
-					for(var i = 0 ; i < this.aiAgent.enemyCharactersInVision.length; i++)
-					{
+					for(var i = 0 ; i < this.aiAgent.allyCharactersInVision.length; i++) {
 						var isLOS = false;
-						var cpos = this.aiAgent.enemyCharactersInVision[i].c.getPlanckPosition();
+						var cpos = this.aiAgent.allyCharactersInVision[i].c.getPlanckPosition();
 
-						if(cpos !== null)
-						{
+						if(cpos !== null) {
 							isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
 						}
 
-						if(isLOS)
-						{
-							closestLOSCharacterObject = this.aiAgent.enemyCharactersInVision[i];
+						if(isLOS) {
+							closestLOSCharacterObject = this.aiAgent.allyCharactersInVision[i];
 							break;
 						}
-
-						//debugging
-						//this.aiAgent.enemyCharactersInVision[i].isLOS;
 					}
 
-					// //debug
-					// logger.log("info", "+++" + this.aiAgent.username + " LOS: ");
-					// for(var i = 0; i < this.aiAgent.enemyCharactersInVision.length; i++)
-					// {
-					// 	var u = this.aiAgent.gs.um.getUserByID(this.aiAgent.enemyCharactersInVision[i].c.ownerId);
-					// 	if(u !== null)
-					// 	{
-					// 		logger.log("info", "User: " + u.username + " LOS is: " + this.aiAgent.enemyCharactersInVision[i].isLOS);
-					// 	}
-					// }
-
-					//if there is a player within LOS, seek/attack the player
-					if(closestLOSCharacterObject !== null)
-					{
+					//if there is a player within LOS, seek/heal the player
+					if(closestLOSCharacterObject !== null) {
 						bFoundCharacterInLOS = true;
 						this.aiAgent.assignTargetCharacter(closestLOSCharacterObject.c);
 						this.aiAgent.targetCharacterDistanceSquared = closestLOSCharacterObject.distanceSquared;
 
-						//console.log('found target by LOS: ' + this.aiAgent.targetCharacter.id);
-
 						//if the target is within attacking distance, attack the player.
-						if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared)
-						{
+						if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared) {
 							this.aiAgent.nextState = new AIAgentAttackPlayerState.AIAgentAttackPlayerState(this.aiAgent);
 						}
 						//otherwise, seek the player
-						else
-						{
+						else {
 							this.aiAgent.nextState = new AIAgentSeekPlayerState.AIAgentSeekPlayerState(this.aiAgent);
 						}
 					}
 				}
 
-				//if a character was not found in LOS, then seek the closest player in general
+				//if a character was not found in LOS, then seek the closest ally in general
 				if(!bFoundCharacterInLOS) {
-					var nearestOpponent = this.aiAgent.findNearestOpponentTrueDistance();
+					var ally = this.aiAgent.findAllyToHeal();
 
-					if(nearestOpponent !== null) {
-
-						this.aiAgent.assignTargetCharacter(nearestOpponent.c);
-						this.aiAgent.targetCharacterDistanceSquared = nearestOpponent.distanceSquared;
-
-						//console.log('found target by NEAREST OPPONENT: ' + this.aiAgent.targetCharacter.id);
+					if(ally !== null) {
+						this.aiAgent.assignTargetCharacter(ally.c);
+						this.aiAgent.targetCharacterDistanceSquared = ally.distanceSquared;
 
 						//if the target is within attacking distance, attack the player.
 						if(this.aiAgent.targetCharacterDistanceSquared <= this.aiAgent.attackingRangeSquared)
@@ -134,4 +106,4 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 	}
 }
 
-exports.AIAgentIdleState = AIAgentIdleState;
+exports.AIAgentHealIdleState = AIAgentHealIdleState;

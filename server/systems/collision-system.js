@@ -17,6 +17,7 @@ class CollisionSystem {
 
 		this.colList = [
 			{type1: "ai-agent", 	type2:"character", 	beginFunc: this.beginAIAgentCharacterCollision.bind(this), 		endFunc: this.endAIAgentCharacterCollision.bind(this)},
+			// {type1: "ai-agent", 	type2:"aibody", 	beginFunc: this.beginAIAgentAiBodyCollision.bind(this), 		endFunc: this.endAIAgentAiBodyCollision.bind(this)},
 			{type1: "castle", 		type2:"projectile",	beginFunc: this.beginCastleProjectileCollision.bind(this), 		endFunc: this.endCastleProjectileCollision.bind(this)},
 			{type1: "castle", 		type2:"user", 		beginFunc: this.beginCastleUserCollision.bind(this), 			endFunc: this.endCastleUserCollision.bind(this)},
 			// {type1: "character", 	type2:"character", 	beginFunc: this.beginCharacterCharacterCollision.bind(this), 	endFunc: this.endCharacterCharacterCollision.bind(this)},
@@ -145,6 +146,32 @@ class CollisionSystem {
 	}
 
 
+	// STOPPED HERE - just make the "character" body for every character the same. And just filter for the team on the aiagent level.
+
+
+	beginAIAgentAiBodyCollision(AIAgentUserData, aiBodyUserData, contactObj, isAIAgentA)
+	{
+		//logger.log("info", 'begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var ai = this.gs.aim.getAIAgentByID(AIAgentUserData.id);
+		var c = this.gs.gom.getGameObjectByID(aiBodyUserData.id);
+
+		if(ai !== null && c !== null)
+		{
+			ai.aiBodyEnteredVision(c);
+		}
+	}
+
+	endAIAgentAiBodyCollision(AIAgentUserData, aiBodyUserData, contactObj, isAIAgentA)
+	{
+		//logger.log("info", 'begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var ai = this.gs.aim.getAIAgentByID(AIAgentUserData.id);
+		var c = this.gs.gom.getGameObjectByID(aiBodyUserData.id);
+
+		if(ai !== null && c !== null)
+		{
+			ai.aiBodyExitedVision(c);
+		}
+	}
 
 	////////////////////////
 	// Castle collilsions //
@@ -222,12 +249,20 @@ class CollisionSystem {
 		if(c !== null && p !== null) {
 			var processCollision = false;
 	
+			//self collision check
+			if(c.id === p.characterId) {
+				if(p.collideSelf) {
+					processCollision = true;
+				}
+			} 
 			//team collision check
-			if(p.collideSameTeamCharacters && p.teamId === c.teamId) {
-				processCollision = true;
-			}
-			else if(p.collideOtherTeamCharacters && p.teamId !== c.teamId) {
-				processCollision = true;
+			else {
+				if(p.collideSameTeamCharacters && p.teamId === c.teamId) {
+					processCollision = true;
+				}
+				else if(p.collideOtherTeamCharacters && p.teamId !== c.teamId) {
+					processCollision = true;
+				}
 			}
 	
 			if(processCollision) {

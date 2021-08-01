@@ -1,5 +1,5 @@
 {
-	"name": "Slime Big Fire",
+	"name": "Slime Heal Bolt",
 	"size": 0.3,
 	"planckData": {
 		"plShape": "circle",
@@ -8,36 +8,36 @@
 	"phaserData": {
 		"originX": 0.70,
 		"originY": 0.5,
-		"scaleX": 0.42,
-		"scaleY": 0.42
+		"scaleX": 5.0,
+		"scaleY": 5.0
 	},
 	"physicsData": {
-		"speed": 12,
+		"speed": 8,
 		"mass": 100
 	},
 	"renderData": {
-		"spriteKey": "data/sprites/fireball.json",
+		"spriteKey": "data/sprites/heal-bolt.json",
 		"frameTag": "",
 		"hideSprite": false
 	},
 	"collisionData": {
-		"collideSameTeamCharacters": false,
-		"collideOtherTeamCharacters": true,
+		"collideSameTeamCharacters": true,
+		"collideOtherTeamCharacters": false,
 		"collideSelf": false,
 		"collideWalls": true
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 1.0,
-		"damage": 4,
-		"timeLength": 2000,
-		"pushbackVecMagnitude": 25,
-		"destroyOnContact": true
+		"spawnOffsetLength": 0.8,
+		"damage": -2,
+		"timeLength": 1000,
+		"pushbackVecMagnitude": 0,
+		"destroyOnContact": false
 	},
 	"characterEffectData": [
 		{
-			"type": "damage",
-			"value": 4
+			"type": "heal",
+			"value": 2
 		}
 	]
 }
