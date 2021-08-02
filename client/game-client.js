@@ -41,7 +41,6 @@ export default class GameClient {
 
 		this.frameRate = 30; //fps
 		this.previousTick = 0;
-		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
 		this.frameNum = 0; //debugging
 

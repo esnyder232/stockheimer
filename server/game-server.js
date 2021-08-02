@@ -26,19 +26,17 @@ const fs = require('fs');
 class GameServer {
 	constructor() {
 		this.globalfuncs = new GlobalFuncs();
-		this.frameRate = serverConfig.fps; 
+		this.frameRate = this.globalfuncs.getValueDefault(serverConfig?.fps, 30); 
 		this.frameNum = 0;
 		this.maxPlayers = serverConfig.max_players;
 		this.inactivePeriod = 10000; //ms - the amount of ms worth of ack loss (packet loss) before a player is considered "inactive" by the server
 		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
 
-		this.runGameLoop = false;
 		this.gameState = null;
 		this.nextGameState = null;
 
 		this.theRound = null; //temporary place for the only round to live
 
-		this.physicsTimeStep = 1/this.frameRate; //seconds
 		this.frameTimeStep = 1000/this.frameRate; //ms
 		this.velocityIterations = 1;
 		this.positionIterations = 1;
@@ -72,24 +70,13 @@ class GameServer {
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 5000; //ms until this console logs the amount of game objects in the game
 
-		this.castleObject = null;
-		this.enemyCap = 100;
-
 		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
 
-		////////////////////////////////////////////////////////////////////////
-		//This decides what classes/map gets loaded.
-		this.classKeyList = [
-			"data/character-classes/slime-mage-classic.json",
-			"data/character-classes/slime-mage.json",
-			"data/character-classes/slime-mage-2.json",
-			"data/character-classes/slime-mage-3.json",
-			"data/character-classes/slime-fighter.json",
-			"data/character-classes/slime-healer.json",
-		];
-
-		this.mapKey = serverConfig.map_relpath;
-		////////////////////////////////////////////////////////////////////////
+		this.mapRotation = this.globalfuncs.getValueDefault(serverConfig?.map_rotation, []);
+		this.currentMapIndex = 0;
+		this.currentMapResourceKey = "";
+		this.currentMapResource = null;
+		this.atleastOneMapLoads = false;
 	}
 
 	init() {
@@ -170,46 +157,6 @@ class GameServer {
 		// var stophere = true;
 		
 	}
-
-
-	fileReadComplete(file) {
-		// console.log("!!! FileReadComplete !!!");
-		// console.log(" - key: " + file.key);
-		// console.log(" - id: " + file.id);
-		// console.log(" - status: " + file.status);
-		// console.log(" - errorMsg: " + file.errorMsg);
-		// console.log(" - data: " + JSON.stringify(file.data));
-
-		// this.fm.loadFile("data/animation-sets/slime-move-set.json", this.fileReadComplete2.bind(this));
-		// this.fm.loadFile("data/animation-sets/slime-idle-set.json", this.fileReadComplete2.bind(this));
-		// this.fm.loadFile("data/animation-sets/slime-idle-set2.json", this.fileReadComplete2.bind(this));
-
-		// setTimeout(() => {
-		// 	logger.log("info", "=== NOW UNLOADING TEH FUILE ===");
-		// 	this.fm.unloadFileByKey("data/animation-sets/slime-attack-set.json");
-		// 	this.fm.loadFile("data/animation-sets/slime-attack-set.json", this.fileReadComplete2.bind(this));
-		// }, 2000)
-
-		// setTimeout(() => {
-		// 	var stopHere = true;
-		// 	var t = this;
-
-		// }, 4000)
-		
-
-	}
-
-	// fileReadComplete2(file) {
-	// 	var t = this;
-	// 	console.log("!!! FileReadComplete2222 !!!");
-	// 	console.log(" - key: " + file.key);
-	// 	console.log(" - id: " + file.id);
-	// 	console.log(" - status: " + file.status);
-	// 	console.log(" - errorMsg: " + file.errorMsg);
-	// 	console.log(" - data: " + file.data);
-	// }
-
-
 
 	getGlobalGameObjectID() {
 		return this.globalGameObjectIDCounter++;
@@ -419,70 +366,15 @@ class GameServer {
 
 		if(this.nextGameState)
 		{
-			this.gameState.exit();
-			this.nextGameState.enter();
-
-			this.gameState = this.nextGameState;
+			var temp = this.nextGameState;
 			this.nextGameState = null;
+
+			this.gameState.exit();
+			temp.enter();
+
+			this.gameState = temp;
 		}
 	}
-
-
-
-
-	// //the gameloop uses setTimeout + setImmediate combo to get a more accurate timer.
-	// //credit: (https://timetocode.tumblr.com/post/71512510386/an-accurate-nodejs-game-loop-inbetween-settimeout)
-	// //There is additional tuning parameters (set_timeout_variance) used because setTimeout does NOT have the same variance across operating systems.
-	// //For example: setTimeout(..., 50) has +16ms variance on Windows 10, and +1ms variance on Debian 10 
-	// //(iow, setimeout will be called between 50-66ms on windows, and 50-51ms on debian 10)
-	// gameLoop() {
-	// 	var nowTime = performance.now();
-
-	// 	//if its the designated time has passed, run the update function
-	// 	if(this.previousTick + (this.frameTimeStep) < nowTime)
-	// 	{
-	// 		var dt = nowTime - this.previousTick;
-	// 		this.previousTick = nowTime;
-	// 		if(this.gameState)
-	// 		{
-	// 			this.gameState.update(dt);
-
-	// 			//report timer
-	// 			this.reportTimer += dt;
-	// 			if(this.reportTimer >= this.reportTimerInterval)
-	// 			{
-	// 				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
-	// 				this.reportTimer = 0;
-	// 				// var temp = this.um.getActiveUsersGroupedByTeams();
-	// 				// console.log(temp);
-	// 			}
-	// 		}
-
-	// 		if(this.nextGameState)
-	// 		{
-	// 			this.gameState.exit();
-	// 			this.nextGameState.enter();
-
-	// 			this.gameState = this.nextGameState;
-	// 			this.nextGameState = null;
-	// 		}
-	// 	}
-
-	// 	//set either the sloppy timer (setTimeout) or accurate timer (setImmediate)
-	// 	if(nowTime - this.previousTick < (this.frameTimeStep - serverConfig.set_timeout_variance))
-	// 	{
-	// 		//call the sloppy timer
-	// 		if(this.runGameLoop)
-	// 		{
-	// 			setTimeout(this.gameLoop.bind(this), 1);
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		//call the accurate timer
-	// 		setImmediate(this.gameLoop.bind(this));
-	// 	}
-	// }
 
 	/* apis */
 	getServerDetails(req, res) {

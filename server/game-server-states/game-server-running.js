@@ -23,19 +23,24 @@ class GameServerRunning extends GameServerBaseState {
 		var startSummaryArray = [];
 		startSummaryArray.push("\n");
 		startSummaryArray.push("===== Game has started =====");
-		var mapResource = this.gs.rm.getResourceByID(this.gs.activeTilemap.resourceId);
-		var mapKey = "";
-		if(mapResource !== null) {
-			mapKey = mapResource.key;
-		}
-		
-		startSummaryArray.push("Map: " + mapKey);
-		
+		startSummaryArray.push("Map Name: " + this.gs.currentMapResource.data?.name);
+		startSummaryArray.push("Map Resource: " + this.gs.currentMapResource.key);
+		startSummaryArray.push("");
+
 		var availableClasses = this.gs.rm.getResourceByType("character-class");
+		var availableTeams = this.gs.tm.getTeams();
+		
+		startSummaryArray.push("Available Teams:");
+		for(var i = 0; i < availableTeams.length; i++) {
+			startSummaryArray.push(" - " + availableTeams[i].name);
+		}
+		startSummaryArray.push("");
+
 		startSummaryArray.push("Available Classes:")
 		for(var i = 0; i < availableClasses.length; i++) {
 			startSummaryArray.push(" - " + availableClasses[i].key);
 		}
+		
 		startSummaryArray.push("============================");
 
 		logger.log("info", startSummaryArray.join("\n"));
@@ -262,35 +267,7 @@ class GameServerRunning extends GameServerBaseState {
 							var broadcastMessage = "";
 							var userMessage = "";
 							var logEventMessage = "";
-							logEventMessage = "Player: " + user.username + ", event: fromClientSpawnEnemy " + e.spawnLocation + ": ";
-	
-							//reusing this event to respawn the castle becasue i don't feel like making another event and exporting it.
-							// if (e.spawnLocation === "respawnCastle")
-							// {
-							// 	if(this.gs.castleObject !== null)
-							// 	{
-							// 		bFail = true;
-							// 		userMessage = "Only one castle can exist at a time."
-							// 	}
-	
-							// 	if(!bFail)
-							// 	{
-							// 		//create castle object 
-							// 		var castle = this.gs.gom.createGameObject("castle");
-							// 		this.gs.castleObject = castle; //temporary location for it
-	
-							// 		var xc = this.gs.activeNavGrid.castleNode.x;
-							// 		var yc = -this.gs.activeNavGrid.castleNode.y;
-									
-							// 		var castleName = user.username + "'s Castle";
-	
-							// 		castle.castleInit(this.gs, xc, yc, castleName);
-	
-	
-							// 		broadcastMessage = "Player '" + user.username + "' spawned '" + castleName + "'";
-							// 	}
-							// }
-	
+							logEventMessage = "Player: " + user.username + ", event: fromClientSpawnEnemy " + e.spawnLocation + ": ";	
 	
 							//send out usermessage and/or broadcast message
 							if(userMessage !== "")
@@ -421,20 +398,6 @@ class GameServerRunning extends GameServerBaseState {
 			});
 		}
 	}
-	
-
-
-	checkEnemyCap() {
-		var bFail = false;
-		var enemyNum = this.gs.aim.getAIAgents().length;
-		if(enemyNum >= this.gs.enemyCap)
-		{
-			bFail = true;
-		}
-
-		return bFail;
-	}
-
 
 	destroyOwnersCharacter(ownerId, ownerType)
 	{
@@ -547,7 +510,6 @@ class GameServerRunning extends GameServerBaseState {
 			}
 		}
 	}
-
 }
 
 

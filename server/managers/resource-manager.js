@@ -4,6 +4,7 @@ const logger = require('../../logger.js');
 const path = require('path');
 const {Resource} = require("../classes/resource.js");
 const {CharacterClassResourceDefinition} = require("../resource-definition/character-class-resource-definition.js");
+const {MapResourceDefinition} = require("../resource-definition/map-resource-definition.js");
 const {TilemapResourceDefinition} = require("../resource-definition/tilemap-resource-definition.js");
 const {TilesetResourceDefinition} = require("../resource-definition/tileset-resource-definition.js");
 const {SpriteResourceDefinition} = require("../resource-definition/sprite-resource-definition.js");
@@ -34,6 +35,7 @@ class ResourceManager {
 		this.globalfuncs = new GlobalFuncs();
 
 		this.resourceDefinitions["character-class"] = new CharacterClassResourceDefinition();
+		this.resourceDefinitions["map"] = new MapResourceDefinition();
 		this.resourceDefinitions["tilemap"] = new TilemapResourceDefinition();
 		this.resourceDefinitions["tileset"] = new TilesetResourceDefinition();
 		this.resourceDefinitions["sprite"] = new SpriteResourceDefinition();

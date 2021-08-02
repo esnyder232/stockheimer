@@ -11,6 +11,7 @@
 	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",
 	"log_level": "debug",
 	"allow_simulated_user_ai_agents": true,
-	
-	"map_relpath": "assets/tilemaps/team-map-square.json"
+	"map_rotation": [
+		"data/maps/team-map-square.json"
+	]
 }

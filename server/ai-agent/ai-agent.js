@@ -287,26 +287,6 @@ class AIAgent {
 		//logger.log("info", 'updateing target character distance: ' + this.targetCharacterDistanceSquared);
 	}
 
-	updateCastleDistance() {
-		if(this.characterPos !== null && this.gs.castleObject !== null)
-		{
-			var cpos = this.gs.castleObject.getPlanckPosition();
-			if(cpos !== null)
-			{
-				var dx = cpos.x - this.characterPos.x;
-				var dy = cpos.y - this.characterPos.y;
-				this.castleDistanceSquared = dx*dx + dy*dy;
-			}
-			else
-			{
-				this.castleDistanceSquared = 999999;
-			}
-		}
-
-		//debugging
-		//logger.log("info", 'updateing castle distance: ' + this.castleDistanceSquared);
-	}
-
 	seekCastle() {
 		var character = this.gs.gom.getGameObjectByID(this.characterId);
 		if(character !== null && character.isActive)

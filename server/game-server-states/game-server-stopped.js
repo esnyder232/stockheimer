@@ -1,5 +1,5 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
-const {GameServerStarting} = require('./game-server-starting.js');
+const GameServerLoadingMap = require('./game-server-loading-map.js');
 const logger = require('../../logger.js');
 
 class GameServerStopped extends GameServerBaseState {
@@ -9,7 +9,6 @@ class GameServerStopped extends GameServerBaseState {
 
 	enter(dt) {
 		logger.log("info", 'Game loop stopped.');
-		this.gs.runGameLoop = false;
 		super.enter(dt);
 	}
 
@@ -22,12 +21,9 @@ class GameServerStopped extends GameServerBaseState {
 	}
 	
 	startGameRequest() {
-		logger.log("info", 'Game loop start request.');
-		this.gs.nextGameState = new GameServerStarting(this.gs);
-		this.gs.runGameLoop = true;
-
+		logger.log("info", 'Start Game Request called.');
+		this.gs.nextGameState = new GameServerLoadingMap.GameServerLoadingMap(this.gs);
 		this.gs.tempInterval = setInterval(this.gs.gameLoop.bind(this.gs), this.gs.frameTimeStep);
-		// this.gs.gameLoop();
 	}
 
 	joinRequest() {
