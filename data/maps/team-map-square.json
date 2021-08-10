@@ -7,7 +7,7 @@
 	"roundPlayingTimeLength": 90000,
 	"roundOverTimeLength": 7000,
 	"roundMapEndTimeLength": 5000,
-	"userRespawningTimeLength": 2000,
+	"userRespawningTimeLength": 4000,
 	"minimumUsersPlaying": 24,
 	"classData": [
 		"data/character-classes/slime-small.json",

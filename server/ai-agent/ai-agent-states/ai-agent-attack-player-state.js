@@ -155,7 +155,13 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 				this.aiAgent.angle += radiansToAdd;
 
 				finalInput.isFiring = true;
-				// finalInput.isFiringAlt = true;
+
+				//randomly fire the alt
+				var rand = Math.random();
+				if(rand >= 0.80) {
+					finalInput.isFiringAlt = true;
+				}
+								
 				finalInput.characterDirection = this.aiAgent.angle;
 				inputChanged = true;
 				
