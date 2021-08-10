@@ -36,11 +36,24 @@ class CollisionSystem {
 			this.colList[i].fullType = this.colList[i].type1 + this.colList[i].type2;
 			this.colFullTypeIndex[this.colList[i].fullType] = this.colList[i];
 		}
-
-		//register callbacks with planck
-		this.gs.world.on("begin-contact", this.handleBeginCollision.bind(this));
-		this.gs.world.on("end-contact", this.handleEndCollision.bind(this));
 	}
+
+	activate() {
+		//register callbacks with planck
+		if(this.gs.world !== null) {
+			this.gs.world.on("begin-contact", this.handleBeginCollision.bind(this));
+			this.gs.world.on("end-contact", this.handleEndCollision.bind(this));
+		}
+	}
+
+	deactivate() {
+		if(this.gs.world !== null) {
+			this.gs.world.off("begin-contact", this.handleBeginCollision.bind(this));
+			this.gs.world.off("end-contact", this.handleEndCollision.bind(this));
+		}
+	}
+
+
 
 
 	handleBeginCollision(contactObj)

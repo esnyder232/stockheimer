@@ -8,24 +8,32 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 	constructor(user) {
 		super(user);
 		this.stateName = "RESPAWNING";
+		this.respawnTimer = 6000;
 	}
 
 	enter(dt) {
 		// logger.log("info", this.stateName + ' enter');
 		super.enter(dt);
+
+		//get the resource respawn time if it exists
+		this.respawnTimer = this.user.globalfuncs.getValueDefault(this.user.gs?.currentMapResource?.data?.userRespawningTimeLength, this.respawnTimer);
 		
 		//respawn time depends on round state
 		switch(this.user.gs.theRound.getStateEnum())
 		{
+			case GameConstants.RoundStates["MAPSTART"]:
+				this.user.respawnTimer = 999999;
+				break;
 			case GameConstants.RoundStates["STARTING"]:
 				this.user.respawnTimer = 100;
 				break;
-
 			case GameConstants.RoundStates["PLAYING"]:
-				this.user.respawnTimer = 6000;
+				this.user.respawnTimer = this.respawnTimer;
 				break;
-
 			case GameConstants.RoundStates["OVER"]:
+				this.user.respawnTimer = 999999;
+				break;
+			case GameConstants.RoundStates["MAPEND"]:
 				this.user.respawnTimer = 999999;
 				break;
 			default: 
@@ -40,7 +48,8 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 
 		//character is done waiting for respawn timer. Check if he has a character class picked, and respawn him and let him start playing
 		if(this.user.respawnTimeAcc >= this.user.respawnTimer && this.user.characterClassResourceId !== null) {
-			if(this.user.gs.theRound.getStateEnum() !== GameConstants.RoundStates["OVER"]) {
+			if(this.user.gs.theRound.getStateEnum() === GameConstants.RoundStates["STARTING"] 
+			|| this.user.gs.theRound.getStateEnum() === GameConstants.RoundStates["PLAYING"]) {
 				this.user.nextPlayingState = new PlayingPlayingState.PlayingPlayingState(this.user);
 			}
 		}

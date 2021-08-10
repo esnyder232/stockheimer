@@ -17,8 +17,6 @@ class Tilemap {
 		this.tileheight = 1;
 		this.tileset = []; //this is a flattened version of the tileset array in the jsonData. The index for this array is the gid from Tiled
 		this.navGridLayer = null;
-		this.enemySpawnLayer = null;
-		this.enemySpawnZones = [];
 		this.playerSpawnLayer = null;
 		this.playerSpawnZones = [];
 		this.playerSpawnZonesSlotNumIndex = {};
@@ -29,6 +27,22 @@ class Tilemap {
 	init(gameServer) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs();
+	}
+
+
+	deinit() {
+		this.gs = null;
+		this.globalfuncs = null;
+		this.resourceId = null
+		this.jsonData = null;
+		this.tileset = [];
+		this.navGridLayer = null;
+		this.playerSpawnLayer = null;
+		this.playerSpawnZones = [];
+		this.playerSpawnZonesSlotNumIndex = {};
+
+		this.navGrid.deinit();
+		this.navGrid = null;
 	}
 
 	//creates tilemap and navgrid
@@ -55,7 +69,6 @@ class Tilemap {
 			//create a '0' gid tile (in Tiled, a 0 gid means there is no tile assigned at all)
 			var gid0 = this.createTileForTileset(0, []);
 			this.tileset.push(gid0);
-			this.enemySpawnZones = [];
 	
 			for(var i = 0; i < this.jsonData.tilesets.length; i++)
 			{
@@ -101,14 +114,6 @@ class Tilemap {
 								this.navGridLayer = currentLayer;
 							}
 	
-							//a property with "enemySpawns = true" on it will be used for the enemy spawning locations
-							if(currentProperty.name.toLowerCase() === "enemyspawns" 
-							&& currentProperty.type === "bool"
-							&& currentProperty.value === true)
-							{
-								this.enemySpawnLayer = currentLayer;
-							}
-	
 							//a property with "playerSpawns = true" on it will be used for the enemy spawning locations
 							if(currentProperty.name.toLowerCase() === "playerspawns" 
 							&& currentProperty.type === "bool"
@@ -118,24 +123,6 @@ class Tilemap {
 							}
 						}
 					}
-				}
-			}
-	
-			//create enemy spawn zones
-			if(this.enemySpawnLayer !== null && this.enemySpawnLayer.objects)
-			{
-				var xOffset = -this.tilewidth/2;
-				var yOffset = -this.tileheight/2;
-				for(var i = 0; i < this.enemySpawnLayer.objects.length; i++)
-				{
-					var z = this.enemySpawnLayer.objects[i];
-	
-					z.xPlanck = (z.x + xOffset) / this.tilewidth;
-					z.yPlanck = ((z.y + yOffset) / this.tileheight) * -1;
-					z.widthPlanck = z.height / this.tilewidth;
-					z.heightPlanck = z.height / this.tileheight;
-	
-					this.enemySpawnZones.push(z);
 				}
 			}
 	

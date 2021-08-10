@@ -3,9 +3,6 @@ const AIAgentIdleState = require('./ai-agent-idle-state.js');
 const AIAgentHealIdleState = require('./ai-agent-heal-idle-state.js');
 const {CollisionCategories, CollisionMasks} = require('../../data/collision-data.js');
 const logger = require("../../../logger.js");
-const ServerConfig = require("../../server-config.json");
-
-
 
 //this state just waits for the user and character to initialize and become activated.
 class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
@@ -38,9 +35,21 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			bContinue = false;
 		}
 
+		//check if the ai needs to pick a team. They need to pick a team if they are currently on spectator team
+		var spectatorTeam = this.aiAgent.gs.tm.getSpectatorTeam();
+		if(bContinue && spectatorTeam !== null && (this.aiAgent.user.teamId === null || this.aiAgent.user.teamId === spectatorTeam.id)) {
+			var smallestTeam = this.aiAgent.globalfuncs.getSmallestTeam(this.aiAgent.gs);
+			if(smallestTeam !== null && smallestTeam.id !== spectatorTeam.id) {
+				this.aiAgent.user.updateTeamId(smallestTeam.id);
+				logger.log("info", "ai " + this.aiAgent.user.username + " has joined team " + smallestTeam.name);
+			}
+
+			bContinue = false;
+		}
+
 		//check if the ai needs to pick a class
 		if(bContinue && this.aiAgent.user.playingStateName === "CLASS_PICKING") {
-			var randomClass = this.globalfuncs.getRandomClass(this.aiAgent.gs);
+			var randomClass = this.aiAgent.globalfuncs.getRandomClass(this.aiAgent.gs);
 			if(randomClass !== null) {
 				this.aiAgent.user.updateCharacterClassId(randomClass.id);
 				logger.log("info", "ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name);
@@ -101,7 +110,7 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 
 			//determine if you are a healing or an attacking role (for now, just look at the primary projectile)
 			if(projectileResource !== null) {
-				var characterEffects = this.globalfuncs.getValueDefault(projectileResource?.data?.characterEffectData, []);
+				var characterEffects = this.aiAgent.globalfuncs.getValueDefault(projectileResource?.data?.characterEffectData, []);
 
 				//if you find any healing, you are for sure a healing class. Thats the law.
 				var healingEffect = characterEffects.find((x) => {return x.type === "heal";});
@@ -133,15 +142,7 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			});
 			//////////////////////////////////////////
 
-
-			
-
 			this.aiAgent.character.em.batchRegisterForEvent(this.aiAgent.characterEventCallbackMapping);
-
-			//go to the next state
-			if(ServerConfig.allow_simulated_user_ai_agents && this.aiAgent.user.username.indexOf("beepboop") === 0) {
-				this.aiAgent.bForceIdle = true;
-			}
 
 			if(this.aiAgent.characterRole === "heal") {
 				this.aiAgent.nextState = new AIAgentHealIdleState.AIAgentHealIdleState(this.aiAgent);

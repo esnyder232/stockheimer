@@ -8,7 +8,7 @@ class UserDisconnectedState extends UserBaseState {
 	}
 
 	enter(dt) {
-		//logger.log("info", this.stateName + ' enter');
+		// logger.log("info", this.stateName + ' enter');
 		this.user.stateName = this.stateName;
 		super.enter(dt);
 	}
@@ -18,8 +18,15 @@ class UserDisconnectedState extends UserBaseState {
 	}
 
 	exit(dt) {
-		//logger.log("info", this.stateName + ' exit');
+		// logger.log("info", this.stateName + ' exit');
 		super.exit(dt);
+
+		//rebalance ai on teams on exit
+		this.user.gs.rebalanceTeams = true;
+	}
+
+	processClientEvents(ua) {
+		//intentionally blank
 	}
 }
 

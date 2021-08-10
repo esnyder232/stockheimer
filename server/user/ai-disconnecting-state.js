@@ -24,26 +24,34 @@ class AiDisconnectingState extends UserBaseState {
 	exit(dt) {
 		//logger.log("info", this.stateName + ' exit');
 
-		//clean up any relationships the user may have had
-		this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
-		this.user.gs.gameState.deactivateUserId(this.user.id);
+		//kill the ai user from the user manager
+		this.user.gs.um.deactivateUserId(this.user.id);
+		this.user.gs.um.destroyUserId(this.user.id);
+		this.user.gs.aim.destroyAIAgent(this.user.aiAgentId);
 
-		//send a message to existing users about the person that left
+		//delete the tracked entity for ALL user agents (regardless if they're playing or not)
 		var userAgents = this.user.gs.uam.getUserAgents();
-		for(var j = 0; j < userAgents.length; j++)
-		{
-			userAgents[j].insertServerToClientEvent({
-				"eventName": "fromServerChatMessage",
-				"userId": 0,
-				"chatMsg": "Player '" + this.user.username + "' has disconnected.",
-				"isServerMessage": true
-			});
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].deleteTrackedEntity("user", this.user.id);
+		}
+
+		//send a message only to playing users about the person that left
+		var playingUsers = this.user.gs.um.getPlayingUsers();
+		for(var j = 0; j < playingUsers.length; j++) {
+			var ua = this.user.gs.uam.getUserAgentByID(playingUsers[j].userAgentId);
+			if(ua !== null) {
+				//give the user a chat message showing the ai user disconnected
+				ua.insertServerToClientEvent({
+					"eventName": "fromServerChatMessage",
+					"userId": 0,
+					"chatMsg": "Player '" + this.user.username + "' has disconnected.",
+					"isServerMessage": true
+				});
+			}
 		}
 
 		super.exit(dt);
 	}
 }
-
-
 
 exports.AiDisconnectingState = AiDisconnectingState;

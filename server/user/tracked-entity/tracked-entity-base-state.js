@@ -6,8 +6,6 @@ class TrackedEntityBaseState {
 	enter(dt) {}
 	update(dt) {}
 	exit(dt) {}
-
-	createUpdateEvent(dt) {return null};
 }
 
 exports.TrackedEntityBaseState = TrackedEntityBaseState;

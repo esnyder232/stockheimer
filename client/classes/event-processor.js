@@ -29,6 +29,8 @@ import RoundResultsEvent from "../event-classes/round-results-event.js"
 import UpdateUserRttEvent from "../event-classes/update-user-rtt-event.js"
 import DebugServerCircleEvent from "../event-classes/debug-server-circle-event.js"
 import UpdateCharacterStateEvent from "../event-classes/update-character-state-event.js"
+import ServerMapLoadedEvent from "../event-classes/server-map-loaded-event.js"
+import LeaveGameImmediatelyEvent from "../event-classes/leave-game-immediately-event.js"
 
 
 
@@ -88,7 +90,8 @@ export default class EventProcessor {
 			{eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent()},
 			{eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent()},
 			{eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent()},
-			
+			{eventName: "serverMapLoaded", eventClass: new ServerMapLoadedEvent()},
+			{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent()},
 		];
 
 	}

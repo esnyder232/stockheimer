@@ -1,19 +1,21 @@
-const {RoundBaseState} = require('./round-base-state.js');
+const RoundBaseState = require('./round-base-state.js');
 const RoundStarting = require('./round-starting.js');
+const RoundMapEnd = require('./round-map-end.js');
 const logger = require('../../logger.js');
 
 //do anything here that involves starting the game, Like loading the map, pools, loading saved games, sessions, anything.
-class RoundOver extends RoundBaseState {
+class RoundOver extends RoundBaseState.RoundBaseState {
 	constructor(gs, round) {
 		super(gs, round);
 		this.stateName = "OVER";
+		this.roundTimerDefault = 90000;
 	}
 	
 	enter(dt) {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = 10000;
+		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.roundOverTimeLength, this.roundTimerDefault);
 
 		//calculate and send the results to the users
 		var winningTeamCsv = "";
@@ -122,7 +124,12 @@ class RoundOver extends RoundBaseState {
 
 		if(this.round.roundTimeAcc >= this.round.roundTimer)
 		{
-			this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
+			//see if a map rotation needs to occur
+			if(this.gs.rotateMapAfterCurrentRound) {
+				this.round.nextState = new RoundMapEnd.RoundMapEnd(this.gs, this.round);
+			} else {
+				this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
+			}
 		}
 
 		super.update(dt);
@@ -142,10 +149,6 @@ class RoundOver extends RoundBaseState {
 		for(var i = 0; i < teams.length; i++) {
 			teams[i].setRoundPoints(0);
 		}
-
-		//tell all active users the round is restarting. Let them sort themselves out.
-		this.round.em.emitEvent("round-restarting");
-		
 	}
 }
 

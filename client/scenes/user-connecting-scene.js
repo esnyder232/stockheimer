@@ -16,10 +16,11 @@ export default class UserConnectingScene extends Phaser.Scene {
 		console.log('init on ' + this.scene.key + ' start');
 
 		this.phaserEventMapping = [
-			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
+			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events},
+			{event: 'sleep', func: this.sleep.bind(this), target: this.sys.events},
+			{event: 'wake', func: this.wake.bind(this), target: this.sys.events},
 		];
 		this.windowsEventMapping = [
-			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: 'resource-load-error', func: this.resourceLoadError.bind(this)}
 		];
 
@@ -54,13 +55,17 @@ export default class UserConnectingScene extends Phaser.Scene {
 
 		$("#user-connecting-scene-root").addClass("hide");
 	}
-	
 
-	exitGameClick() {
-		this.globalfuncs.appendToLog("Disconnecting from server.");
-
-		this.gc.gameState.exitGameClick();
+	sleep() {
+		console.log('sleep on ' + this.scene.key);
+		$("#user-connecting-scene-root").addClass("hide");
 	}
+
+	wake() {
+		console.log('wake on ' + this.scene.key);
+		$("#user-connecting-scene-root").removeClass("hide");
+	}
+
 
 	resourceLoadError(e) {
 		//if the event is an error, put the error somewhere on the screen here

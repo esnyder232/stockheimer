@@ -1,5 +1,5 @@
 const {GameServerBaseState} = require('./game-server-base-state.js');
-const {GameServerStopping} = require('./game-server-stopping.js');
+const {GameServerUnloadingMap} = require('./game-server-unloading-map.js');
 const {AiConnectingState} = require('../user/ai-connecting-state.js');
 const {Round} = require('../classes/round.js');
 const GameConstants = require('../../shared_files/game-constants.json');
@@ -43,11 +43,17 @@ class GameServerRunning extends GameServerBaseState {
 		
 		startSummaryArray.push("============================");
 
+		this.gs.bServerMapLoaded = true;
+		this.gs.rebalanceTeams = true; //set to true to spawn ai
+
+		this.tempTimer = 40000;
+		this.tempTimerAcc = 0;
+
 		logger.log("info", startSummaryArray.join("\n"));
 	}
 
 	update(dt) {
-		//logger.log("info", "gameloop framenum " + this.gs.frameNum);
+		// logger.log("info", "gameloop framenum " + this.gs.frameNum);
 		var activeUsers = this.gs.um.getActiveUsers();
 		var userAgents = this.gs.uam.getUserAgents();
 		var activeGameObjects = this.gs.gom.getActiveGameObjects();
@@ -55,8 +61,8 @@ class GameServerRunning extends GameServerBaseState {
 		var teams = this.gs.tm.getTeams();
 		
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
-		for(var i = 0; i < userAgents.length; i++) {
-			this.processClientEvents(userAgents[i]);
+		for(var i = 0; i < activeUsers.length; i++) {
+			activeUsers[i].processClientEvents();
 		}
 
 		//update users
@@ -104,6 +110,11 @@ class GameServerRunning extends GameServerBaseState {
 			activeGameObjects[i].postWebsocketUpdate(dt);
 		}
 
+		if(this.gs.rebalanceTeams) {
+			this.gs.rebalanceTeams = false;
+			this.gs.globalfuncs.balanceAiUsersOnTeams(this.gs);
+		}
+
 
 		//update managers
 		this.gs.wsm.update(dt);
@@ -117,13 +128,32 @@ class GameServerRunning extends GameServerBaseState {
 
 		this.gs.frameNum++;
 
+		this.gs.mapTimeAcc += dt;
+		if(!this.gs.rotateMapAfterCurrentRound && this.gs.mapTimeAcc >= this.gs.mapTimeLength) {
+			logger.log("info", "Map time length has been reached. Rotating maps after current round is over.");
+			this.gs.rotateMapAfterCurrentRound = true;
+		}
+
+		if(this.gs.rotateMapNow) {
+			this.gs.nextGameState = new GameServerUnloadingMap(this.gs);
+		}
+
 		super.update(dt);
 	}
 
 	exit(dt) {
 		super.exit(dt);
 
+		this.gs.bServerMapLoaded = false;
+
+		//tell every connected client that it is NOT okay to be in the game right now
+		var activeUsers = this.gs.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++) {
+			activeUsers[i].bOkayToBeInTheGame = false;
+		}
+
 		this.gs.theRound.deinit();
+		this.gs.theRound = null;
 	}
 	
 	stopGameRequest() {
@@ -132,228 +162,6 @@ class GameServerRunning extends GameServerBaseState {
 
 	joinRequest() {
 		return "success";
-	}
-
-	websocketClosed(wsh) {
-		var user = this.gs.um.getUserByID(wsh.userId);
-
-		if(user)
-		{
-			user.bDisconnected = true;
-		}
-
-		this.gs.wsm.destroyWebsocket(wsh);
-	}
-
-	websocketErrored(wsh) {
-		var user = this.gs.um.getUserByID(wsh.userId);
-
-		//put user in disconnecting state
-		//not sure why they would not have a user at this point, but better safe than sorry.
-		if(user)
-		{
-			user.bDisconnected = true;
-		}
-
-		this.gs.wsm.destroyWebsocket(wsh);
-	}
-
-	processClientEvents(ua) {
-		var user = this.gs.um.getUserByID(ua.userId);
-		if(user !== null) {
-			if(ua.clientToServerEvents.length > 0) {
-				for(var i = 0; i < ua.clientToServerEvents.length; i++) {
-					var e = ua.clientToServerEvents[i];
-					switch(e.eventName)
-					{
-						case "fromClientChatMessage":
-							var userAgents = this.gs.uam.getUserAgents();
-							logger.log("info", "Player: " + user.username + ", event: fromClientChatMessage: " + e.chatMsg);
-							for(var j = 0; j < userAgents.length; j++) {
-								userAgents[j].insertTrackedEntityEvent('user', user.id, {
-									"eventName": "fromServerChatMessage",
-									"userId": user.id,
-									"chatMsg": e.chatMsg,
-									"isServerMessage": false
-								})
-							}
-							
-							break;
-		
-						case "fromClientKillCharacter":
-							logger.log("info", "Player: " + user.username + ", event: fromClientKillCharacter: ");
-							//as long as they have an existing character, kill it.
-							if(user.characterId !== null)
-							{
-								var c = this.gs.gom.getGameObjectByID(user.characterId);
-	
-								if(c && c.ownerId === user.id)
-								{
-									c.hpCur = 0;
-								}
-							}
-							break;
-
-						case "fromClientSpawnAi":
-							logger.log("info", "Player: " + user.username + ", event: fromClientSpawnAi: teamId: " + e.teamId);
-
-							//create the user to be controlled by the ai
-							var aiUser = this.gs.um.createUser();
-
-							//create an ai agent to control the user
-							var aiAgent = this.gs.aim.createAIAgent();
-
-							//setup user
-							aiUser.userInit(this.gs);
-							aiUser.username = "AI " + aiUser.id;
-							aiUser.stateName = "user-disconnected-state";
-							aiUser.userType = "ai";
-							aiUser.aiAgentId = aiAgent.id;
-							aiUser.updateTeamId(e.teamId);
-
-							//setup the user's nextState
-							aiUser.nextState = new AiConnectingState(aiUser);
-
-							//setup aiAgent
-							aiAgent.aiAgentInit(this.gs, aiUser.id);
-				
-							//activate the user
-							this.gs.um.activateUserId(aiUser.id, null, this.cbAiUserActivateFail.bind(this));
-			
-							break;
-
-						case "fromClientKillAllAi":
-							logger.log("info", "Player: " + user.username + ", event: fromClientKillAllAi: teamId: " + e.teamId);
-							var activeUsers = this.gs.um.getActiveUsers();
-							for(var i = 0; i < activeUsers.length; i++) {
-								if(activeUsers[i].userType === "ai" && activeUsers[i].teamId === e.teamId) {
-									activeUsers[i].bDisconnected = true;
-								}
-							}
-							break;
-
-						case "fromClientKillRandomAi":
-							logger.log("info", "Player: " + user.username + ", event: fromClientKillRandomAi: teamId: " + e.teamId);
-							var activeUsers = this.gs.um.getActiveUsers();
-							var teamAiUsers = [];
-
-							for(var i = 0; i < activeUsers.length; i++) {
-								if(activeUsers[i].userType === "ai" && activeUsers[i].teamId === e.teamId) {
-									teamAiUsers.push(activeUsers[i]);
-								}
-							}
-
-							if(teamAiUsers.length > 0) {
-								var killIndex = Math.floor(teamAiUsers.length * Math.random());
-
-								if(killIndex === teamAiUsers.length) {
-									killIndex = teamAiUsers.length-1
-								}
-
-								teamAiUsers[killIndex].bDisconnected = true;
-							}
-							break;
-							
-						case "fromClientInputs":
-							user.inputQueue.push(e);
-							break;
-	
-						case "fromClientReadyToPlay":
-							user.bReadyToPlay = true;
-							break;
-	
-						case "fromClientSpawnEnemy":
-							var bFail = false;
-							var broadcastMessage = "";
-							var userMessage = "";
-							var logEventMessage = "";
-							logEventMessage = "Player: " + user.username + ", event: fromClientSpawnEnemy " + e.spawnLocation + ": ";	
-	
-							//send out usermessage and/or broadcast message
-							if(userMessage !== "")
-							{
-								this.userResponseMessage(user, userMessage, logEventMessage);
-							}
-							if(broadcastMessage !== "")
-							{
-								this.broadcastResponseMessage(broadcastMessage, logEventMessage);
-							}
-	
-							break;
-	
-						case "fromClientJoinTeam":
-							var existingTeamId = user.teamId;
-							var newTeamId = null;
-							var broadcastMessage = "";
-							var logEventMessage = "";
-	
-							var newTeam = this.gs.tm.getTeamByID(e.teamId);
-							
-							if(newTeam !== null) {
-								newTeamId = newTeam.id;
-							}
-	
-							//if the new team is different than the existing, change it, and send an event
-							if(newTeamId !== existingTeamId && newTeamId !== null)
-							{
-								user.updateTeamId(newTeamId);
-	
-								broadcastMessage = "Player '" + user.username + "' joined " + newTeam.name;
-								logEventMessage = "Player: " + user.username + ", event: fromClientJoinTeam: joined " + newTeam.name + "(" + newTeamId + ")";
-							}
-	
-							//send out usermessage and/or broadcast message
-							if(broadcastMessage !== "")
-							{
-								this.broadcastResponseMessage(broadcastMessage, logEventMessage);
-							}
-	
-							break;
-						case "fromClientChangeClass":
-							var existingClassId = user.characterClassResourceId;
-							var newClassId = null;
-							var broadcastMessage = "";
-							var logEventMessage = "";
-	
-							var newClassResource = this.gs.rm.getResourceByID(e.characterClassResourceId);
-							
-							if(newClassResource !== null && newClassResource.resourceType === "character-class") {
-								newClassId = newClassResource.id;
-							}
-	
-							//if the new class is different than the existing, change it, and send an event
-							if(newClassId !== null && newClassId !== existingClassId) {
-								user.updateCharacterClassId(newClassId);
-	
-								broadcastMessage = "Player '" + user.username + "' changed class to " + newClassResource.data.name;
-								logEventMessage = "Player: " + user.username + ", event: fromClientChangeClass: chnaged class to " + newClassResource.data.name;
-							}
-	
-							//send out usermessage and/or broadcast message
-							if(broadcastMessage !== "") {
-								this.broadcastResponseMessage(broadcastMessage, logEventMessage);
-							}
-							
-	
-							break;
-
-	
-						case "fragmentStart":
-						case "fragmentContinue":
-						case "fragmentEnd":
-							ua.fromClientFragmentEvent(e);
-							break;
-						default:
-							//intentionally blank
-							break;
-					}
-				}
-		
-				//delete all events
-				ua.clientToServerEvents.length = 0;
-			}
-	
-		}
 	}
 
 	//if ai user fails to be activated
@@ -375,33 +183,9 @@ class GameServerRunning extends GameServerBaseState {
 	}
 
 
-
-	userResponseMessage(user, userMessage, logEventMessage) {
-		logger.log("info", logEventMessage + userMessage);
-		var ua = this.gs.uam.getUserAgentByID(user.userAgentId);
-		if(ua !== null) {
-			ua.insertServerToClientEvent({
-				"eventName": "debugMsg",
-				"debugMsg": userMessage
-			});
-		}
-	}
-
-	broadcastResponseMessage(broadcastMessage, logEventMessage) {
-		logger.log("info", logEventMessage + " (broadcastMessage: " + broadcastMessage + ")");
-		var userAgents = this.gs.uam.getUserAgents();
-		for(var j = 0; j < userAgents.length; j++)
-		{
-			userAgents[j].insertServerToClientEvent({
-				"eventName": "debugMsg",
-				"debugMsg": broadcastMessage
-			});
-		}
-	}
-
 	destroyOwnersCharacter(ownerId, ownerType)
 	{
-		var owner = this.globalfuncs.getOwner(this.gs, ownerId, ownerType);
+		var owner = this.gs.globalfuncs.getOwner(this.gs, ownerId, ownerType);
 
 		//as long as they have an existing character, kill it.
 		if(owner !== null && owner.characterId !== null)
@@ -414,25 +198,6 @@ class GameServerRunning extends GameServerBaseState {
 			}
 		}
 	}
-
-
-	//deactivates the user and sends events out to the clients
-	deactivateUserId(userId) {
-		var u = this.gs.um.getUserByID(userId);
-		if(u && u.isActive)
-		{
-			//tell existing users about the user that disconnected
-			var userAgents = this.gs.uam.getUserAgents();
-			for(var i = 0; i < userAgents.length; i++)
-			{
-				userAgents[i].deleteTrackedEntity("user", userId);
-			}
-
-			//deactivate the user in the server manager
-			this.gs.um.deactivateUserId(u.id, this.gs.cbUserDeactivateSuccess.bind(this.gs));
-		}
-	}
-
 
 	characterDied(characterId) {
 		var c = this.gs.gom.getGameObjectByID(characterId);

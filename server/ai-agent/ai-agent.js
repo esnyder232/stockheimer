@@ -71,7 +71,7 @@ class AIAgent {
 		];
 
 		this.userEventCallbackMapping = [ 
-			{eventName: "user-deactivated", cb: this.cbEventEmitted.bind(this), handleId: null}
+			{eventName: "user-stopped-playing", cb: this.cbEventEmitted.bind(this), handleId: null}
 		]
 
 		//just assume your a damage dealing role in the beginning
@@ -95,14 +95,14 @@ class AIAgent {
 	}
 
 	aiAgentDeinit() {
+		if(this.user.bOkayToBeInTheGame && this.aiAgent.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
+			this.aiAgent.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
+		}
+
 		this.user = null;
 		this.character = null;
 		this.characterPos = null;
 		this.nextState = null;
-
-		if(this.aiAgent.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
-			this.aiAgent.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
-		}
 	}
 
 	cbEventEmitted(eventName, owner) {
@@ -112,26 +112,28 @@ class AIAgent {
 	}
 
 	processPlayingEvents() {
-		if(this.playingEventQueue.length > 0) {
-			for(var i = 0; i < this.playingEventQueue.length; i++) {
-				switch(this.playingEventQueue[i].eventName) {
-					case "character-deactivated":
-						//unregister events
-						this.character.em.batchUnregisterForEvent(this.characterEventCallbackMapping);
-
-						//change state back to waiting
-						this.nextState = new AIAgentWaitingState(this);
-						break;
-					case "user-deactivated":
-						//unregister events
-						this.user.em.batchUnregisterForEvent(this.userEventCallbackMapping);
-
-						//destroy this ai agent
-						this.gs.aim.destroyAIAgent(this.id);
-						break;
+		if(this.user.bOkayToBeInTheGame) {
+			if(this.playingEventQueue.length > 0) {
+				for(var i = 0; i < this.playingEventQueue.length; i++) {
+					switch(this.playingEventQueue[i].eventName) {
+						case "character-deactivated":
+							//unregister events
+							this.character.em.batchUnregisterForEvent(this.characterEventCallbackMapping);
+	
+							//change state back to waiting
+							this.nextState = new AIAgentWaitingState(this);
+							break;
+						case "user-stopped-playing":
+							//unregister events
+							this.user.em.batchUnregisterForEvent(this.userEventCallbackMapping);
+	
+							//destroy this ai agent
+							this.gs.aim.destroyAIAgent(this.id);
+							break;
+					}
 				}
+				this.playingEventQueue.length = 0;
 			}
-			this.playingEventQueue.length = 0;
 		}
 	}
 

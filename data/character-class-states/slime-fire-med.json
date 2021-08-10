@@ -1,0 +1,11 @@
+{
+	"name": "Slime Fire Med",
+	"type": "one-time",
+	"animationSet": "cast",
+	"canLook": false,
+	"canMove": false,
+	"timeLength": 600,
+	"projectileKey": "data/projectiles/slime-fire-med.json",
+	"projectileTime": 150,
+	"cooldownTimeLength": 1200
+}

@@ -6,7 +6,7 @@ const {ValidFuncs} = require('./valid-funcs.js');
 const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
-const {UserConnectingState} = require('./user/user-connecting-state.js');
+const UserWaitingForServerState = require('./user/user-waiting-for-server-state.js');
 const {CollisionSystem} = require ('./systems/collision-system.js');
 const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const {TilemapManager} = require ('./managers/tilemap-manager.js');
@@ -64,19 +64,26 @@ class GameServer {
 
 		this.appRoot = path.join(__dirname, "..");
 
-		this.activeNavGrid = null; //temporary
-		this.activeTilemap = null; //temporary
+		this.activeNavGrid = null;
+		this.activeTilemap = null;
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 5000; //ms until this console logs the amount of game objects in the game
 
-		this.minimumUsersPlaying = 24; //temporary. This is used to fill in each teams with AI if there are not enough human users playing.
+		this.minimumUsersPlaying = 0;
+		this.mapTimeLengthDefault = 180000;
+		this.mapTimeLength = 180000;
+		this.mapTimeAcc = 0;
 
 		this.mapRotation = this.globalfuncs.getValueDefault(serverConfig?.map_rotation, []);
 		this.currentMapIndex = 0;
 		this.currentMapResourceKey = "";
 		this.currentMapResource = null;
-		this.atleastOneMapLoads = false;
+		this.rotateMapAfterCurrentRound = false;
+		this.rotateMapNow = false;
+
+		this.bServerMapLoaded = false;
+		this.rebalanceTeams = false;
 	}
 
 	init() {
@@ -94,12 +101,6 @@ class GameServer {
 		this.rm = new ResourceManager();
 		this.fm = new FileManager();
 
-		const Vec2 = this.pl.Vec2;
-		if(!this.world) {
-			this.world = this.pl.World({
-				gravity: Vec2(0, 0)
-			});
-		}
 		
 		//logger.log("info", 'creating gameworld done');
 
@@ -179,17 +180,6 @@ class GameServer {
 			reqCookies = this.globalfuncs.parseCookies(req);
 			cookieSession = reqCookies["user-session"];
 
-			//check if the game is in a "joinable" state
-			if(!authResult.bError)
-			{
-				authResult.errorMessage = this.gameState.joinRequest();
-				authResult.bError = authResult.errorMessage != "success";
-				if(authResult.bError)
-				{
-					authResult.userMessage = authResult.errorMessage;
-				}
-			}
-
 			//check for max players
 			if(!authResult.bError && this.um.activeUserArray.length >= this.um.maxAllowed)
 			{
@@ -265,7 +255,22 @@ class GameServer {
 			this.um.activateUserId(user.id, this.cbUserActivateSuccess.bind(this), this.cbUserActivateFail.bind(this));
 
 			//setup the user's nextState
-			user.nextState = new UserConnectingState(user);
+			user.nextState = new UserWaitingForServerState.UserWaitingForServerState(user);
+
+			//send a message to playing users about the person that joined
+			var playingUsers = this.um.getPlayingUsers();
+			for(var j = 0; j < playingUsers.length; j++) {
+				var ua = this.uam.getUserAgentByID(playingUsers[j].userAgentId);
+				if(ua !== null) {
+					ua.insertServerToClientEvent({
+						"eventName": "fromServerChatMessage",
+						"userId": 0,
+						"chatMsg": "Player '" + user.username + "' has connected.",
+						"isServerMessage": true
+					});
+				}
+			}
+
 		}
 		catch(ex) {
 			//GenFuncs.logErrorGeneral(req.path, "Exception caught in try catch: " + ex, ex.stack, userdata.uid, userMessage);
@@ -321,7 +326,7 @@ class GameServer {
 		var userAgents = this.uam.getUserAgents();
 		for(var i = 0; i < userAgents.length; i++)
 		{
-			//i don't know why it would EVER be null at this point. Buy just to be safe.
+			//i don't know why it would EVER be null at this point. But just to be safe.
 			if(userAgents[i].wsh !== null)
 			{
 				userAgents[i].wsh.updateMaxPacketSize();
@@ -375,6 +380,54 @@ class GameServer {
 			this.gameState = temp;
 		}
 	}
+
+	websocketClosed(wsh) {
+		var user = this.um.getUserByID(wsh.userId);
+
+		if(user !== null) {
+			user.bDisconnected = true;
+		}
+
+		this.wsm.destroyWebsocket(wsh);
+	}
+
+	websocketErrored(wsh) {
+		var user = this.um.getUserByID(wsh.userId);
+
+		//put user in disconnecting state
+		//not sure why they would not have a user at this point, but better safe than sorry.
+		if(user !== null) {
+			user.bDisconnected = true;
+		}
+
+		this.wsm.destroyWebsocket(wsh);
+	}
+
+	//common function
+	userResponseMessage(user, userMessage, logEventMessage) {
+		logger.log("info", logEventMessage + userMessage);
+		var ua = this.uam.getUserAgentByID(user.userAgentId);
+		if(ua !== null) {
+			ua.insertServerToClientEvent({
+				"eventName": "debugMsg",
+				"debugMsg": userMessage
+			});
+		}
+	}
+
+	//common function
+	broadcastResponseMessage(broadcastMessage, logEventMessage) {
+		logger.log("info", logEventMessage + " (broadcastMessage: " + broadcastMessage + ")");
+		var userAgents = this.uam.getUserAgents();
+		for(var j = 0; j < userAgents.length; j++)
+		{
+			userAgents[j].insertServerToClientEvent({
+				"eventName": "debugMsg",
+				"debugMsg": broadcastMessage
+			});
+		}
+	}
+
 
 	/* apis */
 	getServerDetails(req, res) {
@@ -532,13 +585,6 @@ class GameServer {
 
 		try {
 			username = req.body.username;
-
-			//check if the game is in a "joinable" state
-			if(!bError)
-			{
-				userMessage = this.gameState.joinRequest();
-				bError = userMessage != "success";
-			}
 
 			//validate inputs
 			if(!bError)

@@ -16,6 +16,9 @@ class GameServerLoadingMap extends GameServerBaseState {
 	enter(dt) {
 		super.enter(dt);
 
+		//reset some stuff
+		this.gs.minimumUsersPlaying = 0;
+
 		if(this.gs.currentMapIndex >= 0 && this.gs.currentMapIndex < this.gs.mapRotation.length) {
 			this.gs.currentMapResourceKey = this.gs.mapRotation[this.gs.currentMapIndex];
 
@@ -29,9 +32,36 @@ class GameServerLoadingMap extends GameServerBaseState {
 	}
 
 	update(dt) {
+		var activeUsers = this.gs.um.getActiveUsers();
+		var userAgents = this.gs.uam.getUserAgents();
+
+		//process client events
+		for(var i = 0; i < activeUsers.length; i++) {
+			activeUsers[i].processClientEvents();
+		}
+
+		//update users
+		for(var i = 0; i < activeUsers.length; i++) {
+			activeUsers[i].update(dt);
+		}
+
+		//update user agents to fill each user's packet with events
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].update(dt);
+		}
+
+		//create/send packet for all useragents
+		for(var i = 0; i < userAgents.length; i++) {
+			var wsh = this.gs.wsm.getWebsocketByID(userAgents[i].wsId);
+			if(wsh !== null) {
+				wsh.createPacketForUser();
+			}
+		}
+
+
+
 		var resourcesProcessing = this.gs.rm.anyResourcesProcessing();
 		if(resourcesProcessing === false) {
-			this.gs.atleastOneMapLoads = true;
 			this.gs.nextGameState = new GameServerRunning(this.gs);
 		}
 
@@ -39,11 +69,18 @@ class GameServerLoadingMap extends GameServerBaseState {
 			this.gs.nextGameState = new GameServerUnloadingMap.GameServerUnloadingMap(this.gs);
 		}
 
-		//update some managers
+		//update managers
+		this.gs.wsm.update(dt);
+		this.gs.um.update(dt);
+		this.gs.gom.update(dt);
 		this.gs.tmm.update(dt);
+		this.gs.aim.update(dt);
 		this.gs.tm.update(dt);
+		this.gs.pm.update(dt);
+		this.gs.uam.update(dt);
 		this.gs.rm.update(dt);
 		this.gs.fm.update(dt);
+
 
 		super.update(dt);
 	}
@@ -64,6 +101,18 @@ class GameServerLoadingMap extends GameServerBaseState {
 		else {
 			this.gs.currentMapResourceKey = resource.key;
 			this.gs.currentMapResource = resource;
+		}
+
+		//create planck world
+		if(!bError) {
+			if(!this.gs.world) {
+				this.gs.world = this.gs.pl.World({
+					gravity: this.gs.pl.Vec2(0, 0)
+				});
+			}
+
+			//activate the collision system too
+			this.gs.cs.activate();
 		}
 
 		//load classes
@@ -130,7 +179,9 @@ class GameServerLoadingMap extends GameServerBaseState {
 			}
 		}
 
-		
+		//other stuff
+		this.gs.minimumUsersPlaying = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.minimumUsersPlaying, 0);
+		this.gs.mapTimeLength = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.mapTimeLength, this.gs.mapTimeLengthDefault);
 	}
 
 	cbCharacterClassComplete(resource) {
@@ -290,16 +341,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 			logger.log("error", errorMessage);
 			this.mapLoadError = true;
 		}
-	}
-	
-
-	
-	createTeams() {
-		
-	}
-
-	joinRequest() {
-		return "Game is still starting up. Try again in a little bit.";
 	}
 }
 

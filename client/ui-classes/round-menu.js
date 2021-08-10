@@ -53,6 +53,10 @@ export default class RoundMenu {
 
 	updateRoundStateDiv() {
 		switch(this.gc.theRound.stateName) {
+			case "MAPSTART":
+				this.roundState.removeClass("hide");
+				this.roundState.text("Waiting for players to join");
+				break;
 			case "STARTING":
 				this.roundState.removeClass("hide");
 				this.roundState.text("Round Starting");
@@ -63,6 +67,10 @@ export default class RoundMenu {
 			case "OVER":
 				this.roundState.removeClass("hide");
 				this.roundState.text("Round Over");
+				break;
+			case "MAPEND":
+				this.roundState.removeClass("hide");
+				this.roundState.text("Changing Maps");
 				break;
 		}
 	}

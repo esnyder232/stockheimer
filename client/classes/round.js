@@ -1,7 +1,9 @@
 import GlobalFuncs from "../global-funcs.js"
+import RoundMapStart from "../round-states/round-map-start.js"
 import RoundStarting from "../round-states/round-starting.js"
 import RoundPlaying from "../round-states/round-playing.js"
 import RoundOver from "../round-states/round-over.js"
+import RoundMapEnd from "../round-states/round-map-end.js"
 import ServerEventQueue from "./server-event-queue.js";
 
 export default class Round {
@@ -84,6 +86,9 @@ export default class Round {
 		this.roundTimeAcc = e.roundTimeAcc;
 		switch(initState)
 		{
+			case "MAPSTART":
+				this.nextState = new RoundMapStart(this.gc, this);
+				break;
 			case "STARTING":
 				this.nextState = new RoundStarting(this.gc, this);
 				break;
@@ -92,6 +97,9 @@ export default class Round {
 				break;
 			case "OVER":
 				this.nextState = new RoundOver(this.gc, this);
+				break;
+			case "MAPEND":
+				this.nextState = new RoundMapEnd(this.gc, this);
 				break;
 		}
 

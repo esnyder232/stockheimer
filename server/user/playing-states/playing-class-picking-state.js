@@ -1,7 +1,7 @@
 const PlayingBaseState = require('./playing-base-state.js');
 const PlayingRespawningState = require('./playing-respawning-state.js');
 const logger = require('../../../logger.js');
-const GameConstants = require('../../../shared_files/game-constants.json');
+const ServerConfig = require('../../server-config.json');
 
 
 class PlayingClassPickingState extends PlayingBaseState.PlayingBaseState {
@@ -14,6 +14,15 @@ class PlayingClassPickingState extends PlayingBaseState.PlayingBaseState {
 		// logger.log("info", this.stateName + ' enter');
 		this.user.updateCharacterClassId(null);
 		super.enter(dt);
+
+		//if the name is "beepboop", pick a class
+		if(ServerConfig.allow_simulated_user_ai_agents && this.user.username.indexOf("beepboop") === 0) {
+			logger.log("info", "Detected a 'beepboop'. Picking a class for '" + this.user.username + "'");
+			var randomClass = this.user.globalfuncs.getRandomClass(this.user.gs);
+			if(randomClass !== null) {
+				this.user.updateCharacterClassId(randomClass.id);
+			}
+		}
 	}
 
 	update(dt) {
@@ -21,6 +30,8 @@ class PlayingClassPickingState extends PlayingBaseState.PlayingBaseState {
 		if(this.user.characterClassResourceId !== null) {
 			this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
 		}
+
+
 
 		//an event has occured
 		if(this.user.playingEventQueue.length > 0) {

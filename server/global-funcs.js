@@ -1,5 +1,6 @@
 const GameConstants = require('../shared_files/game-constants.json');
 const {AiConnectingState} = require("./user/ai-connecting-state.js")
+const logger = require("../logger.js");
 
 class GlobalFuncs {
 	constructor(){}
@@ -178,11 +179,11 @@ class GlobalFuncs {
 			//send out usermessage and/or broadcast message
 			if(userMessage !== "")
 			{
-				gs.gameState.userResponseMessage(user, userMessage, logEventMessage);
+				gs.userResponseMessage(user, userMessage, logEventMessage);
 			}
 			if(broadcastMessage !== "")
 			{
-				gs.gameState.broadcastResponseMessage(broadcastMessage, logEventMessage);
+				gs.broadcastResponseMessage(broadcastMessage, logEventMessage);
 			}
 		}
 
@@ -190,126 +191,246 @@ class GlobalFuncs {
 
 	}
 
-	//this is such a fucking wierd way to do it....but it does work
+	//NEW - attempt 2
 	balanceAiUsersOnTeams(gs) {
-		if(gs.minimumUsersPlaying > 0 && gs.maxPlayers > 0)
-		{
-			var activeUsersTeams = gs.um.getActiveUsersGroupedByTeams();
+		if(gs.minimumUsersPlaying > 0 && gs.maxPlayers > 0) {
+			var usersSummary = gs.um.getActiveUsersSummary();
 			var bError = false;
-			
-			//create some more property on each team grouping
-			activeUsersTeams.map((x) => {x.minimumUsersThisTeamShouldHave = 0;})
-			activeUsersTeams.map((x) => {x.maxUsersThisTeamShouldHave = 0;})
 
-			var spectatorHumanUsers = 0;
-			for(var i = 0; i < activeUsersTeams.length; i++) {
-				if(activeUsersTeams[i].isSpectatorTeam) {
-					spectatorHumanUsers = activeUsersTeams[i].humanUserIds.length;
-					break;
+			//There are no human players. Add ais until it meets the minimum users playing
+			if(usersSummary.totalHumans === 0) {
+				if(usersSummary.totalAis < gs.minimumUsersPlaying) {
+					for(var i = 0; i < gs.minimumUsersPlaying - usersSummary.totalAis; i++) {
+						this.addAiUser(gs);
+					}
 				}
 			}
-			
-	
-			//if there are teams for ai to belong to (minus the spectator team), spawn the ai on each team until it fills up to the minimum players for that team (yeah...)
-			if(activeUsersTeams.length > 1) {
-	
-				//calculate the minimum number of players per team (minus the spectator team)
-				var numOfUsers = gs.minimumUsersPlaying - spectatorHumanUsers;
-
-				var teamIndex = 0;
-				while(numOfUsers > 0) {
-					if(!activeUsersTeams[teamIndex].isSpectatorTeam) {
-						activeUsersTeams[teamIndex].minimumUsersThisTeamShouldHave += 1;
-						numOfUsers--;
-					}
-					teamIndex++;
-					teamIndex %= activeUsersTeams.length;
-				}
-
-				//also calculate the max number of players per team (minus the spectator team)
-				teamIndex = 0;
-				numOfUsers = gs.maxPlayers;
-				while(numOfUsers > 0) {
-					if(!activeUsersTeams[teamIndex].isSpectatorTeam) {
-						activeUsersTeams[teamIndex].maxUsersThisTeamShouldHave += 1;
-						numOfUsers--;
-					}
-					teamIndex++;
-					teamIndex %= activeUsersTeams.length;
-				}
-			}
-			//the only team that is existing is the spectator team....i guess put them on spectator for now
-			else if (activeUsersTeams.length === 1) { 
-				activeUsersTeams[0].minimumUsersThisTeamShouldHave = gs.minimumUsersPlaying;
-				activeUsersTeams[0].maxUsersThisTeamShouldHave = gs.maxPlayers;
-			}
-			//not sure how it could EVER reach this else statement....there should always be ATLEAST ONE team: spectators
-			else {
-				
-				logger.log("error", "Error when creating ai users for each team. activeUsersTeams came back with 0 teams.");
-				bError = true;
-			}
-	
-	
-			if(!bError) {
-				//finally calculate the number of ai to spawn based on minimum users per tea, maximum players per team, etc
-				for(var i = 0; i < activeUsersTeams.length; i++) {
-					var currHumanUsers = activeUsersTeams[i].humanUserIds.length;
-					var currAiUsers = activeUsersTeams[i].aiUserIds.length;
-					var aiToAdd = activeUsersTeams[i].minimumUsersThisTeamShouldHave;
-
-					if(activeUsersTeams[i].minimumUsersThisTeamShouldHave > activeUsersTeams[i].maxUsersThisTeamShouldHave) {
-						aiToAdd = activeUsersTeams[i].maxUsersThisTeamShouldHave;
-					}
-
-					aiToAdd -= currHumanUsers + currAiUsers;
-
-					//debug
-					//console.log('For team ' + activeUsersTeams[i].teamId + ', i should change it by: ' + aiToAdd);
-
-					//kick some ai from this team
-					if(aiToAdd < 0 && activeUsersTeams[i].aiUserIds.length > 0) {
-						for(var j = 0; j < Math.abs(aiToAdd); j++) {
+			//There more than enough human players to play the game. Kick all existing ai if there is any
+			else if (usersSummary.totalHumans >= gs.minimumUsersPlaying) {
+				if(usersSummary.totalAis > 0) {
+					for(var i = 0; i < usersSummary.teams.length; i++) {
+						for(var j = 0 ; j < usersSummary.teams[i].aiUserIds.length; j++) {
 							//console.log('Attempting to kick an ai');
-							var aiToKick = gs.um.getUserByID(activeUsersTeams[i].aiUserIds[j]);
+							var aiToKick = gs.um.getUserByID(usersSummary.teams[i].aiUserIds[j]);
 
 							if(aiToKick !== null) {
-								console.log('Inside balanceAiUsersOnTeams, kicking ai ' + aiToKick.id + " off team " + activeUsersTeams[i].teamId);
+								logger.log("info", 'Inside balanceAiUsersOnTeams, kicking ai ' + aiToKick.id + " off team " + usersSummary.teams[i].teamId);
 								aiToKick.bDisconnected = true;
 							}
 						}
 					}
-					//add some ai to this team
-					else if (aiToAdd > 0) {
-						for(var j = 0; j < aiToAdd; j++) {
-							//create the user to be controlled by the ai
-							var aiUser = gs.um.createUser();
+				}
+			}
+			//There are some human players, but not enough to reach the minimum. Ais either need to be created or kicked to reach the minimum again.
+			else if (usersSummary.totalHumans > 0 && usersSummary.totalHumans < gs.minimumUsersPlaying) {
+				var totalAiThatShouldBeInGame = gs.minimumUsersPlaying - usersSummary.totalHumans;
 
-							//create an ai agent to control the user
-							var aiAgent = gs.aim.createAIAgent();
+				//some ai need to be kicked. Start kicking from the largest team, and work your way down to the smallest
+				if(totalAiThatShouldBeInGame < usersSummary.totalAis) {
+					var aiLeftToKick = usersSummary.totalAis - totalAiThatShouldBeInGame;
 
-							//setup user
-							aiUser.userInit(gs);
-							aiUser.username = "AI " + aiUser.id;
-							aiUser.stateName = "user-disconnected-state";
-							aiUser.userType = "ai";
-							aiUser.aiAgentId = aiAgent.id;
-							aiUser.updateTeamId(activeUsersTeams[i].teamId);
+					var whileLoopCounter = 0;
+					while (aiLeftToKick > 0) {
+						//sort existing teams by totalUsers desc
+						usersSummary.teams.sort((a, b) => {return b.totalUsers - a.totalUsers;});
 
-							//setup the user's nextState
-							aiUser.nextState = new AiConnectingState(aiUser);
+						//start with the team that has the most users, try to find an ai on the team and kick. If there isn't an ai on the team, move onto the next team.
+						for(var i = 0; i < usersSummary.teams.length; i++) {
+							if(usersSummary.teams[i].aiUserIds.length > 0) {
+								//console.log('Attempting to kick an ai');
+								var aiToKick = gs.um.getUserByID(usersSummary.teams[i].aiUserIds[0]);
 
-							//setup aiAgent
-							aiAgent.aiAgentInit(gs, aiUser.id);
+								if(aiToKick !== null) {
+									logger.log("info", 'Inside balanceAiUsersOnTeams, kicking ai ' + aiToKick.id + " off team " + usersSummary.teams[i].teamId);
+									aiToKick.bDisconnected = true;
+									aiLeftToKick--;
 
-							//activate the user
-							gs.um.activateUserId(aiUser.id);
+									//update the team summary for sorting for the next loop
+									usersSummary.teams[i].aiUserIds.splice(0, 1);
+									usersSummary.teams[i].totalUsers--;
+									break;
+								}
+							}
+						}
+						
+						//just in case the while loop gets caught in an infinite loop
+						whileLoopCounter++;						
+						if(whileLoopCounter > 50) {
+							logger.log("info", "Inside balanceAiUsersOnTeams: Warning: while-loop to kick ai users reached 50 iterations. Breaking out of loop.")
+							break;
 						}
 					}
 				}
-			}	
+				//some ai need to be added. Just create them, and they will pick a team later when they get activated.
+				else if(totalAiThatShouldBeInGame > usersSummary.totalAis) {
+					for(var i = 0; i < totalAiThatShouldBeInGame - usersSummary.totalAis; i++) {
+						this.addAiUser(gs);
+					}
+				}
+			}
 		}
 	}
+
+
+	addAiUser(gs) {
+		//create the user to be controlled by the ai
+		var aiUser = gs.um.createUser();
+
+		//create an ai agent to control the user
+		var aiAgent = gs.aim.createAIAgent();
+
+		//setup user
+		aiUser.userInit(gs);
+		aiUser.username = "AI " + aiUser.id;
+		aiUser.stateName = "user-disconnected-state";
+		aiUser.userType = "ai";
+		aiUser.aiAgentId = aiAgent.id;
+
+		//setup the user's nextState
+		aiUser.nextState = new AiConnectingState(aiUser);
+
+		//setup aiAgent
+		aiAgent.aiAgentInit(gs, aiUser.id);
+
+		//activate the user
+		gs.um.activateUserId(aiUser.id);
+
+		console.log("Added ai user '" + aiUser.username);
+	}
+
+
+
+
+
+
+
+
+
+
+	// //OLD
+	// // //this is such a fucking wierd way to do it....but it does work
+	// balanceAiUsersOnTeams(gs) {
+	// 	if(gs.minimumUsersPlaying > 0 && gs.maxPlayers > 0)
+	// 	{
+	// 		var usersSummary = gs.um.getActiveUsersSummary();
+	// 		var bError = false;
+			
+	// 		//create some more property on each team grouping
+	// 		usersSummary.teams.map((x) => {x.minimumUsersThisTeamShouldHave = 0;})
+	// 		usersSummary.teams.map((x) => {x.maxUsersThisTeamShouldHave = 0;})
+
+	// 		var spectatorHumanUsers = 0;
+	// 		for(var i = 0; i < usersSummary.teams.length; i++) {
+	// 			if(usersSummary.teams[i].isSpectatorTeam) {
+	// 				spectatorHumanUsers = usersSummary.teams[i].humanUserIds.length;
+	// 				break;
+	// 			}
+	// 		}
+			
+	
+	// 		//if there are teams for ai to belong to (minus the spectator team), spawn the ai on each team until it fills up to the minimum players for that team (yeah...)
+	// 		if(usersSummary.teams.length > 1) {
+	
+	// 			//calculate the minimum number of players per team (minus the spectator team)
+	// 			var numOfUsers = gs.minimumUsersPlaying - spectatorHumanUsers;
+
+	// 			var teamIndex = 0;
+	// 			while(numOfUsers > 0) {
+	// 				if(!usersSummary.teams[teamIndex].isSpectatorTeam) {
+	// 					usersSummary.teams[teamIndex].minimumUsersThisTeamShouldHave += 1;
+	// 					numOfUsers--;
+	// 				}
+	// 				teamIndex++;
+	// 				teamIndex %= usersSummary.teams.length;
+	// 			}
+
+	// 			//also calculate the max number of players per team (minus the spectator team)
+	// 			teamIndex = 0;
+	// 			numOfUsers = gs.maxPlayers;
+	// 			while(numOfUsers > 0) {
+	// 				if(!usersSummary.teams[teamIndex].isSpectatorTeam) {
+	// 					usersSummary.teams[teamIndex].maxUsersThisTeamShouldHave += 1;
+	// 					numOfUsers--;
+	// 				}
+	// 				teamIndex++;
+	// 				teamIndex %= usersSummary.teams.length;
+	// 			}
+	// 		}
+	// 		//the only team that is existing is the spectator team....i guess put them on spectator for now
+	// 		else if (usersSummary.teams.length === 1) { 
+	// 			usersSummary.teams[0].minimumUsersThisTeamShouldHave = gs.minimumUsersPlaying;
+	// 			usersSummary.teams[0].maxUsersThisTeamShouldHave = gs.maxPlayers;
+	// 		}
+	// 		//not sure how it could EVER reach this else statement....there should always be ATLEAST ONE team: spectators
+	// 		else {
+				
+	// 			logger.log("error", "Error when creating ai users for each team. usersSummary.teams came back with 0 teams.");
+	// 			bError = true;
+	// 		}
+	
+	
+	// 		if(!bError) {
+	// 			//finally calculate the number of ai to spawn based on minimum users per tea, maximum players per team, etc
+	// 			for(var i = 0; i < usersSummary.teams.length; i++) {
+	// 				var currHumanUsers = usersSummary.teams[i].humanUserIds.length;
+	// 				var currAiUsers = usersSummary.teams[i].aiUserIds.length;
+	// 				var aiToAdd = usersSummary.teams[i].minimumUsersThisTeamShouldHave;
+
+	// 				if(usersSummary.teams[i].minimumUsersThisTeamShouldHave > usersSummary.teams[i].maxUsersThisTeamShouldHave) {
+	// 					aiToAdd = usersSummary.teams[i].maxUsersThisTeamShouldHave;
+	// 				}
+
+	// 				aiToAdd -= currHumanUsers + currAiUsers;
+
+	// 				//debug
+	// 				console.log('For team ' + usersSummary.teams[i].teamId + ', i should change it by: ' + aiToAdd);
+
+	// 				//kick some ai from this team
+	// 				if(aiToAdd < 0 && usersSummary.teams[i].aiUserIds.length > 0) {
+	// 					for(var j = 0; j < Math.abs(aiToAdd); j++) {
+	// 						//console.log('Attempting to kick an ai');
+	// 						var aiToKick = gs.um.getUserByID(usersSummary.teams[i].aiUserIds[j]);
+
+	// 						if(aiToKick !== null) {
+	// 							console.log('Inside balanceAiUsersOnTeams, kicking ai ' + aiToKick.id + " off team " + usersSummary.teams[i].teamId);
+	// 							aiToKick.bDisconnected = true;
+	// 						}
+	// 					}
+	// 				}
+	// 				//add some ai to this team
+	// 				else if (aiToAdd > 0) {
+	// 					for(var j = 0; j < aiToAdd; j++) {
+	// 						//create the user to be controlled by the ai
+	// 						var aiUser = gs.um.createUser();
+
+	// 						//create an ai agent to control the user
+	// 						var aiAgent = gs.aim.createAIAgent();
+
+	// 						//setup user
+	// 						aiUser.userInit(gs);
+	// 						aiUser.username = "AI " + aiUser.id;
+	// 						aiUser.stateName = "user-disconnected-state";
+	// 						aiUser.userType = "ai";
+	// 						aiUser.aiAgentId = aiAgent.id;
+	// 						aiUser.updateTeamId(usersSummary.teams[i].teamId);
+
+	// 						console.log("Creating ai user '" + aiUser.username + "' for team " + usersSummary.teams[i].teamId);
+
+	// 						//setup the user's nextState
+	// 						aiUser.nextState = new AiConnectingState(aiUser);
+
+
+	// 						//setup aiAgent
+	// 						aiAgent.aiAgentInit(gs, aiUser.id);
+
+	// 						//activate the user
+	// 						gs.um.activateUserId(aiUser.id);
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	//https://stackoverflow.com/questions/511761/js-function-to-get-filename-from-url/48554885
 	//sick
@@ -333,19 +454,19 @@ class GlobalFuncs {
 
 	//returns a team that has the least amount of players on it. If there is a tie, it picks the one with the lowest id. 
 	//It returns the spectator team if there are no teams to join.
-	getRandomOpenTeam(gameServer) {
+	getSmallestTeam(gameServer) {
 		var finalTeam = null;
-		var activeUsersTeams = gameServer.um.getActiveUsersGroupedByTeams();
+		var usersSummary = gameServer.um.getActiveUsersSummary();
 
-		if(activeUsersTeams.length === 1) {
-			finalTeam = gameServer.tm.getTeamByID(activeUsersTeams[0].teamId);
+		if(usersSummary.teams.length === 1) {
+			finalTeam = gameServer.tm.getTeamByID(usersSummary.teams[0].teamId);
 		}
-		else if (activeUsersTeams.length > 1) {
+		else if (usersSummary.teams.length > 1) {
 			//sort by totalUsers asc, then teamId asc
-			var activeUserTeamsSorted = activeUsersTeams.sort((a, b) => {return a.totalUsers-b.totalUsers || a.teamId-b.teamId;});
-			for(var i = 0; i < activeUserTeamsSorted.length; i++) {
-				if(!activeUserTeamsSorted[i].isSpectatorTeam) {
-					finalTeam = gameServer.tm.getTeamByID(activeUserTeamsSorted[i].teamId);
+			usersSummary.teams.sort((a, b) => {return a.totalUsers-b.totalUsers || a.teamId-b.teamId;});
+			for(var i = 0; i < usersSummary.teams.length; i++) {
+				if(!usersSummary.teams[i].isSpectatorTeam) {
+					finalTeam = gameServer.tm.getTeamByID(usersSummary.teams[i].teamId);
 					break;
 				}
 			}
@@ -380,7 +501,7 @@ class GlobalFuncs {
 		return randomClass;
 	}
 
-	//function that only inserts tracked entities into user agents with users who are "active" (meaning they are connected and are playing)
+	//function that only inserts tracked entities into user agents with users who are "playing" (meaning they are connected and are playing)
 	insertTrackedEntityToPlayingUsers(gameServer, entType, entId) {
 		var playingUsers = gameServer.um.getPlayingUsers();
 		for(var i = 0; i < playingUsers.length; i++) {

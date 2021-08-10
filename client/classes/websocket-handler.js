@@ -114,16 +114,30 @@ export default class WebsocketHandler {
 		}
 	}
 
+
+	//Remove all ack/send callbacks for the websocket handler. 
+	//This should only be called when the user leaves the game and is currently resetting its user-agent for rejoining/map rotation.
+	removeAllCallbacks() {
+		for(var i = 0; i < this.ackCallbacks.length; i++) {
+			this.ackCallbacks[i].length = 0;
+		}
+
+		for(var i = 0; i < this.sendCallbacks.length; i++) {
+			this.sendCallbacks[i].length = 0;
+		}
+	}
+
+
 	onclose(e) {
 		if(e.reason)
 		{
 			this.globalfuncs.appendToLog("WebsocketHandler: Websocket is now closed. Reason: " + e.reason);
 		}
-		this.gc.gameState.websocketClosed();
+		this.gc.websocketClosed();
 	}
 
 	onopen(e) {
-		this.gc.gameState.websocketOpened();
+		this.gc.websocketOpened();
 	}
 
 	onerror(e) {
@@ -131,7 +145,7 @@ export default class WebsocketHandler {
 		this.globalfuncs.appendToLog("WebsocketHandler: " + msg);
 		this.gc.modalMenu.openMenu("error", msg);
 		
-		this.gc.gameState.websocketErrored();
+		this.gc.websocketErrored();
 	}
 
 	onmessage(e) {

@@ -59,6 +59,7 @@ class Character {
 		this.bAllowedLook = true;
 		this.bAllowedMove = true;
 		this.bAllowedShoot = true;
+		this.bAllowedInput = true;
 
 		this.inputQueue = [];
 		this.frameEventQueue = [];
@@ -84,6 +85,10 @@ class Character {
 
 	changeAllowShoot(bAllowedShoot) {
 		this.bAllowedShoot = bAllowedShoot;
+	}
+
+	changeAllowInput(bAllowInput) {
+		this.bAllowedInput = bAllowInput;
 	}
 
 	changeAllowLook(bAllowedLook) {
@@ -233,7 +238,6 @@ class Character {
 		this.em.emitEvent("character-deactivated");
 		/////////////////////
 
-
 		var userAgents = this.gs.uam.getUserAgents();
 		for(var i = 0 ; i < userAgents.length; i++) {
 			userAgents[i].deleteTrackedEntity("gameobject", this.id);
@@ -298,7 +302,7 @@ class Character {
 	
 			//step 2 - apply game logic for the client input controller to get the input for THIS frame
 			//if they are allowed to move, get the latest directional inputs from the client for the frame
-			if(this.bAllowedMove) {
+			if(this.bAllowedInput && this.bAllowedMove) {
 				this.frameInputController.up.state = this.clientInputController.up.state;
 				this.frameInputController.down.state = this.clientInputController.down.state;
 				this.frameInputController.left.state = this.clientInputController.left.state;
@@ -313,7 +317,7 @@ class Character {
 			}
 
 			//if they are allowed to shoot, get the latest shooting buttons from the client for the frame
-			if(this.bAllowedShoot) {
+			if(this.bAllowedInput && this.bAllowedShoot) {
 				this.frameInputController.isFiring.state = this.clientInputController.isFiring.state;
 				this.frameInputController.isFiringAlt.state = this.clientInputController.isFiringAlt.state;
 			}
@@ -323,7 +327,7 @@ class Character {
 				this.frameInputController.isFiringAlt.state = false;
 			}
 
-			if(this.bAllowedLook) {
+			if(this.bAllowedInput && this.bAllowedLook) {
 				this.frameInputController.characterDirection.value = this.clientInputController.characterDirection.value;
 			}
 			else {

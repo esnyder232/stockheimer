@@ -65,14 +65,17 @@ class TrackedEntity {
 
 	//called when this gets spliced off the user's trackedEntity array. Only ever called once.
 	trackedEntityDeinit() {
+		this.gs = null;
+		this.userAgent = null;
 		this.ent = null;
-		this.user = null;
+		this.eventQueue.length = 0;
+		this.orderedEventQueue.length = 0;
 		this.state = null;
 		this.nextState = null;
 	}
 
 	update(dt) {
-		this.state.update();
+		this.state.update(dt);
 
 		if(this.nextState)
 		{
@@ -82,10 +85,6 @@ class TrackedEntity {
 			this.state = this.nextState;
 			this.nextState = null;
 		}
-	}
-
-	createUpdateEvent(dt) {
-		this.state.createUpdateEvent(dt);
 	}
 
 	cbCreateAck(miscData) {

@@ -9,6 +9,8 @@ class UserBaseState {
 	enter(dt) {}
 	update(dt) {}
 	exit(dt) {}
+
+	processClientEvents(ua){};
 }
 
 

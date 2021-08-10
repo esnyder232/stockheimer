@@ -51,12 +51,15 @@ export default class GameClient {
 
 		this.changelogRaw = "";
 		this.changelogFinal = null;
+
+		this.wsConnected = false;
+		this.bDisconnect = false;
+		this.bServerMapLoaded = false;
 		
 		//scenes
 		this.lobbyScene = null;
 		this.mainScene = null;
 		this.userConnectingScene = null;
-		this.userDisconnectingScene = null;
 		this.resourceLoadingScene = null;
 
 		//menus
@@ -142,7 +145,9 @@ export default class GameClient {
 		
 
 		this.phaserEventMapping = [];
-		this.windowsEventMapping = [];
+		this.windowsEventMapping = [
+			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
+		];
 
 		this.globalfuncs.registerPhaserEvents(this.phaserEventMapping);
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -287,6 +292,24 @@ export default class GameClient {
 		}
 	}
 
+	websocketErrored() {
+		this.wsConnected = false;
+		this.bDisconnect = true;
+	}
+
+	websocketOpened() {
+		this.wsConnected = true;
+	}
+	
+	websocketClosed() {
+		this.wsConnected = false;
+		this.bDisconnect = true;
+	}
+
+	exitGameClick() {
+		this.bDisconnect = true;
+	}
+
 	getResources(cb) {
 		$.ajax({url: this.resourcesApi, method: "GET"})
 		.done((responseData, textStatus, xhr) => {
@@ -310,6 +333,9 @@ export default class GameClient {
 		this.resourcesResults = [];
 		this.ep.reset();
 		this.theRound = null;
+		this.bDisconnect = false;
+		this.wsConnected = false;
+		this.bServerMapLoaded = false;
 	}
 
 	gameLoop() {

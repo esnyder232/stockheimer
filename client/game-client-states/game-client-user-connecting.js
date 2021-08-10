@@ -1,20 +1,12 @@
 import GameClientBaseState from './game-client-base-state.js';
 import GameClientUserDisconnecting from './game-client-user-disconnecting.js';
-import GameClientUserPlaying from './game-client-user-playing.js';
+import GameClientUserWaitingForServer from './game-client-user-waiting-for-server.js';
 import UserConnectingScene from "../scenes/user-connecting-scene.js"
-import MainScene from "../scenes/main-scene.js"
-
 export default class GameClientUserConnecting extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
 
-		// NEW
-		//0 - connecting websocket
-		//1 - recieving game server state
-		//2 - retrieve resources
-		//3 - load resources and wait until they are done
-		//4 - start playing
-		this.connectionState = "WEBSOCKET_CONNECTION";
+		this.wsConnected = false;
 	}
 	
 	enter(dt) {
@@ -24,136 +16,31 @@ export default class GameClientUserConnecting extends GameClientBaseState {
 			gc: this.gc
 		});
 		
-		var bFail = this.gc.wsh.createWebSocket();
+		var error = this.gc.wsh.createWebSocket();
 		
-		if(bFail)
-		{
-			this.websocketErrored();
+		if(error) {
+			this.gc.websocketErrored();
 		}
 		
-		//create main scene
-		this.gc.mainScene = this.gc.phaserGame.scene.add("main-scene", MainScene, true, {
-			gc: this.gc
-		});
-
-		this.connectionState = "WEBSOCKET_CONNECTION";
-		this.gc.userConnectingScene.updateConnectingMessage("Connecting");
-
-
-		//put main scene to sleep until we are done preloading everything
-		this.gc.mainScene.scene.sleep();
-		this.gc.mainMenu.enableExitServerButton();
+		this.gc.userConnectingScene.updateConnectingMessage("Connecting to server...");
 	}
 
 
 	update(dt) {
 		super.update(dt);
 
-		switch(this.connectionState)
-		{
-			case "WEBSOCKET_CONNECTION":
-				break;
-			case "RECIEVE_WORLD_STATE":
-				this.gc.ep.processServerEvents();
-
-				this.gc.wsh.createPacketForUser();
-				this.gc.wsh.update(dt);
-				break;
-
-			case "RETRIEVE_RESOURCES":
-				this.gc.wsh.createPacketForUser();
-				this.gc.wsh.update(dt);
-				break;
-
-			case "LOAD_RESOURCES":
-				if(!this.gc.rm.anyResourcesLoading()) {
-					this.connectionState = "START_PLAYING";
-				}
-
-				this.gc.resourceLoadingScene.load.start();
-				this.gc.wsh.createPacketForUser();
-				this.gc.wsh.update(dt);
-				break;
-
-			case "START_PLAYING":
-				this.gc.nextGameState = new GameClientUserPlaying(this.gc);
-
-				this.gc.wsh.createPacketForUser();
-				this.gc.wsh.update(dt);
-				break;
-
+		//if a disconnect was requested by the user or an error occured somehow in the websocket, disconnect
+		if(this.gc.bDisconnect) {
+			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
 		}
-		
-		//update managers
-		this.gc.um.update(dt);
-		this.gc.tm.update(dt);
-		this.gc.rm.update(dt);
+
+		//if the websocket connected, move onto the next state
+		if(this.gc.wsConnected) {
+			this.gc.nextGameState = new GameClientUserWaitingForServer(this.gc);
+		}
 	}
 
 	exit(dt) {
 		super.exit(dt);
-		this.gc.phaserGame.scene.stop("user-connecting-scene");
-		this.gc.phaserGame.scene.remove("user-connecting-scene");
-
-		this.gc.userConnectingScene = null;
-	}
-
-	websocketOpened() {
-		this.globalfuncs.appendToLog("Connected.");
-		this.globalfuncs.appendToLog("Getting world state...");
-		this.gc.userConnectingScene.updateConnectingMessage("Getting world state");
-		this.connectionState = "RECIEVE_WORLD_STATE";
-	}
-
-	websocketErrored() {
-		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-	}
-
-	websocketClosed() {
-		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-	}
-
-	exitGameClick() {
-		this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-	}
-
-	worldDoneState(e) {
-		// NEW
-		this.globalfuncs.appendToLog("World state done.");
-		this.globalfuncs.appendToLog("Getting resources...");
-		this.gc.userConnectingScene.updateConnectingMessage("Getting resources");
-		this.connectionState = "RETRIEVE_RESOURCES";
-
-		this.gc.getResources(this.cbGetResources.bind(this));
-	}
-
-	cbGetResources(bError) {
-		if(bError) {
-			this.globalfuncs.appendToLog("An Error has occured when retreiving resources. Disconnecting.");
-			this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-		}
-		else {
-			//go through each resource and load them into the client's resource manager
-			this.globalfuncs.appendToLog("Getting resource done.");
-			this.globalfuncs.appendToLog("Loading resources...");
-			this.gc.userConnectingScene.updateConnectingMessage("Loading resources");
-			this.connectionState = "LOAD_RESOURCES";
-
-			for(var i = 0; i < this.gc.resourcesResults.length; i++) {
-				this.gc.rm.loadResource(this.gc.resourcesResults[i], this.cbResourceLoadComplete.bind(this));
-			}
-		}
-	}
-
-	cbResourceLoadComplete(resource) {
-		if(resource.resourceType === "tilemap") {
-			if(resource.status === "failed") {
-				this.globalfuncs.appendToLog("An Error has occured when loading tilemap data. Disconnecting.");
-				this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
-			}
-			else {
-				this.gc.activeTilemap = resource;
-			}
-		}
 	}
 }

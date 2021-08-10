@@ -1,5 +1,6 @@
 const PlayingBaseState = require('./playing-base-state.js');
 const logger = require('../../../logger.js');
+const ServerConfig = require('../../server-config.json');
 
 class PlayingSpectatorState extends PlayingBaseState.PlayingBaseState {
 	constructor(user) {
@@ -11,6 +12,13 @@ class PlayingSpectatorState extends PlayingBaseState.PlayingBaseState {
 	enter(dt) {
 		super.enter(dt);
 		this.user.inputQueue.length = 0;
+
+		//if the name is "beepboop", pick a team
+		if(ServerConfig.allow_simulated_user_ai_agents && this.user.username.indexOf("beepboop") === 0) {
+			logger.log("info", "Detected a 'beepboop'. Picking a team for '" + this.user.username + "'");
+			var team = this.user.globalfuncs.getSmallestTeam(this.user.gs);
+			this.user.updateTeamId(team.id);
+		}
 	}
 
 	update(dt) {

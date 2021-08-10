@@ -1,12 +1,12 @@
 {
-	"name": "Team Map Square",
-	"tilemapResource": "assets/tilemaps/team-map-square.json",
-	"mapTimeLength": 300000,
+	"name": "Team Map Square No Walls",
+	"tilemapResource": "assets/tilemaps/team-map-square-no-walls.json",
+	"mapTimeLength": 30000,
 	"roundMapStartTimeLength": 10000,
 	"roundStartingTimeLength": 10000,
-	"roundPlayingTimeLength": 90000,
-	"roundOverTimeLength": 7000,
-	"roundMapEndTimeLength": 5000,
+	"roundPlayingTimeLength": 10000,
+	"roundOverTimeLength": 10000,
+	"roundMapEndTimeLength": 10000,
 	"userRespawningTimeLength": 2000,
 	"minimumUsersPlaying": 0,
 	"classData": [

@@ -387,7 +387,7 @@ class ResourceManager {
 					var rindex = this.resourceArray.findIndex((x) => {return x.id === r.id;});
 
 					if(rindex >= 0) {
-						this.updateIndex(r.id, r.key, r, "delete");
+						this.updateIndex(r.id, r.key, r.resourceType, r, "delete");
 						this.resourceArray.splice(rindex, 1);
 					}
 				}

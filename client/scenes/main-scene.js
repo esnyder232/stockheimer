@@ -9,7 +9,7 @@ import ChatMenu from "../ui-classes/chat-menu.js"
 import ChatMenuMinified from "../ui-classes/chat-menu-minified.js"
 import UserListMenu from "../ui-classes/user-list-menu.js"
 import RoundMenu from "../ui-classes/round-menu.js"
-import RespawnTimeMenu from "../ui-classes/respawn-timer-menu.js"
+import RespawnTimerMenu from "../ui-classes/respawn-timer-menu.js"
 import KillFeedMenu from "../ui-classes/kill-feed-menu.js"
 import RoundResultsMenu from "../ui-classes/round-results-menu.js"
 import TeamScoreMenu from "../ui-classes/team-score-menu.js"
@@ -130,7 +130,6 @@ export default class MainScene extends Phaser.Scene {
 			{event: 'shutdown', func: this.shutdown.bind(this), target: this.sys.events}
 		];
 		this.windowsEventMapping = [
-			{event: 'exit-game-click', func: this.exitGameClick.bind(this)},
 			{event: "team-changed", func: this.teamChanged.bind(this)}
 		];
 
@@ -165,7 +164,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenuMinified = new ChatMenuMinified();
 		this.userListMenu = new UserListMenu();
 		this.roundMenu = new RoundMenu();
-		this.respawnTimeMenu = new RespawnTimeMenu();
+		this.respawnTimerMenu = new RespawnTimerMenu();
 		this.killFeedMenu = new KillFeedMenu();
 		this.roundResultsMenu = new RoundResultsMenu();
 		this.teamScoreMenu = new TeamScoreMenu();
@@ -177,7 +176,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenuMinified.init(this.gc);
 		this.userListMenu.init(this.gc);
 		this.roundMenu.init(this.gc);
-		this.respawnTimeMenu.init(this.gc);
+		this.respawnTimerMenu.init(this.gc);
 		this.killFeedMenu.init(this.gc);
 		this.roundResultsMenu.init(this.gc);
 		this.teamScoreMenu.init(this.gc);
@@ -275,7 +274,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenuMinified.activate();
 		this.userListMenu.activate();
 		this.roundMenu.activate();
-		this.respawnTimeMenu.activate();
+		this.respawnTimerMenu.activate();
 		this.killFeedMenu.activate();
 		this.roundResultsMenu.activate();
 		this.teamScoreMenu.activate();
@@ -332,6 +331,7 @@ export default class MainScene extends Phaser.Scene {
 
 	shutdown() {
 		console.log('shutdown on ' + this.scene.key);
+		this.gc.turnOnContextMenu();
 		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 		this.globalfuncs.unregisterPhaserEvents(this.phaserEventMapping);
 
@@ -381,7 +381,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenuMinified.deactivate();
 		this.userListMenu.deactivate();
 		this.roundMenu.deactivate();
-		this.respawnTimeMenu.deactivate();
+		this.respawnTimerMenu.deactivate();
 		this.killFeedMenu.deactivate();
 		this.roundResultsMenu.deactivate();
 		this.teamScoreMenu.deactivate();
@@ -392,7 +392,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenuMinified.deinit();
 		this.userListMenu.deinit();
 		this.roundMenu.deinit();
-		this.respawnTimeMenu.deinit();
+		this.respawnTimerMenu.deinit();
 		this.killFeedMenu.deinit();
 		this.roundResultsMenu.deinit();
 		this.teamScoreMenu.deinit();
@@ -401,14 +401,10 @@ export default class MainScene extends Phaser.Scene {
 		this.gc.debugMenu.clearAiControls();
 	}
 
-	exitGameClick() {
-		this.gc.turnOnContextMenu();
-		this.gc.gameState.exitGameClick();
-	}
 
 	switchCameraMode(mode)
 	{
-		console.log('switching camera mode');
+		console.log('switching camera mode to ' + mode);
 
 		if(mode === 0) //0 - spectator mode
 		{
@@ -686,7 +682,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//update menus
 		this.roundMenu.update(dt);
-		this.respawnTimeMenu.update(dt);
+		this.respawnTimerMenu.update(dt);
 		this.killFeedMenu.update(dt);
 
 		this.frameNum++;
@@ -707,7 +703,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//open the team menu if:
 		// - the player has first entered the game, but does not have a teamId
-		if(bFirstMenuFlow && this.gc.myUser.teamId === spectatorTeam.serverId) {
+		if(bFirstMenuFlow && (this.gc.myUser.teamId === 0 || this.gc.myUser.teamId === spectatorTeam.serverId)) {
 			this.teamMenu.openMenu();
 			bStop = true;
 		}

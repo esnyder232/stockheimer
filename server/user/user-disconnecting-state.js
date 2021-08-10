@@ -9,24 +9,8 @@ class UserDisconnectingState extends UserBaseState {
 	}
 
 	enter(dt) {
-		//logger.log("info", this.stateName + ' enter');
+		// logger.log("info", this.stateName + ' enter');
 		this.user.stateName = this.stateName;
-
-		super.enter(dt);
-	}
-
-	update(dt) {
-		//for now, just go to the next state immediately
-		this.user.nextState = new UserDisconnectedState.UserDisconnectedState(this.user);
-		super.update(dt);
-	}
-
-	exit(dt) {
-		//logger.log("info", this.stateName + ' exit');
-
-		//clean up any relationships the user may have had
-		this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
-		this.user.gs.gameState.deactivateUserId(this.user.id);
 
 		//send a message to existing users about the person that left
 		var userAgents = this.user.gs.uam.getUserAgents();
@@ -40,11 +24,46 @@ class UserDisconnectingState extends UserBaseState {
 			});
 		}
 
+		//just in case idk
+		var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
+		if(ua !== null) {
+			ua.forceDisconnect();
+		}
+
+		super.enter(dt);
+	}
+
+	update(dt) {
+		//for now, just go to the next state immediately
+		this.user.nextState = new UserDisconnectedState.UserDisconnectedState(this.user);
+		super.update(dt);
+	}
+
+	exit(dt) {
+		// logger.log("info", this.stateName + ' exit');
+		
+		logger.log("info", this.user.username + ' has disconnected.');
+
+		//tell existing users about the user that disconnected
+		var userAgents = this.user.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].deleteTrackedEntity("user", this.user.id);
+		}
+
+		//deactivate the user in the server manager
+		this.user.gs.um.deactivateUserId(this.user.id, this.user.gs.cbUserDeactivateSuccess.bind(this.user.gs));
+
+		//destroy the user agent as well
 		if(this.user.userAgentId !== null) {
 			this.user.gs.uam.destroyUserAgent(this.user.userAgentId);
 		}
 
 		super.exit(dt);
+	}
+
+	processClientEvents(ua) {
+		//delete all events if the user recieved any (he shouldn't recieve any in this state)
+		ua.clientToServerEvents.length = 0;
 	}
 }
 

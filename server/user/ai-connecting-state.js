@@ -7,8 +7,6 @@ class AiConnectingState extends UserBaseState {
 	constructor(user) {
 		super(user);
 		this.stateName = "ai-connecting-state";
-		this.worldStateDoneEventSent = false;
-		this.teamAcks = [];
 	}
 
 	enter(dt) {
@@ -37,14 +35,18 @@ class AiConnectingState extends UserBaseState {
 	}
 
 	update(dt) {
-		//wait for the "readyToPlay" signal from the client
+		//just in case
+		if(this.user.gs.bServerMapLoaded) {
+			this.user.bOkayToBeInTheGame = true;
+		}
+
+		if(this.user.bOkayToBeInTheGame) {
+			this.user.nextState = new AiPlayingState(this.user);
+		}
+
 		if(this.user.bDisconnected)
 		{
 			this.user.nextState = new AiDisconnectingState(this.user);
-		}
-		else
-		{
-			this.user.nextState = new AiPlayingState(this.user);
 		}
 
 		super.update(dt);

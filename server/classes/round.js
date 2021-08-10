@@ -1,5 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
-const {RoundStarting} = require('../round-states/round-starting.js');
+const RoundMapStart = require('../round-states/round-map-start.js');
 const {EventEmitter} = require("./event-emitter.js");
 
 class Round {
@@ -25,7 +25,7 @@ class Round {
 		this.globalfuncs = new GlobalFuncs();
 		this.em = new EventEmitter(this);
 
-		this.state = new RoundStarting(this.gs, this);
+		this.state = new RoundMapStart.RoundMapStart(this.gs, this);
 		this.nextState = null;
 
 		this.state.enter();
@@ -56,8 +56,7 @@ class Round {
 			var userAgents = this.gs.uam.getUserAgents();
 			var event = this.serializeUpdateRoundStateEvent();
 
-			for(var i = 0; i < userAgents.length; i++)
-			{
+			for(var i = 0; i < userAgents.length; i++) {
 				userAgents[i].insertTrackedEntityOrderedEvent("round", this.id, event)
 			}
 		}

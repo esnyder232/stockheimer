@@ -24,6 +24,7 @@ class WebsocketHandler {
 		this.id = null;
 		this.userId = null;
 		this.userAgentId = null;
+		this.userAgent = null; //direct reference
 
 		this.localSequence = 0; 	//current local sequence number
 		this.remoteSequence = 0;	//most recent remote sequence number
@@ -49,6 +50,7 @@ class WebsocketHandler {
 		this.userId = userId;
 		this.userAgentId = userAgentId;
 		this.ws = ws;
+		this.userAgent = this.gs.uam.getUserAgentByID(this.userAgentId);
 
 		//calculate maxPacketSize through config values
 		//this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (serverConfig.max_players * serverConfig.fps * 8));
@@ -78,7 +80,14 @@ class WebsocketHandler {
 		}
 	}
 
-
+	//Remove all ack/send callbacks for the websocket handler. 
+	//This should only be called when the user leaves the game and is currently resetting its user-agent for rejoining/map rotation.
+	removeAllCallbacks() {
+		for(var i = 0; i < this.sentPacketHistory.length; i++) {
+			this.sentPacketHistory[i].ackCallbacks.length = 0;
+			this.sentPacketHistory[i].sendCallbacks.length = 0;
+		}
+	}
 
 
 	//should be called whenever a user joins/leaves the server to adjust max packet size for existing users
@@ -99,12 +108,12 @@ class WebsocketHandler {
 			logger.log("info", "Websocket-handler. websocket is now closed. Id: " + this.id + '. userId: ' + this.userId + ". Code: " + code + ". Reason: " + reason);
 		}
 		
-		this.gs.gameState.websocketClosed(this);
+		this.gs.websocketClosed(this);
 	}
 
 	onerror(e) {
 		logger.log("info", "Websocket Errored for id: " + this.id + ". Error:" + e);
-		this.gs.gameState.websocketErrored(this);
+		this.gs.websocketErrored(this);
 	}
 
 	onpong(e) {
@@ -252,7 +261,6 @@ class WebsocketHandler {
 
 
 	decodeEvent(n, view, debugMe) {
-		var userAgent = this.gs.uam.getUserAgentByID(this.userAgentId);
 		var oldN = n;
 
 		//event id
@@ -416,7 +424,7 @@ class WebsocketHandler {
 				eventData[schema.parameters[p].txt_param_name] = value;
 			}
 
-			userAgent.clientToServerEvents.push(eventData);
+			this.userAgent.clientToServerEvents.push(eventData);
 		}
 
 		return n - oldN;

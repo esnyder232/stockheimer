@@ -1,7 +1,7 @@
 import $ from "jquery"
 import GlobalFuncs from "../global-funcs.js"
 
-export default class RoundMenu {
+export default class RespawnTimerMenu {
 	constructor() {
 		this.reset();
 	}
@@ -48,56 +48,72 @@ export default class RoundMenu {
 	}
 
 	updateRespawnMessage() {
-		if(this.gc.myUser !== null)
-		{
-			switch(this.gc.myUser.playingStateName) {
-				case "SPECTATING":
-					this.menu.removeClass("hide");
-					this.respawnMessage.text("Spectating");
-					this.updateMessageOnUpdate = false;
-					break;
-				case "CLASS_PICKING":
-					this.menu.removeClass("hide");
-					this.respawnMessage.text("Pick a class to respawn");
-					break;
-
-				case "RESPAWNING":
-				case "DEAD":
-					this.menu.removeClass("hide");
-					if(this.gc.theRound.stateName === "PLAYING" || this.gc.theRound.stateName === "STARTING") {
-						this.updateMessageOnUpdate = true;
-						var secondsLeft = this.gc.myUser.getRespawnSeconds();
-						if(secondsLeft <= 0) {
-							secondsLeft = 0;
-						}
-						
-						this.respawnMessage.text("Respawning in " + secondsLeft + " seconds");
-					}
-					else if (this.gc.theRound.stateName === "OVER") {
+		if(this.gc.myUser !== null) {
+			if (this.gc.theRound.stateName === "MAPSTART") {
+				this.menu.removeClass("hide");
+				this.updateMessageOnUpdate = true;
+				this.respawnMessage.text("Waiting for players to join");
+			}
+			else if (this.gc.theRound.stateName === "MAPEND") {
+				this.menu.removeClass("hide");
+				this.updateMessageOnUpdate = true;
+				this.respawnMessage.text("Server is changing maps");
+			}
+			else {
+				switch(this.gc.myUser.playingStateName) {
+					case "SPECTATING":
+						this.menu.removeClass("hide");
+						this.respawnMessage.text("Spectating");
 						this.updateMessageOnUpdate = false;
-						this.respawnMessage.text("Waiting for the round to restart");
-					}
-					break;
-				case "PLAYING":
-					this.menu.addClass("hide");
-					this.updateMessageOnUpdate = false;
-					break;
-				default:
-					this.menu.addClass("hide");
-					break;
+						break;
+					case "CLASS_PICKING":
+						this.menu.removeClass("hide");
+						this.respawnMessage.text("Pick a class to respawn");
+						break;
+	
+					case "RESPAWNING":
+					case "DEAD":
+						this.menu.removeClass("hide");
+						if(this.gc.theRound.stateName === "PLAYING" || this.gc.theRound.stateName === "STARTING") {
+							this.updateMessageOnUpdate = true;
+							var secondsLeft = this.gc.myUser.getRespawnSeconds();
+							if(secondsLeft <= 0) {
+								secondsLeft = 0;
+							}
+							this.respawnMessage.text("Respawning in " + secondsLeft + " seconds");
+						}
+						else if (this.gc.theRound.stateName === "OVER") {
+							this.updateMessageOnUpdate = false;
+							this.respawnMessage.text("Waiting for the round to restart");
+						}
+						break;
+					case "PLAYING":
+						this.menu.addClass("hide");
+						this.updateMessageOnUpdate = false;
+						break;
+					default:
+						this.menu.addClass("hide");
+						break;
+				}
 			}
 		}
 	}
 
 	update(dt) {
-		if(this.updateMessageOnUpdate)
+		// if(this.updateMessageOnUpdate)
+		// {
+		// 	this.internalSampleTimer -= dt;
+		// 	if(this.internalSampleTimer <= 0)
+		// 	{
+		// 		this.updateRespawnMessage();
+		// 		this.internalSampleTimer = 250;
+		// 	}
+		// }
+		this.internalSampleTimer -= dt;
+		if(this.internalSampleTimer <= 0)
 		{
-			this.internalSampleTimer -= dt;
-			if(this.internalSampleTimer <= 0)
-			{
-				this.updateRespawnMessage();
-				this.internalSampleTimer = 250;
-			}
+			this.updateRespawnMessage();
+			this.internalSampleTimer = 250;
 		}
 	}
 

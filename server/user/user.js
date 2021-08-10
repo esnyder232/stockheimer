@@ -24,12 +24,8 @@ class User {
 		this.nextState = null;
 
 		this.characterId = null; //temp character id to establish a relationship between a user and character
-		this.bReadyToPlay = false; //flag that gets flipped when the user sends the "readyToPlay" event
-		this.bDisconnected = false; //flag that gets flipped when the user disconnects or times out
-
 		this.inputQueue = [];
 	
-		this.plBody = null; //used for tracking when objects are near the user
 		this.userKillCount = 0;		//total kills
 		this.userDeathCount = 0;	//total deaths
 		this.roundUserKillCount = 0;//kills in current round
@@ -53,10 +49,22 @@ class User {
 		this.roundEventCallbackMapping = [ 
 			{eventName: "round-restarting", cb: this.cbEventEmitted.bind(this), handleId: null},
 			{eventName: "round-started", cb: this.cbEventEmitted.bind(this), handleId: null},
+			{eventName: "round-map-end", cb: this.cbEventEmitted.bind(this), handleId: null},
+			
 		]
 		
 		this.em = null;
+
+		//This is a flag to be set when its okay for the user to be in the game. This essentially drives when the user NEEDS to leave the game because of map rotation.
+		//This gets set to true ONLY when the user is in the "user-waiting-for-server-state", when the server has the map loaded
+		//This gets set to false ONLY when the user is in the "user-joining-game-state" or "user-playing-state", when the server is unloading maps.
+		this.bOkayToBeInTheGame = false;
+
+		this.bClientReadyToPlay = false; //flag for when the client has finished loading resources/world state, and is ready to play.
+		this.bClientReadyToWait = false; //flag for when the client has finished unloading resources/world state (user-leaving-game-state), and is ready to go into the user-waiting-for-server-state.
+		this.bDisconnected = false; //flag that gets flipped when the user disconnects or times out
 	}
+
 
 	userInit(gameServer) {
 		this.gs = gameServer;
@@ -68,27 +76,12 @@ class User {
 	}
 
 	activated() {
-		//console.log('user activated for ' + this.username);
-		
-		//assign to sepctator team by default
-		var spectatorTeam = this.gs.tm.getSpectatorTeam();
-		if(this.teamId === null && spectatorTeam) {
-			this.teamId = spectatorTeam.id;
-		}
-
-		this.playingState = new PlayingSpectatorState.PlayingSpectatorState(this);
-		this.playingState.enter();
-
-		//register for events from the round
-		this.gs.theRound.em.batchRegisterForEvent(this.roundEventCallbackMapping);
+		// console.log('user activated for ' + this.username);
 	}
 
 	deactivated() {
 		// console.log('user deactivated called for ' + this.username);
-		//unregister for events from the round
-		this.gs.theRound.em.batchUnregisterForEvent(this.roundEventCallbackMapping);
-
-		this.em.emitEvent("user-deactivated");
+		
 	}
 
 
@@ -114,7 +107,7 @@ class User {
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 
 		//if the player chose any team except the spectator team, put the player in an initial playing state
-		if(spectatorTeam && this.teamId !== spectatorTeam.id) {
+		if(spectatorTeam && this.teamId !== null && this.teamId !== spectatorTeam.id) {
 			this.nextPlayingState = new PlayingClassPickingState.PlayingClassPickingState(this);
 		}
 		else {
@@ -122,18 +115,14 @@ class User {
 		}
 	}
 
-	userPostStartPlaying() {
-		this.determinePlayingState();
-	}
-
 	userDeinit() {
 		//fucking whatever
-		this.globalfuncs.balanceAiUsersOnTeams(this.gs);
+		this.gs.rebalanceTeams = true;
 
 		this.characterId = null;
-		//this.teamId = null; //purposely commented out and left in code to remind you later: don't get rid of the teamId so the game remembers what team you were on.
+		this.teamId = null;
 		this.characterClassResourceId = null;
-		this.bReadyToPlay = false;
+		this.bClientReadyToWait = false;
 		this.bDisconnected = false;
 		this.inputQueue = [];
 
@@ -144,6 +133,10 @@ class User {
 		this.playingEventQueue = [];
 		this.em.eventEmitterDeinit();
 		this.em = null;
+		this.state = null;
+		this.nextState = null;
+		this.globalfuncs = null;
+		this.gs = null;
 	}
 
 	//just queue the events that occured and handle them in the user's own update loop
@@ -172,62 +165,27 @@ class User {
 	}
 
 	update(dt) {
-		//update connection state
-		this.state.update();
-
-		//update playing state if they have one
-		this.playingState.update(dt);
-		if(this.nextPlayingState !== null) {
-			this.playingState.exit(dt);
-			this.nextPlayingState.enter(dt);
-
-			this.playingState = this.nextPlayingState;
-			this.nextPlayingState = null;
-
-			this.sendUserPlayingState = true;
-		}
-
 		//update user state
+		this.state.update(dt);
+
 		if(this.nextState) {
 			this.state.exit();
 			this.nextState.enter();
 
 			this.state = this.nextState;
 			this.nextState = null;
-		}
-
-		//tell all users about the new info if its dirty
-		if(this.userInfoDirty) {
-			var userAgents = this.gs.uam.getUserAgents();
-			for(var i = 0; i < userAgents.length; i++)
-			{
-				userAgents[i].insertTrackedEntityEvent("user", this.id, this.serializeUpdateUserInfoEvent());
-			}
-			this.userInfoDirty = false;
-		}
-		
-		//tell only the connected user if their playing state changed
-		if(this.sendUserPlayingState) {
-			var ua = this.gs.uam.getUserAgentByID(this.userAgentId);
-			if(ua !== null) {
-				var te = ua.findTrackedEntity("user", this.id);
-				if(te !== null) {
-					te.insertOrderedEvent({
-						"eventName": "updateUserPlayingState",
-						"userId": this.id,
-						"userPlayingState": this.playingStateEnum,
-						"userRespawnTime": this.respawnTimer,
-						"userRespawnTimeAcc": this.respawnTimeAcc
-					})
-				}
-			}
-
-			this.sendUserPlayingState = false;
-		}
-
-
+		}	
 
 		this.em.update(dt);
+	}
+
+	processClientEvents() {
+		if(this.userType === "user") {
+			var ua = this.gs.uam.getUserAgentByID(this.userAgentId);
+			if(ua !== null) {
+				this.state.processClientEvents(ua);
+			}
+		}
 	}
 
 	///////////////////////////////////

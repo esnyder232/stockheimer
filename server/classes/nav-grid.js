@@ -29,6 +29,19 @@ class NavGrid {
 		this.globalfuncs = new GlobalFuncs();
 	}
 
+	deinit() {
+		this.gs = null;
+		this.globalfuncs = null;
+		this.tm = null;
+		this.nodes = [];
+		this.edges = [];
+		this.nodesIdIndex = {};
+		this.edgesIdIndex = {};
+		this.castleNode = null;
+		this.toCastleNodeMap = null;
+		this.walls = [];
+	}
+
 	create() {
 		//create nodes/edges
 		if(this.tm !== null && this.tm.navGridLayer)

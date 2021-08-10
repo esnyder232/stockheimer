@@ -1,6 +1,6 @@
 {
 	"name": "Slime Big Fire",
-	"size": 1.5,
+	"size": 0.7,
 	"planckData": {
 		"plShape": "circle",
 		"plRadius": 1
@@ -12,7 +12,7 @@
 		"scaleY": 0.42
 	},
 	"physicsData": {
-		"speed": 8,
+		"speed": 12,
 		"mass": 100
 	},
 	"renderData": {
@@ -30,15 +30,15 @@
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 2,
-		"timeLength": 6000,
-		"pushbackVecMagnitude": 40,
-		"destroyOnContact": false
+		"spawnOffsetLength": 1.0,
+		"timeLength": 2000,
+		"pushbackVecMagnitude": 25,
+		"destroyOnContact": true
 	},
 	"characterEffectData": [
 		{
 			"type": "damage",
-			"value": 8
+			"value": 6
 		}
 	]
 }

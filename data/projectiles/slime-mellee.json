@@ -32,13 +32,13 @@
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 1.0,
 		"timeLength": 100,
-		"pushbackVecMagnitude": 50,
+		"pushbackVecMagnitude": 30,
 		"destroyOnContact": true
 	},
 	"characterEffectData": [
 		{
 			"type": "damage",
-			"value": 4
+			"value": 6
 		}
 	]
 }

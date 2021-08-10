@@ -10,11 +10,8 @@ export default class GameClientBaseState {
 	update(dt) {}
 	exit(dt) {}
 
-	//websocket event callbacks
-	websocketClosed(){};
-	websocketOpened(){};
-	websocketErrored(){};
-
 	//other events to be passed into the game state for it to handle
 	worldDoneState(e){};
+	serverMapLoaded(e){};
+	leaveGameImmediately(e){};
 }

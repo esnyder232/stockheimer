@@ -68,19 +68,21 @@ class TilemapManager {
 		if(this.isDirty) {
 			//process any transactions that occured this frame
 			if(this.transactionQueue.length > 0) {
-				for(var i = 0; i < this.transactionQueue.length; i++) {
+				while(this.transactionQueue.length > 0) {
+					var tr = this.transactionQueue.shift();
+
 					try {
 						var bError = false;
 						var errorMessage = "";
-
-						var o = this.getTilemapByID(this.transactionQueue[i].id);
-
+						var o = this.getTilemapByID(tr.id);
+	
 						if(o) {
-							switch(this.transactionQueue[i].transaction) {
+							switch(tr.transaction) {
 								case "delete":
 									var oi = this.tilemapArray.findIndex((x) => {return x.id == o.id;});
 									if(oi >= 0) {
-										this.updateIndex(this.tilemapArray[oi].id, null, "delete");
+										this.updateIndex(this.tilemapArray[oi].id, this.tilemapArray[oi].resourceId, this.tilemapArray[oi], "delete");
+										this.tilemapArray[oi].deinit()
 										this.tilemapArray.splice(oi, 1);
 									}
 									
@@ -99,9 +101,9 @@ class TilemapManager {
 						bError = true;
 						errorMessage = "Exception caught: " + ex + ". Stack: " + ex.stack;
 					}
-
+	
 					if(bError) {
-						logger.log("error", 'Tilemap Manager transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(this.transactionQueue[i]));
+						logger.log("error", 'Tilemap Manager transaction error: ' + errorMessage + ". transaction Object: " + JSON.stringify(tr));
 					}
 				}
 			}

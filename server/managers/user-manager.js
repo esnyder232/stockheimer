@@ -404,9 +404,15 @@ class UserManager {
 		return this.userArray;
 	}
 	
-	//gets users seperated out
-	getActiveUsersGroupedByTeams() {
-		var arr = [];
+	//gets summary of active users (mainly used for rebalancing ai on teams)
+	getActiveUsersSummary() {
+		var summary = {
+			totalUsers: 0,
+			totalHumans: 0,
+			totalAis: 0,
+			teams: []
+
+		};
 		var teams = this.gs.tm.getTeams();
 		var tempTeamIndex = {};
 
@@ -418,23 +424,33 @@ class UserManager {
 				aiUserIds : [],
 				totalUsers: 0
 			}
-			arr.push(obj);
+			summary.teams.push(obj);
 
 			tempTeamIndex[teams[i].id] = obj;
 		}
 
 		for(var i = 0; i < this.activeUserArray.length; i++) {
+			summary.totalUsers++;
 			if(this.activeUserArray[i].userType === "user") {
-				tempTeamIndex[this.activeUserArray[i].teamId].humanUserIds.push(this.activeUserArray[i].id);
-				tempTeamIndex[this.activeUserArray[i].teamId].totalUsers++;
+				summary.totalHumans++;
 			}
 			else if (this.activeUserArray[i].userType === "ai") {
-				tempTeamIndex[this.activeUserArray[i].teamId].aiUserIds.push(this.activeUserArray[i].id);
-				tempTeamIndex[this.activeUserArray[i].teamId].totalUsers++;
+				summary.totalAis++;
+			}
+
+			if(tempTeamIndex[this.activeUserArray[i].teamId] !== undefined) {
+				if(this.activeUserArray[i].userType === "user") {
+					tempTeamIndex[this.activeUserArray[i].teamId].humanUserIds.push(this.activeUserArray[i].id);
+					tempTeamIndex[this.activeUserArray[i].teamId].totalUsers++;
+				}
+				else if (this.activeUserArray[i].userType === "ai") {
+					tempTeamIndex[this.activeUserArray[i].teamId].aiUserIds.push(this.activeUserArray[i].id);
+					tempTeamIndex[this.activeUserArray[i].teamId].totalUsers++;
+				}
 			}
 		}
 
-		return arr;
+		return summary;
 	}
 
 }
