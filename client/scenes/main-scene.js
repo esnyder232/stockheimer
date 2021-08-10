@@ -53,13 +53,13 @@ export default class MainScene extends Phaser.Scene {
 		this.cameraZoomMin = 0.4;
 
 		this.defaultCenter = {
-			x: 32,
-			y: -32
+			x: 0,
+			y: 0
 		}
 
 		this.spectatorCamera = {
-			x: 32,
-			y: -32
+			x: 0,
+			y: 0
 		}
 
 		// cameraMode = 0 means spectator mode
@@ -316,6 +316,16 @@ export default class MainScene extends Phaser.Scene {
 				this.layerArray.push(newLayer);
 			}
 		}
+
+		//calculate the center of the map for spectator/death cam
+		var width = this.globalfuncs.getValueDefault(this.gc.activeTilemap?.data?.width, 0);
+		var height = this.globalfuncs.getValueDefault(this.gc.activeTilemap?.data?.height, 0);
+
+		this.defaultCenter.x = width/2;
+		this.defaultCenter.y = -height/2;
+
+		this.spectatorCamera.x = width/2;
+		this.spectatorCamera.y = -height/2;
 	}
 
 	
