@@ -46,6 +46,8 @@ class NavGrid {
 		//create nodes/edges
 		if(this.tm !== null && this.tm.navGridLayer)
 		{
+			this.tiledUnitsToPlanckUnits = this.tm.tiledUnitsToPlanckUnits;
+
 			//make a node for each coordinate in the tilemap
 			for(var j = 0; j < this.tm.height; j++)
 			{
@@ -60,6 +62,8 @@ class NavGrid {
 						x: i,
 						y: j,
 						edges: [],
+						xPlanck: i * this.tiledUnitsToPlanckUnits,
+						yPlanck: j * this.tiledUnitsToPlanckUnits,
 						impassable: tileType.impassable === true ? true : false,
 						movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
 						castle: tileType.castle === true ? true : false
@@ -139,6 +143,7 @@ class NavGrid {
 			{
 				this.toCastleNodeMap = this.breadthFirstNodeMap(this.castleNode);
 			}
+
 
 			//fuck it, we'll just make the walls here
 			const Vec2 = this.gs.pl.Vec2;
@@ -446,18 +451,17 @@ class NavGrid {
 
 	getNode(x, y) {
 		var node = null;
-		if(y >= 0 && y < this.nodes.length)
-		{
-			if(x >= 0 && x < this.nodes[y].length)
-			{
-				var node = this.nodes[y][x];
+		var yNode = Math.round(y / this.tiledUnitsToPlanckUnits);
+		var xNode = Math.round(x / this.tiledUnitsToPlanckUnits);
+
+		if(yNode >= 0 && yNode < this.nodes.length) {
+			if(xNode >= 0 && xNode < this.nodes[yNode].length) {
+				var node = this.nodes[yNode][xNode];
 			}
 		}
 		
 		return node;
 	}
-
-
 }
 
 exports.NavGrid = NavGrid;

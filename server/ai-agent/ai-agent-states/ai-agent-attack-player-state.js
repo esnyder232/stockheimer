@@ -110,7 +110,7 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 			//make a decision if you can			
 			//if the player is not within attacking distance or you lose LOS, switch to seek player
-			else if(!(isInAttackRange && isLOS)) {
+			if(!(isInAttackRange && isLOS)) {
 				this.aiAgent.nextState = new AIAgentSeekPlayerState.AIAgentSeekPlayerState(this.aiAgent);
 				decisionMade = true;
 			}

@@ -1,6 +1,6 @@
 {
-	"name": "Team Map Square",
-	"tilemapResource": "assets/tilemaps/team-map-square.json",
+	"name": "Zelda 2 Test",
+	"tilemapResource": "assets/tilemaps/zelda-2-test.json",
 	"mapTimeLength": 200000,
 	"roundMapStartTimeLength": 10000,
 	"roundStartingTimeLength": 10000,

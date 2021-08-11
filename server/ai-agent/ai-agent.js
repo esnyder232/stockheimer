@@ -289,29 +289,6 @@ class AIAgent {
 		//logger.log("info", 'updateing target character distance: ' + this.targetCharacterDistanceSquared);
 	}
 
-	seekCastle() {
-		var character = this.gs.gom.getGameObjectByID(this.characterId);
-		if(character !== null && character.isActive)
-		{
-			var pos = character.plBody.getPosition();
-
-			//contact the nav grid to get a path
-			if(this.characterPos !== null)
-			{
-				this.nodePathToCastle = this.gs.activeNavGrid.getPathToCastle(Math.round(pos.x), -Math.round(pos.y));
-
-				if(this.nodePathToCastle.length > 0)
-				{
-					this.pathSet = true;
-					this.followPath = true;
-					this.currentNode = 0;
-
-					this.findNextLOSNode(pos);
-				}
-			}
-		}
-	}
-
 	seekPlayer(user) {
 		var aiCharacter = this.gs.gom.getGameObjectByID(this.characterId);
 		var userCharacter = this.gs.gom.getGameObjectByID(user.characterId);
@@ -323,8 +300,8 @@ class AIAgent {
 			//contact the nav grid to get a path
 			if(aiPos !== null && userPos !== null)
 			{
-				var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
-				var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
+				var aiNode = this.gs.activeNavGrid.getNode(aiPos.x, -aiPos.y);
+				var userNode = this.gs.activeNavGrid.getNode(userPos.x, -userPos.y);
 
 				if(aiNode !== null && userNode !== null)
 				{
@@ -480,8 +457,8 @@ class AIAgent {
 
 		if(aiPos !== null && userPos !== null)
 		{
-			var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
-			var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
+			var aiNode = this.gs.activeNavGrid.getNode(aiPos.x, -aiPos.y);
+			var userNode = this.gs.activeNavGrid.getNode(userPos.x, -userPos.y);
 
 			if(aiNode !== null && userNode !== null)
 			{
@@ -506,8 +483,8 @@ class AIAgent {
 
 		if(aiPos !== null && userPos !== null)
 		{
-			var aiNode = this.gs.activeNavGrid.getNode(Math.round(aiPos.x), -Math.round(aiPos.y));
-			var userNode = this.gs.activeNavGrid.getNode(Math.round(userPos.x), -Math.round(userPos.y));
+			var aiNode = this.gs.activeNavGrid.getNode(aiPos.x, -aiPos.y);
+			var userNode = this.gs.activeNavGrid.getNode(userPos.x, -userPos.y);
 
 			if(aiNode !== null && userNode !== null)
 			{
@@ -562,8 +539,8 @@ class AIAgent {
 		var nodeTarget = this.nodePathToCastle[this.currentNode];
 
 		//the *-1 is to flip the y coordinates for planck cooridnate plane
-		var dx = nodeTarget.x - pos.x;
-		var dy = (nodeTarget.y*-1) - pos.y;
+		var dx = nodeTarget.xPlanck - pos.x;
+		var dy = (nodeTarget.yPlanck*-1) - pos.y;
 
 		if(Math.abs(dx) === 0 && Math.abs(dy) === 0)
 		{
@@ -573,7 +550,7 @@ class AIAgent {
 		
 		//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
 		//this basically just flips the direction of the x and y
-		var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
+		var radiansToAdd = (nodeTarget.xPlanck - pos.x) < 0 ? Math.PI : 0;
 
 		angle += radiansToAdd;
 
@@ -605,20 +582,6 @@ class AIAgent {
 			var firstObjectPos = this.raycastObjects[0].fixture.getBody().getPosition();
 			velVec.x = (pos.x - firstObjectPos.x) * avoidanceForce;
 			velVec.y = (pos.y - firstObjectPos.y) * avoidanceForce;
-
-			// var nodeTarget = this.nodePathToCastle[this.currentNode];
-	
-			// //the *-1 is to flip the y coordinates for planck cooridnate plane
-			// var angle = Math.atan(((nodeTarget.y*-1) - pos.y) / (nodeTarget.x - pos.x));
-			
-			// //this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
-			// //this basically just flips the direction of the x and y
-			// var radiansToAdd = (nodeTarget.x - pos.x) < 0 ? Math.PI : 0;
-	
-			// angle += radiansToAdd;
-	
-			// velVec.x = character.walkingVelMagMax * Math.cos(angle);
-			// velVec.y = character.walkingVelMagMax * Math.sin(angle);
 		}
 
 		
@@ -645,7 +608,7 @@ class AIAgent {
 		{
 			if(this.currentNode < this.nodePathToCastle.length-1)
 			{
-				var nodePos = new Vec2(this.nodePathToCastle[this.currentNode + 1].x, -this.nodePathToCastle[this.currentNode + 1].y);
+				var nodePos = new Vec2(this.nodePathToCastle[this.currentNode + 1].xPlanck, -this.nodePathToCastle[this.currentNode + 1].yPlanck);
 
 				nodeInLOS = this.lineOfSightTest(pos, nodePos);
 				if(nodeInLOS)

@@ -136,8 +136,8 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 			//check if you have reached your current node
 			if(this.aiAgent.currentNode < this.aiAgent.nodePathToCastle.length && this.aiAgent.nodePathToCastle[this.aiAgent.currentNode])
 			{
-				var errorX = this.aiAgent.nodePathToCastle[this.aiAgent.currentNode].x - this.aiAgent.characterPos.x;
-				var errorY = (this.aiAgent.nodePathToCastle[this.aiAgent.currentNode].y * -1) - this.aiAgent.characterPos.y;
+				var errorX = this.aiAgent.nodePathToCastle[this.aiAgent.currentNode].xPlanck - this.aiAgent.characterPos.x;
+				var errorY = (this.aiAgent.nodePathToCastle[this.aiAgent.currentNode].yPlanck * -1) - this.aiAgent.characterPos.y;
 				var squaredDistance = errorX * errorX + errorY * errorY;
 
 				//if you have reached your current node

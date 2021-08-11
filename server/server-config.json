@@ -12,6 +12,6 @@
 	"log_level": "debug",
 	"allow_simulated_user_ai_agents": true,
 	"map_rotation": [
-		"data/maps/zelda-1-test.json"
+		"data/maps/zelda-2-test.json"
 	]
 }

@@ -20,6 +20,7 @@ class Tilemap {
 		this.playerSpawnLayer = null;
 		this.playerSpawnZones = [];
 		this.playerSpawnZonesSlotNumIndex = {};
+		this.tiledUnitsToPlanckUnits = 1;
 
 		this.navGrid = null;
 	}
@@ -57,6 +58,23 @@ class Tilemap {
 		else {
 			bError = true;
 		}
+
+		//find properties on the tilemap for scaling and stuff
+		if(!bError && this.jsonData.properties !== undefined && this.jsonData.properties !== null) {
+			for(var i = 0; i < this.jsonData.properties.length; i++) {
+				var currentProperty = this.jsonData.properties[i];
+
+				//a property with "planckScale" on it will be used for tiledUnitsToPlanckUnits scaling
+				if(currentProperty.name.toLowerCase() === "planckscale"
+				&& currentProperty.type === "float")
+				{
+					if(typeof currentProperty.value === "number") {
+						this.tiledUnitsToPlanckUnits = Math.abs(currentProperty.value);
+					}
+				}
+			}
+		}
+		
 
 		//create tilemap
 		if(!bError) {
@@ -134,10 +152,10 @@ class Tilemap {
 				for(var i = 0; i < this.playerSpawnLayer.objects.length; i++) {
 					var z = this.playerSpawnLayer.objects[i];
 
-					z.xPlanck = (z.x + xOffset) / this.tilewidth;
-					z.yPlanck = ((z.y + yOffset) / this.tileheight) * -1;
-					z.widthPlanck = z.width / this.tilewidth;
-					z.heightPlanck = z.height / this.tileheight;
+					z.xPlanck = ((z.x + xOffset) / this.tilewidth) * this.tiledUnitsToPlanckUnits;
+					z.yPlanck = (((z.y + yOffset) / this.tileheight) * -1) * this.tiledUnitsToPlanckUnits;
+					z.widthPlanck = (z.width / this.tilewidth) * this.tiledUnitsToPlanckUnits;
+					z.heightPlanck = (z.height / this.tileheight) * this.tiledUnitsToPlanckUnits;
 					z.slotNumArr = []; //slotnums assigned to this spawn zone
 
 					this.playerSpawnZones.push(z);

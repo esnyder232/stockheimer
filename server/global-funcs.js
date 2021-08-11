@@ -525,6 +525,10 @@ class GlobalFuncs {
 		return shape;
 	}
 
+	isFloat(n) {
+		return n === +n && n !== (n|0);
+	}
+
 
 }
 

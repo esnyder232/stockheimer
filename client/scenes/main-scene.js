@@ -51,6 +51,7 @@ export default class MainScene extends Phaser.Scene {
 		this.cameraZoom = 1.4;
 		this.cameraZoomMax = 6;
 		this.cameraZoomMin = 0.4;
+		this.planckScale = 1;
 
 		this.defaultCenter = {
 			x: 0,
@@ -305,10 +306,26 @@ export default class MainScene extends Phaser.Scene {
 			var l = this.gc.activeTilemap.data.layers[i];
 
 			if(l.type === "tilelayer") {
+				//find properties on the tilemap for scaling and stuff
+				if(this.gc.activeTilemap.data.properties !== undefined && this.gc.activeTilemap.data.properties !== null) {
+					for(var i = 0; i < this.gc.activeTilemap.data.properties.length; i++) {
+						var currentProperty = this.gc.activeTilemap.data.properties[i];
+
+						//a property with "planckScale" on it will be used for tiledUnitsToPlanckUnits scaling
+						if(currentProperty.name.toLowerCase() === "planckscale"
+						&& currentProperty.type === "float")
+						{
+							if(typeof currentProperty.value === "number") {
+								this.planckScale = Math.abs(currentProperty.value);
+							}
+						}
+					}
+				}
+
 				//create layer
-				var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-				var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2);
-				var newLayer = this.map.createLayer(l.name, this.tilesetArray, xOffset, yOffset).setScale(2);
+				var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
+				var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
+				var newLayer = this.map.createLayer(l.name, this.tilesetArray, xOffset, yOffset).setScale(this.planckScale * 2);
 
 				newLayer.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
 
@@ -321,11 +338,11 @@ export default class MainScene extends Phaser.Scene {
 		var width = this.globalfuncs.getValueDefault(this.gc.activeTilemap?.data?.width, 0);
 		var height = this.globalfuncs.getValueDefault(this.gc.activeTilemap?.data?.height, 0);
 
-		this.defaultCenter.x = width/2;
-		this.defaultCenter.y = -height/2;
+		this.defaultCenter.x = (width/2) * this.planckScale;
+		this.defaultCenter.y = -(height/2) * this.planckScale;
 
-		this.spectatorCamera.x = width/2;
-		this.spectatorCamera.y = -height/2;
+		this.spectatorCamera.x = (width/2) * this.planckScale;
+		this.spectatorCamera.y = -(height/2) * this.planckScale;
 	}
 
 	
