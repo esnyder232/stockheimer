@@ -45,9 +45,7 @@ class GameServerRunning extends GameServerBaseState {
 
 		this.gs.bServerMapLoaded = true;
 		this.gs.rebalanceTeams = true; //set to true to spawn ai
-
-		this.tempTimer = 40000;
-		this.tempTimerAcc = 0;
+		this.gs.mapTimeAcc = 0;
 
 		logger.log("info", startSummaryArray.join("\n"));
 	}

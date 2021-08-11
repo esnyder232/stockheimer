@@ -19,6 +19,8 @@ export default class MainScene extends Phaser.Scene {
 		super(config);
 		this.globalfuncs = new GlobalFuncs();
 		this.planckUnitsToPhaserUnitsRatio = 32;
+		this.planckScale = 1;
+		this.baseTileWidth = 16;
 		this.radiansToDegreesRatio = 180/3.14;
 		
 		this.userPhaserElements = []; //list of json objects that contain phaser specific graphic elements
@@ -51,7 +53,7 @@ export default class MainScene extends Phaser.Scene {
 		this.cameraZoom = 1.4;
 		this.cameraZoomMax = 6;
 		this.cameraZoomMin = 0.4;
-		this.planckScale = 1;
+
 
 		this.defaultCenter = {
 			x: 0,
@@ -291,6 +293,8 @@ export default class MainScene extends Phaser.Scene {
 		//create tilemap in phaser
 		this.map = this.make.tilemap({key: this.gc.activeTilemap.key});
 
+		this.planckScale = 1;
+
 		//for each layer, create a tileset and a tile later in phaser
 		for(var i = 0; i < this.gc.activeTilemap.data.tilesets.length; i++) {
 			var ts = this.gc.activeTilemap.data.tilesets[i];
@@ -306,6 +310,7 @@ export default class MainScene extends Phaser.Scene {
 			var l = this.gc.activeTilemap.data.layers[i];
 
 			if(l.type === "tilelayer") {
+
 				//find properties on the tilemap for scaling and stuff
 				if(this.gc.activeTilemap.data.properties !== undefined && this.gc.activeTilemap.data.properties !== null) {
 					for(var i = 0; i < this.gc.activeTilemap.data.properties.length; i++) {
@@ -322,10 +327,13 @@ export default class MainScene extends Phaser.Scene {
 					}
 				}
 
+				//adjust the scaling based on tilewidth in the image
+				this.graphicsScale = this.planckScale * (this.baseTileWidth / this.gc.activeTilemap.data.tilewidth);
+
 				//create layer
 				var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
 				var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
-				var newLayer = this.map.createLayer(l.name, this.tilesetArray, xOffset, yOffset).setScale(this.planckScale * 2);
+				var newLayer = this.map.createLayer(l.name, this.tilesetArray, xOffset, yOffset).setScale(this.graphicsScale * 2);
 
 				newLayer.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
 
