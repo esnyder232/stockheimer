@@ -12,6 +12,6 @@
 	"log_level": "debug",
 	"allow_simulated_user_ai_agents": true,
 	"map_rotation": [
-		"data/maps/retro-mmo-town-2.json"
+		"data/maps/retro-mmo-town-3.json"
 	]
 }

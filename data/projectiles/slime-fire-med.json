@@ -30,7 +30,7 @@
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 1.0,
+		"spawnOffsetLength": 0,
 		"timeLength": 2000,
 		"pushbackVecMagnitude": 25,
 		"destroyOnContact": true

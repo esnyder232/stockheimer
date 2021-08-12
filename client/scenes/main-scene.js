@@ -329,7 +329,7 @@ export default class MainScene extends Phaser.Scene {
 		for(var i = 0; i < this.gc.activeTilemap.data.layers.length; i++) {
 			var l = this.gc.activeTilemap.data.layers[i];
 
-			if(l.type === "tilelayer") {
+			if(l.type === "tilelayer" && l.visible) {
 				//create layer
 				var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
 				var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
