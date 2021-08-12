@@ -11,3 +11,9 @@ client-dist/
 # configs
 configs/
 
+#temporary for a bit for retrommo
+assets/retro-tilemaps/
+assets/retro-tilesets/
+
+
+

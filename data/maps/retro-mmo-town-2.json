@@ -1,0 +1,55 @@
+{
+	"name": "Retro MMO Town 2",
+	"tilemapResource": "assets/retro-tilemaps/retro-mmo-town-2.json",
+	"mapTimeLength": 200000,
+	"roundMapStartTimeLength": 10000,
+	"roundStartingTimeLength": 10000,
+	"roundPlayingTimeLength": 90000,
+	"roundOverTimeLength": 7000,
+	"roundMapEndTimeLength": 5000,
+	"userRespawningTimeLength": 4000,
+	"minimumUsersPlaying": 24,
+	"classData": [
+		"data/character-classes/slime-small.json",
+		"data/character-classes/slime-med.json",
+		"data/character-classes/slime-large.json",
+		"data/character-classes/slime-fighter.json",
+		"data/character-classes/slime-healer.json"
+	],
+	"teamData": [
+		{
+			"name": "Spectators",
+			"characterStrokeColor": "#ffffff",
+			"characterFillColor": "#ffffff",
+			"characterTextStrokeColor": "#ffffff",
+			"characterTextFillColor": "#ffffff",
+			"killFeedTextColor": "#CCCCCC",
+			"projectileStrokeColor": "#000000",
+			"characterTintColor": "#ffffff",
+			"slotNum": 0
+		},
+		{
+			"name": "Red Team",
+			"characterStrokeColor": "#ff0000",
+			"characterFillColor": "#FF0000",
+			"characterTextStrokeColor": "#000000",
+			"characterTextFillColor": "#ffffff",
+			"killFeedTextColor": "#FF1A1A",
+			"projectileStrokeColor": "#FF0000",
+			"characterTintColor": "#ffdddd",
+			"slotNum": 1
+		},
+		{
+			"name": "Blue Team",
+			"characterStrokeColor": "#0000ff",
+			"characterFillColor": "#00ffff",
+			"characterTextStrokeColor": "#000000",
+			"characterTextFillColor": "#ffffff",
+			"killFeedTextColor": "#337DFF",
+			"projectileStrokeColor": "#0000FF",
+			"characterTintColor": "#ddddff",
+			"slotNum": 2
+		}
+	],
+	"spectatorTeamSlotNum": 0
+}

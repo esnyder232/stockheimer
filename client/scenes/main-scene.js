@@ -306,36 +306,52 @@ export default class MainScene extends Phaser.Scene {
 			this.tilesetArray.push(newTileset);
 		}
 
+		//find properties on the tilemap for scaling and stuff
+		if(this.gc.activeTilemap.data.properties !== undefined && this.gc.activeTilemap.data.properties !== null) {
+			for(var i = 0; i < this.gc.activeTilemap.data.properties.length; i++) {
+				var currentProperty = this.gc.activeTilemap.data.properties[i];
+
+				//a property with "planckScale" on it will be used for tiledUnitsToPlanckUnits scaling
+				if(currentProperty.name.toLowerCase() === "planckscale"
+				&& currentProperty.type === "float")
+				{
+					if(typeof currentProperty.value === "number") {
+						this.planckScale = Math.abs(currentProperty.value);
+					}
+				}
+			}
+		}
+
+		//adjust the scaling based on tilewidth (i'm assuming all tilesets' tilewidth are the same width as the tilewidth set in the map)
+		this.graphicsScale = this.planckScale * (this.baseTileWidth / this.gc.activeTilemap.data.tilewidth);
+
+		//create each layer
 		for(var i = 0; i < this.gc.activeTilemap.data.layers.length; i++) {
 			var l = this.gc.activeTilemap.data.layers[i];
 
 			if(l.type === "tilelayer") {
-
-				//find properties on the tilemap for scaling and stuff
-				if(this.gc.activeTilemap.data.properties !== undefined && this.gc.activeTilemap.data.properties !== null) {
-					for(var i = 0; i < this.gc.activeTilemap.data.properties.length; i++) {
-						var currentProperty = this.gc.activeTilemap.data.properties[i];
-
-						//a property with "planckScale" on it will be used for tiledUnitsToPlanckUnits scaling
-						if(currentProperty.name.toLowerCase() === "planckscale"
-						&& currentProperty.type === "float")
-						{
-							if(typeof currentProperty.value === "number") {
-								this.planckScale = Math.abs(currentProperty.value);
-							}
-						}
-					}
-				}
-
-				//adjust the scaling based on tilewidth in the image
-				this.graphicsScale = this.planckScale * (this.baseTileWidth / this.gc.activeTilemap.data.tilewidth);
-
 				//create layer
 				var xOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
 				var yOffset = -(this.planckUnitsToPhaserUnitsRatio/2) * this.planckScale;
 				var newLayer = this.map.createLayer(l.name, this.tilesetArray, xOffset, yOffset).setScale(this.graphicsScale * 2);
+				var layerDepth = ClientConstants.PhaserDrawLayers.tilemapBaseLayer + i;
+				
+				//search for propeties for depth and stuff
+				if(l.properties !== undefined && l.properties !== null) {
+					for(var j = 0; j < l.properties.length; j++) {
+						var currentProperty = l.properties[j];
+						//a bool property with "topLayer" on it will be used for the top layer depth
+						if(currentProperty.name.toLowerCase() === "toplayer"
+						&& currentProperty.type === "bool"
+						&& currentProperty.value === true)
+						{
+							layerDepth = ClientConstants.PhaserDrawLayers.tilemapTopLayer + i;
+						}
+					}
+				}
+				
 
-				newLayer.setDepth(ClientConstants.PhaserDrawLayers.tilemapLayer)
+				newLayer.setDepth(layerDepth);
 
 				//add layer to the pile
 				this.layerArray.push(newLayer);
