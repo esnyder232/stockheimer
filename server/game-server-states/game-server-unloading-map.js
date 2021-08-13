@@ -49,9 +49,9 @@ class GameServerUnloadingMap extends GameServerBaseState {
 		this.gs.activeNavGrid = null;
 
 		//unload game objects
-		var activeGameObjects = this.gs.gom.getActiveGameObjects();
-		for(var i = 0; i < activeGameObjects.length; i++) {
-			this.gs.gom.destroyGameObject(activeGameObjects[i].id);
+		var gameObjects = this.gs.gom.getGameObjects();
+		for(var i = 0; i < gameObjects.length; i++) {
+			this.gs.gom.destroyGameObject(gameObjects[i].id);
 		}
 
 		//deactivate the collision system too

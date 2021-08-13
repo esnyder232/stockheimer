@@ -2,6 +2,7 @@ const {GlobalFuncs} = require('../global-funcs.js');
 const {Character} = require('../game-objects/character.js');
 const {Projectile} = require("../game-objects/projectile.js");
 const {Castle} = require("../game-objects/castle.js");
+const {Wall} = require("../game-objects/wall.js");
 const logger = require('../../logger.js');
 
 class GameObjectManager {
@@ -25,6 +26,7 @@ class GameObjectManager {
 
 	createGameObject(type) {
 		var o = null;
+		var activate = true;
 
 		switch(type)
 		{
@@ -37,6 +39,11 @@ class GameObjectManager {
 			case "castle":
 				o = new Castle();
 				break;
+			case "wall":
+				o = new Wall();
+				//feels kinda hacky...but don't activate a wall object. Because its not really "active", is it?
+				activate = false; 
+				break;
 		}
 
 		o.id = this.gs.getGlobalGameObjectID();
@@ -46,8 +53,9 @@ class GameObjectManager {
 		this.gameObjectArray.push(o);
 		this.updateIndex(o.id, o, 'create');
 
-		//go ahead and put in the activate transaction as well
-		this.activateGameObjectId(o.id);
+		if(activate) {
+			this.activateGameObjectId(o.id);
+		}
 		
 		return o;
 	}
@@ -292,6 +300,10 @@ class GameObjectManager {
 	
 	getActiveGameObjects() {
 		return this.activeGameObjectArray;
+	}
+
+	getGameObjects() {
+		return this.gameObjectArray;
 	}
 }
 

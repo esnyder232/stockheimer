@@ -360,9 +360,8 @@ class GameServer {
 
 			//report timer
 			this.reportTimer += dt;
-			if(this.reportTimer >= this.reportTimerInterval)
-			{
-				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.AIAgentArray.length + ". Gameobjects: " + this.gom.gameObjectArray.length);
+			if(this.reportTimer >= this.reportTimerInterval) {
+				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.getAIAgents().length + ". Gameobjects: " + this.gom.getActiveGameObjects().length);
 				this.reportTimer = 0;
 				// var temp = this.um.getActiveUsersGroupedByTeams();
 				// console.log(temp);
