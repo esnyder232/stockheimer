@@ -1,16 +1,20 @@
 {
-	"name": "Retro MMO Overworld 1",
-	"tilemapResource": "assets/retro-tilemaps/retro-mmo-overworld-1.json",
-	"mapTimeLength": 20000,
-	"roundMapStartTimeLength": 100,
-	"roundStartingTimeLength": 100,
+	"name": "Retro MMO Overworld 2",
+	"tilemapResource": "assets/retro-tilemaps/retro-mmo-overworld-2.json",
+	"mapTimeLength": 200000,
+	"roundMapStartTimeLength": 10000,
+	"roundStartingTimeLength": 10000,
 	"roundPlayingTimeLength": 90000,
 	"roundOverTimeLength": 7000,
 	"roundMapEndTimeLength": 5000,
-	"userRespawningTimeLength": 400,
-	"minimumUsersPlaying": 2,
+	"userRespawningTimeLength": 4000,
+	"minimumUsersPlaying": 24,
 	"classData": [
-		"data/character-classes/slime-small.json"
+		"data/character-classes/slime-small.json",
+		"data/character-classes/slime-med.json",
+		"data/character-classes/slime-large.json",
+		"data/character-classes/slime-fighter.json",
+		"data/character-classes/slime-healer.json"
 	],
 	"teamData": [
 		{

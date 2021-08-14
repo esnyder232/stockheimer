@@ -26,7 +26,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		super.update(dt);
 
 		var decisionMade = false;
-		var isLOS = false;
+		var losResults = {};
 		var isInAttackRange = false;
 		var inputChanged = false;
 
@@ -101,24 +101,25 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 
 			if(cpos !== null)
 			{
-				isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+				losResults = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
 			}
 
 			//make a decision if you can
 			//if the player is within attacking distance and you have LOS, switch to attacking.
-			if(isInAttackRange && isLOS)
+			if(isInAttackRange && losResults.isLOS)
 			{
 				this.aiAgent.insertStopInput();
 				this.aiAgent.nextState = new AIAgentAttackPlayerState.AIAgentAttackPlayerState(this.aiAgent);
 				decisionMade = true;
 			}
-			//if the player is NOT within attacking distance, but you have LOS, keep seeking to the player, but change the nodes to where they are currently located
-			else if (!isInAttackRange && isLOS)
+			//if the player is NOT within attacking distance, but you have LOS and the path is unobstructed, keep seeking to the player, but change the nodes to where they are currently located
+			//IOW, move in a straight line to the target.
+			else if (!isInAttackRange && losResults.isLOS && losResults.pathUnobstructed)
 			{
 				this.aiAgent.findStraightPathToPlayer();
 				// decisionMade = true;
 			}
-			//if the user doesn't have LOS. Find the player with A*
+			//if the user doesn't even have LOS, find the player with A*
 			else {
 				this.aiAgent.findaStarPathToPlayer();
 			}
@@ -279,7 +280,7 @@ class AIAgentSeekPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		this.aiAgent.isAttackCurrentTimer -= dt;
 
 		//fire a bullet
-		if(!decisionMade && isLOS && this.aiAgent.isAttackCurrentTimer <= 0)
+		if(!decisionMade && losResults.isLOS && this.aiAgent.isAttackCurrentTimer <= 0)
 		{
 			var targetCharacterPos = null;
 			targetCharacterPos = this.aiAgent.targetCharacter.getPlanckPosition();

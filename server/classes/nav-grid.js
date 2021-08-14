@@ -19,8 +19,6 @@ class NavGrid {
 		this.castleNode = null;
 		this.toCastleNodeMap = null;
 		this.tiledUnitsToPlanckUnits = 1;
-
-		this.walls = [];
 	}
 
 
@@ -39,7 +37,6 @@ class NavGrid {
 		this.edgesIdIndex = {};
 		this.castleNode = null;
 		this.toCastleNodeMap = null;
-		this.walls = [];
 	}
 
 	create() {
@@ -58,13 +55,13 @@ class NavGrid {
 					var tileType = this.tm.tileset[this.tm.navGridLayer.data[tileIndex]];
 
 					//kinda wierd. If its got the colideProjectile property on it, just treat that as the source of truth
-					var collideProjectile = false;
-					if(tileType.collideProjectile !== undefined && tileType.collideProjectile !== null) {
-						collideProjectile = tileType.collideProjectile;
+					var collideProjectiles = false;
+					if(tileType.collideProjectiles !== undefined && tileType.collideProjectiles !== null) {
+						collideProjectiles = tileType.collideProjectiles;
 					}
-					//if its a wall, and the collideProjectile property is NOT on it, just assume the wall is SUPPOSED to block projectiles
+					//if its a wall, and the collideProjectiles property is NOT on it, just assume the wall is SUPPOSED to block projectiles
 					else if (tileType.impassable !== undefined && tileType.impassable !== null && tileType.impassable === true) {
-						collideProjectile = true
+						collideProjectiles = true
 					}
 
 					var n = {
@@ -76,7 +73,7 @@ class NavGrid {
 						yPlanck: j * this.tiledUnitsToPlanckUnits,
 						impassable: tileType.impassable === true ? true : false,
 						movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
-						collideProjectile: collideProjectile,
+						collideProjectiles: collideProjectiles,
 						castle: tileType.castle === true ? true : false
 					}
 	
@@ -157,41 +154,15 @@ class NavGrid {
 
 
 			//fuck it, we'll just make the walls here
-			// const Vec2 = this.gs.pl.Vec2;
-			// var wallShape = this.gs.pl.Box(this.tiledUnitsToPlanckUnits/2, this.tiledUnitsToPlanckUnits/2, Vec2(0,0));
-
-			for(var j = 0; j < this.nodes.length; j++)
-			{
-				for(var i = 0; i < this.nodes[j].length; i++)
-				{
-					if(this.nodes[j][i].impassable)
-					{
-						// var xPlanck = i * this.tiledUnitsToPlanckUnits;
-						// var yPlanck = (j * this.tiledUnitsToPlanckUnits) * -1;
-
-						// var w = this.gs.world.createBody({
-						// 	position: Vec2(xPlanck, yPlanck),
-						// 	type: this.gs.pl.Body.STATIC,
-						// 	userData: {type:"wall", id: this.gs.getGlobalGameObjectID()}
-						// });
-
-						// w.createFixture({
-						// 	shape: wallShape,
-						// 	density: 0.0,
-						// 	friction: 0.0,
-						// 	filterCategoryBits: CollisionCategories["wall_body"],
-						// 	filterMaskBits: CollisionMasks["wall_body"]
-						// });
-
-
+			for(var j = 0; j < this.nodes.length; j++) {
+				for(var i = 0; i < this.nodes[j].length; i++) {
+					if(this.nodes[j][i].impassable) {
 						var w = this.gs.gom.createGameObject("wall");
 						w.x = i * this.tiledUnitsToPlanckUnits;
 						w.y = (j * this.tiledUnitsToPlanckUnits) * -1;
 						w.size = this.tiledUnitsToPlanckUnits;
-						w.collideProjectile = this.nodes[j][i].collideProjectile;
+						w.collideProjectiles = this.nodes[j][i].collideProjectiles;
 						w.init(this.gs);
-
-						this.walls.push(w);
 					}
 				}
 			}

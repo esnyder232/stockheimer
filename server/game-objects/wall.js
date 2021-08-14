@@ -1,6 +1,7 @@
 const planck = require('planck-js');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 
+//no need for an update/activate/deactivate functions. Walls do not "activate" because they are just static things that exist in the world. Just init/deinit will do.
 class Wall {
 	constructor() {
 		this.type = "wall";
@@ -12,7 +13,7 @@ class Wall {
 		this.size = 1;
 
 		this.impassable = true; //default is impassable
-		this.collideProjectile = true; //default is blocking projectiles
+		this.collideProjectiles = true; //default is blocking projectiles
 	}
 
 	init(gameServer) {
@@ -24,7 +25,11 @@ class Wall {
 		this.plBody = this.gs.world.createBody({
 			position: Vec2(this.x, this.y),
 			type: this.gs.pl.Body.STATIC,
-			userData: {type:"wall", id: this.id}
+			userData: {
+				type:"wall", 
+				id: this.id,
+				collideProjectiles: this.collideProjectiles
+			}
 		});
 
 		this.plBody.createFixture({
@@ -35,10 +40,10 @@ class Wall {
 			filterMaskBits: CollisionMasks["wall_body"]
 		});
 	}
-	
+
 	//called right before the bullet is officially deleted by the game object manager.
 	deinit() {
-		if(this.plBody) {
+		if(this.plBody !== null) {
 			this.gs.world.destroyBody(this.plBody);
 			this.plBody = null;
 		}
@@ -46,20 +51,6 @@ class Wall {
 		this.gs = null;
 		this.id = null;
 	}
-
-	update(dt) {
-	}
-	
-
-	postWebsocketUpdate() {
-	}
-
-	// collideProjectile()
-
-
-	// collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA) {
-		
-	// }
 }
 
 exports.Wall = Wall;

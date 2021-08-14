@@ -23,7 +23,7 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 		super.update(dt);
 
 		var decisionMade = false;
-		var isLOS = false;
+		var losResults = {};
 		var isInAttackRange = false;
 		var inputChanged = false;
 
@@ -104,13 +104,13 @@ class AIAgentAttackPlayerState extends AIAgentBaseState.AIAgentBaseState {
 				var cpos = this.aiAgent.targetCharacter.getPlanckPosition();
 	
 				if(cpos !== null) {
-					isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+					losResults = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
 				}
 			}
 
 			//make a decision if you can			
 			//if the player is not within attacking distance or you lose LOS, switch to seek player
-			if(!(isInAttackRange && isLOS)) {
+			if(!(isInAttackRange && losResults.isLOS)) {
 				this.aiAgent.nextState = new AIAgentSeekPlayerState.AIAgentSeekPlayerState(this.aiAgent);
 				decisionMade = true;
 			}

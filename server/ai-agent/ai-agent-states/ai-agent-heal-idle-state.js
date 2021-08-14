@@ -38,14 +38,14 @@ class AIAgentHealIdleState extends AIAgentBaseState.AIAgentBaseState {
 					//get the character with the highest hpDiff that is in LOS
 					var closestLOSCharacterObject = null;
 					for(var i = 0 ; i < this.aiAgent.allyCharactersInVision.length; i++) {
-						var isLOS = false;
+						var losResults = {};
 						var cpos = this.aiAgent.allyCharactersInVision[i].c.getPlanckPosition();
 
 						if(cpos !== null) {
-							isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+							losResults = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
 						}
 
-						if(isLOS) {
+						if(losResults.isLOS) {
 							closestLOSCharacterObject = this.aiAgent.allyCharactersInVision[i];
 							break;
 						}

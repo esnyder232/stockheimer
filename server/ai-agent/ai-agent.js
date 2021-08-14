@@ -603,15 +603,17 @@ class AIAgent {
 	{
 		const Vec2 = this.gs.pl.Vec2;
 		//do line of sight tests to get the next logical node
-		var nodeInLOS = true;
-		while(nodeInLOS)
+		var pathToNodeUnobstructed = true;
+		var losResults = {};
+		while(pathToNodeUnobstructed)
 		{
 			if(this.currentNode < this.nodePathToCastle.length-1)
 			{
 				var nodePos = new Vec2(this.nodePathToCastle[this.currentNode + 1].xPlanck, -this.nodePathToCastle[this.currentNode + 1].yPlanck);
 
-				nodeInLOS = this.lineOfSightTest(pos, nodePos);
-				if(nodeInLOS)
+				losResults = this.lineOfSightTest(pos, nodePos);
+				pathToNodeUnobstructed = losResults.pathUnobstructed;
+				if(pathToNodeUnobstructed)
 				{
 					//logger.log("info", 'current node in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + '). Skipping the node.')
 					this.currentNode++
@@ -624,7 +626,7 @@ class AIAgent {
 			//final node is reached
 			else
 			{
-				nodeInLOS = false;
+				pathToNodeUnobstructed = false;
 			}
 		}
 	}
@@ -634,7 +636,10 @@ class AIAgent {
 	lineOfSightTest(pos, pos2)
 	{
 		const Vec2 = this.gs.pl.Vec2;
-		var isInLOS = true;
+		var losResults = {
+			isLOS: true,
+			pathUnobstructed: true
+		}
 
 		var p1 = new Vec2(pos.x, pos.y);
 		var p2 = new Vec2(pos2.x, pos2.y);
@@ -647,15 +652,19 @@ class AIAgent {
 		{
 			for(var i = 0; i < this.lineOfSightObjects.length; i++)			
 			{
-				if(this.lineOfSightObjects[i].fixture.getBody().getUserData().type === "wall")
-				{
-					isInLOS = false;
+				var userData = this.lineOfSightObjects[i].fixture.getBody().getUserData()
+				if(userData.type === "wall" && userData.collideProjectiles) {
+					losResults.isLOS = false;
+					losResults.pathUnobstructed = false;
 					break;
+				}
+				else if(userData.type === "wall" && !userData.collideProjectiles) {
+					losResults.pathUnobstructed = false;
 				}
 			}
 		}
 
-		return isInLOS;
+		return losResults;
 	}
 
 	lineOfSightCallback(fixture, point, normal, fraction) {

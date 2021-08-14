@@ -375,13 +375,20 @@ class CollisionSystem {
 	beginProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)
 	{
 		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
+		var w = this.gs.gom.getGameObjectByID(wallUserData.id);
 
-		if(p !== null) {
-			if(p.collideWalls) {
+		if(w !== null && p !== null) {
+			var processCollision = true;
+		
+			//basically, only process the colilsion if BOTH the projectile and the wall allow the collision.
+			if(!p.collideWalls || !w.collideProjectiles) {
+				processCollision = false;
+			}
+		
+			if(processCollision) {
 				p.collisionWall(projectileUserData, wallUserData, contactObj, isProjectileA);
 			}
 		}
-
 	}
 
 	endProjectileWallCollision(projectileUserData, wallUserData, contactObj, isProjectileA)

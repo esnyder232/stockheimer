@@ -1,6 +1,6 @@
 {
 	"name": "Bigger Slime",
-	"hp": 50,
+	"hp": 40,
 	"speed": 4,
 	"planckData": {
 		"plShape": "circle",

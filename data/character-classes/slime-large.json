@@ -1,6 +1,6 @@
 {
 	"name": "BIGGEST Slime",
-	"hp": 90,
+	"hp": 60,
 	"speed": 4,
 	"planckData": {
 		"plShape": "circle",

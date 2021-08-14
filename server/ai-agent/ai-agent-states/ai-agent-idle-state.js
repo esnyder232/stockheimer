@@ -42,15 +42,15 @@ class AIAgentIdleState extends AIAgentBaseState.AIAgentBaseState {
 					var closestLOSCharacterObject = null;
 					for(var i = 0 ; i < this.aiAgent.enemyCharactersInVision.length; i++)
 					{
-						var isLOS = false;
+						var losResults = {};
 						var cpos = this.aiAgent.enemyCharactersInVision[i].c.getPlanckPosition();
 
 						if(cpos !== null)
 						{
-							isLOS = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
+							losResults = this.aiAgent.lineOfSightTest(this.aiAgent.characterPos, cpos);
 						}
 
-						if(isLOS)
+						if(losResults.isLOS)
 						{
 							closestLOSCharacterObject = this.aiAgent.enemyCharactersInVision[i];
 							break;

@@ -10,5 +10,5 @@
 	"cooldownTimeLength": 3000,
 	"specialDashMag": 40,
 	"specialDashTimeStop": 250,
-	"contactDmg": 5
+	"contactDmg": 6
 }
