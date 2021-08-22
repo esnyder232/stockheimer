@@ -12,6 +12,10 @@ export default class GameClientUserWaitingForServer extends GameClientBaseState 
 		this.globalfuncs.appendToLog("Waiting for server response...");
 		this.gc.userConnectingScene.updateConnectingMessage("Waiting for server response...");
 		this.gc.mainMenu.enableExitServerButton();
+
+		this.gc.ep.setAllEventEnable(false);
+		this.gc.ep.setEventEnable("serverMapLoaded", true);
+		this.gc.ep.setEventEnable("leaveGameImmediately", true);
 	}
 
 	update(dt) {

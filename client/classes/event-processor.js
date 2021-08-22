@@ -54,6 +54,7 @@ export default class EventProcessor {
 		this.eventClassesMapping = []; //mapping of eventNames to eventClasses
 		this.eventFunctions = {}; //Actual event functions to be called. keys are event_ids from event schema, and values are the eventClasses.processEvent (built from event schema and eventClassesMapping). 
 								  //This is ultimately to make event function lookups more efficient by looking up the event_id instead of the eventName
+		this.eventFunctionsDirty = false;
 	}
 	
 	init(gc, wsh) {
@@ -61,130 +62,79 @@ export default class EventProcessor {
 		this.wsh = wsh;
 
 		this.eventClassesMapping = [
-			{eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent()},
-			{eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent()},
-			{eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent()},
-			{eventName: "characterDamageEffect", eventClass: new CharacterDamageEffectEvent()},
-			{eventName: "characterHealEffect", eventClass: new CharacterHealEffectEvent()},
-			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()},
-			{eventName: "userConnected", eventClass: new UserConnectedEvent()},
-			{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent()},
-			{eventName: "yourUser", eventClass: new YourUserEvent()},
-			{eventName: "fromServerChatMessage", eventClass: new FromServerChatMessageEvent()},
-			{eventName: "addCastle", eventClass: new AddCastleEvent()},
-			{eventName: "castleUpdate", eventClass: new CastleUpdateEvent()},
-			{eventName: "removeCastle", eventClass: new RemoveCastleEvent()},
-			{eventName: "castleDamage", eventClass: new CastleDamageEvent()},
-			{eventName: "addProjectile", eventClass: new AddProjectileEvent()},
-			{eventName: "removeProjectile", eventClass: new RemoveProjectileEvent()},
-			{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()},
-			{eventName: "debugMsg", eventClass: new DebugMsgEvent()},
-			{eventName: "addTeam", eventClass: new AddTeamEvent()},
-			{eventName: "updateTeam", eventClass: new UpdateTeamEvent()},
-			{eventName: "removeTeam", eventClass: new RemoveTeamEvent()},
-			{eventName: "addRound", eventClass: new AddRoundEvent()},
-			{eventName: "updateRoundState", eventClass: new UpdateRoundStateEvent()},
-			{eventName: "updateUserPlayingState", eventClass: new UpdateUserPlayingStateEvent()},
-			{eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent()},
-			{eventName: "roundResults", eventClass: new RoundResultsEvent()},
-			{eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent()},
-			{eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent()},
-			{eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent()},
-			{eventName: "serverMapLoaded", eventClass: new ServerMapLoadedEvent()},
-			{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent()},
+			{eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent(), enabled: false},
+			{eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent(), enabled: false},
+			{eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent(), enabled: false},
+			{eventName: "characterDamageEffect", eventClass: new CharacterDamageEffectEvent(), enabled: false},
+			{eventName: "characterHealEffect", eventClass: new CharacterHealEffectEvent(), enabled: false},
+			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent(), enabled: false},
+			{eventName: "userConnected", eventClass: new UserConnectedEvent(), enabled: false},
+			{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent(), enabled: false},
+			{eventName: "yourUser", eventClass: new YourUserEvent(), enabled: false},
+			{eventName: "fromServerChatMessage", eventClass: new FromServerChatMessageEvent(), enabled: false},
+			{eventName: "addCastle", eventClass: new AddCastleEvent(), enabled: false},
+			{eventName: "castleUpdate", eventClass: new CastleUpdateEvent(), enabled: false},
+			{eventName: "removeCastle", eventClass: new RemoveCastleEvent(), enabled: false},
+			{eventName: "castleDamage", eventClass: new CastleDamageEvent(), enabled: false},
+			{eventName: "addProjectile", eventClass: new AddProjectileEvent(), enabled: false},
+			{eventName: "removeProjectile", eventClass: new RemoveProjectileEvent(), enabled: false},
+			{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent(), enabled: false},
+			{eventName: "debugMsg", eventClass: new DebugMsgEvent(), enabled: false},
+			{eventName: "addTeam", eventClass: new AddTeamEvent(), enabled: false},
+			{eventName: "updateTeam", eventClass: new UpdateTeamEvent(), enabled: false},
+			{eventName: "removeTeam", eventClass: new RemoveTeamEvent(), enabled: false},
+			{eventName: "addRound", eventClass: new AddRoundEvent(), enabled: false},
+			{eventName: "updateRoundState", eventClass: new UpdateRoundStateEvent(), enabled: false},
+			{eventName: "updateUserPlayingState", eventClass: new UpdateUserPlayingStateEvent(), enabled: false},
+			{eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent(), enabled: false},
+			{eventName: "roundResults", eventClass: new RoundResultsEvent(), enabled: false},
+			{eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent(), enabled: false},
+			{eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent(), enabled: false},
+			{eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent(), enabled: false},
+			{eventName: "serverMapLoaded", eventClass: new ServerMapLoadedEvent(), enabled: false},
+			{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent(), enabled: false},
 		];
-
-
-
-		// temp for debugging
-		// //joining only
-		// this.eventClassesMapping = [
-		// 	// {eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent()},
-		// 	// {eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent()},
-		// 	// {eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent()},
-		// 	// {eventName: "characterDamageEffect", eventClass: new CharacterDamageEffectEvent()},
-		// 	// {eventName: "characterHealEffect", eventClass: new CharacterHealEffectEvent()},
-		// 	{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()},
-		// 	{eventName: "userConnected", eventClass: new UserConnectedEvent()},
-		// 	{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent()},
-		// 	{eventName: "yourUser", eventClass: new YourUserEvent()},
-		// 	// {eventName: "fromServerChatMessage", eventClass: new FromServerChatMessageEvent()},
-		// 	// {eventName: "addCastle", eventClass: new AddCastleEvent()},
-		// 	// {eventName: "castleUpdate", eventClass: new CastleUpdateEvent()},
-		// 	// {eventName: "removeCastle", eventClass: new RemoveCastleEvent()},
-		// 	// {eventName: "castleDamage", eventClass: new CastleDamageEvent()},
-		// 	// {eventName: "addProjectile", eventClass: new AddProjectileEvent()},
-		// 	// {eventName: "removeProjectile", eventClass: new RemoveProjectileEvent()},
-		// 	{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()},
-		// 	// {eventName: "debugMsg", eventClass: new DebugMsgEvent()},
-		// 	{eventName: "addTeam", eventClass: new AddTeamEvent()},
-		// 	// {eventName: "updateTeam", eventClass: new UpdateTeamEvent()},
-		// 	{eventName: "removeTeam", eventClass: new RemoveTeamEvent()},
-		// 	{eventName: "addRound", eventClass: new AddRoundEvent()},
-		// 	{eventName: "updateRoundState", eventClass: new UpdateRoundStateEvent()},
-		// 	// {eventName: "updateUserPlayingState", eventClass: new UpdateUserPlayingStateEvent()},
-		// 	// {eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent()},
-		// 	// {eventName: "roundResults", eventClass: new RoundResultsEvent()},
-		// 	// {eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent()},
-		// 	// {eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent()},
-		// 	// {eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent()},
-		// 	{eventName: "serverMapLoaded", eventClass: new ServerMapLoadedEvent()},
-		// 	{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent()},
-		// ];
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	}
 
-	eventSchemaReady() {
-		console.log('building eventFunctions mapping...');
-		console.log(this.wsh.eventNameIndex);
-		//build the eventFunctions (map the event id to an event function)
-		for(var i = 0; i < this.eventClassesMapping.length; i++)
-		{
-			var e = this.wsh.eventNameIndex[this.eventClassesMapping[i].eventName];
-			if(e !== undefined)
-			{
-				this.eventFunctions[e.event_id] = this.eventClassesMapping[i].eventClass;
-				this.eventFunctions[e.event_id].init(this.gc); //just init it here, whatever
+	setEventEnable(eventName, bEnabled) {
+		var ei = this.eventClassesMapping.findIndex((x) => {return x.eventName === eventName;});
+
+		if(ei >= 0) {
+			this.eventClassesMapping[ei].enabled = bEnabled;
+			this.eventFunctionsDirty = true;
+		}
+	}
+
+	setAllEventEnable(bEnabled) {
+		for(var i = 0; i < this.eventClassesMapping.length; i++) {
+			this.eventClassesMapping[i].enabled = bEnabled;
+		}
+		this.eventFunctionsDirty = true;
+	}
+
+	buildEventFunctions() {
+		//clear out eventFunctions
+		for(var key in this.eventFunctions) {
+			if (this.eventFunctions.hasOwnProperty(key)) {
+				delete this.eventFunctions[key];
 			}
 		}
 
-		//add special fragment functions seperately
+		//build the eventFunctions (map the event id to an event function)
+		for(var i = 0; i < this.eventClassesMapping.length; i++) {
+			if(this.eventClassesMapping[i].enabled) {
+				var e = this.wsh.eventNameIndex[this.eventClassesMapping[i].eventName];
+				if(e !== undefined) {
+					this.eventFunctions[e.event_id] = this.eventClassesMapping[i].eventClass;
+					this.eventFunctions[e.event_id].init(this.gc); //just init it here, whatever
+				}
+			}
+		}
+
+		//always add special fragment functions
 		this.eventFunctions[this.wsh.eventNameIndex["fragmentStart"].event_id] = {processEvent: this.fragmentStart.bind(this)};
 		this.eventFunctions[this.wsh.eventNameIndex["fragmentContinue"].event_id] = {processEvent: this.fragmentContinue.bind(this)};
 		this.eventFunctions[this.wsh.eventNameIndex["fragmentEnd"].event_id] = {processEvent: this.fragmentEnd.bind(this)};
-
-		console.log('eventFunctions built successfully');
-		console.log(this.eventFunctions);
 	}
 
 	reset() {
@@ -193,8 +143,10 @@ export default class EventProcessor {
 
 		this.serverToClientEvents = []; //event queue to be processed by the main loop
 		this.clientToServerEvents = []; //event queue to be processed by the main loop for events going from client to server
-		
+		this.eventFunctions = [];
+
 		this.fragmentIdCounter = 0;
+		this.eventFunctionsDirty = false;
 	}
 
 	insertEventsIntoPacket() {
@@ -416,6 +368,11 @@ export default class EventProcessor {
 
 
 	processServerEvents() {
+		if(this.eventFunctionsDirty) {
+			this.buildEventFunctions();
+			this.eventFunctionsDirty = false;
+		}
+
 		for(var i = 0; i < this.serverToClientEvents.length; i++)
 		{
 			var e = this.serverToClientEvents[i];

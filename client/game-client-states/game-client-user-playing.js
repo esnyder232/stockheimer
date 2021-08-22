@@ -22,6 +22,8 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		
 		this.gc.mainScene.stockheimerActivate();
 		this.gc.quickMenu.showMainSceneIcons();
+
+		this.gc.ep.setAllEventEnable(true);
 	}
 
 	update(dt) {

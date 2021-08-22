@@ -114,17 +114,8 @@ export default class GlobalFuncs {
 			for(var i = 0; i < json.meta.frameTags.length; i++) {
 				var f = json.meta.frameTags[i];
 				var key = asepriteSpritesheetKey + "-" + f.name;
-	
-				//temp for debugging
-				try {
-					console.log("Now removing anims from aseprite. key: " + key + ". has?: " + anims.exists(key));
 
-					anims.remove(key);
-				} catch(ex) {
-					console.log("Exception caughtin in global funcs whil removing anims from aseprite.");
-					console.log(ex);
-					var debughere = true;
-				}
+				anims.remove(key);
 			}
 		}
 	}

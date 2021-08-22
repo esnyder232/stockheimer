@@ -15,11 +15,16 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		this.updateCounterLimit = 10;
 		this.updateCounter = 0;
 
+		this.gc.ep.setAllEventEnable(false);
+
 	}
 
 	update(dt) {
 		super.update(dt);
 		
+		//update event processor too so it can rebuild its event functions
+		this.gc.ep.processServerEvents(dt);
+
 		//update managers
 		this.gc.um.update(dt);
 		this.gc.gom.update(dt);

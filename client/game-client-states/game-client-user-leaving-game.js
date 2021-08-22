@@ -65,6 +65,10 @@ export default class GameClientUserLeavingGame extends GameClientBaseState {
 		//this is just to give a few update loops so the managers can clear themselves out
 		this.updateCounter = 0;
 		this.updateCounterLimit = 5;
+
+		//essentially ignore all events coming from the server. 
+		//In this state, the client should just be cleaning up any resources on their side, then either going to wait for the server to load the next map, or go straight to disconnecting.
+		this.gc.ep.setAllEventEnable(false);
 	}
 
 	update(dt) {

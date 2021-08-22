@@ -14,6 +14,19 @@ export default class GameClientUserJoiningGame extends GameClientBaseState {
 		//2 - load resources and wait until they are done
 		//3 - start playing
 		this.connectionState = "RECIEVE_WORLD_STATE";
+
+		this.gc.ep.setAllEventEnable(false);
+		this.gc.ep.setEventEnable("serverMapLoaded", true);
+		this.gc.ep.setEventEnable("userConnected", true);
+		this.gc.ep.setEventEnable("userDisconnected", true);
+		this.gc.ep.setEventEnable("updateUserInfo", true);
+		this.gc.ep.setEventEnable("yourUser", true);
+		this.gc.ep.setEventEnable("worldStateDone", true);
+		this.gc.ep.setEventEnable("addTeam", true);
+		this.gc.ep.setEventEnable("removeTeam", true);
+		this.gc.ep.setEventEnable("addRound", true);
+		this.gc.ep.setEventEnable("updateRoundState", true);
+		this.gc.ep.setEventEnable("leaveGameImmediately", true);
 	}
 	
 	enter(dt) {

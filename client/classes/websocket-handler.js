@@ -42,7 +42,6 @@ export default class WebsocketHandler {
 			EventSchema = responseData;
 			try {
 				this.buildQueuesAndIndex();
-				this.ep.eventSchemaReady();
 			} catch(ex) {
 				console.log("VERY BAD ERROR: Exception caught when building from event schema: " + ex.stack);
 			}
