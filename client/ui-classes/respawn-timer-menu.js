@@ -60,7 +60,7 @@ export default class RespawnTimerMenu {
 				this.respawnMessage.text("Server is changing maps");
 			}
 			else {
-				switch(this.gc.myUser.playingStateName) {
+				switch(this.gc.myUser?.playingStateName) {
 					case "SPECTATING":
 						this.menu.removeClass("hide");
 						this.respawnMessage.text("Spectating");
@@ -76,7 +76,7 @@ export default class RespawnTimerMenu {
 						this.menu.removeClass("hide");
 						if(this.gc.theRound.stateName === "PLAYING" || this.gc.theRound.stateName === "STARTING") {
 							this.updateMessageOnUpdate = true;
-							var secondsLeft = this.gc.myUser.getRespawnSeconds();
+							var secondsLeft = this.gc.myUser?.getRespawnSeconds();
 							if(secondsLeft <= 0) {
 								secondsLeft = 0;
 							}

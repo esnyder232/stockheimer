@@ -83,10 +83,10 @@ export default class KillFeedMenu {
 		var isYourUserInvolved = false;
 
 		//FIRST, check if the user is involved in any of this
-		if(e.killerType === this.gc.gameConstants.OwnerTypes["user"] && e.killerId === this.gc.myUser.serverId) {
+		if(e.killerType === this.gc.gameConstants.OwnerTypes["user"] && e.killerId === this.gc.myUser?.serverId) {
 			isYourUserInvolved = true;
 		}
-		else if(e.victimType === this.gc.gameConstants.OwnerTypes["user"] && e.victimId === this.gc.myUser.serverId) {
+		else if(e.victimType === this.gc.gameConstants.OwnerTypes["user"] && e.victimId === this.gc.myUser?.serverId) {
 			isYourUserInvolved = true;
 		}
 

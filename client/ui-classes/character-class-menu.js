@@ -55,28 +55,8 @@ export default class CharacterClassMenu {
 		}
 
 		//reset to initial state
-		var showCharacterClassMenu = false;
 		this.menu.addClass("hide");
 
-		// //if the user has a team but not a class selected, show the team menu so they can pick a team
-		// if(this.gc.myUser !== null) {
-		// 	var spectatorTeam = this.gc.tm.getSpectatorTeam();
-
-		// 	//make sure they are on a a team
-		// 	if(spectatorTeam !== null && this.gc.myUser.teamId !== spectatorTeam.serverId) {
-		// 		//check if they have a character class selected
-		// 		if(this.gc.myUser.characterClassResourceId !== null) {
-		// 			showCharacterClassMenu = true;
-		// 		}
-		// 	}
-		// }
-
-		// if(showCharacterClassMenu) {
-		// 	this.menu.removeClass("hide");
-		// }
-		// else {
-		// 	this.menu.addClass("hide");
-		// }
 	}
 
 	characterClassClick(serverId) {

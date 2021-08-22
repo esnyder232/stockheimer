@@ -1,5 +1,6 @@
 import GlobalFuncs from "../global-funcs.js";
 import ServerEventQueue from "./server-event-queue.js";
+import $ from "jquery"
 
 export default class Team {
 	constructor() {
@@ -26,6 +27,7 @@ export default class Team {
 		this.phaserProjectileStrokeColor = 0x000000;
 		this.phaserCharacterTintColor = 0xffffff;
 
+		this.teamShaderKey = "";
 		
 		this.serverEventMapping = {
 			"updateTeam": this.updateTeamEvent.bind(this)
@@ -42,8 +44,10 @@ export default class Team {
 	}
 
 	deinit() {
+		this.destroyTeamShader();
 		this.gc = null;
 		this.globalfuncs = null;
+		
 
 		this.seq.batchUnregisterFromEvent(this.serverEventMapping);
 		this.seq.deinit();
@@ -105,4 +109,43 @@ export default class Team {
 		
 		this.phaserCharacterTintColor = Number.parseInt(newColor, 16);
 	}
+
+	createTeamShader() {
+		// this.teamShaderKey = this.name + "-" + this.serverId;
+
+		// var CustomPipeline = new Phaser.Class({
+
+		// 	Extends: Phaser.Renderer.WebGL.Pipelines.SinglePipeline,
+		
+		// 	initialize:
+		
+		// 	function CustomPipeline (game)
+		// 	{
+		// 		var testGlsl = $("#team-shader").text();
+		// 		console.log("inside custom pipeline");
+		// 		console.log(testGlsl);
+		// 		Phaser.Renderer.WebGL.Pipelines.SinglePipeline.call(this, {
+		// 			game: game,
+		// 			fragShader: testGlsl,
+		// 			uniforms: [
+		// 				'uProjectionMatrix',
+		// 				'uViewMatrix',
+		// 				'uModelMatrix',
+		// 				'uMainSampler',
+		// 				'uResolution',
+		// 				'uTime'
+		// 			]
+		// 		});
+		// 	}
+		// });
+		
+		// this.customPipeline = this.gc.resourceLoadingScene.renderer.pipelines.add(this.teamShaderKey, new CustomPipeline(this.gc.phaserGame));
+	}
+
+	destroyTeamShader() {
+		// this.gc.resourceLoadingScene.renderer.pipelines.remove(this.teamShaderKey, true);
+	}
+
 }
+
+

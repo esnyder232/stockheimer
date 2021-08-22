@@ -94,6 +94,74 @@ export default class EventProcessor {
 			{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent()},
 		];
 
+
+
+		// temp for debugging
+		// //joining only
+		// this.eventClassesMapping = [
+		// 	// {eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent()},
+		// 	// {eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent()},
+		// 	// {eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent()},
+		// 	// {eventName: "characterDamageEffect", eventClass: new CharacterDamageEffectEvent()},
+		// 	// {eventName: "characterHealEffect", eventClass: new CharacterHealEffectEvent()},
+		// 	{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent()},
+		// 	{eventName: "userConnected", eventClass: new UserConnectedEvent()},
+		// 	{eventName: "userDisconnected", eventClass: new UserDisconnectedEvent()},
+		// 	{eventName: "yourUser", eventClass: new YourUserEvent()},
+		// 	// {eventName: "fromServerChatMessage", eventClass: new FromServerChatMessageEvent()},
+		// 	// {eventName: "addCastle", eventClass: new AddCastleEvent()},
+		// 	// {eventName: "castleUpdate", eventClass: new CastleUpdateEvent()},
+		// 	// {eventName: "removeCastle", eventClass: new RemoveCastleEvent()},
+		// 	// {eventName: "castleDamage", eventClass: new CastleDamageEvent()},
+		// 	// {eventName: "addProjectile", eventClass: new AddProjectileEvent()},
+		// 	// {eventName: "removeProjectile", eventClass: new RemoveProjectileEvent()},
+		// 	{eventName: "worldStateDone", eventClass: new WorldStateDoneEvent()},
+		// 	// {eventName: "debugMsg", eventClass: new DebugMsgEvent()},
+		// 	{eventName: "addTeam", eventClass: new AddTeamEvent()},
+		// 	// {eventName: "updateTeam", eventClass: new UpdateTeamEvent()},
+		// 	{eventName: "removeTeam", eventClass: new RemoveTeamEvent()},
+		// 	{eventName: "addRound", eventClass: new AddRoundEvent()},
+		// 	{eventName: "updateRoundState", eventClass: new UpdateRoundStateEvent()},
+		// 	// {eventName: "updateUserPlayingState", eventClass: new UpdateUserPlayingStateEvent()},
+		// 	// {eventName: "killFeedMsg", eventClass: new KillFeedMsgEvent()},
+		// 	// {eventName: "roundResults", eventClass: new RoundResultsEvent()},
+		// 	// {eventName: "updateUserRtt", eventClass: new UpdateUserRttEvent()},
+		// 	// {eventName: "debugServerCircle", eventClass: new DebugServerCircleEvent()},
+		// 	// {eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent()},
+		// 	{eventName: "serverMapLoaded", eventClass: new ServerMapLoadedEvent()},
+		// 	{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent()},
+		// ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	}
 
 	eventSchemaReady() {

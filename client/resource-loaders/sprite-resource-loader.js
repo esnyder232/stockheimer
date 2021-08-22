@@ -78,12 +78,12 @@ export default class SpriteResourceLoader {
 
 
 	unloadResource(resource) {
-		//unload image
-		this.gc.phaserGame.textures.remove(resource.key);
-
 		//unload animation
 		this.globalfuncs.removeAnimsFromAseprite(this.gc.phaserGame, resource.key, resource.data.animationPath);
 		this.gc.phaserGame.cache.json.remove(resource.data.animationPath);
+
+		//unload image
+		this.gc.phaserGame.textures.remove(resource.key);
 
 		this.gc.rm.unregisterDelegate(resource.data.animationPath, resource.id, this.resourceType);
 	}

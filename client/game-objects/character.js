@@ -50,6 +50,7 @@ export default class Character {
 		this.characterTextStrokeThickness = 1;
 		this.characterFillColor = 0x000000;
 		this.usernameText = "???";
+		this.teamShaderKey = "";
 		this.circleShape = null;
 
 		this.characterClassResourceId = null;
@@ -188,6 +189,10 @@ export default class Character {
 		this.state = new CharacterClassState(this.gc, this, null, 0);
 		this.state.enter(0);
 
+
+		// this.spriteGraphics.setPipeline(this.teamShaderKey);
+
+
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
@@ -234,6 +239,7 @@ export default class Character {
 				this.characterTextStrokeColor = team.characterTextStrokeColor;
 				this.characterFillColor = team.phaserCharacterFillColor;
 				this.characterTintColor = team.phaserCharacterTintColor;
+				this.teamShaderKey = team.teamShaderKey;
 			}
 		}
 	}

@@ -754,7 +754,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//open the team menu if:
 		// - the player has first entered the game, but does not have a teamId
-		if(bFirstMenuFlow && (this.gc.myUser.teamId === 0 || this.gc.myUser.teamId === spectatorTeam.serverId)) {
+		if(bFirstMenuFlow && (this.gc.myUser?.teamId === 0 || this.gc.myUser?.teamId === spectatorTeam.serverId)) {
 			this.teamMenu.openMenu();
 			bStop = true;
 		}
@@ -763,11 +763,11 @@ export default class MainScene extends Phaser.Scene {
 		// - the player has first entered the game, has a teamId, but does not have a class
 		// - the player has a teamId, but does not have a class
 		if(!bStop) {
-			if(bFirstMenuFlow && this.gc.myUser.teamId !== spectatorTeam.serverId && this.gc.myUser.characterClassResourceId === null) {
+			if(bFirstMenuFlow && this.gc.myUser?.teamId !== spectatorTeam.serverId && this.gc.myUser?.characterClassResourceId === null) {
 				this.characterClassMenu.openMenu();
 				bStop = true;
 			}
-			else if(this.gc.myUser.teamId !== spectatorTeam.serverId && this.gc.myUser.characterClassResourceId === null) {
+			else if(this.gc.myUser?.teamId !== spectatorTeam.serverId && this.gc.myUser?.characterClassResourceId === null) {
 				this.characterClassMenu.openMenu();
 				bStop = true;
 			}
