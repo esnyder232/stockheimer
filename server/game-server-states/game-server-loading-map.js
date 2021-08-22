@@ -172,6 +172,10 @@ class GameServerLoadingMap extends GameServerBaseState {
 				temp.killFeedTextColor = this.globalfuncs.getValueDefault(teamData[i].killFeedTextColor, "#CCCCCC");
 				temp.projectileStrokeColor = this.globalfuncs.getValueDefault(teamData[i].projectileStrokeColor, "#000000");
 				temp.characterTintColor = this.globalfuncs.getValueDefault(teamData[i].characterTintColor, "#ffffff");
+				temp.characterPrimaryColor = this.globalfuncs.getValueDefault(teamData[i].characterPrimaryColor, "#ffffff");
+				temp.characterPrimaryColorReplace = this.globalfuncs.getValueDefault(teamData[i].characterPrimaryColorReplace, "#ffffff");
+				temp.characterSecondaryColor = this.globalfuncs.getValueDefault(teamData[i].characterSecondaryColor, "#ffffff");
+				temp.characterSecondaryColorReplace = this.globalfuncs.getValueDefault(teamData[i].characterSecondaryColorReplace, "#ffffff");
 
 				if(teamData[i].slotNum === spectatorTeamSlotNum) {
 					this.gs.tm.assignSpectatorTeamById(temp.id);

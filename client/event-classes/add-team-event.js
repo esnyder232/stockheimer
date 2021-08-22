@@ -23,6 +23,11 @@ export default class AddTeamEvent {
 		t.changeCharacterStrokeColor(e.characterStrokeColor);
 		t.changeProjectileStrokeColor(e.projectileStrokeColor);
 		t.changeCharacterTintColor(e.characterTintColor);
+		t.changeCharacterPrimaryColor(e.characterPrimaryColor);
+		t.changeCharacterPrimaryColorReplace(e.characterPrimaryColorReplace);
+		t.changeCharacterSecondaryColor(e.characterSecondaryColor);
+		t.changeCharacterSecondaryColorReplace(e.characterSecondaryColorReplace);
+
 		t.createTeamShader();
 
 		if(e.isSpectatorTeam) {

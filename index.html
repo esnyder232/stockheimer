@@ -457,9 +457,10 @@
 			int rCoef = 1 - int(min(1.0, abs(colorToReplace.r*255.0 - originalColor.r*255.0)));
 			int gCoef = 1 - int(min(1.0, abs(colorToReplace.g*255.0 - originalColor.g*255.0)));
 			int bCoef = 1 - int(min(1.0, abs(colorToReplace.b*255.0 - originalColor.b*255.0)));
+			int aCoef = 1 - int(min(1.0, abs(colorToReplace.a*255.0 - originalColor.a*255.0)));
 			
 			//finalCoef will only ever be 1 or 0.
-			int finalCoef = (rCoef + gCoef + bCoef) / 3;
+			int finalCoef = (rCoef + gCoef + bCoef + aCoef) / 4;
 			
 			finalColor = (originalColor*(float(1-finalCoef))) + (newColor*(float(finalCoef)));
 			
@@ -469,20 +470,21 @@
 		
 		void main( void ) {	
 			// taem color swap
-			 // testing			
-			const vec4 primaryColorToReplace = vec4(55.0/255.0, 148.0/255.0, 110.0/255.0, 1.0);
-			const vec4 primaryColorNewColor = vec4(255.0/255.0, 255.0/255.0, 0.0/255.0, 1.0);
-			
-			const vec4 secondaryColorToReplace = vec4(106.0/255.0, 190.0/255.0, 48.0/255.0, 1.0);
-			const vec4 secondaryColorNewColor = vec4(0.0/255.0, 0.0/255.0, 255.0/255.0, 1.0);
-			
+			// testing
 			/*
+			const vec4 primaryColorToReplace = vec4(55.0/255.0, 148.0/255.0, 110.0/255.0, 255.0/255.0);
+			const vec4 primaryColorNewColor = vec4(255.0/255.0, 255.0/255.0, 0.0/255.0, 50.0/255.0);
+			
+			const vec4 secondaryColorToReplace = vec4(106.0/255.0, 190.0/255.0, 48.0/255.0, 255.0/255.0);
+			const vec4 secondaryColorNewColor = vec4(0.0/255.0, 0.0/255.0, 255.0/255.0, 50.0/255.0);
+			*/
+			
 			const vec4 primaryColorToReplace = #primaryColorToReplace#;
 			const vec4 primaryColorNewColor = #primaryColorNewColor#;
 			
 			const vec4 secondaryColorToReplace = #secondaryColorToReplace#;
 			const vec4 secondaryColorNewColor = #secondaryColorNewColor#;
-			*/
+			
 			
 			vec4 finalColor = texture2D(uMainSampler, outTexCoord);
 

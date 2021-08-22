@@ -13,8 +13,12 @@ class Team {
 		this.characterTextStrokeColor = "#ffffff";
 		this.characterTextFillColor = "#ffffff";
 		this.killFeedTextColor = "#ffffff";
-		this.projectileStrokeColor = "#000000";
-		this.characterTintColor = "#ffffff";
+		this.projectileStrokeColor = "#000000"; //pretty sure i'm not using this anymore. But i don't want to break everything lol.
+		this.characterTintColor = "#ffffff"; 	//pretty sure i'm not using this anymore. But i don't want to break everything lol.
+		this.characterPrimaryColor = "#37946eff"
+		this.characterPrimaryColorReplace = "#37946eff"
+		this.characterSecondaryColor = "#6abe30ff"
+		this.characterSecondaryColorReplace = "#6abe30ff"
 		this.roundPoints = 0;
 	}
 
@@ -73,6 +77,10 @@ class Team {
 			"killFeedTextColor": this.killFeedTextColor,
 			"projectileStrokeColor": this.projectileStrokeColor,
 			"characterTintColor": this.characterTintColor,
+			"characterPrimaryColor": this.characterPrimaryColor,
+			"characterPrimaryColorReplace": this.characterPrimaryColorReplace,
+			"characterSecondaryColor": this.characterSecondaryColor,
+			"characterSecondaryColorReplace": this.characterSecondaryColorReplace,
 			"roundPoints": this.roundPoints
 		};
 	}

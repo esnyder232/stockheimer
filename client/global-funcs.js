@@ -250,5 +250,27 @@ export default class GlobalFuncs {
 		return Math.min(Math.max(num, min), max);
 	};
 
+	//this builds a string for glsl shaders. The output will be in this format:
+	// "vec4(r.0/255.0, g.0/255.0, b.0/255.0, a.0/255.0)"
+	glslBuildVec4RGBA(r, g, b, a) {
+		if(typeof r !== "number") {r = 0;};
+		if(typeof g !== "number") {g = 0;};
+		if(typeof b !== "number") {b = 0;};
+		if(typeof a !== "number") {a = 255;};
+
+		var vec4Final = "";
+		var vec4InternalStr = "";
+		var vec4InternalArr = [];
+
+		vec4InternalArr.push(r.toString() + ".0/255.0");
+		vec4InternalArr.push(g.toString() + ".0/255.0");
+		vec4InternalArr.push(b.toString() + ".0/255.0");
+		vec4InternalArr.push(a.toString() + ".0/255.0");
+		vec4InternalStr = vec4InternalArr.join(", ");
+
+		vec4Final = "vec4(" + vec4InternalStr + ")";
+		return vec4Final;
+	}
+
 
 }

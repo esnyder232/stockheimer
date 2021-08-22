@@ -1,10 +1,10 @@
 {
 	"name": "Zelda 2 Test",
 	"tilemapResource": "assets/tilemaps/zelda-2-test.json",
-	"mapTimeLength": 200000,
+	"mapTimeLength": 150000,
 	"roundMapStartTimeLength": 10000,
 	"roundStartingTimeLength": 10000,
-	"roundPlayingTimeLength": 90000,
+	"roundPlayingTimeLength": 9000,
 	"roundOverTimeLength": 7000,
 	"roundMapEndTimeLength": 5000,
 	"userRespawningTimeLength": 4000,
@@ -26,6 +26,10 @@
 			"killFeedTextColor": "#CCCCCC",
 			"projectileStrokeColor": "#000000",
 			"characterTintColor": "#ffffff",
+			"characterPrimaryColor": "#37946eff",
+			"characterPrimaryColorReplace": "#37946eff",
+			"characterSecondaryColor": "#6abe30ff",
+			"characterSecondaryColorReplace": "#6abe30ff",
 			"slotNum": 0
 		},
 		{
@@ -37,6 +41,10 @@
 			"killFeedTextColor": "#FF1A1A",
 			"projectileStrokeColor": "#FF0000",
 			"characterTintColor": "#ffdddd",
+			"characterPrimaryColor": "#37946eff",
+			"characterPrimaryColorReplace": "#ff946eff",
+			"characterSecondaryColor": "#6abe30ff",
+			"characterSecondaryColorReplace": "#ffbe30ff",
 			"slotNum": 1
 		},
 		{
@@ -48,6 +56,10 @@
 			"killFeedTextColor": "#337DFF",
 			"projectileStrokeColor": "#0000FF",
 			"characterTintColor": "#ddddff",
+			"characterPrimaryColor": "#37946eff",
+			"characterPrimaryColorReplace": "#3794ffff",
+			"characterSecondaryColor": "#6abe30ff",
+			"characterSecondaryColorReplace": "#6abeffff",
 			"slotNum": 2
 		}
 	],
