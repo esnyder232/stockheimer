@@ -1,7 +1,0 @@
-{
-	"spriteKey": "data/sprites/slime-mage-classic.json",
-	"frameTagUp": "move-up",
-	"frameTagDown": "move-down",
-	"frameTagLeft": "move-left",
-	"frameTagRight": "move-right"
-}

@@ -1,7 +1,0 @@
-{
-	"spriteKey": "data/sprites/slime-red.json",
-	"frameTagUp": "cast-up",
-	"frameTagDown": "cast-down",
-	"frameTagLeft": "cast-left",
-	"frameTagRight": "cast-right"
-}

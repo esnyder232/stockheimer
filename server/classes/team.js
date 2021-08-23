@@ -9,7 +9,7 @@ class Team {
 		this.slotNum = 0;
 		this.isSpectatorTeam = false;
 		this.characterStrokeColor = "#ffffff";
-		this.characterFillColor = "#ffffff";
+		this.characterFillColor = "#ffffff";		//glow graphics
 		this.characterTextStrokeColor = "#ffffff";
 		this.characterTextFillColor = "#ffffff";
 		this.killFeedTextColor = "#ffffff";

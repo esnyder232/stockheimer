@@ -189,8 +189,8 @@ export default class Character {
 		this.state = new CharacterClassState(this.gc, this, null, 0);
 		this.state.enter(0);
 
-
-		// this.spriteGraphics.setPipeline(this.teamShaderKey);
+		
+		this.spriteGraphics.setPostPipeline(this.teamShaderKey);
 
 
 		//check if this is your character your controlling. If it is, then switch camera modes

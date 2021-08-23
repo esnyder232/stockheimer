@@ -154,60 +154,55 @@ export default class Team {
 	createTeamShader() {
 		this.teamShaderKey = this.name + "-" + this.serverId;
 
-		//create a team shader pipeline object for phaser
-		var CustomPipeline = new Phaser.Class({
-			Extends: Phaser.Renderer.WebGL.Pipelines.SinglePipeline,
-			initialize:
-		
-			function CustomPipeline (game, gameClient, team)
-			{
-				var testGlsl = $("#team-shader").text();
-				var teamPrimaryColor = team.getRGBA(team.characterPrimaryColor);
-				var teamPrimaryColorReplace = team.getRGBA(team.characterPrimaryColorReplace);
-				var teamSecondaryColor = team.getRGBA(team.characterSecondaryColor);
-				var teamSecondaryColorReplace = team.getRGBA(team.characterSecondaryColorReplace);
+		//Creates a phaser PostFXPipeline class dynamically. Not an instance, just the class definition itself.
+		//This is necessary to have dynamic glsl shader code AND work with phaser's post fx pipeline architecture stuff.
+		//...so fucking stupid...
+		function TeamShaderClassGenerator(gameClient, team) {
+			var testGlsl = $("#team-shader").text();
+			var teamPrimaryColor = team.getRGBA(team.characterPrimaryColor);
+			var teamPrimaryColorReplace = team.getRGBA(team.characterPrimaryColorReplace);
+			var teamSecondaryColor = team.getRGBA(team.characterSecondaryColor);
+			var teamSecondaryColorReplace = team.getRGBA(team.characterSecondaryColorReplace);
 
-				// console.log("+++++++++++++++++REVIEW COLORS: +++++++++++++++++")
-				// console.log(teamPrimaryColor);
-				// console.log(teamPrimaryColorReplace);
-				// console.log(teamSecondaryColor);
-				// console.log(teamSecondaryColorReplace);
-				// console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++");
+			// console.log("+++++++++++++++++REVIEW COLORS: +++++++++++++++++")
+			// console.log(teamPrimaryColor);
+			// console.log(teamPrimaryColorReplace);
+			// console.log(teamSecondaryColor);
+			// console.log(teamSecondaryColorReplace);
+			// console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-				//build out the team shader with custom color replacement
-				var teampPrimaryColorVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamPrimaryColor.r, teamPrimaryColor.g, teamPrimaryColor.b, teamPrimaryColor.a);
-				var teamPrimaryColorReplaceVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamPrimaryColorReplace.r, teamPrimaryColorReplace.g, teamPrimaryColorReplace.b, teamPrimaryColorReplace.a);
-				var teamSecondaryColorVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamSecondaryColor.r, teamSecondaryColor.g, teamSecondaryColor.b, teamSecondaryColor.a);
-				var teamSecondaryColorReplaceVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamSecondaryColorReplace.r, teamSecondaryColorReplace.g, teamSecondaryColorReplace.b, teamSecondaryColorReplace.a);
+			//build out the team shader with custom color replacement
+			var teampPrimaryColorVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamPrimaryColor.r, teamPrimaryColor.g, teamPrimaryColor.b, teamPrimaryColor.a);
+			var teamPrimaryColorReplaceVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamPrimaryColorReplace.r, teamPrimaryColorReplace.g, teamPrimaryColorReplace.b, teamPrimaryColorReplace.a);
+			var teamSecondaryColorVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamSecondaryColor.r, teamSecondaryColor.g, teamSecondaryColor.b, teamSecondaryColor.a);
+			var teamSecondaryColorReplaceVec4 = gameClient.globalfuncs.glslBuildVec4RGBA(teamSecondaryColorReplace.r, teamSecondaryColorReplace.g, teamSecondaryColorReplace.b, teamSecondaryColorReplace.a);
 
-				//finally reaplce the shader stubs with the vec4 colors
-				testGlsl = testGlsl.replace("#primaryColorToReplace#", teampPrimaryColorVec4);
-				testGlsl = testGlsl.replace("#primaryColorNewColor#", teamPrimaryColorReplaceVec4);
-				testGlsl = testGlsl.replace("#secondaryColorToReplace#", teamSecondaryColorVec4);
-				testGlsl = testGlsl.replace("#secondaryColorNewColor#", teamSecondaryColorReplaceVec4);
+			//finally reaplce the shader stubs with the vec4 colors
+			testGlsl = testGlsl.replace("#primaryColorToReplace#", teampPrimaryColorVec4);
+			testGlsl = testGlsl.replace("#primaryColorNewColor#", teamPrimaryColorReplaceVec4);
+			testGlsl = testGlsl.replace("#secondaryColorToReplace#", teamSecondaryColorVec4);
+			testGlsl = testGlsl.replace("#secondaryColorNewColor#", teamSecondaryColorReplaceVec4);
 
-				Phaser.Renderer.WebGL.Pipelines.SinglePipeline.call(this, {
-					game: game,
-					fragShader: testGlsl,
-					uniforms: [
-						'uProjectionMatrix',
-						'uViewMatrix',
-						'uModelMatrix',
-						'uMainSampler',
-						'uResolution',
-						'uTime'
-					]
-				});
+			return class TeamShader extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline {
+				constructor(game) {
+					 super({
+						"game": game,
+						"name": 'TeamShader',
+						"fragShader": testGlsl,
+						uniforms: [
+							'uMainSampler',
+							'uTime',
+							'uSpeed'
+						]
+					});
+				}
 			}
-		});
+		};
 		
-		this.customPipeline = this.gc.resourceLoadingScene.renderer.pipelines.add(this.teamShaderKey, new CustomPipeline(this.gc.phaserGame, this.gc, this));
+		this.customPipeline = this.gc.resourceLoadingScene.renderer.pipelines.addPostPipeline(this.teamShaderKey, TeamShaderClassGenerator(this.gc, this));
 	}
 
 	destroyTeamShader() {
-		this.gc.resourceLoadingScene.renderer.pipelines.remove(this.teamShaderKey, true);
+		this.gc.resourceLoadingScene.renderer.pipelines.remove(this.teamShaderKey, true, true);
 	}
-
 }
-
-

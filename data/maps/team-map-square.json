@@ -26,6 +26,10 @@
 			"killFeedTextColor": "#CCCCCC",
 			"projectileStrokeColor": "#000000",
 			"characterTintColor": "#ffffff",
+			"characterPrimaryColor": "#646464ff",
+			"characterPrimaryColorReplace": "#000000ff",
+			"characterSecondaryColor": "#969696ff",
+			"characterSecondaryColorReplace": "#000000ff",
 			"slotNum": 0
 		},
 		{
@@ -37,6 +41,10 @@
 			"killFeedTextColor": "#FF1A1A",
 			"projectileStrokeColor": "#FF0000",
 			"characterTintColor": "#ffdddd",
+			"characterPrimaryColor": "#646464ff",
+			"characterPrimaryColorReplace": "#da231dff",
+			"characterSecondaryColor": "#969696ff",
+			"characterSecondaryColorReplace": "#efa19fff",
 			"slotNum": 1
 		},
 		{
@@ -46,8 +54,12 @@
 			"characterTextStrokeColor": "#000000",
 			"characterTextFillColor": "#ffffff",
 			"killFeedTextColor": "#337DFF",
-			"projectileStrokeColor": "#0000FF",
+			"projectileStrokeColor": "#000000FF",
 			"characterTintColor": "#ddddff",
+			"characterPrimaryColor": "#646464ff",
+			"characterPrimaryColorReplace": "#5b6ee1ff",
+			"characterSecondaryColor": "#969696ff",
+			"characterSecondaryColorReplace": "#5fede4ff",
 			"slotNum": 2
 		}
 	],

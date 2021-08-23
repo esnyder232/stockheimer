@@ -1,7 +1,0 @@
-{
-	"spriteKey": "data/sprites/slime-red.json",
-	"frameTagUp": "attack-up",
-	"frameTagDown": "attack-down",
-	"frameTagLeft": "attack-left",
-	"frameTagRight": "attack-right"
-}

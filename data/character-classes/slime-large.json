@@ -16,10 +16,10 @@
 	"idleMsPerFrame": 500,
 	"moveMsPerFrame": 250,
 	"animationSets": {
-		"idle": "data/animation-sets/slime-mage-classic-idle-set.json",
-		"move": "data/animation-sets/slime-mage-classic-move-set.json",
-		"attack": "data/animation-sets/slime-mage-classic-attack-set.json",
-		"cast": "data/animation-sets/slime-mage-classic-fire-set.json"
+		"idle": "data/animation-sets/slime-mage-idle-set.json",
+		"move": "data/animation-sets/slime-mage-move-set.json",
+		"attack": "data/animation-sets/slime-mage-attack-set.json",
+		"cast": "data/animation-sets/slime-mage-fire-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
 	"fireStateKey": "data/character-class-states/slime-fire.json",
