@@ -98,6 +98,8 @@ export default class Projectile {
 		//draw the graphics objects on activation
 		this.drawBoxGraphics();
 		this.drawSpriteGraphics();
+
+		this.spriteGraphics.setPipeline(this.projectileShaderKey);
 	}
 
 
@@ -106,6 +108,7 @@ export default class Projectile {
 	
 		if(team !== null) {
 			this.boxGraphicsStrokeColor = team.phaserCharacterStrokeColor;
+			this.projectileShaderKey = team.projectileShaderKey;
 		}
 	}
 

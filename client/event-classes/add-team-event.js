@@ -18,6 +18,15 @@ export default class AddTeamEvent {
 		t.killFeedTextColor = e.killFeedTextColor;
 		t.isSpectatorTeam = e.isSpectatorTeam;
 		t.roundPoints = e.roundPoints;
+		t.projectileColor1 = e.projectileColor1;
+		t.projectileColor1Replace = e.projectileColor1Replace;
+		t.projectileColor2 = e.projectileColor2;
+		t.projectileColor2Replace = e.projectileColor2Replace;
+		t.projectileColor3 = e.projectileColor3;
+		t.projectileColor3Replace = e.projectileColor3Replace;
+		t.projectileColor4 = e.projectileColor4;
+		t.projectileColor4Replace = e.projectileColor4Replace;
+
 
 		t.changeCharacterFillColor(e.characterFillColor);
 		t.changeCharacterStrokeColor(e.characterStrokeColor);
@@ -29,6 +38,7 @@ export default class AddTeamEvent {
 		t.changeCharacterSecondaryColorReplace(e.characterSecondaryColorReplace);
 
 		t.createTeamShader();
+		t.createProjectileShader();
 
 		if(e.isSpectatorTeam) {
 			this.gc.tm.assignSpectatorTeamByServerId(t.serverId);

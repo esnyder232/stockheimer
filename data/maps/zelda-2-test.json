@@ -30,6 +30,14 @@
 			"characterPrimaryColorReplace": "#000000ff",
 			"characterSecondaryColor": "#969696ff",
 			"characterSecondaryColorReplace": "#000000ff",
+			"projectileColor1": "#323232ff",
+			"projectileColor1Replace": "#000000ff",
+			"projectileColor2": "#646464ff",
+			"projectileColor2Replace": "#000000ff",
+			"projectileColor3": "#969696ff",
+			"projectileColor3Replace": "#000000ff",
+			"projectileColor4": "#C8C8C8ff",
+			"projectileColor4Replace": "#000000ff",
 			"slotNum": 0
 		},
 		{
@@ -45,6 +53,14 @@
 			"characterPrimaryColorReplace": "#da231dff",
 			"characterSecondaryColor": "#969696ff",
 			"characterSecondaryColorReplace": "#efa19fff",
+			"projectileColor1": "#323232ff",
+			"projectileColor1Replace": "#ff0000ff",
+			"projectileColor2": "#646464ff",
+			"projectileColor2Replace": "#ff6c3dff",
+			"projectileColor3": "#969696ff",
+			"projectileColor3Replace": "#ff9d3dff",
+			"projectileColor4": "#C8C8C8ff",
+			"projectileColor4Replace": "#ffcd3dff",
 			"slotNum": 1
 		},
 		{
@@ -60,6 +76,14 @@
 			"characterPrimaryColorReplace": "#5b6ee1ff",
 			"characterSecondaryColor": "#969696ff",
 			"characterSecondaryColorReplace": "#5fede4ff",
+			"projectileColor1": "#323232ff",
+			"projectileColor1Replace": "#0000ffff",
+			"projectileColor2": "#646464ff",
+			"projectileColor2Replace": "#3d54ffff",
+			"projectileColor3": "#969696ff",
+			"projectileColor3Replace": "#3dabffff",
+			"projectileColor4": "#C8C8C8ff",
+			"projectileColor4Replace": "#3defffff",
 			"slotNum": 2
 		}
 	],

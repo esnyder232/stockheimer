@@ -176,6 +176,14 @@ class GameServerLoadingMap extends GameServerBaseState {
 				temp.characterPrimaryColorReplace = this.globalfuncs.getValueDefault(teamData[i].characterPrimaryColorReplace, "#ffffff");
 				temp.characterSecondaryColor = this.globalfuncs.getValueDefault(teamData[i].characterSecondaryColor, "#ffffff");
 				temp.characterSecondaryColorReplace = this.globalfuncs.getValueDefault(teamData[i].characterSecondaryColorReplace, "#ffffff");
+				temp.projectileColor1 = this.globalfuncs.getValueDefault(teamData[i].projectileColor1, "#ffffffff");
+				temp.projectileColor1Replace = this.globalfuncs.getValueDefault(teamData[i].projectileColor1Replace, "#ffffffff");
+				temp.projectileColor2 = this.globalfuncs.getValueDefault(teamData[i].projectileColor2, "#ffffffff");
+				temp.projectileColor2Replace = this.globalfuncs.getValueDefault(teamData[i].projectileColor2Replace, "#ffffffff");
+				temp.projectileColor3 = this.globalfuncs.getValueDefault(teamData[i].projectileColor3, "#ffffffff");
+				temp.projectileColor3Replace = this.globalfuncs.getValueDefault(teamData[i].projectileColor3Replace, "#ffffffff");
+				temp.projectileColor4 = this.globalfuncs.getValueDefault(teamData[i].projectileColor4, "#ffffffff");
+				temp.projectileColor4Replace = this.globalfuncs.getValueDefault(teamData[i].projectileColor4Replace, "#ffffffff");
 
 				if(teamData[i].slotNum === spectatorTeamSlotNum) {
 					this.gs.tm.assignSpectatorTeamById(temp.id);

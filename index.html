@@ -494,6 +494,62 @@
 			gl_FragColor = finalColor;
 		}
 	</script>
+
+
+
+	<script id="projectile-shader" type="notjs">
+		precision mediump float;
+		uniform sampler2D uMainSampler;
+		varying vec2 outTexCoord;
+		uniform vec2 uResolution;
+
+		vec4 replaceColor(vec4 originalColor, vec4 colorToReplace, vec4 newColor) {
+			vec4 finalColor = originalColor;
+			
+			//check on the r value this time for efficiency reasons
+			int rCoef = 1 - int(min(1.0, abs(colorToReplace.r*255.0 - originalColor.r*255.0)));
+						
+			finalColor = (originalColor*(float(1-rCoef))) + (newColor*(float(rCoef)));
+			
+			
+			return finalColor;
+		}
+		
+		void main( void ) {	
+			// taem color swap
+			// testing
+			/*
+			const vec4 primaryColorToReplace = vec4(55.0/255.0, 148.0/255.0, 110.0/255.0, 255.0/255.0);
+			const vec4 primaryColorNewColor = vec4(255.0/255.0, 255.0/255.0, 0.0/255.0, 50.0/255.0);
+			
+			const vec4 secondaryColorToReplace = vec4(106.0/255.0, 190.0/255.0, 48.0/255.0, 255.0/255.0);
+			const vec4 secondaryColorNewColor = vec4(0.0/255.0, 0.0/255.0, 255.0/255.0, 50.0/255.0);
+			*/
+			
+			const vec4 color1ToReplace = #color1ToReplace#;
+			const vec4 color1NewColor = #color1NewColor#;
+			
+			const vec4 color2ToReplace = #color2ToReplace#;
+			const vec4 color2NewColor = #color2NewColor#;
+
+			const vec4 color3ToReplace = #color3ToReplace#;
+			const vec4 color3NewColor = #color3NewColor#;
+			
+			const vec4 color4ToReplace = #color4ToReplace#;
+			const vec4 color4NewColor = #color4NewColor#;
+			
+			
+			vec4 finalColor = texture2D(uMainSampler, outTexCoord);
+
+			finalColor = replaceColor(finalColor, color1ToReplace, color1NewColor);
+			finalColor = replaceColor(finalColor, color2ToReplace, color2NewColor);
+			finalColor = replaceColor(finalColor, color3ToReplace, color3NewColor);
+			finalColor = replaceColor(finalColor, color4ToReplace, color4NewColor);
+				
+			gl_FragColor = finalColor;
+		}
+	</script>
+
 	
 	<!--#BUNDLES_START#-->
 	<script src="client-dist/vendors.bundle.js"></script>

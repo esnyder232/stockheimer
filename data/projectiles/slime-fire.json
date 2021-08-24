@@ -6,10 +6,10 @@
 		"plRadius": 1
 	},
 	"phaserData": {
-		"originX": 0.70,
+		"originX": 0.7,
 		"originY": 0.5,
-		"scaleX": 0.42,
-		"scaleY": 0.42
+		"scaleX": 5.4,
+		"scaleY": 5.4
 	},
 	"physicsData": {
 		"speed": 8,

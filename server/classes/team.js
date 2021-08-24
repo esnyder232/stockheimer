@@ -15,10 +15,19 @@ class Team {
 		this.killFeedTextColor = "#ffffff";
 		this.projectileStrokeColor = "#000000"; //pretty sure i'm not using this anymore. But i don't want to break everything lol.
 		this.characterTintColor = "#ffffff"; 	//pretty sure i'm not using this anymore. But i don't want to break everything lol.
-		this.characterPrimaryColor = "#37946eff"
-		this.characterPrimaryColorReplace = "#37946eff"
-		this.characterSecondaryColor = "#6abe30ff"
-		this.characterSecondaryColorReplace = "#6abe30ff"
+		this.characterPrimaryColor = "#37946eff";
+		this.characterPrimaryColorReplace = "#37946eff";
+		this.characterSecondaryColor = "#6abe30ff";
+		this.characterSecondaryColorReplace = "#6abe30ff";
+		this.projectileColor1 = "#ffffffff";
+		this.projectileColor1Replace = "#000000ff";
+		this.projectileColor2 = "#ffffffff";
+		this.projectileColor2Replace = "#000000ff";
+		this.projectileColor3 = "#ffffffff";
+		this.projectileColor3Replace = "#000000ff";
+		this.projectileColor4 = "#ffffffff";
+		this.projectileColor4Replace = "#000000ff";
+
 		this.roundPoints = 0;
 	}
 
@@ -81,6 +90,14 @@ class Team {
 			"characterPrimaryColorReplace": this.characterPrimaryColorReplace,
 			"characterSecondaryColor": this.characterSecondaryColor,
 			"characterSecondaryColorReplace": this.characterSecondaryColorReplace,
+			"projectileColor1": this.projectileColor1,
+			"projectileColor1Replace": this.projectileColor1Replace,
+			"projectileColor2": this.projectileColor2,
+			"projectileColor2Replace": this.projectileColor2Replace,
+			"projectileColor3": this.projectileColor3,
+			"projectileColor3Replace": this.projectileColor3Replace,
+			"projectileColor4": this.projectileColor4,
+			"projectileColor4Replace": this.projectileColor4Replace,
 			"roundPoints": this.roundPoints
 		};
 	}
