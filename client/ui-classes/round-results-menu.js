@@ -169,7 +169,6 @@ export default class RoundResultsMenu {
 
 
 	createTeamStandingItem(team) {
-		console.log("==== Adding ITEM === ");
 		var newItem = this.roundResultsStandingsItemTemplate.clone();
 		newItem.removeClass("hide");
 		newItem.removeAttr("id");

@@ -24,19 +24,22 @@
 		"repeatNum": 0
 	},
 	"collisionData": {
-		"collideSameTeamCharacters": false,
-		"collideOtherTeamCharacters": true,
+		"collideSameTeamCharacters": true,
+		"collideOtherTeamCharacters": false,
 		"collideSelf": false,
-		"collideWalls": false
+		"collideWalls": true
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 0.0,
 		"timeLength": 1000,
-		"pushbackVecMagnitude": 10000,
+		"pushbackVecMagnitude": 0,
 		"destroyOnContact": false
 	},
 	"characterEffectData": [
-		
+		{
+			"type": "heal",
+			"value": 2
+		}
 	]
 }

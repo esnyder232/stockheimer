@@ -224,33 +224,50 @@ export default class Projectile {
 
 		/////////////
 		// RTT COMPENSATE TECHNIQUE
-		if(this.clientSideDraw) {
-			this.x += this.xSpeedPhaser * (dt/1000);
-			this.y += this.ySpeedPhaser * (dt/1000);
+		// if(this.clientSideDraw) {
+		// 	this.x += this.xSpeedPhaser * (dt/1000);
+		// 	this.y += this.ySpeedPhaser * (dt/1000);
 
-			this.boxGraphics.setX(this.x);
-			this.boxGraphics.setY(this.y);
+		// 	this.boxGraphics.setX(this.x);
+		// 	this.boxGraphics.setY(this.y);
 			
-			if(this.spriteGraphics !== null) {
-				this.spriteGraphics.setX(this.x);
-				this.spriteGraphics.setY(this.y);
-			}
+		// 	if(this.spriteGraphics !== null) {
+		// 		this.spriteGraphics.setX(this.x);
+		// 		this.spriteGraphics.setY(this.y);
+		// 	}
 
-			//check if the projectile SHOULD have been destroyed based on timelength
-			this.timeLengthAcc += dt;
-			// console.log(this.timeLength + " === " + this.timeLengthAcc);
-			if(this.timeLengthAcc >= this.timeLength) {
-				// console.log("DESTROYING IT NOW");
-				this.clientSideDraw = false;
-				if(this.boxGraphics !== null) {
-					this.boxGraphics.destroy();
-					this.boxGraphics = null;
-				}
-				if(this.spriteGraphics !== null) {
-					this.spriteGraphics.destroy();
-					this.spriteGraphics = null;
-				}
-			}
-		}
+		// 	//check if the projectile SHOULD have been destroyed based on timelength
+		// 	this.timeLengthAcc += dt;
+		// 	// console.log(this.timeLength + " === " + this.timeLengthAcc);
+		// 	if(this.timeLengthAcc >= this.timeLength) {
+		// 		// console.log("DESTROYING IT NOW");
+		// 		this.clientSideDraw = false;
+		// 		if(this.boxGraphics !== null) {
+		// 			this.boxGraphics.destroy();
+		// 			this.boxGraphics = null;
+		// 		}
+		// 		if(this.spriteGraphics !== null) {
+		// 			this.spriteGraphics.destroy();
+		// 			this.spriteGraphics = null;
+		// 		}
+		// 	}
+		// }
+
+
+		this.x += this.xSpeedPhaser * (dt/1000);
+		this.y += this.ySpeedPhaser * (dt/1000);
+
+		// this.boxGraphics.setX(this.x);
+		// this.boxGraphics.setY(this.y);
+
+		this.spriteGraphics.setX(this.x);
+		this.spriteGraphics.setY(this.y);
+
+
+
+
+
+
+
 	}
 }
