@@ -1,5 +1,4 @@
 const PlayingBaseState = require('./playing-base-state.js');
-const PlayingRespawningState = require('./playing-respawning-state.js');
 const logger = require('../../../logger.js');
 const GameConstants = require('../../../shared_files/game-constants.json');
 
@@ -75,10 +74,10 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 						case "round-restarting":
 							//kill the current character, and put user in respawning state
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
-							this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
+							this.user.determineRespawnState();
 							break;
 						case "character-deactivated":
-							this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
+							this.user.determineRespawnState();
 							break;
 						case "team-changed":
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
@@ -87,7 +86,7 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 						case "class-changed":
 							//kill the current character, and put user in respawning state
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
-							this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
+							this.user.determineRespawnState();
 							break;
 					}
 				}
@@ -96,9 +95,8 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 			}
 			
 		}
-		else
-		{
-			this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
+		else {
+			this.user.determineRespawnState();
 		}
 	}
 

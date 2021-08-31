@@ -77,7 +77,6 @@ export default class LobbyScene extends Phaser.Scene {
 
 	preload() {
 		console.log('preload on ' + this.scene.key + ' start');
-
 	}
 	  
 	create() {

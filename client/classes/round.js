@@ -18,6 +18,7 @@ export default class Round {
 		this.nextState= null;
 		this.roundTime = 0;
 		this.roundTimeAcc = 0;
+		this.roundNum = 1;
 
 		this.serverEventMapping = {
 			"addRound": this.changeState.bind(this),
@@ -84,6 +85,8 @@ export default class Round {
 		var initState = this.gc.gameConstantsInverse["RoundStates"][e.roundState];
 		this.roundTime = e.roundTime;
 		this.roundTimeAcc = e.roundTimeAcc;
+		this.roundNum = e.roundNum;
+
 		switch(initState)
 		{
 			case "MAPSTART":

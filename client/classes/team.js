@@ -13,6 +13,8 @@ export default class Team {
 		this.globalfuncs = null;
 		this.isSpectatorTeam = false;
 		this.roundPoints = 0;
+		this.roundWins = 0;
+		this.usersAlive = 0;
 
 		this.characterStrokeColor = "#ffffff";
 		this.characterFillColor = "#ffffff";
@@ -77,9 +79,19 @@ export default class Team {
 	}
 
 	updateTeamEvent(e) {
+		var roundWinChanged = false;
+		if(this.roundWins !== e.roundWins) {
+			roundWinChanged = true;
+		}
 		this.roundPoints = e.roundPoints;
+		this.roundWins = e.roundWins;
+		this.usersAlive = e.usersAlive;
 		
 		window.dispatchEvent(new CustomEvent("team-points-updated", {detail: {serverId: this.serverId}}));
+
+		if(roundWinChanged) {
+			window.dispatchEvent(new CustomEvent("team-wins-updated", {detail: {serverId: this.serverId}}));
+		}
 	}
 
 	//Wow look at that...your SOOO good at programming. And all by yourself? Good job!!!

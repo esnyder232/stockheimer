@@ -1,4 +1,5 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const logger = require("../../logger.js")
 
 class Team {
 	constructor() {
@@ -28,7 +29,13 @@ class Team {
 		this.projectileColor4 = "#ffffffff";
 		this.projectileColor4Replace = "#000000ff";
 
+		this.teamDirty = true;
+		this.usersAliveDirty = true;
 		this.roundPoints = 0;
+		this.roundWins = 0;
+		this.usersAlive = 0;
+
+		this.eventCallbackMapping = [];
 	}
 
 	teamInit(gameServer) {
@@ -36,21 +43,80 @@ class Team {
 
 		this.globalfuncs = new GlobalFuncs();
 		this.roundPoints = 0;
-		this.teamDirtyEvent = false;
+		this.teamDirty = false;
+
+		this.eventCallbackMapping = [ 
+			{eventName: "character-activated", cb: this.cbCharacterActivated.bind(this), handleId: null},
+			{eventName: "character-deactivated", cb: this.cbCharacterDeactivated.bind(this), handleId: null}
+		];
+
+		this.gs.em.batchRegisterForEvent(this.eventCallbackMapping);
+	}
+
+	deinit() {
+		this.gs.em.batchUnregisterForEvent(this.eventCallbackMapping);
+		this.globalfuncs = null;
+		this.gs = null;
 	}
 
 	modRoundPoints(modRoundPoints) {
-		this.roundPoints += modRoundPoints;
-		this.teamDirtyEvent = true;
+		if(!this.isSpectatorTeam) {
+			this.roundPoints += modRoundPoints;
+			this.teamDirty = true;
+		}
 	}
 
 	setRoundPoints(newRoundPoints) {
-		this.roundPoints = newRoundPoints;
-		this.teamDirtyEvent = true;
+		if(!this.isSpectatorTeam) {
+			this.roundPoints = newRoundPoints;
+			this.teamDirty = true;
+		}
+	}
+
+	setRoundWins(newRoundWins) {
+		if(!this.isSpectatorTeam) {
+			this.roundWins = newRoundWins;
+			this.teamDirty = true;
+		}
+	}
+
+	modRoundWins(modRoundWins) {
+		if(!this.isSpectatorTeam) {
+			this.roundWins += modRoundWins;
+			this.teamDirty = true;
+		}
+	}
+
+	updateUsersAlive() {
+		if(!this.isSpectatorTeam) {
+			this.usersAliveDirty = true;
+		}
+	}
+
+	cbCharacterActivated(eventName, owner, eventData) {
+		if(!this.isSpectatorTeam && eventData.teamId === this.id) {
+			this.updateUsersAlive();
+		}
+	}
+
+	cbCharacterDeactivated(eventName, owner, eventData) {
+		if(!this.isSpectatorTeam && eventData.teamId === this.id) {
+			this.updateUsersAlive();
+		}
 	}
 
 	update(dt) {
-		if(this.teamDirtyEvent) {
+
+		if(this.usersAliveDirty) {
+			this.usersAliveDirty = false;
+			var userSummary = this.gs.um.getUserAliveSummary();
+			if(userSummary.teamIndex[this.id] !== undefined) {
+				this.usersAlive = userSummary.teamIndex[this.id].usersAlive;
+				this.teamDirty = true;
+			}
+		}
+
+		if(this.teamDirty) {
 
 			//send the round points update to all user agents
 			var teamUpdateEvent = this.serializeUpdateTeam();
@@ -60,7 +126,7 @@ class Team {
 				userAgents[i].insertTrackedEntityEvent("team", this.id, teamUpdateEvent);
 			}
 
-			this.teamDirtyEvent = false;
+			this.teamDirty = false;
 		}
 	}
 
@@ -68,7 +134,9 @@ class Team {
 		return {
 			"eventName": "updateTeam",
 			"id": this.id,
-			"roundPoints": this.roundPoints
+			"roundPoints": this.roundPoints,
+			"roundWins": this.roundWins,
+			"usersAlive": this.usersAlive
 		};
 	}
 	
@@ -98,7 +166,9 @@ class Team {
 			"projectileColor3Replace": this.projectileColor3Replace,
 			"projectileColor4": this.projectileColor4,
 			"projectileColor4Replace": this.projectileColor4Replace,
-			"roundPoints": this.roundPoints
+			"roundPoints": this.roundPoints,
+			"roundWins": this.roundWins,
+			"usersAlive": this.usersAlive
 		};
 	}
 

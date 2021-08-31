@@ -10,6 +10,7 @@ export default class UpdateTeamEvent {
 	processEvent(e)
 	{
 		var t = this.gc.tm.getTeamByServerID(e.id);
+
 		if(t !== null) {
 			t.seq.insertEvent(e);
 		}

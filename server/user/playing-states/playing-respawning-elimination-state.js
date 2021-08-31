@@ -4,7 +4,7 @@ const logger = require('../../../logger.js');
 const GameConstants = require('../../../shared_files/game-constants.json');
 
 
-class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
+class PlayingRespawningEliminationState extends PlayingBaseState.PlayingBaseState {
 	constructor(user) {
 		super(user);
 		this.stateName = "RESPAWNING";
@@ -17,54 +17,29 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 
 		//get the resource respawn time if it exists
 		this.respawnTimer = this.user.globalfuncs.getValueDefault(this.user.gs?.currentMapResource?.data?.gameData?.userRespawningTimeLength, this.respawnTimer);
-		
-		if(this.user.gs.currentGameType === "deathmatch") {
-			//respawn time depends on round state
-			switch(this.user.gs.theRound.getStateEnum())
-			{
-				case GameConstants.RoundStates["MAPSTART"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["STARTING"]:
-					this.user.respawnTimer = 100;
-					break;
-				case GameConstants.RoundStates["PLAYING"]:
-					this.user.respawnTimer = this.respawnTimer;
-					break;
-				case GameConstants.RoundStates["OVER"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["MAPEND"]:
-					this.user.respawnTimer = 999999;
-					break;
-				default: 
-					this.user.respawnTimer = 999999;
-					break;
-			} 
-		}
-		else if (this.user.gs.currentGameType === "elimination") {
-			switch(this.user.gs.theRound.getStateEnum())
-			{
-				case GameConstants.RoundStates["MAPSTART"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["STARTING"]:
-					this.user.respawnTimer = 100;
-					break;
-				case GameConstants.RoundStates["PLAYING"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["OVER"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["MAPEND"]:
-					this.user.respawnTimer = 999999;
-					break;
-				default: 
-					this.user.respawnTimer = 999999;
-					break;
-			} 
-		}
+
+		switch(this.user.gs.theRound.getStateEnum())
+		{
+			case GameConstants.RoundStates["MAPSTART"]:
+				this.user.respawnTimer = 999999;
+				break;
+			case GameConstants.RoundStates["STARTING"]:
+				this.user.respawnTimer = 100;
+				break;
+			case GameConstants.RoundStates["PLAYING"]:
+				this.user.respawnTimer = 999999;
+				break;
+			case GameConstants.RoundStates["OVER"]:
+				this.user.respawnTimer = 999999;
+				break;
+			case GameConstants.RoundStates["MAPEND"]:
+				this.user.respawnTimer = 999999;
+				break;
+			default: 
+				this.user.respawnTimer = 999999;
+				break;
+		} 
+
 
 		this.user.respawnTimeAcc = 0;
 	}
@@ -112,4 +87,4 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 	}
 }
 
-exports.PlayingRespawningState = PlayingRespawningState;
+exports.PlayingRespawningEliminationState = PlayingRespawningEliminationState;

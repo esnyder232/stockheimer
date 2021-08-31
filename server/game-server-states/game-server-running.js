@@ -24,6 +24,8 @@ class GameServerRunning extends GameServerBaseState {
 		startSummaryArray.push("\n");
 		startSummaryArray.push("===== Game has started =====");
 		startSummaryArray.push("Map Name: " + this.gs.currentMapResource.data?.name);
+		startSummaryArray.push("Game Type: " + this.gs.currentGameType);
+		startSummaryArray.push("Match Win Condition: " + this.gs.matchWinCondition);
 		startSummaryArray.push("Map Resource: " + this.gs.currentMapResource.key);
 		startSummaryArray.push("");
 
@@ -123,6 +125,7 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.tm.update(dt);
 		this.gs.pm.update(dt);
 		this.gs.uam.update(dt);
+		this.gs.em.update(dt);
 
 		this.gs.frameNum++;
 

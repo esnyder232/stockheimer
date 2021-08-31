@@ -61,13 +61,13 @@ class EventEmitter {
 		}
 	}
 
-	emitEvent(eventName) {
+	emitEvent(eventName, eventData) {
 		if(this.eventCallbacks[eventName] === undefined) {
 			return;
 		}
 
 		for(var i = 0; i < this.eventCallbacks[eventName].length; i++) {
-			this.eventCallbacks[eventName][i].cb(eventName, this.owner);
+			this.eventCallbacks[eventName][i].cb(eventName, this.owner, eventData);
 		}
 	}
 

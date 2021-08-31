@@ -1,8 +1,9 @@
 const GlobalFuncs = require('../global-funcs.js');
 const {UserDisconnectedState} = require("./user-disconnected-state.js");
-const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
 const PlayingClassPickingState = require('./playing-states/playing-class-picking-state.js');
 const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
+const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
+const PlayingRespawningEliminationState = require('./playing-states/playing-respawning-elimination-state.js');
 const {EventEmitter} = require('../classes/event-emitter.js');
 const logger = require('../../logger.js');
 
@@ -28,8 +29,10 @@ class User {
 	
 		this.userKillCount = 0;		//total kills
 		this.userDeathCount = 0;	//total deaths
+		this.userHealCount = 0;		//total heals
 		this.roundUserKillCount = 0;//kills in current round
 		this.roundUserDeathCount = 0;	//deaths in current round
+		this.roundHealCount = 0; //hp heals in current round
 
 		this.teamId = null;
 		this.characterClassResourceId = null;
@@ -115,6 +118,24 @@ class User {
 		}
 	}
 
+	determineRespawnState() {
+		var spectatorTeam = this.gs.tm.getSpectatorTeam();
+
+		//just to make sure they are apart of a team and has picked a class already
+		if(spectatorTeam && this.teamId !== null && this.teamId !== spectatorTeam.id && this.characterClassResourceId !== null) {
+			if(this.gs.currentGameType === "deathmatch") {
+				this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this);
+			} else if (this.gs.currentGameType === "elimination") {
+				this.nextPlayingState = new PlayingRespawningEliminationState.PlayingRespawningEliminationState(this);
+			}
+			
+		}
+		//its always safe to default to spectator lol
+		else {
+			this.nextPlayingState = new PlayingSpectatorState.PlayingSpectatorState(this);
+		}
+	}
+
 	userDeinit() {
 		//fucking whatever
 		this.gs.rebalanceTeams = true;
@@ -158,9 +179,17 @@ class User {
 		this.userInfoDirty = true;
 	}
 
+	updateHealCount(amt) {
+		this.roundHealCount += amt;
+		this.userHealCount += amt;
+		this.ustStatsDirty = true;
+	}
+
+
 	resetRoundCounts() {
 		this.roundUserKillCount = 0;
 		this.roundUserDeathCount = 0;
+		this.roundHealCount = 0;
 		this.userInfoDirty = true;
 	}
 

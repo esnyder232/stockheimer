@@ -34,7 +34,7 @@
          "name":"playerSpawns",
          "objects":[
                 {
-                 "height":79,
+                 "height":16,
                  "id":1,
                  "name":"Slotnum 1",
                  "properties":[
@@ -46,12 +46,12 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":78,
+                 "width":16,
                  "x":64,
-                 "y":463
+                 "y":496
                 }, 
                 {
-                 "height":76,
+                 "height":16,
                  "id":2,
                  "name":"slotnum2",
                  "properties":[
@@ -63,9 +63,9 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":78,
-                 "x":864,
-                 "y":465
+                 "width":16,
+                 "x":128,
+                 "y":496
                 }],
          "opacity":1,
          "properties":[
@@ -80,7 +80,7 @@
          "y":0
         }],
  "nextlayerid":4,
- "nextobjectid":5,
+ "nextobjectid":6,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.1",

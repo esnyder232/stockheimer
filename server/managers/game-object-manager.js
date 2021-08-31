@@ -297,7 +297,17 @@ class GameObjectManager {
 		}
 	}
 
-	
+	getActiveGameObjectID(id) {
+		if(this.activeIdIndex[id])
+		{
+			return this.activeIdIndex[id];
+		}
+		else
+		{
+			return null;
+		}
+	}
+
 	getActiveGameObjects() {
 		return this.activeGameObjectArray;
 	}

@@ -453,6 +453,54 @@ class UserManager {
 		return summary;
 	}
 
+	getUserAliveSummary() {
+		var activeUsers = this.gs.um.getActiveUsers();
+		var teams = this.gs.tm.getTeams();
+		var userAliveSumamry = {
+			teamArray: [],
+			teamIndex: {}
+		};
+
+		var spectatorTeam = this.gs.tm.getSpectatorTeam();
+		
+		//initlize team summary 
+		for(var i = 0; i < teams.length; i++) {
+			if(teams[i].id !== spectatorTeam.id) {
+				var teamObj = {
+					teamId: teams[i].id,
+					usersAlive: 0,
+					hpCurSum: 0,
+					hpMaxSum: 0,
+					hpAverage: 0
+				};
+				userAliveSumamry.teamArray.push(teamObj);
+				userAliveSumamry.teamIndex[teams[i].id] = teamObj;
+			}
+		}
+
+		//count all users that are alive (essentially active characters)
+		for(var i = 0; i < activeUsers.length; i++) {
+			if(activeUsers[i].teamId !== null && activeUsers[i].teamId !== spectatorTeam.id) {
+				var c = this.gs.gom.getActiveGameObjectID(activeUsers[i].characterId);
+
+				if(c !== null) {
+					userAliveSumamry.teamIndex[c.teamId].usersAlive += 1;
+					userAliveSumamry.teamIndex[c.teamId].hpCurSum += c.hpCur;
+					userAliveSumamry.teamIndex[c.teamId].hpMaxSum += c.hpMax;
+				}
+			}
+		}
+
+		//calculate average of hp
+		for(var i = 0; i < userAliveSumamry.teamArray.length; i++) {
+			if(userAliveSumamry.teamArray[i].hpMaxSum > 0) {
+				userAliveSumamry.teamArray[i].hpAverage = userAliveSumamry.teamArray[i].hpCurSum / userAliveSumamry.teamArray[i].hpMaxSum;
+			}
+		}
+
+		return userAliveSumamry;
+	}
+
 }
 
 exports.UserManager = UserManager;

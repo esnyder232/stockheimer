@@ -16,6 +16,17 @@ export default class UserListMenu {
 		this.userListTeamContainer = null;
 		this.userListItemTemplate = null;
 		this.userListTeamContentsTemplate = null;
+		this.userListGameType = null;
+		this.userListGameRules = null;
+
+	// 	<div class="user-list-game-summary">
+	// 	<div class="user-list-game-type" id="user-list-game-type">
+	// 		Elimination
+	// 	</div>
+	// 	<div class="user-list-game-rules" id="user-list-game-rules">
+	// 		First to 5 round wins.
+	// 	</div>
+	// </div>
 
 		this.contentsWidth = 400; //pixels
 
@@ -43,7 +54,7 @@ export default class UserListMenu {
 			{event: 'user-info-updated', func: this.userInfoUpdated.bind(this)},
 			{event: 'team-points-updated', func: this.teamPointsUpdated.bind(this)},
 			{event: 'user-rtt-updated', func: this.userRttUpdated.bind(this)},
-			
+			{event: 'round-map-end', func: this.openMenu.bind(this)}
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -56,7 +67,23 @@ export default class UserListMenu {
 		this.userListItemTemplate = $("#ul-item-template");
 		this.userListSpectatorList = $("#user-list-spectator-list");
 		this.userListSpectatorItemTemplate = $("#user-lists-spectator-item-template");
-		
+		this.userListGameType = $("#user-list-game-type");
+		this.userListGameRules = $("#user-list-game-rules");
+
+		//gametype and rules
+		var gameType = "";
+		var gameRules = "";
+		if(this.gc.currentGameType === "deathmatch") {
+			gameType = "Deathmatch";
+			gameRules = "First to " + this.gc.matchWinCondition + " wins";
+		} else if (this.gc.currentGameType === "elimination") {
+			gameType = "Elimination";
+			gameRules = "First to " + this.gc.matchWinCondition + " wins";
+		}
+
+		this.userListGameType.text(gameType);
+		this.userListGameRules.text(gameRules);
+
 		//get the width of the template content, and recalculate the width on the teams container
 		this.contentsWidth = this.userListTeamContentsTemplate.outerWidth(true);
 		var numTeams = 0;
@@ -111,6 +138,7 @@ export default class UserListMenu {
 			teamContents: newTeam,
 			divTitle: newTeam.find("div[name='team-title']"),
 			divNumPlayers: newTeam.find("div[name='team-num-players']"),
+			divRoundWins: newTeam.find("div[name='team-round-wins']"),
 			divRoundPoints: newTeam.find("div[name='team-round-points']"),
 			tbody: newTeam.find("tbody[name='ul-tbody']"),
 			numPlayers: 0,
@@ -119,6 +147,7 @@ export default class UserListMenu {
 
 		obj.divTitle.text(team.name);
 		obj.divRoundPoints.text(team.roundPoints);
+		obj.divRoundWins.text(team.roundWins);
 		obj.divNumPlayers.text(team.numPlayers);
 
 		this.teamIdUserItemMap[obj.teamId] = obj;
@@ -130,6 +159,7 @@ export default class UserListMenu {
 		teamObj.divTitle.remove();
 		teamObj.divNumPlayers.remove();
 		teamObj.divRoundPoints.remove();
+		teamObj.divRoundWins.remove();
 		teamObj.tbody.remove();
 		teamObj.teamContents.remove();
 
@@ -137,6 +167,7 @@ export default class UserListMenu {
 		teamObj.divTitle = null;
 		teamObj.divNumPlayers = null;
 		teamObj.divRoundPoints = null;
+		teamObj.divRoundWins = null;
 		teamObj.tbody = null;
 		teamObj.teamContents = null;
 		teamObj.userListItemOrdered = [];
@@ -415,6 +446,9 @@ export default class UserListMenu {
 				if(teamObj !== undefined) {
 					//update points
 					teamObj.divRoundPoints.text(t.roundPoints);
+
+					//update wins
+					teamObj.divRoundWins.text(t.roundWins);
 				}
 			}
 		}

@@ -14,6 +14,8 @@ class Projectile {
 		this.plBody = null;
 		this.plShape = "circle";
 		this.plRadius = 1;
+		this.plWidth = 1;
+		this.plHeight = 1;
 
 		this.speed = 1.0;
 		this.mass = 100;
@@ -57,6 +59,8 @@ class Projectile {
 		//get data from resource
 		this.plShape = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plShape);
 		this.plRadius = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plRadius);
+		this.plWidth = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plWidth);
+		this.plHeight = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plHeight);
 		this.speed = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.speed);
 		this.mass = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.mass);
 		this.spawnLocationType = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnLocationType);
@@ -87,8 +91,17 @@ class Projectile {
 			xOffset = this.spawnOffsetLength * Math.cos(this.angle);
 		}
 
-		// var boxShape = pl.Box(this.size, this.size, Vec2(0, 0));
-		var theShape = this.gs.globalfuncs.createPlanckShape(this.gs, this.plShape, {plRadius: this.plRadius*this.size});
+
+
+		var theShape = null;
+
+		if(this.plShape === "circle") {
+			theShape = this.gs.pl.Circle(this.gs.pl.Vec2(0, 0), this.plRadius*this.size);
+		} else if(this.plShape === "rect") {
+			theShape = this.gs.pl.Box((this.plWidth * this.size)/2, (this.plHeight * this.size)/2, this.gs.pl.Vec2(0, 0), this.angle*-1);
+		} else {
+			theShape = this.gs.pl.Circle(this.gs.pl.Vec2(0, 0), 1);
+		}
 
 		this.plBody = this.gs.world.createBody({
 			position: this.gs.pl.Vec2(this.xStarting + xOffset, this.yStarting + yOffset),
@@ -237,7 +250,11 @@ class Projectile {
 			"gameObjectId": this.id,
 			"x": bodyPos.x,
 			"y": bodyPos.y,
-			"r": this.plRadius*this.size
+			"r": this.plRadius*this.size,
+			"w": this.plWidth*this.size,
+			"h": this.plHeight*this.size,
+			"a": this.angle,
+			"t": this.plShape === "rect" ? 2 : 1
 		};
 		
 		return eventData;

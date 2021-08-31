@@ -60,6 +60,8 @@ export default class GameClientUserLeavingGame extends GameClientBaseState {
 		this.gc.theRound = null;
 		this.gc.activeTilemap = null;
 		this.gc.resourcesResults.length = 0;
+		this.gc.currentMapResource = null;
+		this.gc.currentGameType = "";
 		
 
 		//this is just to give a few update loops so the managers can clear themselves out

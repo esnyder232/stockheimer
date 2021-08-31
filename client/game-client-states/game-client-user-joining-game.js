@@ -120,14 +120,23 @@ export default class GameClientUserJoiningGame extends GameClientBaseState {
 
 	cbResourceLoadComplete(resource) {
 		if(resource.resourceType === "tilemap") {
-			console.log("cbResourceLoadComplete");
-			console.log(resource);
 			if(resource.status === "failed") {
 				this.globalfuncs.appendToLog("An Error has occured when loading tilemap data. Disconnecting.");
 				this.gc.bDisconnect = true;
 			}
 			else {
 				this.gc.activeTilemap = resource;
+			}
+		} else if (resource.resourceType === "map") {
+			if(resource.status === "failed") {
+				this.globalfuncs.appendToLog("An Error has occured when loading map data. Disconnecting.");
+				this.gc.bDisconnect = true;
+			}
+			else {
+				this.gc.currentMapResource = resource;
+				this.gc.currentGameType = this.globalfuncs.getValueDefault(resource?.data?.gameData?.type, "deathmatch");
+				this.gc.matchWinCondition = this.globalfuncs.getValueDefault(resource?.data?.gameData?.matchWinCondition, 1);
+				
 			}
 		}
 	}

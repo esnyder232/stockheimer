@@ -139,6 +139,15 @@
 							</div>
 						</div>
 						<div class="small-menu-contents user-list-menu-contents">
+							<div class="user-list-game-summary">
+								<div class="user-list-game-type" id="user-list-game-type">
+									Elimination
+								</div>
+								<div class="user-list-game-rules" id="user-list-game-rules">
+									First to 5 round wins.
+								</div>
+							</div>
+
 							<div class="user-list-team-container" id="user-list-team-container">
 
 							</div>
@@ -157,7 +166,15 @@
 								</div>
 								<div class="team-pair"> 
 									<div class="team-pair-label">
-										Round Points
+										Wins
+									</div>
+									<div class="team-pair-value" name="team-round-wins">
+										0
+									</div>
+								</div>
+								<div class="team-pair"> 
+									<div class="team-pair-label">
+										Points
 									</div>
 									<div class="team-pair-value" name="team-round-points">
 										0
@@ -257,7 +274,7 @@
 
 				<div class="ui-list-container team-score-menu-container" id="team-score-menu">
 					<div class="ui-list-contents team-score-contents">
-						<div class="team-score-title">
+						<div class="team-score-title" id="team-score-title">
 							Team Scores:
 						</div>
 						<div class="team-score-list" id="team-score-list">
@@ -342,6 +359,30 @@
 				</div>
 			</div>
 
+			<div class="hide round-start-wrapper" id="round-start-menu">
+				<div class="round-start-container">
+					<div class="round-start-gametype" id="round-start-gametype">
+						Deathmatch
+					</div>
+					<div class="round-start-rules" id="round-start-rules">
+						First to 5 wins
+					</div>
+					<div class="round-start-round-num" id="round-start-round-num">
+						Round 1
+					</div>
+				</div>
+			</div>
+
+			<div class="hide match-win-text-wrapper" id="match-win-text">
+				<div class="match-win-text-container">
+					<div class="match-win-text-title" id="match-win-text-title">
+						Blue Team Wins the match!
+					</div>
+					<div class="match-win-text-rules" id="match-win-text-rules">
+						Deathmatch: first to 5 wins
+					</div>
+				</div>
+			</div>
 
 
 			<div class="hide round-results-menu-wrapper" id="round-results-menu">
@@ -356,17 +397,36 @@
 					</div>
 					<div class="round-results-winner" id="round-results-winner">
 					</div>
+					<div class="round-results-mvp-title">
+						<span>Team Standings:</span>
+					</div>
+					<div class="round-results-game-rules" id="round-results-game-rules">
+						(Elimination: First to 5 rounds)
+					</div>
+					<div class="round-results-standings" id="round-results-standings">
+						
+					</div>
+					<div class="hide round-results-standings-item" id="round-results-standings-item-template">
+						<div class="round-results-standings-team" name="round-results-standings-team">
+							Team name here
+						</div>
+						<div class="round-results-standings-wins" name="round-results-standings-wins">
+							123
+						</div>
+					</div>
+
 					<div class="round-results-mvp-container">
 						<div class="round-results-mvp-title">
-							<span>Best Players:</span>
+							<span>Round Best Players:</span>
 						</div>
 						<table class="mvp-table">
 							<thead>
 								<tr class="mvp-th">
 									<th class="mvp-team-header">Team</th>
 									<th class="mvp-name-header">Name</th>
-									<th class="mvp-points-header">Points</th>
+									<th class="mvp-points-header">Kills</th>
 									<th class="mvp-deaths-header">Deaths</th>
+									<th class="mvp-heals-header">Heals</th>
 								</tr>
 							</thead>
 							<tbody id="mvp-best-tbody">
@@ -377,6 +437,7 @@
 									<td class="mvp-name-value" name="mvp-name-value"></td>
 									<td class="mvp-points-value" name="mvp-points-value"></td>
 									<td class="mvp-deaths-value" name="mvp-deaths-value"></td>
+									<td class="mvp-heals-value" name="mvp-heals-value"></td>
 								</tr>
 							</tfoot>
 						</table>
@@ -384,7 +445,7 @@
 
 					<div class="round-results-mvp-container">
 						<div class="round-results-mvp-title">
-							<span>Worst Players:</span>
+							<span>Round Worst Players:</span>
 						</div>
 						<table class="mvp-table">
 							<thead>
@@ -393,6 +454,7 @@
 									<th class="mvp-name-header">Name</th>
 									<th class="mvp-points-header">Points</th>
 									<th class="mvp-deaths-header">Deaths</th>
+									<th class="mvp-heals-header">Heals</th>
 								</tr>
 							</thead>
 							<tbody id="mvp-worst-tbody">
@@ -509,8 +571,19 @@
 			//check on the r value this time for efficiency reasons
 			int rCoef = 1 - int(min(1.0, abs(colorToReplace.r*255.0 - originalColor.r*255.0)));
 						
-			finalColor = (originalColor*(float(1-rCoef))) + (newColor*(float(rCoef)));
+			//finalColor = (originalColor*(float(1-rCoef))) + (newColor*(float(rCoef)));
 			
+			float finalR = originalColor.r*float(1-rCoef) + newColor.r*(float(rCoef));
+			float finalG = originalColor.g*float(1-rCoef) + newColor.g*(float(rCoef));
+			float finalB = originalColor.b*float(1-rCoef) + newColor.b*(float(rCoef));
+			float finalA = originalColor.a*float(1-rCoef) + newColor.a*(float(rCoef));
+
+			//float finalR = 255.0/255.0;
+			//float finalG = 0.0/255.0;
+			//float finalB = 0.0/255.0;
+			//float finalA = 1.0/255.0;
+			
+			finalColor = vec4(finalR, finalG, finalB, finalA);
 			
 			return finalColor;
 		}

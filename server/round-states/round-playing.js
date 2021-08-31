@@ -14,7 +14,7 @@ class RoundPlaying extends RoundBaseState.RoundBaseState {
 		logger.log("info", 'Round playing.');
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
-		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.roundPlayingTimeLength, this.roundTimerDefault);
+		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.gameData?.roundPlayingTimeLength, this.roundTimerDefault);
 		
 		//tell users that the rouns has started
 		this.round.em.emitEvent("round-started");

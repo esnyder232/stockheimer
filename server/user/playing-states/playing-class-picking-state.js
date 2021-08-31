@@ -1,5 +1,4 @@
 const PlayingBaseState = require('./playing-base-state.js');
-const PlayingRespawningState = require('./playing-respawning-state.js');
 const logger = require('../../../logger.js');
 const ServerConfig = require('../../server-config.json');
 
@@ -28,7 +27,7 @@ class PlayingClassPickingState extends PlayingBaseState.PlayingBaseState {
 	update(dt) {
 		//wait until the player picks a class
 		if(this.user.characterClassResourceId !== null) {
-			this.user.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this.user);
+			this.user.determineRespawnState();
 		}
 
 

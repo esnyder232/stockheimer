@@ -9,6 +9,7 @@ class Round {
 		this.id = 123; //hardcoded for now
 		this.roundTimer = 0;
 		this.roundTimeAcc = 0;
+		this.roundNum = 1;
 
 		this.stateName = "";
 		this.stateEnum = 0;
@@ -74,7 +75,8 @@ class Round {
 			"id": this.id,
 			"roundState": this.stateEnum,
 			"roundTime": this.roundTimer,
-			"roundTimeAcc": this.roundTimeAcc
+			"roundTimeAcc": this.roundTimeAcc,
+			"roundNum": this.roundNum
 		};
 	}
 	
@@ -84,7 +86,8 @@ class Round {
 			"id": this.id,
 			"roundState": this.stateEnum,
 			"roundTime": this.roundTimer,
-			"roundTimeAcc": this.roundTimeAcc
+			"roundTimeAcc": this.roundTimeAcc,
+			"roundNum": this.roundNum
 		};
 	}
 }

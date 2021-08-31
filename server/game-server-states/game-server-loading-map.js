@@ -87,6 +87,26 @@ class GameServerLoadingMap extends GameServerBaseState {
 
 	exit(dt) {
 		super.exit(dt);
+		
+		//last things to do here before you load the game
+		//calculate the healsToPointsRatio (this is used convert healing points into actual points in round results)
+		//for now, just use the smallest hp class
+		var characterClasses = this.gs.rm.getResourceByType("character-class");
+		var smallestHpClass = null;
+		var smallestHp = 0;
+
+		smallestHpClass = characterClasses.reduce((acc, cur) => {
+			var hpCur = this.globalfuncs.getValueDefault(cur.data?.hp, 1);
+			var hpPrev = this.globalfuncs.getValueDefault(acc.data?.hp, 1);
+			return hpCur < hpPrev ? cur : acc;
+		});
+
+		smallestHp = this.globalfuncs.getValueDefault(smallestHpClass?.data?.hp, 0);
+
+		this.gs.healsToPointsRatio = smallestHp;
+		if(this.gs.healsToPointsRatio <= 0) { 
+			this.gs.healsToPointsRatio = 1;
+		}
 	}
 
 	cbMapComplete(resource) {
@@ -114,6 +134,12 @@ class GameServerLoadingMap extends GameServerBaseState {
 			//activate the collision system too
 			this.gs.cs.activate();
 		}
+
+		if(!bError) {
+			this.gs.currentGameType = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.gameData?.type, "deathmatch");
+			this.gs.matchWinCondition = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.gameData?.matchWinCondition, 1);
+		}
+
 
 		//load classes
 		if(!bError) {

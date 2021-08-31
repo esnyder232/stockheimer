@@ -219,6 +219,8 @@ class Character {
 
 			this.stateCooldownsTemplates[obj.key] = obj;
 		}
+
+		this.gs.em.emitEvent("character-activated", {characterId: this.id, teamId: this.teamId});
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
@@ -232,10 +234,8 @@ class Character {
 		///////////////////
 		//all the stuff below came from game-server-running from the semi-old flow of gameobjectManager (manually activating/deactivation/deinit of game objects with bunch of callbacks).
 		//its kind of hacky that it is HERE inside character.
-		var owner = null;
-		owner = this.globalfuncs.getOwner(this.gs, this.ownerId, this.ownerType);
-		
 		this.em.emitEvent("character-deactivated");
+		this.gs.em.emitEvent("character-deactivated", {characterId: this.id, teamId: this.teamId});
 		/////////////////////
 
 		var userAgents = this.gs.uam.getUserAgents();
@@ -702,7 +702,17 @@ class Character {
 	}
 
 	applyHealEffect(srcUserId, healAmount) {
-		this.modHealth(-healAmount);
+		//give the src healer heal points
+		var actualHealAmount = Math.min(healAmount, (this.hpMax - this.hpCur));
+
+		if(actualHealAmount > 0) {
+			var u = this.gs.um.getUserByID(srcUserId);
+			if(u !== null) {
+				u.roundHealCount += actualHealAmount;
+			}
+		}
+
+		this.modHealth(-actualHealAmount);
 
 		//create event for clients to notify them of damage
 		var userAgents = this.gs.uam.getUserAgents();
@@ -710,7 +720,7 @@ class Character {
 			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
 				"eventName": "characterHealEffect",
 				"id": this.id,
-				"heal": healAmount,
+				"heal": actualHealAmount,
 				"srcUserId": srcUserId
 			});
 		}

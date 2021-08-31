@@ -76,9 +76,11 @@ class UserLeavingGameState extends UserBaseState {
 		this.user.userKillCount = 0;
 		this.user.inputQueue.length = 0;
 		this.user.userKillCount = 0;
-		this.user.userDeathCount - 0;
+		this.user.userDeathCount = 0;
+		this.user.userHealCount = 0;
 		this.user.roundUserKillCount = 0;
 		this.user.roundUserDeathCount = 0;
+		this.user.roundHealCount = 0;
 		this.user.teamId = null;
 		this.user.characterClassResourceId = null;
 		this.user.playingState = null;

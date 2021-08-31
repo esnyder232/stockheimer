@@ -126,7 +126,8 @@ class GameServerUnloadingMap extends GameServerBaseState {
 		this.gs.tm.update(dt);
 		this.gs.pm.update(dt);
 		this.gs.uam.update(dt);
-
+		this.gs.em.update(dt);
+		
 		this.gs.frameNum++;
 
 		super.update(dt);

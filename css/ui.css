@@ -224,7 +224,7 @@ input[type="text"]:disabled {
 
 .menu-title {
 	width: 100%;
-	font-size: 36px;
+	font-size: 30px;
 	font-weight: bold;
 	text-align: center;
 	margin-top:6px;
@@ -431,6 +431,11 @@ input[type="text"]:disabled {
 	transition: opacity 10s ease-in;
 }
 
+.fade-out-5 {
+	opacity: 0;
+	transition: opacity 5s ease-in;
+}
+
 
 .chat-history-minified-wrapper {
 	position: absolute;
@@ -482,6 +487,22 @@ input[type="text"]:disabled {
 	overflow-x: auto;
 }
 
+.user-list-game-summary {
+	width: 100%;
+	text-align: center;
+}
+
+.user-list-game-type {
+	width: 100%;
+	font-size: 24px;
+}
+
+.user-list-game-rules {
+	width: 100%;
+	font-size: 16px;
+}
+
+
 .user-list-item {
 	width: 100%;
 	float: left;
@@ -489,12 +510,9 @@ input[type="text"]:disabled {
 
 /*the div that uses this class has its 'width' style attributed modified by javascript*/
 .user-list-team-container {
-	height: 100%;
 	width: 10px;
 	margin: 0% auto;
 	text-align: center;
-	overflow-y: auto;
-	overflow-x: auto;
 }
 
 
@@ -612,7 +630,7 @@ input[type="text"]:disabled {
 
 
 .team-pair {
-	width:50%;
+	width:33%;
 	float:left;
 }
 
@@ -948,6 +966,88 @@ input.menu-button {
 
 
 
+
+
+
+
+.round-start-wrapper {
+	position:absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 9;
+}
+
+.round-start-container {
+	position: relative;
+	width: 100%;
+	color: #cccccc;
+	margin: 10% auto;
+	pointer-events: none;
+}
+
+.round-start-gametype {
+	font-size: 78px;
+	text-shadow: 3px 3px #000000;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+}
+
+.round-start-rules {
+	font-size: 36px;
+	text-shadow: 2px 2px #000000;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+}
+
+.round-start-round-num {
+	font-size: 36px;
+	text-shadow: 2px 2px #000000;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+}
+
+
+
+
+
+
+
+
+.match-win-text-wrapper {
+	position:absolute;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 9;
+}
+
+.match-win-text-container {
+	position: relative;
+	width: 100%;
+	color: #cccccc;
+	margin: 20% auto;
+	pointer-events: none;
+}
+
+.match-win-text-title {
+	font-size: 98px;
+	text-shadow: 3px 3px #000000;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+	
+}
+
+.match-win-text-rules {
+	font-size: 36px;
+	text-shadow: 2px 2px #000000;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+}
+
+
+
+
 .round-results-menu-wrapper {
 	position:absolute;
 	width: 100%;
@@ -969,17 +1069,48 @@ input.menu-button {
 	position: relative;
 	margin: 10% auto;
 	text-shadow: 1px 1px #000000;
+	pointer-events: none;
 }
 
 
 
 .round-results-winner {
 	width: 100%;
-	font-size: 32px;
+	font-size: 28px;
 	text-align: center;
 	margin-top: 12px;
 	margin-top: 12px;
 	font-weight: bold;
+}
+
+.round-results-standings {
+	width: 100%;
+	font-size: 16px;
+	margin-top: 12px;
+	margin-top: 12px;
+}
+
+.round-results-game-rules {
+	width: 100%;
+	font-size: 16px;
+	text-align: center;
+}
+
+.round-results-standings-item {
+	font-weight: bold;
+	width: 100%;
+}
+
+.round-results-standings-team {
+	width: 80%;
+	text-align: left;
+	float: left;
+}
+
+.round-results-standings-wins {
+	width: 20%;
+	text-align: right;
+	float: left;
 }
 
 
@@ -1022,17 +1153,23 @@ input.menu-button {
 
 .mvp-team-header {
 	text-align: left;
-	width: 25%;
+	width: 20%;
 }
 
 .mvp-points-header {
 	text-align: right;
-	width: 12%;
+	width: 10%;
 }
 
 .mvp-deaths-header {
 	text-align: right;
-	width: 13%;
+	width: 10%;
+}
+
+
+.mvp-heals-header {
+	text-align: right;
+	width: 10%;
 }
 
 
@@ -1053,7 +1190,9 @@ input.menu-button {
 	text-align: right;
 }
 
-
+.mvp-heals-value {
+	text-align: right;
+}
 
 
 

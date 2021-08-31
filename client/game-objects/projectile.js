@@ -21,6 +21,10 @@ export default class Projectile {
 		this.offsetX = 0;
 		this.offsetY = 0;
 		this.angle = 0;
+
+		this.timeLength = 0.0;
+		this.timeLengthAcc = 0.0;
+		this.clientSideDraw = true;
 		
 		this.globalfuncs = null;
 
@@ -79,6 +83,7 @@ export default class Projectile {
 		this.hideSprite = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.hideSprite, this.hideSprite);
 		this.animationTimeLength = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.animationTimeLength, this.animationTimeLength);
 		this.repeatNum = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.renderData?.repeatNum, this.repeatNum);
+		this.timeLength = this.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.timeLength, this.timeLength);
 		
 		//calculate stuff
 		this.x = this.x * this.ms.planckUnitsToPhaserUnitsRatio;
@@ -100,6 +105,18 @@ export default class Projectile {
 		this.drawSpriteGraphics();
 
 		this.spriteGraphics.setPipeline(this.projectileShaderKey);
+
+		//destruction compensation for fast moving projectiles. This is to help time the destruction of fast moving projectiles with the sprite drawn on the screen (cheap client side destruction prediction)
+		//Also only do this for projectiles that have a longer time length than 100 ms (ie, not melee or flash heal projectiles)
+		if(this.timeLength > 100) {
+			var u = this.gc.um.getUserByServerID(this.gc.myUserServerId);
+			if(u !== null) {
+				this.timeLengthAcc = u.userRtt*2;
+			}
+		} else {
+			this.timeLengthAcc = 0;
+		}
+		
 	}
 
 
@@ -189,15 +206,51 @@ export default class Projectile {
 	}
 
 	update(dt) {
-		this.x += this.xSpeedPhaser * (dt/1000);
-		this.y += this.ySpeedPhaser * (dt/1000);
+		/////////////
+		// LAG TECHNIQUE		
+		// if(this.lagTimeBeforeDrawAcc >= this.lagTimeBeforeDraw) {
+		// 	console.log("+++ DRAWING NOW +++");
+		// 	this.x += this.xSpeedPhaser * (dt/1000);
+		// 	this.y += this.ySpeedPhaser * (dt/1000);
+		// } else {
+		// 	this.lagTimeBeforeDrawAcc += dt;
+		// 	console.log("--- not drawing " + this.lagTimeBeforeDrawAcc)
+		// }
 
-		// this.boxGraphics.setX(this.x);
-		// this.boxGraphics.setY(this.y);
+
+
+
 		
-		if(this.spriteGraphics !== null) {
-			this.spriteGraphics.setX(this.x);
-			this.spriteGraphics.setY(this.y);
+
+		/////////////
+		// RTT COMPENSATE TECHNIQUE
+		if(this.clientSideDraw) {
+			this.x += this.xSpeedPhaser * (dt/1000);
+			this.y += this.ySpeedPhaser * (dt/1000);
+
+			this.boxGraphics.setX(this.x);
+			this.boxGraphics.setY(this.y);
+			
+			if(this.spriteGraphics !== null) {
+				this.spriteGraphics.setX(this.x);
+				this.spriteGraphics.setY(this.y);
+			}
+
+			//check if the projectile SHOULD have been destroyed based on timelength
+			this.timeLengthAcc += dt;
+			// console.log(this.timeLength + " === " + this.timeLengthAcc);
+			if(this.timeLengthAcc >= this.timeLength) {
+				// console.log("DESTROYING IT NOW");
+				this.clientSideDraw = false;
+				if(this.boxGraphics !== null) {
+					this.boxGraphics.destroy();
+					this.boxGraphics = null;
+				}
+				if(this.spriteGraphics !== null) {
+					this.spriteGraphics.destroy();
+					this.spriteGraphics = null;
+				}
+			}
 		}
 	}
 }

@@ -8,7 +8,7 @@ export default class RoundStarting extends RoundBaseState {
 	
 	enter(dt) {
 		super.enter(dt);
-		//console.log("Client side round. Round is now in starting state.");
+		window.dispatchEvent(new CustomEvent("round-started"));
 	}
 
 	update(dt) {

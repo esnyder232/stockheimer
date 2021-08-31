@@ -76,6 +76,9 @@ export default class GameClient {
 		this.theRound = null;
 		this.activeTilemap = null;
 		this.bDisplayServerSightlines = false;
+		this.currentMapResource = null;
+		this.currentGameType = "";
+		this.matchWinCondition = 1;
 
 		////////////////////////////////////
 		// api end points for resources

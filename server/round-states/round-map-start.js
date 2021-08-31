@@ -15,7 +15,7 @@ class RoundMapStart extends RoundBaseState.RoundBaseState {
 		super.enter(dt);
 
 		//get resource for round timer
-		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.roundMapStartTimeLength, this.roundTimerDefault);
+		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.gameData?.roundMapStartTimeLength, this.roundTimerDefault);
 		this.round.roundTimeAcc = 0;
 	}
 
@@ -23,6 +23,7 @@ class RoundMapStart extends RoundBaseState.RoundBaseState {
 		this.round.roundTimeAcc += dt;
 
 		if(this.round.roundTimeAcc >= this.round.roundTimer) {
+			//determine the round state
 			this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
 		}
 

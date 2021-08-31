@@ -298,140 +298,6 @@ class GlobalFuncs {
 		console.log("Added ai user '" + aiUser.username);
 	}
 
-
-
-
-
-
-
-
-
-
-	// //OLD
-	// // //this is such a fucking wierd way to do it....but it does work
-	// balanceAiUsersOnTeams(gs) {
-	// 	if(gs.minimumUsersPlaying > 0 && gs.maxPlayers > 0)
-	// 	{
-	// 		var usersSummary = gs.um.getActiveUsersSummary();
-	// 		var bError = false;
-			
-	// 		//create some more property on each team grouping
-	// 		usersSummary.teams.map((x) => {x.minimumUsersThisTeamShouldHave = 0;})
-	// 		usersSummary.teams.map((x) => {x.maxUsersThisTeamShouldHave = 0;})
-
-	// 		var spectatorHumanUsers = 0;
-	// 		for(var i = 0; i < usersSummary.teams.length; i++) {
-	// 			if(usersSummary.teams[i].isSpectatorTeam) {
-	// 				spectatorHumanUsers = usersSummary.teams[i].humanUserIds.length;
-	// 				break;
-	// 			}
-	// 		}
-			
-	
-	// 		//if there are teams for ai to belong to (minus the spectator team), spawn the ai on each team until it fills up to the minimum players for that team (yeah...)
-	// 		if(usersSummary.teams.length > 1) {
-	
-	// 			//calculate the minimum number of players per team (minus the spectator team)
-	// 			var numOfUsers = gs.minimumUsersPlaying - spectatorHumanUsers;
-
-	// 			var teamIndex = 0;
-	// 			while(numOfUsers > 0) {
-	// 				if(!usersSummary.teams[teamIndex].isSpectatorTeam) {
-	// 					usersSummary.teams[teamIndex].minimumUsersThisTeamShouldHave += 1;
-	// 					numOfUsers--;
-	// 				}
-	// 				teamIndex++;
-	// 				teamIndex %= usersSummary.teams.length;
-	// 			}
-
-	// 			//also calculate the max number of players per team (minus the spectator team)
-	// 			teamIndex = 0;
-	// 			numOfUsers = gs.maxPlayers;
-	// 			while(numOfUsers > 0) {
-	// 				if(!usersSummary.teams[teamIndex].isSpectatorTeam) {
-	// 					usersSummary.teams[teamIndex].maxUsersThisTeamShouldHave += 1;
-	// 					numOfUsers--;
-	// 				}
-	// 				teamIndex++;
-	// 				teamIndex %= usersSummary.teams.length;
-	// 			}
-	// 		}
-	// 		//the only team that is existing is the spectator team....i guess put them on spectator for now
-	// 		else if (usersSummary.teams.length === 1) { 
-	// 			usersSummary.teams[0].minimumUsersThisTeamShouldHave = gs.minimumUsersPlaying;
-	// 			usersSummary.teams[0].maxUsersThisTeamShouldHave = gs.maxPlayers;
-	// 		}
-	// 		//not sure how it could EVER reach this else statement....there should always be ATLEAST ONE team: spectators
-	// 		else {
-				
-	// 			logger.log("error", "Error when creating ai users for each team. usersSummary.teams came back with 0 teams.");
-	// 			bError = true;
-	// 		}
-	
-	
-	// 		if(!bError) {
-	// 			//finally calculate the number of ai to spawn based on minimum users per tea, maximum players per team, etc
-	// 			for(var i = 0; i < usersSummary.teams.length; i++) {
-	// 				var currHumanUsers = usersSummary.teams[i].humanUserIds.length;
-	// 				var currAiUsers = usersSummary.teams[i].aiUserIds.length;
-	// 				var aiToAdd = usersSummary.teams[i].minimumUsersThisTeamShouldHave;
-
-	// 				if(usersSummary.teams[i].minimumUsersThisTeamShouldHave > usersSummary.teams[i].maxUsersThisTeamShouldHave) {
-	// 					aiToAdd = usersSummary.teams[i].maxUsersThisTeamShouldHave;
-	// 				}
-
-	// 				aiToAdd -= currHumanUsers + currAiUsers;
-
-	// 				//debug
-	// 				console.log('For team ' + usersSummary.teams[i].teamId + ', i should change it by: ' + aiToAdd);
-
-	// 				//kick some ai from this team
-	// 				if(aiToAdd < 0 && usersSummary.teams[i].aiUserIds.length > 0) {
-	// 					for(var j = 0; j < Math.abs(aiToAdd); j++) {
-	// 						//console.log('Attempting to kick an ai');
-	// 						var aiToKick = gs.um.getUserByID(usersSummary.teams[i].aiUserIds[j]);
-
-	// 						if(aiToKick !== null) {
-	// 							console.log('Inside balanceAiUsersOnTeams, kicking ai ' + aiToKick.id + " off team " + usersSummary.teams[i].teamId);
-	// 							aiToKick.bDisconnected = true;
-	// 						}
-	// 					}
-	// 				}
-	// 				//add some ai to this team
-	// 				else if (aiToAdd > 0) {
-	// 					for(var j = 0; j < aiToAdd; j++) {
-	// 						//create the user to be controlled by the ai
-	// 						var aiUser = gs.um.createUser();
-
-	// 						//create an ai agent to control the user
-	// 						var aiAgent = gs.aim.createAIAgent();
-
-	// 						//setup user
-	// 						aiUser.userInit(gs);
-	// 						aiUser.username = "AI " + aiUser.id;
-	// 						aiUser.stateName = "user-disconnected-state";
-	// 						aiUser.userType = "ai";
-	// 						aiUser.aiAgentId = aiAgent.id;
-	// 						aiUser.updateTeamId(usersSummary.teams[i].teamId);
-
-	// 						console.log("Creating ai user '" + aiUser.username + "' for team " + usersSummary.teams[i].teamId);
-
-	// 						//setup the user's nextState
-	// 						aiUser.nextState = new AiConnectingState(aiUser);
-
-
-	// 						//setup aiAgent
-	// 						aiAgent.aiAgentInit(gs, aiUser.id);
-
-	// 						//activate the user
-	// 						gs.um.activateUserId(aiUser.id);
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
 	//https://stackoverflow.com/questions/511761/js-function-to-get-filename-from-url/48554885
 	//sick
 	getFilenameFromUrl(url) {
@@ -529,7 +395,100 @@ class GlobalFuncs {
 		return n === +n && n !== (n|0);
 	}
 
+	createPlankRect(gameServer, rectData) {
+		return gameServer.pl.Box(shapeData.width/2, shapeData.height/2, Vec2(0, 0));
+	}
 
+	createPlankCircle(gameServer, circleData) {
+		return shape = gameServer.pl.Circle(gameServer.pl.Vec2(0, 0), shapeData.plRadius);
+	}
+
+
+	
+	getRoundMVPs(gs) {
+		var mvpResults = {
+			bestMvps: [],
+			worstMvps: [],
+			bestMvpsHeals: [],
+			worstMvpsHeals: []
+		};
+		
+		var mvpNumberUsers = 3;
+		var spectatorTeamId = gs.tm.getSpectatorTeam().id;
+		var activeUsers = gs.um.getActiveUsers();
+		var bestUserCandidates = [];
+		var worstUserCandidates = [];
+
+		/////////////////////////////////////////////////////////////
+		// BEST MVPs
+		//filter the users out to not include spectators
+		for(var i = 0; i < activeUsers.length; i++) {
+			if(activeUsers[i].teamId !== spectatorTeamId) {
+				var healPoints = this.convertHealingToPoints(activeUsers[i].roundHealCount, gs)
+				bestUserCandidates.push({
+					id: activeUsers[i].id,
+					points: activeUsers[i].roundUserKillCount + healPoints,
+					deaths: activeUsers[i].roundUserDeathCount,
+					heals: activeUsers[i].roundHealCount
+				})
+			}
+		}
+
+		// console.log("===DEBUG HEALS:");
+		// console.log("mid: " + gs.healsToPointsRatio);
+		// for(var i = 0; i < bestUserCandidates.length; i++) {
+		// 	console.log("id: " + bestUserCandidates[i].id + ", heals: " + bestUserCandidates[i].heals + ", total points: " + bestUserCandidates[i].points);
+		// }
+
+		//sort by points desc, then deaths asc
+		bestUserCandidates.sort((a, b) => {return b.points - a.points || a.deaths - b.deaths});
+
+		//top 3 are best MVPs
+		var finalNumUsers = bestUserCandidates.length < mvpNumberUsers ? bestUserCandidates.length : mvpNumberUsers;
+		for(var i = 0; i < finalNumUsers; i++) {
+			mvpResults.bestMvps.push(bestUserCandidates[i].id);
+			mvpResults.bestMvpsHeals.push(bestUserCandidates[i].heals);
+		}
+		/////////////////////////////////////////////////////////////
+
+
+
+
+		/////////////////////////////////////////////////////////////
+		// WORST MVPs
+		//filter the users out to not include spectators AND if they are not included already in the best mvp list
+		for(var i = 0; i < activeUsers.length; i++) {
+			if(activeUsers[i].teamId !== spectatorTeamId) {
+				var existingMvpIndex = mvpResults.bestMvps.findIndex((x) => {return x === activeUsers[i].id});
+				if(existingMvpIndex < 0) {
+					var healPoints = this.convertHealingToPoints(activeUsers[i].roundHealCount, gs)
+					worstUserCandidates.push({
+						id: activeUsers[i].id,
+						points: activeUsers[i].roundUserKillCount + healPoints,
+						deaths: activeUsers[i].roundUserDeathCount,
+						heals: activeUsers[i].roundHealCount
+					})
+				}
+			}
+		}
+
+		//sort by points asc, then deaths desc
+		worstUserCandidates.sort((a, b) => {return a.points - b.points || b.deaths - a.deaths});
+
+		//top 3 are worst MVPs
+		finalNumUsers = worstUserCandidates.length < mvpNumberUsers ? worstUserCandidates.length : mvpNumberUsers;
+		for(var i = 0; i < finalNumUsers; i++) {
+			mvpResults.worstMvps.push(worstUserCandidates[i].id);
+			mvpResults.worstMvpsHeals.push(worstUserCandidates[i].heals);
+		}
+		/////////////////////////////////////////////////////////////
+
+		return mvpResults;
+	}
+
+	convertHealingToPoints(roundHealCount, gs) {
+		return Math.floor(roundHealCount/gs.healsToPointsRatio);
+	}
 }
 
 

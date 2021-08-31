@@ -21,6 +21,7 @@ const serverConfig = require('./server-config.json');
 const GameConstants = require('../shared_files/game-constants.json');
 const path = require('path');
 const logger = require("../logger.js");
+const EventEmitter = require("./classes/event-emitter.js");
 const fs = require('fs');
 
 class GameServer {
@@ -61,6 +62,7 @@ class GameServer {
 		this.rm = null;
 		this.fm = null;
 		this.rmd = null;
+		this.em = null;
 
 		this.appRoot = path.join(__dirname, "..");
 
@@ -79,8 +81,11 @@ class GameServer {
 		this.currentMapIndex = 0;
 		this.currentMapResourceKey = "";
 		this.currentMapResource = null;
+		this.currentGameType = "";
+		this.matchWinCondition = 1; //basically, the ammount of rounds a team needs to win to complete the match
 		this.rotateMapAfterCurrentRound = false;
 		this.rotateMapNow = false;
+		this.healsToPointsRatio = 1;
 
 		this.bServerMapLoaded = false;
 		this.rebalanceTeams = false;
@@ -100,6 +105,7 @@ class GameServer {
 		this.uam = new UserAgentManager();
 		this.rm = new ResourceManager();
 		this.fm = new FileManager();
+		this.em = new EventEmitter.EventEmitter(this);
 
 		
 		//logger.log("info", 'creating gameworld done');

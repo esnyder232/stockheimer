@@ -17,7 +17,8 @@ export default class RoundOver extends RoundBaseState {
 
 	exit(dt) {		
 		//close the round results if its open
-		this.gc.mainScene.roundResultsMenu.closeMenu();
+		// this.gc.mainScene.roundResultsMenu.closeMenu();
+		window.dispatchEvent(new CustomEvent("round-over"));
 
 		super.exit(dt);
 	}

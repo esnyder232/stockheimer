@@ -8,6 +8,7 @@ export default class RoundMapEnd extends RoundBaseState {
 	
 	enter(dt) {
 		super.enter(dt);
+		window.dispatchEvent(new CustomEvent("round-map-end"));
 	}
 
 	update(dt) {

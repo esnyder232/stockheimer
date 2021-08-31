@@ -16,12 +16,18 @@ export default class DebugServerCircleEvent {
 		//see if there exists an server circle already
 		var o = this.gc.mainScene.debugServerCircles.find((x) => {return x.gameObjectId === e.gameObjectId;});
 		if(o === undefined) {
+			console.log("========== CREATED DEBUG CICLE ============");
+			console.log(e);
 			//create an object 
 			o = {
 				gameObjectId: e.gameObjectId,
 				x: e.x,
 				y: e.y,
 				r: e.r,
+				w: e.w,
+				h: e.h,
+				a: e.a,
+				t: e.t,
 				boxGraphics: null
 			}
 
@@ -31,10 +37,25 @@ export default class DebugServerCircleEvent {
 			boxGraphics.setY(e.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
 			boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.serverHitboxLayer);
 
-			var circleShape = new Phaser.Geom.Circle(0, 0, this.gc.mainScene.planckUnitsToPhaserUnitsRatio * e.r);
-			boxGraphics.lineStyle(1, 0xff00ff);
-			boxGraphics.strokeCircleShape(circleShape);
 			
+			//rect
+			if(e.t === 2) {
+				var ph = this.gc.mainScene.planckUnitsToPhaserUnitsRatio * e.h;
+				var pw = this.gc.mainScene.planckUnitsToPhaserUnitsRatio * e.w;
+				var px = 0 - pw/2;
+				var py = 0 - ph/2;
+				var rectShape = new Phaser.Geom.Rectangle(px, py, pw, ph);
+				boxGraphics.lineStyle(1, 0xff00ff);
+				boxGraphics.strokeRectShape(rectShape);
+				boxGraphics.setRotation(o.a);
+			} 
+			//circle
+			else {
+				var circleShape = new Phaser.Geom.Circle(0, 0, this.gc.mainScene.planckUnitsToPhaserUnitsRatio * e.r);
+				boxGraphics.lineStyle(1, 0xff00ff);
+				boxGraphics.strokeCircleShape(circleShape);
+			}
+
 			o.boxGraphics = boxGraphics;
 			this.gc.mainScene.debugServerCircles.push(o);
 		}

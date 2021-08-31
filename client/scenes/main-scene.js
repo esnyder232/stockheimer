@@ -13,6 +13,7 @@ import RespawnTimerMenu from "../ui-classes/respawn-timer-menu.js"
 import KillFeedMenu from "../ui-classes/kill-feed-menu.js"
 import RoundResultsMenu from "../ui-classes/round-results-menu.js"
 import TeamScoreMenu from "../ui-classes/team-score-menu.js"
+import RoundStartMenu from "../ui-classes/round-start-menu.js"
 
 export default class MainScene extends Phaser.Scene {
 	constructor() {
@@ -119,6 +120,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu = null;
 		this.roundResultsMenu = null;
 		this.teamScoreMenu = null;
+		this.roundStartMenu = null;
 
 		this.tilesetArray = [];
 		this.layerArray = [];
@@ -171,6 +173,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu = new KillFeedMenu();
 		this.roundResultsMenu = new RoundResultsMenu();
 		this.teamScoreMenu = new TeamScoreMenu();
+		this.roundStartMenu = new RoundStartMenu();
 		
 
 		this.teamMenu.init(this.gc);
@@ -183,6 +186,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.init(this.gc);
 		this.roundResultsMenu.init(this.gc);
 		this.teamScoreMenu.init(this.gc);
+		this.roundStartMenu.init(this.gc);
 	}
 
 	gameout(time, e) {
@@ -281,12 +285,16 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.activate();
 		this.roundResultsMenu.activate();
 		this.teamScoreMenu.activate();
+		this.roundStartMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
 		this.gc.debugMenu.populateAiControls();
 
 		this.respawnMenuFlowControl(true);
+
+		//set cursor
+		this.input.setDefaultCursor('url(assets/cursors/ProX.cur), pointer');
 	}
 
 	createMap() {
@@ -425,6 +433,7 @@ export default class MainScene extends Phaser.Scene {
 		this.chatMenu.closeMenu();
 		this.roundResultsMenu.closeMenu();
 		this.teamScoreMenu.closeMenu();
+		this.roundStartMenu.closeMenu();
 
 		this.teamMenu.deactivate();
 		this.characterClassMenu.deactivate();
@@ -436,6 +445,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.deactivate();
 		this.roundResultsMenu.deactivate();
 		this.teamScoreMenu.deactivate();
+		this.roundStartMenu.deactivate();
 
 		this.teamMenu.deinit();
 		this.characterClassMenu.deinit();
@@ -447,6 +457,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.deinit();
 		this.roundResultsMenu.deinit();
 		this.teamScoreMenu.deinit();
+		this.roundStartMenu.deinit();
 
 		//other stuff
 		this.gc.debugMenu.clearAiControls();

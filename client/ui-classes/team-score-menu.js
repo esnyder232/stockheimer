@@ -12,6 +12,7 @@ export default class TeamScoreMenu {
 		this.isVisible = false;
 
 		this.menu = null;
+		this.teamScoreTitle = null;
 		this.teamScoreList = null;
 		this.teamScoreItemTemplate = null;
 		this.teamScoreItems = [];
@@ -38,6 +39,7 @@ export default class TeamScoreMenu {
 
 		//grab all the ui elements
 		this.menu = $("#team-score-menu");
+		this.teamScoreTitle = $("#team-score-title");
 		this.teamScoreList = $("#team-score-list");
 		this.teamScoreItemTemplate = $("#team-score-item-template");
 
@@ -48,10 +50,6 @@ export default class TeamScoreMenu {
 
 		//build initial team list
 		this.redrawAllTeamScores();
-		// var teams = this.gc.tm.getTeams();
-		// for(var i = 0; i < teams.length; i++) {
-		// 	this.addTeamScoreItem(teams[i]);
-		// }
 	}
 
 	openMenu() {
@@ -78,69 +76,74 @@ export default class TeamScoreMenu {
 		this.reset();
 	}
 
-	// addTeamScoreItem(team) {
-	// 	console.log('adding team score item NOW');
-	// 	var newItem = this.teamScoreItemTemplate.clone();
-	// 	newUserListItem.removeClass("hide");
-	// 	newUserListItem.text("(kills: " + user.userKillCount + ", deaths: " + user.userDeathCount + ", ping: " + user.userRtt + ") - " + user.username + " - (team " + user.teamId + ")");
-
-	// 	this.userList.append(newUserListItem);
-
-	// 	this.userIdUserListItemMap[user.serverId] = newUserListItem;
-	// }
-
-	// removeTeamScoreItem(team) {
-	// 	console.log('removing team score item NOW');
-	// 	// if(this.userIdUserListItemMap[user.serverId] !== undefined)
-	// 	// {
-	// 	// 	this.userIdUserListItemMap[user.serverId].remove();
-	// 	// 	delete this.userIdUserListItemMap[user.serverId];
-	// 	// }
-	// }
-
 	//for now, just redraw all the scores in the correct order.
 	redrawAllTeamScores() {
-		//clear out old scores
-		this.teamScoreList.empty();
+		if(this.gc.currentGameType === "deathmatch") {
+			this.teamScoreTitle.text("Deathmatch");
 
-		var teams = this.gc.tm.getTeams();
-		var teamsSorted = [];
+			//clear out old scores
+			this.teamScoreList.empty();
 
-		for(var i = 0; i < teams.length; i++) {
-			if(!teams[i].isSpectatorTeam) {
-				teamsSorted.push(i);
+			var teams = this.gc.tm.getTeams();
+			var teamsSorted = [];
+
+			for(var i = 0; i < teams.length; i++) {
+				if(!teams[i].isSpectatorTeam) {
+					teamsSorted.push({
+						index: i,
+						roundPoints: teams[i].roundPoints
+					});
+				}
 			}
-		}
 
-		teamsSorted.sort((a, b) => {return teams[b].roundPoints - teams[a].roundPoints;});
+			teamsSorted.sort((a, b) => {return b.roundPoints - a.roundPoints;});
 
-		for(var i = 0; i < teamsSorted.length; i++) {
-			var t = teams[teamsSorted[i]];
-			
-			var newItem = this.teamScoreItemTemplate.clone();
-			newItem.removeClass("hide");
-			newItem.removeAttr("id");
-			newItem.text(t.name + " - " + t.roundPoints);
-			newItem.css("color", t.killFeedTextColor);
+			for(var i = 0; i < teamsSorted.length; i++) {
+				var t = teams[teamsSorted[i].index];
+				
+				var newItem = this.teamScoreItemTemplate.clone();
+				newItem.removeClass("hide");
+				newItem.removeAttr("id");
+				newItem.text(t.name + " - " + t.roundPoints);
+				newItem.css("color", t.killFeedTextColor);
 
-			this.teamScoreList.append(newItem);
+				this.teamScoreList.append(newItem);
+			}
+		} else if(this.gc.currentGameType === "elimination") {
+			this.teamScoreTitle.text("Elimination");
+
+			//clear out old scores
+			this.teamScoreList.empty();
+
+			var teams = this.gc.tm.getTeams();
+			var teamsSorted = [];
+
+			for(var i = 0; i < teams.length; i++) {
+				if(!teams[i].isSpectatorTeam) {
+					teamsSorted.push({
+						index: i,
+						slotNum: teams[i].slotNum
+					});
+				}
+			}
+
+			teamsSorted.sort((a, b) => {return b.slotNum - a.slotNum;});
+
+			for(var i = 0; i < teamsSorted.length; i++) {
+				var t = teams[teamsSorted[i].index];
+				
+				var newItem = this.teamScoreItemTemplate.clone();
+				newItem.removeClass("hide");
+				newItem.removeAttr("id");
+				newItem.text(t.name + " - " + t.usersAlive);
+				newItem.css("color", t.killFeedTextColor);
+
+				this.teamScoreList.append(newItem);
+			}
 		}
 	}
 
 	teamPointsUpdated(e) {
-		// console.log("TEAM INFO UPDATED CALLED NOW.");
-		// console.log(e);
 		this.redrawAllTeamScores();
-		// if(this.activated) {
-		// 	var u = this.gc.um.getUserByServerID(e.detail.serverId);
-
-		// 	if(u !== null) {
-		// 		if(this.userIdUserListItemMap[u.serverId] !== undefined) {
-		// 			//update userListItem
-		// 			var myText = "(kills: " + u.userKillCount + ", deaths: " + u.userDeathCount + ", ping: " + u.userRtt + ") - " + u.username + " - (team " + u.teamId + ")";
-		// 			this.userIdUserListItemMap[u.serverId].text(myText);
-		// 		}
-		// 	}
-		// }
 	}
 }

@@ -54,6 +54,9 @@ class TeamManager {
 			{
 				if(this.teamArray[i].deleteMe)
 				{
+					if(typeof this.teamArray[i].deinit === "function") {
+						this.teamArray[i].deinit();
+					}
 					this.teamArray.splice(i, 1);
 				}
 			}

@@ -1,0 +1,11 @@
+{
+	"name": "Slime Heal Shot",
+	"type": "one-time",
+	"animationSet": "idle",
+	"canLook": true,
+	"canMove": true,
+	"timeLength": 250,
+	"projectileKey": "data/projectiles/slime-heal-shot.json",
+	"projectileTime": 0,
+	"cooldownTimeLength": 250
+}

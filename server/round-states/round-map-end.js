@@ -13,7 +13,7 @@ class RoundMapEnd extends RoundBaseState.RoundBaseState {
 		super.enter(dt);
 
 		//get resource for round timer
-		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.roundMapEndTimeLength, this.roundTimerDefault);
+		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.gameData?.roundMapEndTimeLength, this.roundTimerDefault);
 		this.round.roundTimeAcc = 0;
 
 		//tell users that the rouns has started
