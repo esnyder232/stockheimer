@@ -1,6 +1,6 @@
 {
 	"name": "Team Map Square - Deathmatch",
-	"tilemapResource": "assets/tilemaps/team-map-square.json",
+	"tilemapResource": "assets/tilemaps/team-map-square-no-walls.json",
 	"mapTimeLength": 1000000,
 	"gameData": {
 		"type": "deathmatch",
@@ -14,7 +14,7 @@
 		"matchWinCondition": 2
 	},
 	
-	"minimumUsersPlaying": 24,
+	"minimumUsersPlaying": 2,
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",

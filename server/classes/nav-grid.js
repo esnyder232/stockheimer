@@ -74,7 +74,8 @@ class NavGrid {
 						impassable: tileType.impassable === true ? true : false,
 						movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
 						collideProjectiles: collideProjectiles,
-						castle: tileType.castle === true ? true : false
+						castle: tileType.castle === true ? true : false,
+						trueClearance: 0
 					}
 	
 					this.nodes[j].push(n);
@@ -133,25 +134,15 @@ class NavGrid {
 				}
 			}
 
+			//build indices
 			this.buildIndex();
 
-			//find the castle node, and create the node map to cache
-			var bCastleFound = false;
-			for(var i = 0; i < this.nodes.length; i++)
-			{
-				 var temp = this.nodes[i].find((x) => {return x.castle;});
-				if(temp)
-				{
-					this.castleNode = temp;
-					bCastleFound = true;
+			//for each node, calculate the true clearance
+			for(var j = 0; j < this.nodes.length; j++) {
+				for(var i = 0; i < this.nodes[j].length; i++) {
+					this.nodes[j][i].trueClearance = this.calcTrueClearance(i, j) * this.tiledUnitsToPlanckUnits;
 				}
 			}
-
-			if(bCastleFound)
-			{
-				this.toCastleNodeMap = this.breadthFirstNodeMap(this.castleNode);
-			}
-
 
 			//fuck it, we'll just make the walls here
 			for(var j = 0; j < this.nodes.length; j++) {
@@ -187,7 +178,50 @@ class NavGrid {
 		}
 	}
 
+	//Calculates true clearance for 1 node.
+	//The true clearance starts in the upper-left, and pushes bottom-right. Its always a square because all unit's profiles are circles.
+	calcTrueClearance(xNode, yNode) {
+		var currentClearance = 0;
+		var allClear = true;
+
+		while(allClear) {
+			//check if the next clearance is still within bounds of the map
+			if((yNode + currentClearance) < 0 || (yNode + currentClearance) >= this.nodes.length) {
+				allClear = false;
+			}
+			else if((xNode + currentClearance) < 0 || (xNode + currentClearance) >= this.nodes[yNode + currentClearance].length) {
+				allClear = false;
+			}
+
+			//check all nodes that are in the next clearance's perimeter
+			//bottom row
+			if(allClear) {
+				for(var i = 0; i <= currentClearance; i++) {
+					if(this.nodes[yNode+currentClearance][xNode+i].impassable) {
+						allClear = false;
+					}
+				}
+			}
+
+			//right column
+			if(allClear) {
+				for(var j = 0; j < currentClearance; j++) {
+					if(this.nodes[yNode+j][xNode+currentClearance].impassable) {
+						allClear = false;
+					}
+				}
+			}
+
+			if(allClear) {
+				currentClearance++;
+			}
+		}
+
+		return currentClearance;
+	}
+
 	//creates an node map from every node to a specific target node. Uses breadth first search.
+	//OLD - not really used anymore...but i'm keeping it around just incase i need it again.
 	breadthFirstNodeMap(nodeTarget)
 	{
 		var finalNodeMap = {};
@@ -243,6 +277,7 @@ class NavGrid {
 
 
 	//returns the path from nodeStart to nodeEnd using breadthFirst
+	//OLD - not really used anymore...but i'm keeping it around just incase i need it again.
 	breadthFirstSearch(nodeStart, nodeEnd)
 	{
 		var breadCrumbs = {};
@@ -308,10 +343,13 @@ class NavGrid {
 
 
 	//returns the nodes from nodeStart to the nodeEnd using A* algorithm
-	AStarSearch(nodeStart, nodeEnd)
-	{
+	AStarSearch(nodeStart, nodeEnd, clearance) {
+		if(clearance === undefined) {
+			clearance = 1;
+		}
 		var breadCrumbs = {};
 		var nodeCostMap = {}; // a mapping of node id to movement cost to get to the node
+		var manhattanArr = [];
 		var frontier = [];
 		var bNodeFound = false;
 		var finalPath = [];
@@ -320,6 +358,12 @@ class NavGrid {
 		{
 			return [];
 		}
+
+		//if nodeEnd is not in a tile with specified clearance, find the closest tile that has the clearance
+		if(nodeEnd.trueClearance < clearance) {
+			nodeEnd = this.breadthFirstSearchClearance(nodeEnd, clearance);
+		}
+
 
 		frontier.push({
 			node: nodeStart,
@@ -330,7 +374,7 @@ class NavGrid {
 
 		while(frontier.length > 0 && !bNodeFound)
 		{
-			//sort frintier based on priority
+			//sort frintier based on priority desc
 			frontier.sort((a, b) => {return a.priority - b.priority;});
 			var currentFrontierNode = frontier.shift().node;
 
@@ -365,7 +409,7 @@ class NavGrid {
 						var heuristic = this.manhattanDistanceHeuristicFunction(neighborNodeInQuestion, nodeEnd);
 	
 						//check first to see if its impassibla (wall). If not, add it to the frontier to be processed next
-						if(!neighborNodeInQuestion.impassable)
+						if(!neighborNodeInQuestion.impassable && clearance <= neighborNodeInQuestion.trueClearance)
 						{
 							//add its neighbors to the frontier
 							frontier.push({
@@ -378,15 +422,24 @@ class NavGrid {
 	
 						//Add the neighbor to the breadcrumbs. Even if the neighbor is impassable, we should add it anyway to provide a path to get out of the impassable neighbor (incase the entity accidentally gets pushed in the wall)
 						breadCrumbs[neighborNodeInQuestion.id] = currentFrontierNode.id;
+						manhattanArr.push({id: neighborNodeInQuestion.id, manhattanDistance: heuristic});
 					}
 				}
 			}
 		}
 
 		//compute the path from the target node from the current node using the bread crumbs
-		if(bNodeFound)
-		{
+		if(bNodeFound) {
 			finalPath = this.getPathFromBreadCrumbs(breadCrumbs, nodeEnd);
+		}
+		//get the closest one path you can
+		else {
+			
+			var closest = manhattanArr.reduce((acc, cur, curIndex, arr) => {return cur.manhattanDistance < acc.manhattanDistance ? cur : acc;});
+			var	closestNode = this.nodesIdIndex[closest.id];
+			if(closestNode !== undefined) {
+				finalPath = this.getPathFromBreadCrumbs(breadCrumbs, closestNode);
+			}
 		}
 
 		return finalPath;
@@ -422,6 +475,73 @@ class NavGrid {
 		return finalPath;	
 	}
 	
+	//This does a breadth first search from the nodeStart to any node that has the specified clearance
+	//It returns the closest NODE of the specified clearance rather than the path to the node.
+	breadthFirstSearchClearance(nodeStart, clearance) {
+		if(clearance === undefined) {
+			clearance = 1;
+		}
+
+		var breadCrumbs = {};
+		var frontier = [];
+		var bNodeFound = false;
+		var finalNode = nodeStart;
+
+		if(nodeStart.trueClearance >= clearance) {
+			return nodeStart;
+		}
+
+		frontier.push(nodeStart);
+		breadCrumbs[nodeStart.id] = null;
+
+		while(frontier.length > 0 && !bNodeFound) {
+			var currentFrontierNode = frontier.shift();
+
+			var currentFrontierNodeEdges = [];
+			//get any edges it may have (and therefore its neighbors)
+			for(var i = 0; i < currentFrontierNode.edges.length; i++) {
+				currentFrontierNodeEdges.push(this.edgesIdIndex[currentFrontierNode.edges[i]]);
+			}
+
+			for(var j = 0; j < currentFrontierNodeEdges.length; j++) {
+				var neighborNodeInQuestion = this.nodesIdIndex[currentFrontierNodeEdges[j].nodeToId];
+
+				//if the neighbor hasn't been visited yet, add it to the frontier if aplicable and compute the path to the target
+				if(breadCrumbs[neighborNodeInQuestion.id] === undefined) {
+					//check first to see if its impassibla (wall). If not, add it to the frontier to be processed next
+					if(!neighborNodeInQuestion.impassable) {
+						//add its neighbors to the frontier
+						frontier.push(neighborNodeInQuestion);
+					}
+
+					//Add the neighbor to the breadcrumbs. Even if the neighbor is impassable, we should add it anyway to provide a path to get out of the impassable neighbor (incase the entity accidentally gets pushed in the wall)
+					breadCrumbs[neighborNodeInQuestion.id] = currentFrontierNode.id;
+
+					if(neighborNodeInQuestion.trueClearance >= clearance) {
+						bNodeFound = true;
+						finalNode = neighborNodeInQuestion;
+						break;
+					}
+				}
+			}
+		}
+
+		return finalNode;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//OLD - not really used anymore...but i'm keeping it around just incase i need it again.
 	getPathToCastle(xStart, yStart) {
 		var path = [];
 		if(yStart >= 0 && yStart < this.nodes.length)

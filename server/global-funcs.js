@@ -354,7 +354,13 @@ class GlobalFuncs {
 			randomClass = availableClasses[cIndex];
 		}
 
-		//temp - only return ONE healing class, for testing ai healing
+
+		//for testing - always pick the same type
+		//randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-large.json"});
+
+
+
+		//for testing - only return ONE healing class, for testing ai healing
 		// if(!gameServer.healerChosen) {
 		// 	gameServer.healerChosen = true;
 		// 	randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-healer.json"});

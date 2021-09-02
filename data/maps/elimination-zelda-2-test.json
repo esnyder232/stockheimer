@@ -4,7 +4,7 @@
 	"mapTimeLength": 10000,
 	"gameData": {
 		"type": "elimination",
-		"roundMapStartTimeLength": 5000,
+		"roundMapStartTimeLength": 10000,
 		"roundStartingTimeLength": 7000,
 		"roundPlayingTimeLength": 60000,
 		"roundOverTimeLength": 7000,

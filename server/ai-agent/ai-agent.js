@@ -76,6 +76,7 @@ class AIAgent {
 
 		//just assume your a damage dealing role in the beginning
 		this.characterRole = "damage";
+		this.characterClearance = 0.7;
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -289,37 +290,6 @@ class AIAgent {
 		//logger.log("info", 'updateing target character distance: ' + this.targetCharacterDistanceSquared);
 	}
 
-	seekPlayer(user) {
-		var aiCharacter = this.gs.gom.getGameObjectByID(this.characterId);
-		var userCharacter = this.gs.gom.getGameObjectByID(user.characterId);
-		if(aiCharacter !== null && aiCharacter.isActive && userCharacter !== null && userCharacter.isActive)
-		{
-			var aiPos = aiCharacter.plBody.getPosition();
-			var userPos = userCharacter.plBody.getPosition();
-
-			//contact the nav grid to get a path
-			if(aiPos !== null && userPos !== null)
-			{
-				var aiNode = this.gs.activeNavGrid.getNode(aiPos.x, -aiPos.y);
-				var userNode = this.gs.activeNavGrid.getNode(userPos.x, -userPos.y);
-
-				if(aiNode !== null && userNode !== null)
-				{
-					this.nodePathToCastle = this.gs.activeNavGrid.AStarSearch(aiNode, userNode);
-					
-					if(this.nodePathToCastle.length > 0)
-					{
-						this.pathSet = true;
-						this.followPath = true;
-						this.currentNode = 0;
-
-						this.findNextLOSNode(aiPos);
-					}
-				}
-			}
-		}
-	}
-
 	insertStopInput() {
 		var finalInput = {
 			up: false,
@@ -462,7 +432,7 @@ class AIAgent {
 
 			if(aiNode !== null && userNode !== null)
 			{
-				this.nodePathToCastle = this.gs.activeNavGrid.AStarSearch(aiNode, userNode);
+				this.nodePathToCastle = this.gs.activeNavGrid.AStarSearch(aiNode, userNode, this.characterClearance);
 				
 				if(this.nodePathToCastle.length > 0)
 				{

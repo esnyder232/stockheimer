@@ -1,10 +1,10 @@
 {
-	"name": "Team Map Square - Elimination",
-	"tilemapResource": "assets/tilemaps/team-map-square.json",
+	"name": "Island - Elimination",
+	"tilemapResource": "assets/tilemaps/elimination-island.json",
 	"mapTimeLength": 10000,
 	"gameData": {
 		"type": "elimination",
-		"roundMapStartTimeLength": 10000,
+		"roundMapStartTimeLength": 5000,
 		"roundStartingTimeLength": 7000,
 		"roundPlayingTimeLength": 60000,
 		"roundOverTimeLength": 7000,

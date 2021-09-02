@@ -23,6 +23,11 @@ class Tilemap {
 		this.tiledUnitsToPlanckUnits = 1;
 
 		this.navGrid = null;
+
+		//there will be 2 navgrids: 
+		//0 - normal (nodes are at the center of each tile)
+		//1 - offset (nodes are at the corners where the tiles meet)
+		this.navGrids = [];
 	}
 
 	init(gameServer) {

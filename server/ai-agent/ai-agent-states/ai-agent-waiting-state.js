@@ -71,10 +71,7 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			//setup direct references because i use them so much in other states
 			this.aiAgent.character = this.aiAgent.gs.gom.getGameObjectByID(this.aiAgent.user.characterId);
 			this.aiAgent.characterPos = this.aiAgent.character.plBody.getPosition();
-
-
-
-
+			
 			//calculate attack range of ai (probably a shitty way to do this, oh well)
 			this.aiAgent.attackingRangeSquared = 10;
 
@@ -88,6 +85,11 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 				if(fireStateResource !== null) {
 					projectileResource = this.aiAgent.gs.rm.getResourceByKey(fireStateResource?.data?.projectileKey);
 				}
+
+				var plRadius = this.aiAgent.globalfuncs.getValueDefault(cr?.data?.planckData?.plRadius, 0.375);
+				var size = this.aiAgent.globalfuncs.getValueDefault(cr?.data?.size, 1);
+
+				this.aiAgent.characterClearance = plRadius*2 * size;
 			}
 
 			//calculate the range of the primary projectile
