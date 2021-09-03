@@ -2,7 +2,7 @@
 	"name": "Island - Elimination",
 	"tilemapResource": "assets/tilemaps/island.json",
 	"mapTimeLength": 10000,
-	"mapMinMatch": 2,
+	"mapMinMatch": 1,
 	"gameData": {
 		"type": "elimination",
 		"roundMapStartTimeLength": 10000,
