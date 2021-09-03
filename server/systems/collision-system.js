@@ -379,35 +379,32 @@ class CollisionSystem {
 		var p2 = this.gs.gom.getGameObjectByID(projectileUserData2.id);
 
 		if(p1 !== null && p2 !== null) {
-			var processCollision = false;
+			var p1Collision = false;
+			var p2Collision = false;
 	
-			//team collision check
+			//p1 team collision check
 			if(p1.collideSameTeamProjectiles && p1.teamId === p2.teamId) {
-				processCollision = true;
+				p1Collision = true;
 			}
 			else if(p1.collideOtherTeamProjectiles && p1.teamId !== p2.teamId) {
-				processCollision = true;
+				p1Collision = true;
 			}
-			
+
+			//p2 team collision check
+			if(p2.collideSameTeamProjectiles && p1.teamId === p2.teamId) {
+				p2Collision = true;
+			}
+			else if(p2.collideOtherTeamProjectiles && p1.teamId !== p2.teamId) {
+				p2Collision = true;
+			}
 	
-			if(processCollision) {
+			if(p1Collision) {
 				p1.collisionProjectile(p2, projectileUserData1, projectileUserData2, contactObj, isProjectileA);
+			}
+
+			if(p2Collision) {
 				p2.collisionProjectile(p1, projectileUserData1, projectileUserData2, contactObj, isProjectileA);
 			}
-
-
-
-
-			// //destroy if the bullet is small
-			// if(p1.bulletType == "bullet")
-			// {
-			// 	p1.timeLength = 0; //cheap and easy
-			// }
-
-			// if(p2.bulletType == "bullet")
-			// {
-			// 	p2.timeLength = 0;
-			// }
 		}
 	}
 

@@ -207,7 +207,7 @@ class Projectile {
 	}
 
 	collisionProjectile(otherP, projectileUserData1, projectileUserData2, contactObj, isProjectileA) {
-		this.timeLength = 0;
+		otherP.timeLength = 0;
 	}
 
 	collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA) {
