@@ -1,18 +1,18 @@
 {
-	"name": "Island - Elimination",
+	"name": "Island - Deathmatch",
 	"tilemapResource": "assets/tilemaps/island.json",
 	"mapTimeLength": 10000,
-	"mapMinMatch": 2,
+	"mapMinMatch": 1,
 	"gameData": {
-		"type": "elimination",
+		"type": "deathmatch",
 		"roundMapStartTimeLength": 10000,
 		"roundStartingTimeLength": 7000,
-		"roundPlayingTimeLength": 60000,
+		"roundPlayingTimeLength": 90000,
 		"roundOverTimeLength": 7000,
 		"roundOverWinTimeLength": 12000,
 		"roundMapEndTimeLength": 5000,
 		"userRespawningTimeLength": 4000,
-		"matchWinCondition": 3
+		"matchWinCondition": 2
 	},
 	"minimumUsersPlaying": 24,
 	"classData": [

@@ -2,6 +2,7 @@
 	"name": "Team Map Square - Elimination",
 	"tilemapResource": "assets/tilemaps/zelda-2-test.json",
 	"mapTimeLength": 10000,
+	"mapMinMatch": 2,
 	"gameData": {
 		"type": "elimination",
 		"roundMapStartTimeLength": 10000,

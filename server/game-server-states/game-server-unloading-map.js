@@ -58,7 +58,8 @@ class GameServerUnloadingMap extends GameServerBaseState {
 		this.gs.cs.deactivate();
 
 		//other stuff
-		this.gs.rotateMapAfterCurrentRound = false;
+		this.gs.mapTimeLengthReached = false;
+		this.gs.currentMatch = 0;
 		this.gs.rotateMapNow = false;
 
 		//this is just to give a few update loops so the managers/user can clear themselves out

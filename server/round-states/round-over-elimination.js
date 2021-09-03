@@ -123,18 +123,19 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 
 		if(this.round.roundTimeAcc >= this.round.roundTimer) {
 			//reset the round num and team wins
-			if(this.matchWon && !this.gs.rotateMapAfterCurrentRound) {
+			if(this.matchWon) {
 				this.round.roundNum = 0;
 				var teams = this.gs.tm.getTeams();
 				for(var i = 0; i < teams.length; i++) {
 					if(!teams[i].isSpectatorTeam) {
-						teams[i].setRoundWins(0)
+						teams[i].setRoundWins(0);
 					}
 				}
+				this.gs.currentMatch++;
 			}
 			
 			//see if a map rotation needs to occur
-			if(this.matchWon && this.gs.rotateMapAfterCurrentRound) {
+			if(this.matchWon && this.gs.mapTimeLengthReached && this.gs.currentMatch >= this.gs.mapMinMatch) {
 				this.round.nextState = new RoundMapEnd.RoundMapEnd(this.gs, this.round);
 			} else {
 				//increase the round count

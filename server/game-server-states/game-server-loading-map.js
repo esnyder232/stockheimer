@@ -220,6 +220,8 @@ class GameServerLoadingMap extends GameServerBaseState {
 		//other stuff
 		this.gs.minimumUsersPlaying = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.minimumUsersPlaying, 0);
 		this.gs.mapTimeLength = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.mapTimeLength, this.gs.mapTimeLengthDefault);
+		this.gs.mapMinMatch = this.globalfuncs.getValueDefault(this.gs.currentMapResource.data?.mapMinMatch, this.gs.mapMinMatchDefault);
+		
 	}
 
 	cbCharacterClassComplete(resource) {

@@ -2,9 +2,10 @@
 	"name": "Team Map Square - Deathmatch",
 	"tilemapResource": "assets/tilemaps/team-map-square.json",
 	"mapTimeLength": 11000,
+	"mapMinMatch": 1,
 	"gameData": {
 		"type": "deathmatch",
-		"roundMapStartTimeLength": 5000,
+		"roundMapStartTimeLength": 10000,
 		"roundStartingTimeLength": 7000,
 		"roundPlayingTimeLength": 90000,
 		"roundOverTimeLength": 7000,

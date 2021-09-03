@@ -130,9 +130,9 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.frameNum++;
 
 		this.gs.mapTimeAcc += dt;
-		if(!this.gs.rotateMapAfterCurrentRound && this.gs.mapTimeAcc >= this.gs.mapTimeLength) {
-			logger.log("info", "Map time length has been reached. Rotating maps after current round is over.");
-			this.gs.rotateMapAfterCurrentRound = true;
+		if(!this.gs.mapTimeLengthReached && this.gs.mapTimeAcc >= this.gs.mapTimeLength) {
+			logger.log("info", "Map time length has been reached. Rotating maps once other conditions are met.");
+			this.gs.mapTimeLengthReached = true;
 		}
 
 		if(this.gs.rotateMapNow) {

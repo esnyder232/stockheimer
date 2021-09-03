@@ -75,6 +75,9 @@ class GameServer {
 		this.minimumUsersPlaying = 0;
 		this.mapTimeLengthDefault = 180000;
 		this.mapTimeLength = 180000;
+		this.mapMinMatch = 1;
+		this.mapMinMatchDefault = 1;
+		this.currentMatch = 0;
 		this.mapTimeAcc = 0;
 
 		this.mapRotation = this.globalfuncs.getValueDefault(serverConfig?.map_rotation, []);
@@ -83,7 +86,7 @@ class GameServer {
 		this.currentMapResource = null;
 		this.currentGameType = "";
 		this.matchWinCondition = 1; //basically, the ammount of rounds a team needs to win to complete the match
-		this.rotateMapAfterCurrentRound = false;
+		this.mapTimeLengthReached = false;
 		this.rotateMapNow = false;
 		this.healsToPointsRatio = 1;
 
