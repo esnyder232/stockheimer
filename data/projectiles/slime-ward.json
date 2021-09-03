@@ -1,0 +1,46 @@
+{
+	"name": "Slime ward",
+	"size": 4.0,
+	"planckData": {
+		"plShape": "circle",
+		"plRadius": 1
+	},
+	"phaserData": {
+		"originX": 0.5,
+		"originY": 0.5,
+		"scaleX": 3.0,
+		"scaleY": 3.0
+	},
+	"physicsData": {
+		"speed": 0,
+		"mass": 100
+	},
+	"renderData": {
+		"spriteKey": "data/sprites/heal-group-smear.json",
+		"frameTag": "main",
+		"hideSprite": false,
+		"animationTimeLength": 100,
+		"repeatNum": 0
+	},
+	"collisionData": {
+		"collideSameTeamCharacters": false,
+		"collideOtherTeamCharacters": true,
+		"collideSelf": false,
+		"collideWalls": false
+	},
+	"projectileData": {
+		"spawnLocationType": "mouse-direction",
+		"spawnOffsetLength": 0.0,
+		"timeLength": 10000,
+		"pushbackVecMagnitude": 30,
+		"destroyOnContact": false
+	},
+	"characterEffectData": [
+		{
+			"type": "force",
+			"mag": 30,
+			"dir": "out",
+			"period": 1
+		}
+	]
+}

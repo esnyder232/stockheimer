@@ -359,6 +359,13 @@ class GlobalFuncs {
 		//randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-large.json"});
 
 
+		//for testing - if the ai choose a particular class, default to something else (useful for testing a new class BUT ONLY you want to be the class)
+		// if (randomClass.key === "data/character-classes/slime-blocker.json") {
+		// 	//default it to slime-mage
+		// 	randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-small.json"});
+		// }
+
+
 
 		//for testing - only return ONE healing class, for testing ai healing
 		// if(!gameServer.healerChosen) {

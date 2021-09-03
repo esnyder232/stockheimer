@@ -1,0 +1,11 @@
+{
+	"name": "Slime Ward",
+	"type": "one-time",
+	"animationSet": "cast",
+	"canLook": true,
+	"canMove": false,
+	"timeLength": 400,
+	"projectileKey": "data/projectiles/slime-ward-wall.json",
+	"projectileTime": 100,
+	"cooldownTimeLength": 100
+}

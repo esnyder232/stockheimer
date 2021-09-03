@@ -105,8 +105,18 @@ class RoundOver extends RoundBaseState.RoundBaseState {
 		this.round.roundTimeAcc += dt;
 
 		if(this.round.roundTimeAcc >= this.round.roundTimer) {
-			//reset the rounds
+			var rotateMaps = false;
+
 			if(this.matchWon) {
+				this.gs.currentMatch++;
+			}
+
+			if(this.matchWon && this.gs.mapTimeLengthReached && this.gs.currentMatch >= this.gs.mapMinMatch) {
+				rotateMaps = true;
+			}
+
+			//reset the rounds scores ONLY if the match is won and the server is NOT going to rotate maps (we want to show the wins/round points in the user list at the end of the map on the client side)
+			if(this.matchWon && !rotateMaps) {
 				this.round.roundNum = 0;
 				var teams = this.gs.tm.getTeams();
 				for(var i = 0; i < teams.length; i++) {
@@ -114,14 +124,11 @@ class RoundOver extends RoundBaseState.RoundBaseState {
 						teams[i].setRoundWins(0);
 					}
 				}
-				this.gs.currentMatch++;
 			}
 
-			//see if a map rotation needs to occur
-			if(this.matchWon && this.gs.mapTimeLengthReached && this.gs.currentMatch >= this.gs.mapMinMatch) {
+			if(rotateMaps) {
 				this.round.nextState = new RoundMapEnd.RoundMapEnd(this.gs, this.round);
 			} else {
-				//increase the round count
 				this.round.roundNum++;
 				this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
 			}

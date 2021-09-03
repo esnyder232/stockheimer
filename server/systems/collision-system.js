@@ -305,6 +305,33 @@ class CollisionSystem {
 	endCharacterProjectileCollision(characterUserData, projectileUserData, contactObj, isCharacterA)
 	{
 		//logger.log("info", 'end character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
+		var p = this.gs.gom.getGameObjectByID(projectileUserData.id);
+
+		if(c !== null && p !== null) {
+			var processCollision = false;
+	
+			//self collision check
+			if(c.id === p.characterId) {
+				if(p.collideSelf) {
+					processCollision = true;
+				}
+			} 
+			//team collision check
+			else {
+				if(p.collideSameTeamCharacters && p.teamId === c.teamId) {
+					processCollision = true;
+				}
+				else if(p.collideOtherTeamCharacters && p.teamId !== c.teamId) {
+					processCollision = true;
+				}
+			}
+	
+			if(processCollision) {
+				p.endCollisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA);
+				c.endCollisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA);
+			}
+		}
 	}
 
 
@@ -351,18 +378,36 @@ class CollisionSystem {
 		var p1 = this.gs.gom.getGameObjectByID(projectileUserData1.id);
 		var p2 = this.gs.gom.getGameObjectByID(projectileUserData2.id);
 
-		if(p1 !== null && p2 !== null)
-		{
-			//destroy if the bullet is small
-			if(p1.bulletType == "bullet")
-			{
-				p1.timeLength = 0; //cheap and easy
+		if(p1 !== null && p2 !== null) {
+			var processCollision = false;
+	
+			//team collision check
+			if(p1.collideSameTeamProjectiles && p1.teamId === p2.teamId) {
+				processCollision = true;
+			}
+			else if(p1.collideOtherTeamProjectiles && p1.teamId !== p2.teamId) {
+				processCollision = true;
+			}
+			
+	
+			if(processCollision) {
+				p1.collisionProjectile(p2, projectileUserData1, projectileUserData2, contactObj, isProjectileA);
+				p2.collisionProjectile(p1, projectileUserData1, projectileUserData2, contactObj, isProjectileA);
 			}
 
-			if(p2.bulletType == "bullet")
-			{
-				p2.timeLength = 0;
-			}
+
+
+
+			// //destroy if the bullet is small
+			// if(p1.bulletType == "bullet")
+			// {
+			// 	p1.timeLength = 0; //cheap and easy
+			// }
+
+			// if(p2.bulletType == "bullet")
+			// {
+			// 	p2.timeLength = 0;
+			// }
 		}
 	}
 

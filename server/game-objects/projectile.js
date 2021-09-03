@@ -39,6 +39,8 @@ class Projectile {
 
 		this.collideSameTeamCharacters = false;
 		this.collideOtherTeamCharacters = false;
+		this.collideSameTeamProjectiles = false;
+		this.collideOtherTeamProjectiles = false;
 		this.collideWalls = false;
 		this.collideSelf = false;
 		this.characterEffectData = [];
@@ -69,6 +71,8 @@ class Projectile {
 		this.size = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.size);
 		this.collideSameTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSameTeamCharacters, this.collideSameTeamCharacters);
 		this.collideOtherTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideOtherTeamCharacters, this.collideOtherTeamCharacters);
+		this.collideSameTeamProjectiles = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSameTeamProjectiles, this.collideSameTeamProjectiles);
+		this.collideOtherTeamProjectiles = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideOtherTeamProjectiles, this.collideOtherTeamProjectiles);
 		this.collideWalls = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideWalls);
 		this.collideSelf = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSelf);
 		this.characterEffectData = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.characterEffectData);
@@ -180,6 +184,18 @@ class Projectile {
 	postWebsocketUpdate() {
 	}
 
+	postPhysicsUpdate() {
+
+	}
+
+	getPlanckPosition() {
+		if(this.plBody !== null)
+		{
+			return this.plBody.getPosition();
+		}
+		return null;
+	}
+
 
 	checkDirty() {
 		var result = false;
@@ -188,6 +204,10 @@ class Projectile {
 			result = this.plBody.isAwake();
 		}
 		return result || this.isDirty;
+	}
+
+	collisionProjectile(otherP, projectileUserData1, projectileUserData2, contactObj, isProjectileA) {
+		this.timeLength = 0;
 	}
 
 	collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA) {
@@ -199,6 +219,11 @@ class Projectile {
 			this.timeLength = 0;
 		}
 	}
+
+	endCollisionCharacter() {
+		
+	}
+
 
 	collisionWall(projectileUserData, wallUserData, contactObj, isProjectileA) {
 		this.timeLength = 0;

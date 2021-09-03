@@ -1,0 +1,11 @@
+{
+	"name": "Slime Mellee",
+	"type": "one-time",
+	"animationSet": "attack",
+	"canLook": false,
+	"canMove": true,
+	"timeLength": 300,
+	"projectileKey": "data/projectiles/slime-mellee-blocker.json",
+	"projectileTime": 0,
+	"cooldownTimeLength": 1000
+}

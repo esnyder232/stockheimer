@@ -77,6 +77,11 @@ class Character {
 		//resource data
 		this.size = 1;
 		this.planckRadius = 1;
+
+		this.projectileEnter = [];
+		this.projectileStay = [];
+		this.projectileLeave = [];
+		this.projectileIndex = {};
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -256,6 +261,11 @@ class Character {
 		this.em = null;
 		this.activeStateCooldowns = [];
 		this.stateCooldownsTemplates = {};
+
+		this.projectileEnter.length = 0;
+		this.projectileStay.length = 0;
+		this.projectileLeave.length = 0;
+		this.projectileIndex = {};
 	}
 
 	update(dt) {
@@ -340,13 +350,13 @@ class Character {
 
 			//step 3 - translate the inputs for this frame into events
 			//cooldowns get applied here
-			if(this.frameInputController.isFiring.state && !this.frameInputController.isFiring.prevState) {
+			if(this.frameInputController.isFiring.state) {
 				if(!this.stateCooldownsTemplates[this.characterClassResource.data.fireStateKey].onCooldown) {
 					this.frameEventQueue.push(this.characterClassResource.data.fireStateKey);
 				}
 			}
 
-			if(this.frameInputController.isFiringAlt.state && !this.frameInputController.isFiringAlt.prevState) {
+			if(this.frameInputController.isFiringAlt.state) {
 				if(!this.stateCooldownsTemplates[this.characterClassResource.data.altFireStateKey].onCooldown) {
 					this.frameEventQueue.push(this.characterClassResource.data.altFireStateKey);
 				}
@@ -589,6 +599,137 @@ class Character {
 		this.em.update(dt);
 	}
 
+	postPhysicsUpdate(dt) {
+
+		/////////////////////////////////
+		// update projectile collision //
+		/////////////////////////////////
+		//give each projectile that the character is still colliding with an update tick
+		for(var i = 0; i < this.projectileStay.length; i++) {
+			// console.log("Currently colliding with: " + this.projectileStay[i].id + ", " + this.projectileStay[i].timerAcc);
+
+			for(var j = 0; j < this.projectileStay[i].effects.length; j++) {
+				var e = this.projectileStay[i].effects[j];
+				if(e.bUpdate) {
+					e.timeAcc += dt;
+					if(e.timeAcc >= e.period) {
+						this.processProjectileHitEffects(this.projectileStay[i].p, e.characterEffectData);
+					}
+				}
+			}
+		}
+
+
+		/////////////////////////////////
+		// new projectile collision    //
+		/////////////////////////////////
+		//process collisions occuring this frame
+		while(this.projectileEnter.length > 0) {
+			var o = this.projectileEnter.shift();
+			// console.log("NOW collided with: " + o.p.id);
+
+			// apply a 1 time hit back vector (legacy. Maybe removed eventually.)
+			//get resource data
+			var pushbackVecMagnitude = this.gs.globalfuncs.getValueDefault(o.p?.projectileResource?.data?.projectileData?.pushbackVecMagnitude, 10);
+			
+			//update last hit by
+			if(o.p.ownerId !== null) {
+				this.lastHitByOwnerId = o.p.ownerId;
+				this.lastHitByOwnerType = o.p.ownerType;
+			}
+
+			//add a push back to the character
+			var pVel = o.p.plBody.getLinearVelocity();
+			var temp = this.gs.pl.Vec2(pVel.x, pVel.y);
+			temp.normalize();
+			var xDir = temp.x;
+			var yDir = temp.y;
+			var mag = pushbackVecMagnitude / this.size;
+
+			this.addForceImpulse(xDir, yDir, mag);
+
+			//for each character effect, create a wrapper object to keep track of the collision time
+			var characterEffectData = this.gs.globalfuncs.getValueDefault(o.p?.projectileResource?.data?.characterEffectData, []);
+
+			for(var i = 0; i < characterEffectData.length; i++) {
+				var e = {
+					characterEffectData: characterEffectData[i],
+					timeAcc: 0,
+					period: characterEffectData[i].period,
+					bUpdate: typeof characterEffectData[i].period === "number" ? true : false
+				};
+
+				o.effects.push(e);
+
+				//process the hit effects on the first hit
+				this.processProjectileHitEffects(o.p, e.characterEffectData);
+				
+			}
+
+			//add projectile to the "staying" array until the character uncollides with it
+			this.projectileStay.push(o);
+		}
+
+		//////////////////////////////////////
+		// existing projectile collision    //
+		//////////////////////////////////////
+		while(this.projectileLeave.length > 0) {
+			var p = this.projectileLeave.shift();
+			// console.log("LEAVING collided with: " + p.id);
+			var existingProjectile = this.getProjectileByID(p.id);
+
+			if(existingProjectile !== null) {
+				
+				var pindex = this.projectileStay.findIndex((x) => {return x.id === p.id});
+				if(pindex >= 0) {
+					this.projectileStay.splice(pindex, 1);
+				}
+
+				this.updateProjectileIndex(p.id, null, "delete");
+			}
+		}
+	}
+
+	processProjectileHitEffects(p, characterEffectData) {
+		//update last hit by
+		if(p.ownerId !== null) {
+			this.lastHitByOwnerId = p.ownerId;
+			this.lastHitByOwnerType = p.ownerType;
+		}
+
+		//go through each character hit effect
+		switch(characterEffectData.type) {
+			case "damage":
+				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
+				this.applyDamageEffect(p.ownerId, value);
+				break;
+			case "heal":
+				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
+				this.applyHealEffect(p.ownerId, value);
+				break;
+			case "force":
+				var pPos = p.getPlanckPosition();
+				var cPos = this.getPlanckPosition();
+				if(pPos !== null && cPos !== null) {
+					var mag = this.gs.globalfuncs.getValueDefault(characterEffectData.mag, 0);
+					var dir = this.gs.globalfuncs.getValueDefault(characterEffectData.dir, "out");
+					var dirMult
+					if(dir === "out") {
+						dirMult = 1;
+					} else {
+						dirMult = -1;
+					}
+
+					var temp = this.gs.pl.Vec2((cPos.x - pPos.x) * dirMult, (cPos.y - pPos.y) * dirMult);
+					temp.normalize();
+					this.addForceImpulse(temp.x, temp.y, mag);
+				}
+				break;
+		}
+		
+	}
+
+
 	//reset dirty flags back to false
 	postWebsocketUpdate() {
 		this.isInputDirty = false;
@@ -639,42 +780,49 @@ class Character {
 		}
 	}
 
-	collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA) {
-		//get resource data
-		var pushbackVecMagnitude = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.projectileData?.pushbackVecMagnitude, 10);
-		var characterEffectData = this.gs.globalfuncs.getValueDefault(p?.projectileResource?.data?.characterEffectData, []);
+	getProjectileByID(id) {
+		var o = null;
 
-		//update last hit by
-		if(p.ownerId !== null) {
-			this.lastHitByOwnerId = p.ownerId;
-			this.lastHitByOwnerType = p.ownerType;
+		if(this.projectileIndex[id] !== undefined) {
+			o = this.projectileIndex[id];
 		}
 
-		//go through each character hit effect
-		for(var i = 0; i < characterEffectData.length; i++) {
-			switch(characterEffectData[i].type) {
-				case "damage":
-					var value = this.gs.globalfuncs.getValueDefault(characterEffectData[i].value, 0);
-					this.applyDamageEffect(p.ownerId, value);
-					break;
-				case "heal":
-					var value = this.gs.globalfuncs.getValueDefault(characterEffectData[i].value, 0);
-					this.applyHealEffect(p.ownerId, value);
-					break;
+		return o;
+	}
+
+	
+	updateProjectileIndex(id, obj, transaction) {
+		if(transaction == 'create') {
+			this.projectileIndex[id] = obj;
+		}
+		else if(transaction == 'delete') {
+			if(this.projectileIndex[id] !== undefined) {
+				delete this.projectileIndex[id];
 			}
 		}
-
-
-		//add a push back to the character
-		var pVel = p.plBody.getLinearVelocity();
-		var temp = this.gs.pl.Vec2(pVel.x, pVel.y);
-		temp.normalize();
-		var xDir = temp.x;
-		var yDir = temp.y;
-		var mag = pushbackVecMagnitude / this.size;
-
-		this.addForceImpulse(xDir, yDir, mag);
 	}
+
+
+	//gets called by the collision system when the collision starts
+	collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA) {
+		var existingProjectile = this.getProjectileByID(p.id);
+
+		if(existingProjectile === null) {
+			var o = {
+				id: p.id,
+				p: p,
+				effects: []
+			}
+			this.projectileEnter.push(o);
+			this.updateProjectileIndex(o.id, o, "create");
+		}
+	}
+	
+	//gets called by the collision system when the collision ends
+	endCollisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA) {
+		this.projectileLeave.push(p);
+	}
+
 	
 	collisionCharacter(otherCharacter) {
 		//apply contact damage

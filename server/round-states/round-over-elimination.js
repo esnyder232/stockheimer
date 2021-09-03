@@ -45,19 +45,30 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 		}
 		//if more than one team is alive, find the teams with the highest hpAverage
 		else if(teamsAlive > 1) {
-			//the first team in the list has the highest hpAverage (sorted previously)
-			winningTeamIds.push(userAliveSummary.teamArray[0].teamId);
-			
-			var highestHpAverage = userAliveSummary.teamArray[0].hpAverage;
-			var smallestDelta = 0.000001;
+			//check for teams that have the most users alive
+			var highestUsersAlive = userAliveSummary.teamArray[0].usersAlive;
+			var teamsHighestUsersAlive = userAliveSummary.teamArray.filter((x) => {return x.usersAlive === highestUsersAlive;});
 
-			//find if any subsequent teams in the list have the same hpAverage
-			//i=1 to skip the first team
-			for(var i = 1; i < userAliveSummary.teamArray.length; i++) {
-				if(Math.abs(userAliveSummary.teamArray[i].hpAverage - highestHpAverage) < smallestDelta) {
-					winningTeamIds.push(userAliveSummary.teamArray[i].teamId);
-				} else {
-					break;
+			//if there is only 1 team with the highest users alive, they are the winner
+			if(teamsHighestUsersAlive.length === 1) {
+				winningTeamIds.push(teamsHighestUsersAlive[0].teamId)
+			}
+			//otherwise, find the team with the highest hpAverage (sorted previously)
+			else {
+				//the first team in the list will always be considered the winner (because it already has the highest usersAlive and hpAverage from the sorting)
+				winningTeamIds.push(teamsHighestUsersAlive[0].teamId);
+			
+				var highestHpAverage = teamsHighestUsersAlive.hpAverage;
+				var smallestDelta = 0.000001;
+	
+				//find if any subsequent teams in the list have the same hpAverage
+				//i=1 to skip the first team
+				for(var i = 1; i < teamsHighestUsersAlive.length; i++) {
+					if(Math.abs(teamsHighestUsersAlive[i].hpAverage - highestHpAverage) < smallestDelta) {
+						winningTeamIds.push(teamsHighestUsersAlive[i].teamId);
+					} else {
+						break;
+					}
 				}
 			}
 		}	
@@ -122,8 +133,18 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 		this.round.roundTimeAcc += dt;
 
 		if(this.round.roundTimeAcc >= this.round.roundTimer) {
-			//reset the round num and team wins
+			var rotateMaps = false;
+
 			if(this.matchWon) {
+				this.gs.currentMatch++;
+			}
+
+			if(this.matchWon && this.gs.mapTimeLengthReached && this.gs.currentMatch >= this.gs.mapMinMatch) {
+				rotateMaps = true;
+			}
+
+			//reset the rounds scores ONLY if the match is won and the server is NOT going to rotate maps (we want to show the wins/round points in the user list at the end of the map on the client side)
+			if(this.matchWon && !rotateMaps) {
 				this.round.roundNum = 0;
 				var teams = this.gs.tm.getTeams();
 				for(var i = 0; i < teams.length; i++) {
@@ -131,14 +152,11 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 						teams[i].setRoundWins(0);
 					}
 				}
-				this.gs.currentMatch++;
 			}
-			
-			//see if a map rotation needs to occur
-			if(this.matchWon && this.gs.mapTimeLengthReached && this.gs.currentMatch >= this.gs.mapMinMatch) {
+
+			if(rotateMaps) {
 				this.round.nextState = new RoundMapEnd.RoundMapEnd(this.gs, this.round);
 			} else {
-				//increase the round count
 				this.round.roundNum++;
 				this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
 			}
