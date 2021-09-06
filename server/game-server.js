@@ -66,7 +66,6 @@ class GameServer {
 
 		this.appRoot = path.join(__dirname, "..");
 
-		this.activeNavGrid = null;
 		this.activeTilemap = null;
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server

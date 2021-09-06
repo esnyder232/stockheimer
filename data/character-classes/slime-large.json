@@ -12,7 +12,7 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
-	"size": 4,
+	"size": 3.99,
 	"idleMsPerFrame": 500,
 	"moveMsPerFrame": 250,
 	"animationSets": {

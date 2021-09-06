@@ -299,7 +299,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 
 			if(!bError) {
 				this.gs.activeTilemap = tm;
-				this.gs.activeNavGrid = tm.getNavGrid();
 			}
 			else {
 				errorMessage = "Error occured when creating tilemap and navgrid for tilemap '" + resource.key + "'.";

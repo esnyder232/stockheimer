@@ -14,7 +14,7 @@
 		"matchWinCondition": 2
 	},
 	
-	"minimumUsersPlaying": 0,
+	"minimumUsersPlaying": 2,
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",

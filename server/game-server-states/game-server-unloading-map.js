@@ -46,7 +46,6 @@ class GameServerUnloadingMap extends GameServerBaseState {
 			this.gs.tmm.destroyTilemap(this.gs.activeTilemap.id);
 		}
 		this.gs.activeTilemap = null;
-		this.gs.activeNavGrid = null;
 
 		//unload game objects
 		var gameObjects = this.gs.gom.getGameObjects();

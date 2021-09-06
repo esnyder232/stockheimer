@@ -420,43 +420,39 @@ class AIAgent {
 
 
 
+
+
+
+
+
 	findaStarPathToPlayer() {
 		//contact the nav grid to get a path
 		var aiPos = this.characterPos;
 		var userPos = this.targetCharacter.getPlanckPosition();
 
-		if(aiPos !== null && userPos !== null)
-		{
-			var aiNode = this.gs.activeNavGrid.getNode(aiPos.x, -aiPos.y);
-			var userNode = this.gs.activeNavGrid.getNode(userPos.x, -userPos.y);
-
-			if(aiNode !== null && userNode !== null)
+		if(aiPos !== null && userPos !== null) {
+			this.nodePathToCastle = this.gs.activeTilemap.AStarSearch(aiPos, userPos, this.characterClearance);
+			
+			if(this.nodePathToCastle.length > 0)
 			{
-				this.nodePathToCastle = this.gs.activeNavGrid.AStarSearch(aiNode, userNode, this.characterClearance);
-				
-				if(this.nodePathToCastle.length > 0)
-				{
-					this.currentNode = 0;
+				this.currentNode = 0;
 
-					this.findNextLOSNode(aiPos);
-				}
+				this.findNextLOSNode(aiPos);
 			}
 		}
 	}
 
 	//this is already assuming the ai has LOS to the player
 	findStraightPathToPlayer() {
-		var aiPos = this.characterPos;
 		var userPos = this.targetCharacter.getPlanckPosition();
 
 		this.currentNode = 0;
 
-		if(aiPos !== null && userPos !== null)
-		{
-			var aiNode = this.gs.activeNavGrid.getNode(aiPos.x, -aiPos.y);
-			var userNode = this.gs.activeNavGrid.getNode(userPos.x, -userPos.y);
+		if(userPos !== null) {
+			//stupid
+			var userNode = this.gs.activeTilemap.getNode(userPos.x, -userPos.y, this.characterClearance);
 
-			if(aiNode !== null && userNode !== null)
+			if(userNode !== null)
 			{
 				this.nodePathToCastle = [];
 				this.nodePathToCastle.push(userNode);

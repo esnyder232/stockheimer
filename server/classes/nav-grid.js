@@ -9,14 +9,16 @@ class NavGrid {
 		this.tm = null; //direct reference to the tile map itself
 		this.nodes = []; //2d array [y][x]
 		this.edges = []; //1d array
+		this.edgesDiagonal = [] //1d array
 
 		this.nodesIdIndex = {};
 		this.edgesIdIndex = {};
+		this.edgesDiagonalIdIndex = {};
 
 		this.nodeIdCounter = 0;
 		this.edgeIdCounter = 0;
+		this.isNormalNavgrid = true;
 
-		this.castleNode = null;
 		this.toCastleNodeMap = null;
 		this.tiledUnitsToPlanckUnits = 1;
 	}
@@ -31,11 +33,11 @@ class NavGrid {
 		this.gs = null;
 		this.globalfuncs = null;
 		this.tm = null;
-		this.nodes = [];
-		this.edges = [];
+		this.nodes.length = 0;
+		this.edges.length = 0;
 		this.nodesIdIndex = {};
 		this.edgesIdIndex = {};
-		this.castleNode = null;
+		this.edgesDiagonalIdIndex = {};
 		this.toCastleNodeMap = null;
 	}
 
@@ -46,41 +48,97 @@ class NavGrid {
 			this.tiledUnitsToPlanckUnits = this.tm.tiledUnitsToPlanckUnits;
 
 			//make a node for each coordinate in the tilemap
-			for(var j = 0; j < this.tm.height; j++)
-			{
-				this.nodes.push([]);
-				for(var i = 0; i < this.tm.width; i++)
-				{
-					var tileIndex = (j * this.tm.width) + i;
-					var tileType = this.tm.tileset[this.tm.navGridLayer.data[tileIndex]];
-
-					//kinda wierd. If its got the colideProjectile property on it, just treat that as the source of truth
-					var collideProjectiles = false;
-					if(tileType.collideProjectiles !== undefined && tileType.collideProjectiles !== null) {
-						collideProjectiles = tileType.collideProjectiles;
-					}
-					//if its a wall, and the collideProjectiles property is NOT on it, just assume the wall is SUPPOSED to block projectiles
-					else if (tileType.impassable !== undefined && tileType.impassable !== null && tileType.impassable === true) {
-						collideProjectiles = true
-					}
-
-					var n = {
-						id: this.nodeIdCounter++,
-						x: i,
-						y: j,
-						edges: [],
-						xPlanck: i * this.tiledUnitsToPlanckUnits,
-						yPlanck: j * this.tiledUnitsToPlanckUnits,
-						impassable: tileType.impassable === true ? true : false,
-						movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
-						collideProjectiles: collideProjectiles,
-						castle: tileType.castle === true ? true : false,
-						trueClearance: 0
-					}
+			//If this is the NORMAL navgrid, create a node for each tile where the node is in the MIDDLE of the tile
+			if(this.isNormalNavgrid) {
+				for(var j = 0; j < this.tm.height; j++) {
+					this.nodes.push([]);
+					for(var i = 0; i < this.tm.width; i++) {
+						var tileIndex = (j * this.tm.width) + i;
+						var tileType = this.tm.tileset[this.tm.navGridLayer.data[tileIndex]];
 	
-					this.nodes[j].push(n);
+						//kinda wierd. If its got the colideProjectile property on it, just treat that as the source of truth
+						var collideProjectiles = false;
+						if(tileType.collideProjectiles !== undefined && tileType.collideProjectiles !== null) {
+							collideProjectiles = tileType.collideProjectiles;
+						}
+						//if its a wall, and the collideProjectiles property is NOT on it, just assume the wall is SUPPOSED to block projectiles
+						else if (tileType.impassable !== undefined && tileType.impassable !== null && tileType.impassable === true) {
+							collideProjectiles = true
+						}
+	
+						var n = {
+							id: this.nodeIdCounter++,
+							x: i,
+							y: j,
+							edges: [],
+							edgesDiagonal: [],
+							xPlanck: i * this.tiledUnitsToPlanckUnits,
+							yPlanck: j * this.tiledUnitsToPlanckUnits,
+							impassable: tileType.impassable === true ? true : false,
+							movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
+							collideProjectiles: collideProjectiles,
+							clearance: -1
+						}
+		
+						this.nodes[j].push(n);
+					}
 				}
 			}
+			//If this is the OFFSET navgrid, create a node for each tile where the node is where the tiles MEET
+			else {
+				for(var j = 0; j <= this.tm.height; j++) {
+					this.nodes.push([]);
+						for(var i = 0; i <= this.tm.width; i++) {
+						var node = {
+							id: this.nodeIdCounter++,
+							x: i,
+							y: j,
+							edges: [],
+							edgesDiagonal: [],
+							xPlanck: (i - 0.5) * this.tiledUnitsToPlanckUnits,
+							yPlanck: (j - 0.5) * this.tiledUnitsToPlanckUnits,
+							impassable: false,
+							movementCost: 1, //just assume its 1 for now
+							collideProjectiles: false,
+							clearance: -1
+						};
+
+						//calculate properties for the node based on the 1-4 adjacent tiles
+						var normalNodes = this.tm.getNormalNodesFromOffsetNode(i, j);
+						var impassable = false;
+						var collideProjectiles = false;
+						
+						for(var k = 0; k < normalNodes.length; k++) {
+							var xNormal = normalNodes[k].x;
+							var yNormal = normalNodes[k].y;
+
+							var tileIndex = (yNormal * this.tm.width) + xNormal;
+							var tileType = this.tm.tileset[this.tm.navGridLayer.data[tileIndex]];
+		
+							//calculate "collideProjectiles"
+							//kinda wierd. If its got the colideProjectile property on it, just treat that as the source of truth
+							if(tileType.collideProjectiles !== undefined && tileType.collideProjectiles !== null) {
+								collideProjectiles = collideProjectiles || tileType.collideProjectiles;
+							}
+							//if its a wall, and the collideProjectiles property is NOT on it, just assume the wall is SUPPOSED to block projectiles
+							else if (tileType.impassable !== undefined && tileType.impassable !== null && tileType.impassable === true) {
+								collideProjectiles = true;
+							}
+
+							//calculate "impassable"
+							if(tileType.impassable !== undefined && tileType.impassable === true){
+								impassable = true;
+							}
+						}
+						
+						node.collideProjectiles = collideProjectiles;
+						node.impassable = impassable;
+
+						this.nodes[j].push(node);
+					}
+				}
+			}
+			
 			
 			//create edges for each node
 			for(var j = 0; j < this.nodes.length; j++)
@@ -91,6 +149,7 @@ class NavGrid {
 					var potentialNeighbors = [];
 					var coordSum = currentNode.x + currentNode.y;
 					var isEven = (coordSum % 2) == 0 ? true : false;
+					var potentialDiagonalNeighbors = [];
 		
 					//order the neighbors differently depending if the manhattan distance is even or odd (for some reason to paths just come out better this way)
 					//even nodes, do CCW, N, W, S E
@@ -109,7 +168,14 @@ class NavGrid {
 						potentialNeighbors.push({x: currentNode.x-1, y:currentNode.y, dir:'west'});
 						potentialNeighbors.push({x: currentNode.x, y:currentNode.y-1, dir:'north'});
 					}
-		
+
+					//also add diagonal neighbors (for clearance calculations only)
+					potentialDiagonalNeighbors.push({x: currentNode.x+1, y:currentNode.y-1, dir:'north-east'});
+					potentialDiagonalNeighbors.push({x: currentNode.x+1, y:currentNode.y+1, dir:'south-east'});
+					potentialDiagonalNeighbors.push({x: currentNode.x-1, y:currentNode.y+1, dir:'south-west'});
+					potentialDiagonalNeighbors.push({x: currentNode.x-1, y:currentNode.y-1, dir:'north-west'});
+					
+					//add neighbors to edges and currentNode
 					for(var k = 0; k < potentialNeighbors.length; k++)
 					{
 						var neigh = potentialNeighbors[k];
@@ -131,29 +197,50 @@ class NavGrid {
 							currentNode.edges.push(e.id);
 						}
 					}
+
+					//add diagonal neighbors to edges and currentNode
+					for(var k = 0; k < potentialDiagonalNeighbors.length; k++)
+					{
+						var neigh = potentialDiagonalNeighbors[k];
+						
+						//check to see if the node exists
+						if(neigh.y >= 0 
+							&& neigh.y < this.nodes.length 
+							&& neigh.x >= 0 
+							&& neigh.x < this.nodes[neigh.y].length)
+						{
+							var e = {
+								id: this.edgeIdCounter++,
+								nodeFromId: currentNode.id,
+								nodeToId: this.nodes[neigh.y][neigh.x].id,
+								dir: neigh.dir
+							};
+
+							this.edgesDiagonal.push(e);
+							currentNode.edgesDiagonal.push(e.id);
+						}
+					}
 				}
 			}
 
 			//build indices
 			this.buildIndex();
 
-			//for each node, calculate the true clearance
-			for(var j = 0; j < this.nodes.length; j++) {
-				for(var i = 0; i < this.nodes[j].length; i++) {
-					this.nodes[j][i].trueClearance = this.calcTrueClearance(i, j) * this.tiledUnitsToPlanckUnits;
-				}
-			}
+			//calculate clearances
+			this.calculateNodeClearance();
 
 			//fuck it, we'll just make the walls here
-			for(var j = 0; j < this.nodes.length; j++) {
-				for(var i = 0; i < this.nodes[j].length; i++) {
-					if(this.nodes[j][i].impassable) {
-						var w = this.gs.gom.createGameObject("wall");
-						w.x = i * this.tiledUnitsToPlanckUnits;
-						w.y = (j * this.tiledUnitsToPlanckUnits) * -1;
-						w.size = this.tiledUnitsToPlanckUnits;
-						w.collideProjectiles = this.nodes[j][i].collideProjectiles;
-						w.init(this.gs);
+			if(this.isNormalNavgrid) {
+				for(var j = 0; j < this.nodes.length; j++) {
+					for(var i = 0; i < this.nodes[j].length; i++) {
+						if(this.nodes[j][i].impassable) {
+							var w = this.gs.gom.createGameObject("wall");
+							w.x = i * this.tiledUnitsToPlanckUnits;
+							w.y = (j * this.tiledUnitsToPlanckUnits) * -1;
+							w.size = this.tiledUnitsToPlanckUnits;
+							w.collideProjectiles = this.nodes[j][i].collideProjectiles;
+							w.init(this.gs);
+						}
 					}
 				}
 			}
@@ -164,6 +251,7 @@ class NavGrid {
 	buildIndex() {
 		this.nodesIdIndex = {};
 		this.edgesIdIndex = {};
+		this.edgesDiagonalIdIndex = {};
 		for(var j = 0; j < this.nodes.length; j++)
 		{
 			for(var i = 0; i < this.nodes[j].length; i++)
@@ -176,49 +264,95 @@ class NavGrid {
 		{
 			this.edgesIdIndex[this.edges[i].id] = this.edges[i];
 		}
+
+		for(var i = 0; i < this.edgesDiagonal.length; i++)
+		{
+			this.edgesDiagonalIdIndex[this.edgesDiagonal[i].id] = this.edgesDiagonal[i];
+		}
 	}
 
-	//Calculates true clearance for 1 node.
-	//The true clearance starts in the upper-left, and pushes bottom-right. Its always a square because all unit's profiles are circles.
-	calcTrueClearance(xNode, yNode) {
-		var currentClearance = 0;
-		var allClear = true;
+	//this calculates the clearance for each node in the navgrid. It uses the brushfire algorithm.
+	//for NORMAL navgrids, the clearance is always 0 or 1 + 2n (0,1,3,5,7,...)
+	//for OFFSET navgrids, the clearance is always 0 or 2 + 2n (0,2,4,6,8,...)
+	calculateNodeClearance() {
+		var initialFrontier = [];
+		var frontier = [];
+		var visitedNodes = {};
 
-		while(allClear) {
-			//check if the next clearance is still within bounds of the map
-			if((yNode + currentClearance) < 0 || (yNode + currentClearance) >= this.nodes.length) {
-				allClear = false;
-			}
-			else if((xNode + currentClearance) < 0 || (xNode + currentClearance) >= this.nodes[yNode + currentClearance].length) {
-				allClear = false;
-			}
-
-			//check all nodes that are in the next clearance's perimeter
-			//bottom row
-			if(allClear) {
-				for(var i = 0; i <= currentClearance; i++) {
-					if(this.nodes[yNode+currentClearance][xNode+i].impassable) {
-						allClear = false;
-					}
+		//go through the nodes to get an initial frontier (all the impassable nodes)
+		//also assign them a 0 clerance because they are impassable
+		for(var j = 0; j < this.nodes.length; j++) {
+			for (var i = 0; i < this.nodes[j].length; i++) {
+				if(this.nodes[j][i].impassable) {
+					this.nodes[j][i].clearance = 0;
+					initialFrontier.push(this.nodes[j][i]);
+					visitedNodes[this.nodes[j][i].id] = true;
 				}
 			}
+		}
+		
+		//calculate the initial frontier clearance (either 1 or 2 depending on if its the NORMAL navgrid or OFFSET navgrid)
+		while(initialFrontier.length > 0) {
+			var currentFrontierNode = initialFrontier.shift();
 
-			//right column
-			if(allClear) {
-				for(var j = 0; j < currentClearance; j++) {
-					if(this.nodes[yNode+j][xNode+currentClearance].impassable) {
-						allClear = false;
-					}
-				}
+			var currentFrontierNodeEdges = [];
+			//get any edges it may have (and therefore its neighbors)
+			for(var i = 0; i < currentFrontierNode.edges.length; i++) {
+				currentFrontierNodeEdges.push(this.edgesIdIndex[currentFrontierNode.edges[i]]);
 			}
 
-			if(allClear) {
-				currentClearance++;
+			//diagonals too
+			for(var i = 0; i < currentFrontierNode.edgesDiagonal.length; i++) {
+				currentFrontierNodeEdges.push(this.edgesDiagonalIdIndex[currentFrontierNode.edgesDiagonal[i]]);
+			}
+
+			for(var j = 0; j < currentFrontierNodeEdges.length; j++) {
+				var neighborNodeInQuestion = this.nodesIdIndex[currentFrontierNodeEdges[j].nodeToId];
+
+				//if the neighbor hasn't been visited yet, calculate clearance and add it to the frontier if aplicable
+				if(visitedNodes[neighborNodeInQuestion.id] === undefined) {
+					visitedNodes[neighborNodeInQuestion.id] = true;
+					if(this.isNormalNavgrid) {
+						neighborNodeInQuestion.clearance = 1 * this.tiledUnitsToPlanckUnits;
+					} else {
+						neighborNodeInQuestion.clearance = 2 * this.tiledUnitsToPlanckUnits;
+					}
+
+					frontier.push(neighborNodeInQuestion);
+				}
 			}
 		}
 
-		return currentClearance;
+		//calculate the frontier clearance
+		while(frontier.length > 0) {
+			var currentFrontierNode = frontier.shift();
+
+			var currentFrontierNodeEdges = [];
+			//get any edges it may have (and therefore its neighbors)
+			for(var i = 0; i < currentFrontierNode.edges.length; i++) {
+				currentFrontierNodeEdges.push(this.edgesIdIndex[currentFrontierNode.edges[i]]);
+			}
+
+			//diagonals too
+			for(var i = 0; i < currentFrontierNode.edgesDiagonal.length; i++) {
+				currentFrontierNodeEdges.push(this.edgesDiagonalIdIndex[currentFrontierNode.edgesDiagonal[i]]);
+			}
+
+			for(var j = 0; j < currentFrontierNodeEdges.length; j++) {
+				var neighborNodeInQuestion = this.nodesIdIndex[currentFrontierNodeEdges[j].nodeToId];
+
+				//if the neighbor hasn't been visited yet, calculate clearance and add it to the frontier if aplicable
+				if(visitedNodes[neighborNodeInQuestion.id] === undefined) {
+					visitedNodes[neighborNodeInQuestion.id] = true;
+					neighborNodeInQuestion.clearance = currentFrontierNode.clearance + (2  * this.tiledUnitsToPlanckUnits);
+					frontier.push(neighborNodeInQuestion);
+				}
+			}
+		}
+
+		var debugHeere = true;
 	}
+
 
 	//creates an node map from every node to a specific target node. Uses breadth first search.
 	//OLD - not really used anymore...but i'm keeping it around just incase i need it again.
@@ -360,7 +494,7 @@ class NavGrid {
 		}
 
 		//if nodeEnd is not in a tile with specified clearance, find the closest tile that has the clearance
-		if(nodeEnd.trueClearance < clearance) {
+		if(nodeEnd.clearance < clearance) {
 			nodeEnd = this.breadthFirstSearchClearance(nodeEnd, clearance);
 		}
 
@@ -409,7 +543,7 @@ class NavGrid {
 						var heuristic = this.manhattanDistanceHeuristicFunction(neighborNodeInQuestion, nodeEnd);
 	
 						//check first to see if its impassibla (wall). If not, add it to the frontier to be processed next
-						if(!neighborNodeInQuestion.impassable && clearance <= neighborNodeInQuestion.trueClearance)
+						if(!neighborNodeInQuestion.impassable && clearance <= neighborNodeInQuestion.clearance)
 						{
 							//add its neighbors to the frontier
 							frontier.push({
@@ -487,7 +621,7 @@ class NavGrid {
 		var bNodeFound = false;
 		var finalNode = nodeStart;
 
-		if(nodeStart.trueClearance >= clearance) {
+		if(nodeStart.clearance >= clearance) {
 			return nodeStart;
 		}
 
@@ -517,7 +651,7 @@ class NavGrid {
 					//Add the neighbor to the breadcrumbs. Even if the neighbor is impassable, we should add it anyway to provide a path to get out of the impassable neighbor (incase the entity accidentally gets pushed in the wall)
 					breadCrumbs[neighborNodeInQuestion.id] = currentFrontierNode.id;
 
-					if(neighborNodeInQuestion.trueClearance >= clearance) {
+					if(neighborNodeInQuestion.clearance >= clearance) {
 						bNodeFound = true;
 						finalNode = neighborNodeInQuestion;
 						break;
@@ -528,15 +662,6 @@ class NavGrid {
 
 		return finalNode;
 	}
-
-
-
-
-
-
-
-
-
 
 
 
@@ -563,6 +688,18 @@ class NavGrid {
 		var node = null;
 		var yNode = Math.round(y / this.tiledUnitsToPlanckUnits);
 		var xNode = Math.round(x / this.tiledUnitsToPlanckUnits);
+
+		if(yNode >= 0 && yNode < this.nodes.length) {
+			if(xNode >= 0 && xNode < this.nodes[yNode].length) {
+				var node = this.nodes[yNode][xNode];
+			}
+		}
+		
+		return node;
+	}
+
+	getNodeExact(xNode, yNode) {
+		var node = null;
 
 		if(yNode >= 0 && yNode < this.nodes.length) {
 			if(xNode >= 0 && xNode < this.nodes[yNode].length) {
