@@ -428,7 +428,7 @@ class CollisionSystem {
 			}
 		
 			if(processCollision) {
-				p.collisionWall(projectileUserData, wallUserData, contactObj, isProjectileA);
+				p.collisionWall(w, projectileUserData, wallUserData, contactObj, isProjectileA);
 			}
 		}
 	}

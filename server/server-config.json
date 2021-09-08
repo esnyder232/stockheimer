@@ -13,7 +13,7 @@
 	"allow_simulated_user_ai_agents": true,
 	"map_rotation": [
 		"data/maps/elimination-team-map-square.json",
-		"data/maps/elimination-zelda-2-test.json",
+		"data/maps/deathmatch-zelda-2-test.json",
 		"data/maps/elimination-island.json"
 	]
 }

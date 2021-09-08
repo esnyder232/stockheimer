@@ -225,8 +225,15 @@ class Projectile {
 	}
 
 
-	collisionWall(projectileUserData, wallUserData, contactObj, isProjectileA) {
-		this.timeLength = 0;
+	collisionWall(w, projectileUserData, wallUserData, contactObj, isProjectileA) {
+		var collided = false;
+
+		//check if it actually hit the wall or was allowed to go through
+		collided = w.projectileBlockCheck(this.plBody);
+
+		if(collided) {
+			this.timeLength = 0;
+		}
 	}
 	
 	///////////////////////////////////

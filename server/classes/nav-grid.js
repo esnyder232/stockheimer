@@ -55,15 +55,20 @@ class NavGrid {
 					for(var i = 0; i < this.tm.width; i++) {
 						var tileIndex = (j * this.tm.width) + i;
 						var tileType = this.tm.tileset[this.tm.navGridLayer.data[tileIndex]];
-	
-						//kinda wierd. If its got the colideProjectile property on it, just treat that as the source of truth
 						var collideProjectiles = false;
+						var collideProjectilesDirection = "";
+
+						//kinda wierd. If its got the colideProjectile property on it, just treat that as the source of truth
 						if(tileType.collideProjectiles !== undefined && tileType.collideProjectiles !== null) {
 							collideProjectiles = tileType.collideProjectiles;
 						}
 						//if its a wall, and the collideProjectiles property is NOT on it, just assume the wall is SUPPOSED to block projectiles
 						else if (tileType.impassable !== undefined && tileType.impassable !== null && tileType.impassable === true) {
 							collideProjectiles = true
+						}
+
+						if(collideProjectiles) {
+							collideProjectilesDirection = tileType.collideProjectilesDirection === undefined ? "" : tileType.collideProjectilesDirection;
 						}
 	
 						var n = {
@@ -77,6 +82,7 @@ class NavGrid {
 							impassable: tileType.impassable === true ? true : false,
 							movementCost: tileType.movementCost !== undefined ? tileType.movementCost : 1,
 							collideProjectiles: collideProjectiles,
+							collideProjectilesDirection: collideProjectilesDirection,
 							clearance: -1
 						}
 		
@@ -239,6 +245,7 @@ class NavGrid {
 							w.y = (j * this.tiledUnitsToPlanckUnits) * -1;
 							w.size = this.tiledUnitsToPlanckUnits;
 							w.collideProjectiles = this.nodes[j][i].collideProjectiles;
+							w.collideProjectilesDirection = this.nodes[j][i].collideProjectilesDirection;
 							w.init(this.gs);
 						}
 					}

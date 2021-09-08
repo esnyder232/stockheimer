@@ -14,6 +14,10 @@ class Wall {
 
 		this.impassable = true; //default is impassable
 		this.collideProjectiles = true; //default is blocking projectiles
+		this.collideProjectilesDirection = ""; //default is blank (blocks all of them)
+		this.collideProjectilesAllDirections = false;
+
+		this.collideProjectilesNormalsArray = [];
 	}
 
 	init(gameServer) {
@@ -21,6 +25,45 @@ class Wall {
 
 		const Vec2 = this.gs.pl.Vec2;
 		var wallShape = this.gs.pl.Box(this.size/2, this.size/2, Vec2(0,0));
+
+		if(this.collideProjectilesDirection === "") {
+			this.collideProjectilesAllDirections = true;
+		}
+
+		//calculate all the vectors that will block the projectile
+		var collideProjectilesDirectionSplit = this.collideProjectilesDirection.toLowerCase().split(",");
+
+		for(var i = 0; i < collideProjectilesDirectionSplit.length; i++) {
+			var vec = null;
+			if(collideProjectilesDirectionSplit[i] === "n") {
+				vec = new Vec2(0, 1);
+
+				// const Vec2 = this.gs.pl.Vec2;
+				// var losResults = {
+				// 	isLOS: true,
+				// 	pathUnobstructed: true
+				// }
+		
+				// var p1 = new Vec2(pos.x, pos.y);
+				// vec = {x: 0, y: 1};
+			}
+			else if(collideProjectilesDirectionSplit[i] === "e") {
+				vec = new Vec2(1, 0);
+				// vec = {x: 1, y: 0};
+			}
+			else if(collideProjectilesDirectionSplit[i] === "s") {
+				vec = new Vec2(0, -1);
+				// vec = {x: 0, y: -1};
+			}
+			else if(collideProjectilesDirectionSplit[i] === "w") {
+				vec = new Vec2(-1, 0);
+				// vec = {x: -1, y: 0};
+			}
+
+			if(vec !== null) {
+				this.collideProjectilesNormalsArray.push(vec);
+			}
+		}
 
 		this.plBody = this.gs.world.createBody({
 			position: Vec2(this.x, this.y),
@@ -50,6 +93,30 @@ class Wall {
 
 		this.gs = null;
 		this.id = null;
+	}
+	
+	//returns true if the projectile body's velocity would collide with wall
+	projectileBlockCheck(pBody) {
+		var collided = false;
+
+		if(this.collideProjectilesAllDirections) {
+			collided = true;
+		} else {
+			var pv = pBody.getLinearVelocity();
+			//see if any of the dot products with the wall's "normal" vectors
+			for(var i = 0; i < this.collideProjectilesNormalsArray.length; i++) {
+				var res = this.gs.pl.Vec2.dot(this.collideProjectilesNormalsArray[i], pv);
+				var debugHere = true;
+				if(res > 0) {
+					collided = true;
+					break;
+				}
+				
+			}
+
+		}
+
+		return collided;
 	}
 }
 
