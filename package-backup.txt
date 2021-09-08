@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build-dev": "./node_modules/.bin/esbuild ./client/game-client.js --bundle --sourcemap --outfile=./client-dist/app.bundle.js",
-	"build-prod": "./node_modules/.bin/esbuild ./client/game-client.js --bundle --minify --outfile=./client-dist/app.bundle.js"
+    "dev": "webpack --env.env=dev && node index.js",
+    "prod": "webpack --env.env=prod && node index.js",
+    "build-dev": "webpack --env.env=dev",
+    "build-prod": "webpack --env.env=prod"
   },
   "repository": {
     "type": "git",
