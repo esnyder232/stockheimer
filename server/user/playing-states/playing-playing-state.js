@@ -22,7 +22,9 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 		if(!this.spawnFailed && c !== null) {
 			if(this.user.gs.theRound.getStateEnum() === GameConstants.RoundStates["STARTING"])
 			{
-				c.changeAllowInput(false);
+				c.changeAllowLook(true);
+				c.changeAllowMove(false);
+				c.changeAllowShoot(false);
 			}
 			
 			//also register for an event for when the character dies
@@ -60,15 +62,18 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 						case "round-map-end":
 							var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
 							if(c !== null) {
-								c.changeAllowInput(false);
+								c.changeAllowLook(true);
+								c.changeAllowMove(false);
+								c.changeAllowShoot(false);
 							}
 							break;
 						case "round-started":
 							//allow the user to move and shoot again
 							var c = this.user.gs.gom.getGameObjectByID(this.user.characterId);
-							if(c !== null)
-							{
-								c.changeAllowInput(true);
+							if(c !== null) {
+								c.changeAllowLook(true);
+								c.changeAllowMove(true);
+								c.changeAllowShoot(true);
 							}
 							break;
 						case "round-restarting":
