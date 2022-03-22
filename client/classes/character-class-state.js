@@ -12,6 +12,7 @@ export default class CharacterClassState {
 		this.repeatNum = -1;
 		this.frameTagDirection = "frameTagDown";
 		this.isFrameTagDirectionDirty = false;
+		this.isAnimationSetKeyDirty = false;
 		this.preserveAnimationProgress = false;
 		this.cooldownTimeLength = 0;
 	}
@@ -54,10 +55,12 @@ export default class CharacterClassState {
 
 		if(this.isIdleState) {
 			this.updateLookDirection();
+			this.updateAnimationSetKey();
 
-			if(this.isFrameTagDirectionDirty) {
+			if(this.isFrameTagDirectionDirty || this.isAnimationSetKeyDirty) {
 				this.setSpriteGraphics();
 				this.isFrameTagDirectionDirty = false;
+				this.isAnimationSetKeyDirty = false;
 			}
 		}
 		else {
@@ -105,6 +108,20 @@ export default class CharacterClassState {
 		if(this.frameTagDirection !== newFrameTagDirection) {
 			this.frameTagDirection = newFrameTagDirection;
 			this.isFrameTagDirectionDirty = true;
+		}
+	}
+
+	//this just checks to see if the animation should be "idle" or "move"
+	updateAnimationSetKey() {
+		var isInputPressed = this.character.clientInputs.up.state || this.character.clientInputs.down.state || this.character.clientInputs.left.state || this.character.clientInputs.right.state;
+
+		if(this.animationSetKey == "idle" && isInputPressed) {
+			this.animationSetKey = "move";
+			this.isAnimationSetKeyDirty = true;
+		}
+		else if(this.animationSetKey == "move" && !isInputPressed) {
+			this.animationSetKey = "idle";
+			this.isAnimationSetKeyDirty = true;
 		}
 	}
 

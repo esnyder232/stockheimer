@@ -20,6 +20,7 @@ export default class Character {
 		this.x = 0;
 		this.y = 0;
 		this.serverCharacterDirection = 0.0;
+		this.clientInputs = {};
 		
 		this.globalfuncs = null;
 		this.state = null;
@@ -148,6 +149,12 @@ export default class Character {
 		this.seq = new ServerEventQueue();
 		this.seq.serverEventQueueInit(this.gc);
 		this.seq.batchRegisterToEvent(this.serverEventMapping);
+
+
+		this.clientInputs.up = {state: false, prevState: false};
+		this.clientInputs.down = {state: false, prevState: false};
+		this.clientInputs.left = {state: false, prevState: false};
+		this.clientInputs.right = {state: false, prevState: false};
 	}
 
 	activated() {
@@ -686,6 +693,8 @@ export default class Character {
 
 		this.updateRenderTarget(dt);
 		this.render(dt);
+
+		this.updateClientInputs();
 	}
 
 
@@ -693,6 +702,11 @@ export default class Character {
 		this.serverX = e.characterPosX;
 		this.serverY = e.characterPosY;
 		this.serverCharacterDirection = e.characterDirection;
+
+		this.clientInputs.up.state = e.up;
+		this.clientInputs.down.state = e.down;
+		this.clientInputs.left.state = e.left;
+		this.clientInputs.right.state = e.right;
 
 		//temporary way just to flag a hp change
 		if(this.hpCur !== e.characterHpCur) {
@@ -723,6 +737,13 @@ export default class Character {
 
 		this.x = actualx;
 		this.y = actualy;
+	}
+
+	updateClientInputs() {
+		this.clientInputs.up.prevState = this.clientInputs.up.state;
+		this.clientInputs.down.prevState = this.clientInputs.down.state;
+		this.clientInputs.left.prevState = this.clientInputs.left.state;
+		this.clientInputs.right.prevState = this.clientInputs.right.state;
 	}
 
 	//this actually renders the character in phaser

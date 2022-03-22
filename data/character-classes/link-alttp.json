@@ -1,0 +1,27 @@
+{
+	"name": "Link",
+	"hp": 40,
+	"speed": 4,
+	"planckData": {
+		"plShape": "circle",
+		"plRadius": 0.375
+	},
+	"phaserData": {
+		"originX": 0.5,
+		"originY": 0.55,
+		"scaleX": 0.08,
+		"scaleY": 0.08
+	},
+	"size": 1,
+	"idleMsPerFrame": 400,
+	"moveMsPerFrame": 200,
+	"animationSets": {
+		"idle": "data/animation-sets/link-alttp-idle-set.json",
+		"move": "data/animation-sets/link-alttp-move-set.json",
+		"attack": "data/animation-sets/slime-mage-attack-set.json",
+		"cast": "data/animation-sets/slime-mage-fire-set.json"
+	},
+	"deathSpriteKey": "data/sprites/gravestone.json",
+	"fireStateKey": "data/character-class-states/slime-fire.json",
+	"altFireStateKey": "data/character-class-states/slime-fire-med.json"
+}

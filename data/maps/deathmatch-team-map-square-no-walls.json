@@ -14,14 +14,15 @@
 		"matchWinCondition": 2
 	},
 	
-	"minimumUsersPlaying": 2,
+	"minimumUsersPlaying": 0,
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",
 		"data/character-classes/slime-large.json",
 		"data/character-classes/slime-fighter.json",
 		"data/character-classes/slime-healer.json",
-		"data/character-classes/slime-blocker.json"
+		"data/character-classes/slime-blocker.json",
+		"data/character-classes/link-alttp.json"
 	],
 	"teamData": [
 		{

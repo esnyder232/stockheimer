@@ -941,7 +941,11 @@ class Character {
 			"characterPosX": bodyPos.x,
 			"characterPosY": bodyPos.y,
 			"characterHpCur": this.hpCur,
-			"characterDirection": this.frameInputController.characterDirection.value
+			"characterDirection": this.frameInputController.characterDirection.value,
+			"up": this.clientInputController.up.state,
+			"down": this.clientInputController.down.state,
+			"left": this.clientInputController.left.state,
+			"right": this.clientInputController.right.state
 		};
 
 		return eventData;
