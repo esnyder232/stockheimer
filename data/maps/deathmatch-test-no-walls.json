@@ -6,7 +6,7 @@
 		"type": "deathmatch",
 		"roundMapStartTimeLength": 100,
 		"roundStartingTimeLength": 100,
-		"roundPlayingTimeLength": 900000,
+		"roundPlayingTimeLength": 9000000,
 		"roundOverTimeLength": 7000,
 		"roundOverWinTimeLength": 12000,
 		"roundMapEndTimeLength": 5000,
