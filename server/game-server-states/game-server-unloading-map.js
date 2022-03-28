@@ -72,6 +72,14 @@ class GameServerUnloadingMap extends GameServerBaseState {
 		var activeUsers = this.gs.um.getActiveUsers();
 		var userAgents = this.gs.uam.getUserAgents();
 
+		//process client packets
+		for(var i = 0; i < userAgents.length; i++) {
+			var wsh = this.gs.wsm.getWebsocketByID(userAgents[i].wsId);
+			if(wsh !== null) {
+				wsh.processClientPackets();
+			}
+		}
+
 		//process client events
 		for(var i = 0; i < activeUsers.length; i++) {
 			activeUsers[i].processClientEvents();

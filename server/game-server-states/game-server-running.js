@@ -60,6 +60,14 @@ class GameServerRunning extends GameServerBaseState {
 		var aiAgents = this.gs.aim.getAIAgents();
 		var teams = this.gs.tm.getTeams();
 		
+		//process client packets
+		for(var i = 0; i < userAgents.length; i++) {
+			var wsh = this.gs.wsm.getWebsocketByID(userAgents[i].wsId);
+			if(wsh !== null) {
+				wsh.processClientPackets();
+			}
+		}
+
 		//process incoming messages here (might be split up based on type of messages later. Like process input HERE, and other messages later)
 		for(var i = 0; i < activeUsers.length; i++) {
 			activeUsers[i].processClientEvents();

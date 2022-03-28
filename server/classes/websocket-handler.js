@@ -43,6 +43,8 @@ class WebsocketHandler {
 		this.sentPacketHistory = []; //array of sent packet data. This doesn't actually hold the packet payload, but it holds the sent/ack callbacks, and timeSent and timeAcked for each packet for ping calculation
 									 //This is index by the packet sequence number.
 		this.rttPacketHistoryLength = 60; //the number of packets to look back from the local sequence number to calculate the rtt
+
+		this.recievedPacketQueue = [];
 	}
 
 	init(gameServer, userId, userAgentId, ws) {
@@ -120,112 +122,122 @@ class WebsocketHandler {
 		logger.log("info", 'socket onpong: ' + e);
 	}
 
+	//this function queues up the packets to be decoded and processed later at the beginning of the next frame.
 	onmessage(e) {
-		var view = new DataView(e);
-		var n = 0; //number of bytes in
-		var m = 0; //event count
-		var bytesRead = 0;
+		this.recievedPacketQueue.push(e);
 
-		//parse the packet header
-		this.remoteSequence = view.getUint16(n); //sequence number
-		n += 2;
-		bytesRead += 2;
+	}
 
-		var onMessageAck = view.getUint16(n); //ack
-		n += 2;
-		bytesRead += 2;
-		
-		m = view.getUint8(n); //event count
-		n++;
-		bytesRead += 1;
-
-		//logger.log("info", 'ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
-
-		//start going through the events
-		for(var i = 0; i < m; i++)
-		{
-			n += this.decodeEvent(n, view);
-		}
-
-		//process any callbacks from the most recent ack from the client
-		//EXAMPLE 1
-		//this.localSequenceMaxValue = 65535;
-		//this.ack = 10
-		//onMessageAck = 15
-		//this means, I need to process:
-		// 11
-		// 12
-		// 13
-		// 14
-		// 15
-		//
-		// ackStart would be 11. Correct.
-		// ackRange would be 4. Correct.
-
-		// EXAMPLE 2 (wrap around)
-		//this.localSequenceMaxValue = 65535;
-		//this.ack = 65530
-		//onMessageAck = 5
-		//this means, I need to process:
-		// 65531
-		// 65532
-		// 65533
-		// 65534
-		// 65535
-		// 0
-		// 1
-		// 2
-		// 3
-		// 4
-		// 5
-		//
-		// ackStart would be 65531. Correct.
-		// ackRange would be: 10. Correct.
-
-		if(onMessageAck != this.ack)
-		{
-			// var timeNow = performance.now();
-			var timeNow = 2;
-			var ackStart = this.ack + 1; 
-			var ackRange = onMessageAck - ackStart;
-
-			//deals with sequence wrap around
-			if(ackRange < 0)
+	//this function actually decodes the packets that came in from the client
+	processClientPackets() {
+		while(this.recievedPacketQueue.length > 0) {
+			var view = new DataView(this.recievedPacketQueue.shift());
+			var n = 0; //number of bytes in
+			var m = 0; //event count
+			var bytesRead = 0;
+	
+			//parse the packet header
+			this.remoteSequence = view.getUint16(n); //sequence number
+			n += 2;
+			bytesRead += 2;
+	
+			var onMessageAck = view.getUint16(n); //ack
+			n += 2;
+			bytesRead += 2;
+			
+			m = view.getUint8(n); //event count
+			n++;
+			bytesRead += 1;
+	
+			//logger.log("info", 'ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
+	
+			//start going through the events
+			for(var i = 0; i < m; i++)
 			{
-				ackRange = onMessageAck - ackStart + this.localSequenceMaxValue + 1;
+				n += this.decodeEvent(n, view);
 			}
 	
-			// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
-			// logger.log("info", this.ack);
-			// logger.log("info", onMessageAck);
-			// logger.log("info", ackStart);
-			// logger.log("info", ackRange);
+			//process any callbacks from the most recent ack from the client
+			//EXAMPLE 1
+			//this.localSequenceMaxValue = 65535;
+			//this.ack = 10
+			//onMessageAck = 15
+			//this means, I need to process:
+			// 11
+			// 12
+			// 13
+			// 14
+			// 15
+			//
+			// ackStart would be 11. Correct.
+			// ackRange would be 4. Correct.
 	
-			for(var i = 0; i <= ackRange; i++)
+			// EXAMPLE 2 (wrap around)
+			//this.localSequenceMaxValue = 65535;
+			//this.ack = 65530
+			//onMessageAck = 5
+			//this means, I need to process:
+			// 65531
+			// 65532
+			// 65533
+			// 65534
+			// 65535
+			// 0
+			// 1
+			// 2
+			// 3
+			// 4
+			// 5
+			//
+			// ackStart would be 65531. Correct.
+			// ackRange would be: 10. Correct.
+	
+			if(onMessageAck != this.ack)
 			{
-				var actualIndex = (ackStart + i) % (this.localSequenceMaxValue + 1);
-				//logger.log("info", '--Actual index: ' + actualIndex);
-
-				//update the timeEnd for ping calculations
-				this.sentPacketHistory[actualIndex].timeAcked = timeNow;
-
-				//call any ack callbacks
-				if(this.sentPacketHistory[actualIndex].ackCallbacks.length > 0)
+				// var timeNow = performance.now();
+				var timeNow = 2;
+				var ackStart = this.ack + 1; 
+				var ackRange = onMessageAck - ackStart;
+	
+				//deals with sequence wrap around
+				if(ackRange < 0)
 				{
-					//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
-					for(var j = 0; j < this.sentPacketHistory[actualIndex].ackCallbacks.length; j++)
-					{
-						//logger.log("info", '--- CALLBACK FOR ' + actualIndex + ". MiscData: " + JSON.stringify(this.sentPacketHistory[actualIndex].ackCallbacks[j].miscData));
-						
-						this.sentPacketHistory[actualIndex].ackCallbacks[j].cbAck(this.sentPacketHistory[actualIndex].ackCallbacks[j].miscData)
-					}
-		
-					this.sentPacketHistory[actualIndex].ackCallbacks.length = 0;
+					ackRange = onMessageAck - ackStart + this.localSequenceMaxValue + 1;
 				}
+		
+				// logger.log("info", '==== ON MESSAGE CALLBACK CALC ====');
+				// logger.log("info", this.ack);
+				// logger.log("info", onMessageAck);
+				// logger.log("info", ackStart);
+				// logger.log("info", ackRange);
+		
+				for(var i = 0; i <= ackRange; i++)
+				{
+					var actualIndex = (ackStart + i) % (this.localSequenceMaxValue + 1);
+					//logger.log("info", '--Actual index: ' + actualIndex);
+	
+					//update the timeEnd for ping calculations
+					this.sentPacketHistory[actualIndex].timeAcked = timeNow;
+	
+					//call any ack callbacks
+					if(this.sentPacketHistory[actualIndex].ackCallbacks.length > 0)
+					{
+						//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+						for(var j = 0; j < this.sentPacketHistory[actualIndex].ackCallbacks.length; j++)
+						{
+							//logger.log("info", '--- CALLBACK FOR ' + actualIndex + ". MiscData: " + JSON.stringify(this.sentPacketHistory[actualIndex].ackCallbacks[j].miscData));
+							
+							this.sentPacketHistory[actualIndex].ackCallbacks[j].cbAck(this.sentPacketHistory[actualIndex].ackCallbacks[j].miscData)
+						}
+			
+						this.sentPacketHistory[actualIndex].ackCallbacks.length = 0;
+					}
+				}
+				this.ack = onMessageAck;
 			}
-			this.ack = onMessageAck;
 		}
 	}
+
 
 	calcRTT() {
 		//count back from the current local sequence number, and calculate the average rtt
@@ -756,7 +768,6 @@ class WebsocketHandler {
 
 		return n - oldN;
 	}
-
 
 	createPacketForUser() {
 		//logger.log("info", 'creating packet for user: ' + user.username + '    localSequenceNumber: ' + this.localSequence);
