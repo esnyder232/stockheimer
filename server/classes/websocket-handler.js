@@ -45,6 +45,8 @@ class WebsocketHandler {
 		this.rttPacketHistoryLength = 60; //the number of packets to look back from the local sequence number to calculate the rtt
 
 		this.recievedPacketQueue = [];
+
+		this.wsSendOptions = {};
 	}
 
 	init(gameServer, userId, userAgentId, ws) {
@@ -53,6 +55,10 @@ class WebsocketHandler {
 		this.userAgentId = userAgentId;
 		this.ws = ws;
 		this.userAgent = this.gs.uam.getUserAgentByID(this.userAgentId);
+		this.wsSendOptions = {
+			binary: true,
+			compress: false
+		}
 
 		//calculate maxPacketSize through config values
 		//this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (serverConfig.max_players * serverConfig.fps * 8));
@@ -913,7 +919,7 @@ class WebsocketHandler {
 		// this.localSequence++;
 		// this.localSequence = this.localSequence % this.localSequenceMaxValue;
 
-		this.ws.send(buffer);
+		this.ws.send(buffer, this.wsSendOptions);
 	}
 
 
