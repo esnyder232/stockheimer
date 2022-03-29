@@ -776,148 +776,146 @@ class WebsocketHandler {
 	}
 
 	createPacketForUser() {
-		//logger.log("info", 'creating packet for user: ' + user.username + '    localSequenceNumber: ' + this.localSequence);
+		var user = this.gs.um.getUserByID(this.userId);
 		
-		// var user = this.gs.um.getUserByID(this.userId);
-		//var buffer = new ArrayBuffer(this.maxPacketSize);
-		// this.calculateBytesUsed();
-		var buffer = new ArrayBuffer(1);
-		// var view = new DataView(buffer);
-		// var n = 0; //current byte within the packet
-		// var m = 0; //number of events
+		this.calculateBytesUsed();
+		var buffer = new ArrayBuffer(this.currentBytes);
+		var view = new DataView(buffer);
+		var n = 0; //current byte within the packet
+		var m = 0; //number of events
 
-		// view.setUint16(0, this.localSequence); //sequence Number
-		// view.setUint16(2, this.remoteSequence); //ack (most recent remote sequence number)
-		// n += 4;
+		view.setUint16(0, this.localSequence); //sequence Number
+		view.setUint16(2, this.remoteSequence); //ack (most recent remote sequence number)
+		n += 4;
 
-		// n += 1; //skipping 1 byte for the event count
+		n += 1; //skipping 1 byte for the event count
 
-		// var bcontinue = true;
+		var bcontinue = true;
 
-		// //start going through the eventQueues
+		//start going through the eventQueues
+		for(var i = 0; i < this.eventQueues.length; i++)
+		{
+			if(!bcontinue)
+			{
+				break;
+			}
+
+			//for each event, encode it into the packet
+			while(this.eventQueues[i].length > 0) {
+				var e = this.eventQueues[i].shift();
+	
+				//check the length of event to make sure it fits
+				var bytesRequired = this.getEventSize(e);
+
+				if(bytesRequired <= this.currentBytes - n)
+				{
+					//encode the event
+					var bytesWritten = this.encodeEventInBuffer(e, view, n);
+
+					if(bytesWritten > 0)
+					{
+						n += bytesWritten;
+						
+						//increase event count
+						m++;
+					}
+					else
+					{
+						logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
+					}
+
+					//mark the event for deletion (used later when double checking that all events made it through)
+					e.isSent = true;
+					this.isEventQueuesDirty = true;
+				}
+				//the packet is full
+				else
+				{
+					bcontinue = false;
+				}
+			}
+
+			//OLD
+			// for(var j = 0; j < this.eventQueues[i].length; j++)
+			// {
+			// 	var e = this.eventQueues[i][j];
+	
+			// 	//check the length of event to make sure it fits
+			// 	var bytesRequired = this.getEventSize(e);
+
+			// 	if(bytesRequired <= this.currentBytes - n)
+			// 	{
+			// 		//encode the event
+			// 		var bytesWritten = this.encodeEventInBuffer(e, view, n);
+
+			// 		if(bytesWritten > 0)
+			// 		{
+			// 			n += bytesWritten;
+						
+			// 			//increase event count
+			// 			m++;
+			// 		}
+			// 		else
+			// 		{
+			// 			logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
+			// 		}
+
+			// 		//mark the event for deletion (used later when double checking that all events made it through)
+			// 		e.isSent = true;
+			// 		this.isEventQueuesDirty = true;
+			// 	}
+			// 	//the packet is full
+			// 	else
+			// 	{
+			// 		bcontinue = false;
+			// 	}
+			// }			
+		}
+
+		// //delete events that were processed, and log a warning when they aren't (shouldn't happen, but you never know)
 		// for(var i = 0; i < this.eventQueues.length; i++)
 		// {
-		// 	if(!bcontinue)
+		// 	if(this.eventQueues[i].length > 0)
 		// 	{
-		// 		break;
-		// 	}
-
-		// 	//for each event, encode it into the packet
-		// 	while(this.eventQueues[i].length > 0) {
-		// 		var e = this.eventQueues[i].shift();
-	
-		// 		//check the length of event to make sure it fits
-		// 		var bytesRequired = this.getEventSize(e);
-
-		// 		if(bytesRequired <= this.currentBytes - n)
+		// 		for(var j = this.eventQueues[i].length - 1; j >= 0; j--)
 		// 		{
-		// 			//encode the event
-		// 			var bytesWritten = this.encodeEventInBuffer(e, view, n);
-
-		// 			if(bytesWritten > 0)
+		// 			//logger.log("info", 'CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
+		// 			//doublecheck - log the events that were not sent
+		// 			if(!this.eventQueues[i][j].isSent)
 		// 			{
-		// 				n += bytesWritten;
-						
-		// 				//increase event count
-		// 				m++;
-		// 			}
-		// 			else
-		// 			{
-		// 				logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
+		// 				logger.log("info", '!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
+		// 				logger.log("info", ' - User: ' + user.username);
+		// 				logger.log("info", ' - event: ' + JSON.stringify(this.eventQueues[i][j]));
 		// 			}
 
-		// 			//mark the event for deletion (used later when double checking that all events made it through)
-		// 			e.isSent = true;
-		// 			this.isEventQueuesDirty = true;
-		// 		}
-		// 		//the packet is full
-		// 		else
-		// 		{
-		// 			bcontinue = false;
+		// 			//logger.log("info", 'Splicing');
+		// 			this.eventQueues[i].splice(j, 1);
 		// 		}
 		// 	}
-
-		// 	//OLD
-		// 	// for(var j = 0; j < this.eventQueues[i].length; j++)
-		// 	// {
-		// 	// 	var e = this.eventQueues[i][j];
-	
-		// 	// 	//check the length of event to make sure it fits
-		// 	// 	var bytesRequired = this.getEventSize(e);
-
-		// 	// 	if(bytesRequired <= this.currentBytes - n)
-		// 	// 	{
-		// 	// 		//encode the event
-		// 	// 		var bytesWritten = this.encodeEventInBuffer(e, view, n);
-
-		// 	// 		if(bytesWritten > 0)
-		// 	// 		{
-		// 	// 			n += bytesWritten;
-						
-		// 	// 			//increase event count
-		// 	// 			m++;
-		// 	// 		}
-		// 	// 		else
-		// 	// 		{
-		// 	// 			logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
-		// 	// 		}
-
-		// 	// 		//mark the event for deletion (used later when double checking that all events made it through)
-		// 	// 		e.isSent = true;
-		// 	// 		this.isEventQueuesDirty = true;
-		// 	// 	}
-		// 	// 	//the packet is full
-		// 	// 	else
-		// 	// 	{
-		// 	// 		bcontinue = false;
-		// 	// 	}
-		// 	// }			
 		// }
 
-		// // //delete events that were processed, and log a warning when they aren't (shouldn't happen, but you never know)
-		// // for(var i = 0; i < this.eventQueues.length; i++)
-		// // {
-		// // 	if(this.eventQueues[i].length > 0)
-		// // 	{
-		// // 		for(var j = this.eventQueues[i].length - 1; j >= 0; j--)
-		// // 		{
-		// // 			//logger.log("info", 'CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
-		// // 			//doublecheck - log the events that were not sent
-		// // 			if(!this.eventQueues[i][j].isSent)
-		// // 			{
-		// // 				logger.log("info", '!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
-		// // 				logger.log("info", ' - User: ' + user.username);
-		// // 				logger.log("info", ' - event: ' + JSON.stringify(this.eventQueues[i][j]));
-		// // 			}
+		//check to see if a callback was associated with it (mainly for fragments)
+		if(this.sentPacketHistory[this.localSequence].sendCallbacks.length > 0)
+		{
+			//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
 
-		// // 			//logger.log("info", 'Splicing');
-		// // 			this.eventQueues[i].splice(j, 1);
-		// // 		}
-		// // 	}
-		// // }
+			for(var i = 0; i < this.sentPacketHistory[this.localSequence].sendCallbacks.length; i++)
+			{
+				this.sentPacketHistory[this.localSequence].sendCallbacks[i].cbSend(this.sentPacketHistory[this.localSequence].sendCallbacks[i].miscData);
+			}
 
-		// //check to see if a callback was associated with it (mainly for fragments)
-		// if(this.sentPacketHistory[this.localSequence].sendCallbacks.length > 0)
-		// {
-		// 	//logger.log("info", "WebSocketHandler for Userid: " + this.userId + '. SEND Callbacks found for ack #' + this.localSequence);
+			this.sentPacketHistory[this.localSequence].sendCallbacks.length = 0;
+		}
 
-		// 	for(var i = 0; i < this.sentPacketHistory[this.localSequence].sendCallbacks.length; i++)
-		// 	{
-		// 		this.sentPacketHistory[this.localSequence].sendCallbacks[i].cbSend(this.sentPacketHistory[this.localSequence].sendCallbacks[i].miscData);
-		// 	}
+		view.setUint8(4, m); //payload event count
 
-		// 	this.sentPacketHistory[this.localSequence].sendCallbacks.length = 0;
-		// }
+		//update packetHistory with timeSent
+		// this.sentPacketHistory[this.localSequence].timeSent = performance.now();
+		this.sentPacketHistory[this.localSequence].timeSent = 0;
+		this.sentPacketHistory[this.localSequence].timeAcked = 0;
 
-		// view.setUint8(4, m); //payload event count
-
-		// //update packetHistory with timeSent
-		// // this.sentPacketHistory[this.localSequence].timeSent = performance.now();
-		// this.sentPacketHistory[this.localSequence].timeSent = 0;
-		// this.sentPacketHistory[this.localSequence].timeAcked = 0;
-
-		// this.localSequence++;
-		// this.localSequence = this.localSequence % this.localSequenceMaxValue;
+		this.localSequence++;
+		this.localSequence = this.localSequence % this.localSequenceMaxValue;
 
 		this.ws.send(buffer, this.wsSendOptions);
 	}
