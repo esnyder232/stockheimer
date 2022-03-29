@@ -31,8 +31,7 @@ class GameServer {
 		this.frameNum = 0;
 		this.maxPlayers = serverConfig.max_players;
 		this.inactivePeriod = 10000; //ms - the amount of ms worth of ack loss (packet loss) before a player is considered "inactive" by the server
-		// this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
-		this.inactiveAckThreashold = 500000;
+		this.inactiveAckThreashold = Math.round(this.inactivePeriod/1000) * this.frameRate; //number of acks needed to be lost (packet loss) for a player to be considered "inactive" by the server
 
 		this.gameState = null;
 		this.nextGameState = null;
@@ -43,6 +42,7 @@ class GameServer {
 		this.velocityIterations = 1;
 		this.positionIterations = 1;
 
+		this.currentTick = 0;
 		this.previousTick = 0;
 
 		this.globalGameObjectIDCounter = 0; //game object id that is used for all game object to have. This is used mainly in the priority system so objects from different pools can be pushed together on the same array
@@ -357,12 +357,10 @@ class GameServer {
 
 	gameLoop() {
 
-		var nowTime = performance.now();
-		var dt = nowTime - this.previousTick;
+		this.currentTick = performance.now();
+		var dt = this.currentTick - this.previousTick;
 		// console.log("game loop called: " + dt);
 
-		//if its the designated time has passed, run the update function
-		this.previousTick = nowTime;
 		if(this.gameState)
 		{
 			this.gameState.update(dt);
@@ -387,6 +385,8 @@ class GameServer {
 
 			this.gameState = temp;
 		}
+
+		this.previousTick = this.currentTick;
 	}
 
 	websocketClosed(wsh) {

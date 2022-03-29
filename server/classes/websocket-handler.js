@@ -1,6 +1,5 @@
 const EventSchema = require('../../shared_files/event-schema.json');
 const serverConfig = require('../server-config.json');
-// const {performance} = require('perf_hooks');
 const logger = require("../../logger.js");
 
 //load in the event schema and build indexes. Do it outside the class so it only does this step once.
@@ -199,8 +198,6 @@ class WebsocketHandler {
 	
 			if(onMessageAck != this.ack)
 			{
-				// var timeNow = performance.now();
-				var timeNow = 2;
 				var ackStart = this.ack + 1; 
 				var ackRange = onMessageAck - ackStart;
 	
@@ -222,7 +219,7 @@ class WebsocketHandler {
 					//logger.log("info", '--Actual index: ' + actualIndex);
 	
 					//update the timeEnd for ping calculations
-					this.sentPacketHistory[actualIndex].timeAcked = timeNow;
+					this.sentPacketHistory[actualIndex].timeAcked = this.gs.currentTick;
 	
 					//call any ack callbacks
 					if(this.sentPacketHistory[actualIndex].ackCallbacks.length > 0)
@@ -247,8 +244,6 @@ class WebsocketHandler {
 	calcRTT() {
 		//count back from the current local sequence number, and calculate the average rtt
 		var totalRtt = 0;
-		// var timeNow = performance.now();
-		var timeNow = 2;
 
 		for(var i = 1; i <= this.rttPacketHistoryLength; i++)
 		{
@@ -265,7 +260,7 @@ class WebsocketHandler {
 			{
 				if(this.sentPacketHistory[actualIndex].timeAcked === 0)
 				{
-					rtt = timeNow - this.sentPacketHistory[actualIndex].timeSent;
+					rtt = this.gs.currentTick - this.sentPacketHistory[actualIndex].timeSent;
 				}
 				else
 				{
@@ -854,8 +849,7 @@ class WebsocketHandler {
 	//this actually sends the packet for the user (this is only seperate from createPacketForUser because its easier to profile with node debug tools to find where slow downs occur)
 	sendPacketForUser() {
 		//update packetHistory with timeSent
-		// this.sentPacketHistory[this.localSequence].timeSent = performance.now(); //temporarily commented for performance testing
-		this.sentPacketHistory[this.localSequence].timeSent = 0;
+		this.sentPacketHistory[this.localSequence].timeSent = this.gs.currentTick;
 		this.sentPacketHistory[this.localSequence].timeAcked = 0;
 
 		this.localSequence++;
