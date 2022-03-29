@@ -5,17 +5,17 @@
 	"mapMinMatch": 1,
 	"gameData": {
 		"type": "deathmatch",
-		"roundMapStartTimeLength": 10000,
-		"roundStartingTimeLength": 7000,
-		"roundPlayingTimeLength": 90000,
+		"roundMapStartTimeLength": 1000,
+		"roundStartingTimeLength": 700,
+		"roundPlayingTimeLength": 9000000,
 		"roundOverTimeLength": 7000,
 		"roundOverWinTimeLength": 12000,
 		"roundMapEndTimeLength": 5000,
-		"userRespawningTimeLength": 4000,
+		"userRespawningTimeLength": 400,
 		"matchWinCondition": 2
 	},
 	
-	"minimumUsersPlaying": 24,
+	"minimumUsersPlaying": 0,
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",
