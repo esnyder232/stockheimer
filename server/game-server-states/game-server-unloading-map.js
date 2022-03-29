@@ -95,11 +95,19 @@ class GameServerUnloadingMap extends GameServerBaseState {
 			userAgents[i].update(dt);
 		}
 
-		//create/send packet for all useragents
+		//create packet for all useragents
 		for(var i = 0; i < userAgents.length; i++) {
 			var wsh = this.gs.wsm.getWebsocketByID(userAgents[i].wsId);
 			if(wsh !== null) {
 				wsh.createPacketForUser();
+			}
+		}
+
+		//send packet for all useragents
+		for(var i = 0; i < userAgents.length; i++) {
+			var wsh = this.gs.wsm.getWebsocketByID(userAgents[i].wsId);
+			if(wsh !== null) {
+				wsh.sendPacketForUser();
 			}
 		}
 		
