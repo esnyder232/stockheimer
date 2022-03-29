@@ -1,6 +1,5 @@
 const EventSchema = require('../../shared_files/event-schema.json');
 const serverConfig = require('../server-config.json');
-// const {performance} = require('perf_hooks');
 const logger = require("../../logger.js");
 
 //load in the event schema and build indexes. Do it outside the class so it only does this step once.
@@ -47,6 +46,7 @@ class WebsocketHandler {
 		this.recievedPacketQueue = [];
 
 		this.wsSendOptions = {};
+		this.wsSendBuffer = null;
 	}
 
 	init(gameServer, userId, userAgentId, ws) {
@@ -58,10 +58,8 @@ class WebsocketHandler {
 		this.wsSendOptions = {
 			binary: true,
 			compress: false
-		}
-
-		//calculate maxPacketSize through config values
-		//this.maxPacketSize = Math.round(serverConfig.max_allowed_bandwidth_bits / (serverConfig.max_players * serverConfig.fps * 8));
+		};
+		this.wsSendBuffer = new ArrayBuffer(this.MTU);
 				
 		//setup actual websocket callbacks
 		ws.on("close", this.onclose.bind(this));
@@ -200,8 +198,6 @@ class WebsocketHandler {
 	
 			if(onMessageAck != this.ack)
 			{
-				// var timeNow = performance.now();
-				var timeNow = 2;
 				var ackStart = this.ack + 1; 
 				var ackRange = onMessageAck - ackStart;
 	
@@ -223,7 +219,7 @@ class WebsocketHandler {
 					//logger.log("info", '--Actual index: ' + actualIndex);
 	
 					//update the timeEnd for ping calculations
-					this.sentPacketHistory[actualIndex].timeAcked = timeNow;
+					this.sentPacketHistory[actualIndex].timeAcked = this.gs.currentTick;
 	
 					//call any ack callbacks
 					if(this.sentPacketHistory[actualIndex].ackCallbacks.length > 0)
@@ -248,8 +244,6 @@ class WebsocketHandler {
 	calcRTT() {
 		//count back from the current local sequence number, and calculate the average rtt
 		var totalRtt = 0;
-		// var timeNow = performance.now();
-		var timeNow = 2;
 
 		for(var i = 1; i <= this.rttPacketHistoryLength; i++)
 		{
@@ -266,7 +260,7 @@ class WebsocketHandler {
 			{
 				if(this.sentPacketHistory[actualIndex].timeAcked === 0)
 				{
-					rtt = timeNow - this.sentPacketHistory[actualIndex].timeSent;
+					rtt = this.gs.currentTick - this.sentPacketHistory[actualIndex].timeSent;
 				}
 				else
 				{
@@ -775,12 +769,12 @@ class WebsocketHandler {
 		return n - oldN;
 	}
 
+	//this assembles and encodes the queued events into a packet to be sent to the client
 	createPacketForUser() {
-		var user = this.gs.um.getUserByID(this.userId);
+		// var user = this.gs.um.getUserByID(this.userId);
 		
 		this.calculateBytesUsed();
-		var buffer = new ArrayBuffer(this.currentBytes);
-		var view = new DataView(buffer);
+		var view = new DataView(this.wsSendBuffer);
 		var n = 0; //current byte within the packet
 		var m = 0; //number of events
 
@@ -834,65 +828,7 @@ class WebsocketHandler {
 					bcontinue = false;
 				}
 			}
-
-			//OLD
-			// for(var j = 0; j < this.eventQueues[i].length; j++)
-			// {
-			// 	var e = this.eventQueues[i][j];
-	
-			// 	//check the length of event to make sure it fits
-			// 	var bytesRequired = this.getEventSize(e);
-
-			// 	if(bytesRequired <= this.currentBytes - n)
-			// 	{
-			// 		//encode the event
-			// 		var bytesWritten = this.encodeEventInBuffer(e, view, n);
-
-			// 		if(bytesWritten > 0)
-			// 		{
-			// 			n += bytesWritten;
-						
-			// 			//increase event count
-			// 			m++;
-			// 		}
-			// 		else
-			// 		{
-			// 			logger.log("info", '!!!WARNING!!! for event ' + e.eventName + ', the event was queued, but no bytes were written. EventData: ' + JSON.stringify(e));
-			// 		}
-
-			// 		//mark the event for deletion (used later when double checking that all events made it through)
-			// 		e.isSent = true;
-			// 		this.isEventQueuesDirty = true;
-			// 	}
-			// 	//the packet is full
-			// 	else
-			// 	{
-			// 		bcontinue = false;
-			// 	}
-			// }			
 		}
-
-		// //delete events that were processed, and log a warning when they aren't (shouldn't happen, but you never know)
-		// for(var i = 0; i < this.eventQueues.length; i++)
-		// {
-		// 	if(this.eventQueues[i].length > 0)
-		// 	{
-		// 		for(var j = this.eventQueues[i].length - 1; j >= 0; j--)
-		// 		{
-		// 			//logger.log("info", 'CHECKING IF ' + this.eventQueues[i][j].eventName + " is sent...");
-		// 			//doublecheck - log the events that were not sent
-		// 			if(!this.eventQueues[i][j].isSent)
-		// 			{
-		// 				logger.log("info", '!!!WARNING!!! - an event was queued with a websocketHandler but was not sent!');
-		// 				logger.log("info", ' - User: ' + user.username);
-		// 				logger.log("info", ' - event: ' + JSON.stringify(this.eventQueues[i][j]));
-		// 			}
-
-		// 			//logger.log("info", 'Splicing');
-		// 			this.eventQueues[i].splice(j, 1);
-		// 		}
-		// 	}
-		// }
 
 		//check to see if a callback was associated with it (mainly for fragments)
 		if(this.sentPacketHistory[this.localSequence].sendCallbacks.length > 0)
@@ -908,16 +844,20 @@ class WebsocketHandler {
 		}
 
 		view.setUint8(4, m); //payload event count
+	}
 
+	//this actually sends the packet for the user (this is only seperate from createPacketForUser because its easier to profile with node debug tools to find where slow downs occur)
+	sendPacketForUser() {
 		//update packetHistory with timeSent
-		// this.sentPacketHistory[this.localSequence].timeSent = performance.now();
-		this.sentPacketHistory[this.localSequence].timeSent = 0;
+		this.sentPacketHistory[this.localSequence].timeSent = this.gs.currentTick;
 		this.sentPacketHistory[this.localSequence].timeAcked = 0;
 
 		this.localSequence++;
-		this.localSequence = this.localSequence % this.localSequenceMaxValue;
 
-		this.ws.send(buffer, this.wsSendOptions);
+		//wrap around local sequence if hit the end
+		this.localSequence = this.localSequence % this.localSequenceMaxValue; 
+
+		this.ws.send(this.wsSendBuffer.slice(0, this.currentBytes), this.wsSendOptions);
 	}
 
 
