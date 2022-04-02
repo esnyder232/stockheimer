@@ -31,13 +31,15 @@ class WebsocketHandler {
 		
 		this.localSequenceMaxValue = 600;
 
-		this.maxPacketSize = 100; //bytes. Dynamically set based on current number of players and max bandwidth set in server config.
-		this.MTU = 1000; //bytes. following Glenn Fiedler's advice. 1000 bytes for MTU just to be safe from IP fragmentation
-		this.eventQueues = [];	//2d array (each entry in eventQueues is another array). Each array is a queue for events to be sent to the client.
-		this.eventQueuesEventIdIndex = {}; //index for the eventQueues
-		this.eventQueuesEventIdReverseIndex = {}; //reverse index of the eventQueuesEventIdIndex. This holds a mapping of "eventQueuesEventIdIndex.index" -> "EventSchema.eventId"
-		this.isEventQueuesDirty = true;
-		this.currentBytes = 0; //current bytes that are queued up to be written to the current packet
+		this.maxPacketSize = 100; 					//bytes. Dynamically set based on current number of players and max bandwidth set in server config.
+		this.MTU = 1000; 							//bytes. following Glenn Fiedler's advice. 1000 bytes for MTU just to be safe from IP fragmentation
+		this.eventQueues = [];						//2d array (each entry in eventQueues is another array). Each array is a queue for events to be sent to the client.
+		this.eventQueuesEventIdIndex = {};			//index for the eventQueues
+		this.eventQueuesEventIdReverseIndex = {}; 	//reverse index of the eventQueuesEventIdIndex. This holds a mapping of "eventQueuesEventIdIndex.index" -> "EventSchema.eventId"		
+		this.currentBytes = 0; 						//current bytes that are queued up to be written to the current packet
+		this.headerBytes = 5;						//amount of bytes for the header information. currentBytes gets reset to this at the end of every frame.
+													//packet header: 4 bytes
+													//event counter: 1 byte
 
 		this.sentPacketHistory = []; //array of sent packet data. This doesn't actually hold the packet payload, but it holds the sent/ack callbacks, and timeSent and timeAcked for each packet for ping calculation
 									 //This is index by the packet sequence number.
@@ -60,6 +62,7 @@ class WebsocketHandler {
 			compress: false
 		};
 		this.wsSendBuffer = new ArrayBuffer(this.MTU);
+		this.currentBytes = this.headerBytes;
 				
 		//setup actual websocket callbacks
 		ws.on("close", this.onclose.bind(this));
@@ -444,46 +447,6 @@ class WebsocketHandler {
 		return n - oldN;
 	}
 
-
-
-
-
-
-	//calculates the currentBytes used in the current packet. Used internally.
-	calculateBytesUsed() {
-		if(this.isEventQueuesDirty)
-		{
-			//recalculate the current bytes for the packet
-			this.currentBytes = 0;
-
-			//packet header
-			this.currentBytes += 2;
-			this.currentBytes += 2;
-
-			//event count
-			this.currentBytes += 1;
-
-			//calculate the size for each event
-			for(var i = 0; i < this.eventQueues.length; i++)
-			{
-				//see if there were any events queued up for this particular event queue
-				if(this.eventQueues[i].length > 0)
-				{
-					//for each event, calculate the bytes the event would take up
-					for(var j = 0; j < this.eventQueues[i].length; j++)
-					{
-						var eventBytes = this.getEventSize(this.eventQueues[i][j]);
-
-						//add the event bytes to current bytes to be written
-						this.currentBytes += eventBytes;
-					}
-				}
-			}
-			this.isEventQueuesDirty = false;
-		}
-
-	}
-
 	//calculates how many bytes the event will be required for current packet
 	getEventSize(eventData) {
 		var eventBytes = 0;
@@ -513,9 +476,6 @@ class WebsocketHandler {
 		result.bytesRequired = this.getEventSize(eventData);
 		result.b_size_varies = schema.b_size_varies;
 
-		//calculate current bytes
-		this.calculateBytesUsed();
-
 		//see if it can fit
 		result.canEventFit = result.bytesRequired <= (this.maxPacketSize - this.currentBytes);
 
@@ -539,7 +499,8 @@ class WebsocketHandler {
 			{
 				//finally, insert the event
 				this.eventQueues[eventQueueIndex].push(eventData);
-				this.isEventQueuesDirty = true;
+				var bytesRequired = this.getEventSize(eventData);
+				this.currentBytes += bytesRequired;
 
 				//also insert the ack callback if there is any
 				if(cbAck)
@@ -773,7 +734,6 @@ class WebsocketHandler {
 	createPacketForUser() {
 		// var user = this.gs.um.getUserByID(this.userId);
 		
-		this.calculateBytesUsed();
 		var view = new DataView(this.wsSendBuffer);
 		var n = 0; //current byte within the packet
 		var m = 0; //number of events
@@ -820,7 +780,6 @@ class WebsocketHandler {
 
 					//mark the event for deletion (used later when double checking that all events made it through)
 					e.isSent = true;
-					this.isEventQueuesDirty = true;
 				}
 				//the packet is full
 				else
@@ -857,7 +816,11 @@ class WebsocketHandler {
 		//wrap around local sequence if hit the end
 		this.localSequence = this.localSequence % this.localSequenceMaxValue; 
 
+		//send the packet to the client
 		this.ws.send(this.wsSendBuffer.slice(0, this.currentBytes), this.wsSendOptions);
+		
+		//reset the current bytes to only the header bytes
+		this.currentBytes = this.headerBytes;
 	}
 
 
