@@ -23,7 +23,8 @@ export default class GameClientUserDisconnecting extends GameClientBaseState {
 		super.update(dt);
 		
 		//update event processor too so it can rebuild its event functions
-		this.gc.ep.processServerEvents(dt);
+		this.gc.wsh.processServerPackets();
+		this.gc.ep.processServerEvents();
 
 		//update managers
 		this.gc.um.update(dt);

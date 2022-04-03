@@ -30,6 +30,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		super.update(dt);
 
 		//update stuff
+		this.gc.wsh.processServerPackets();
 		this.gc.ep.processServerEvents();
 
 		//put the packet algorithm here (insert from clientToServerEvents 1st, then fragmented events 2nd)
@@ -37,6 +38,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 
 		//send the packet to the server
 		this.gc.wsh.createPacketForUser();
+		this.gc.wsh.sendPacketForUser();
 
 		this.gc.wsh.update(dt);
 

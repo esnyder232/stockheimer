@@ -70,9 +70,11 @@ export default class GameClientUserJoiningGame extends GameClientBaseState {
 		}
 		
 		//update managers
+		this.gc.wsh.processServerPackets();
 		this.gc.ep.processServerEvents();
 		this.gc.ep.insertEventsIntoPacket();
 		this.gc.wsh.createPacketForUser();
+		this.gc.wsh.sendPacketForUser();
 		this.gc.wsh.update(dt);
 		this.gc.um.update(dt);
 		this.gc.tm.update(dt);

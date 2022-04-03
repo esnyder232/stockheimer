@@ -22,9 +22,11 @@ export default class GameClientUserWaitingForServer extends GameClientBaseState 
 		super.update(dt);
 		
 		//send pakcets to keep the stream alive
+		this.gc.wsh.processServerPackets();
 		this.gc.ep.processServerEvents();
 		this.gc.ep.insertEventsIntoPacket();
 		this.gc.wsh.createPacketForUser();
+		this.gc.wsh.sendPacketForUser();
 		this.gc.wsh.update(dt);
 
 		if(this.gc.bServerMapLoaded) {

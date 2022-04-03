@@ -29,7 +29,11 @@ export default class WebsocketHandler {
 		this.ackCallbacks = [];
 		this.sendCallbacks = [];
 
+		this.recievedPacketQueue = [];
+
 		this.eventNameIndex = EventNameIndex; //exposed so the event-processor can use it too.
+
+		this.wsSendBuffer = null;
 	}
 	
 	init(gc, ep) {
@@ -57,6 +61,8 @@ export default class WebsocketHandler {
 			this.ackCallbacks.push([]);
 			this.sendCallbacks.push([]);
 		}
+
+		this.wsSendBuffer = new ArrayBuffer(this.MTU);
 	}
 
 	reset() {
@@ -147,103 +153,112 @@ export default class WebsocketHandler {
 		this.gc.websocketErrored();
 	}
 
+	//this function queues up the packets to be decoded and processed later at the beginning of the next frame.
 	onmessage(e) {
-		var view = new DataView(e.data);
-		var n = 0; //number of bytes in
-		var m = 0; //event count
-
-		//parse the packet header
-		this.remoteSequence = view.getUint16(n);
-		n += 2;
-
-		//this.ack = view.getUint16(n);
-		var onMessageAck = view.getUint16(n)
-		n += 2;
-		
-		m = view.getUint8(n); //event count
-		n++;
-
-		//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
-
-		//console.log('ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
-
-		//start going through the events
-		for(var i = 0; i < m; i++)
-		{
-			n += this.decodeEvent(n, view);
-		}
+		this.recievedPacketQueue.push(e);
+	}
 
 
-		//process any callbacks from the most recent ack from the client
-		//EXAMPLE 1
-		//this.localSequenceMaxValue = 65535;
-		//this.ack = 10
-		//onMessageAck = 15
-		//this means, I need to process:
-		// 11
-		// 12
-		// 13
-		// 14
-		// 15
-		//
-		// ackCallbackStart would be 11. Correct.
-		// ackCallbackRange would be 4. Correct.
+	//this function actually decodes the packets that came in from the client
+	processServerPackets() {
+		while(this.recievedPacketQueue.length > 0) {
+			var view = new DataView(this.recievedPacketQueue.shift().data);
+			var n = 0; //number of bytes in
+			var m = 0; //event count
 
-		// EXAMPLE 2 (wrap around)
-		//this.localSequenceMaxValue = 65535;
-		//this.ack = 65530
-		//onMessageAck = 5
-		//this means, I need to process:
-		// 65531
-		// 65532
-		// 65533
-		// 65534
-		// 65535
-		// 0
-		// 1
-		// 2
-		// 3
-		// 4
-		// 5
-		//
-		// ackCallbackStart would be 65531. Correct.
-		// ackCallbackRange would be: 10. Correct.
+			//parse the packet header
+			this.remoteSequence = view.getUint16(n);
+			n += 2;
 
-		if(onMessageAck != this.ack)
-		{
-			var ackCallbackStart = this.ack + 1; 
-			var ackCallbackRange = onMessageAck - ackCallbackStart;
+			//this.ack = view.getUint16(n);
+			var onMessageAck = view.getUint16(n)
+			n += 2;
+			
+			m = view.getUint8(n); //event count
+			n++;
 
-			//deals with sequence wrap around
-			if(ackCallbackRange < 0)
+			//console.log('message recieved: remoteSequence:' + this.remoteSequence + '    ack: ' + this.ack);
+
+			//console.log('ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
+
+			//start going through the events
+			for(var i = 0; i < m; i++)
 			{
-				ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
+				n += this.decodeEvent(n, view);
 			}
-	
-			// console.//log('==== ON MESSAGE CALLBACK CALC ====');
-			// console.log(this.ack);
-			// console.log(onMessageAck);
-			// console.log(ackCallbackStart);
-			// console.log(ackCallbackRange);
-	
-			for(var i = 0; i <= ackCallbackRange; i++)
+
+
+			//process any callbacks from the most recent ack from the client
+			//EXAMPLE 1
+			//this.localSequenceMaxValue = 65535;
+			//this.ack = 10
+			//onMessageAck = 15
+			//this means, I need to process:
+			// 11
+			// 12
+			// 13
+			// 14
+			// 15
+			//
+			// ackCallbackStart would be 11. Correct.
+			// ackCallbackRange would be 4. Correct.
+
+			// EXAMPLE 2 (wrap around)
+			//this.localSequenceMaxValue = 65535;
+			//this.ack = 65530
+			//onMessageAck = 5
+			//this means, I need to process:
+			// 65531
+			// 65532
+			// 65533
+			// 65534
+			// 65535
+			// 0
+			// 1
+			// 2
+			// 3
+			// 4
+			// 5
+			//
+			// ackCallbackStart would be 65531. Correct.
+			// ackCallbackRange would be: 10. Correct.
+
+			if(onMessageAck != this.ack)
 			{
-				var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
-				//console.log('--Actual index: ' + actualIndex);
-				if(this.ackCallbacks[actualIndex].length > 0)
+				var ackCallbackStart = this.ack + 1; 
+				var ackCallbackRange = onMessageAck - ackCallbackStart;
+
+				//deals with sequence wrap around
+				if(ackCallbackRange < 0)
 				{
-					//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
-					for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
-					{
-						//console.log('--- CALLBACK FOR ' + actualIndex);
-						this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].miscData)
-					}
-		
-					this.ackCallbacks[actualIndex].length = 0;
+					ackCallbackRange = onMessageAck - ackCallbackStart + this.localSequenceMaxValue + 1;
 				}
+		
+				// console.//log('==== ON MESSAGE CALLBACK CALC ====');
+				// console.log(this.ack);
+				// console.log(onMessageAck);
+				// console.log(ackCallbackStart);
+				// console.log(ackCallbackRange);
+		
+				for(var i = 0; i <= ackCallbackRange; i++)
+				{
+					var actualIndex = (ackCallbackStart + i) % (this.localSequenceMaxValue + 1);
+					//console.log('--Actual index: ' + actualIndex);
+					if(this.ackCallbacks[actualIndex].length > 0)
+					{
+						//console.log("WebSocketHandler for Userid: " + this.userId + '. Callbacks found for ack #' + actualIndex);
+						for(var j = 0; j < this.ackCallbacks[actualIndex].length; j++)
+						{
+							//console.log('--- CALLBACK FOR ' + actualIndex);
+							this.ackCallbacks[actualIndex][j].cbAck(this.ackCallbacks[actualIndex][j].miscData)
+						}
+			
+						this.ackCallbacks[actualIndex].length = 0;
+					}
+				}
+		
+				this.ack = onMessageAck;
 			}
-	
-			this.ack = onMessageAck;
 		}
 	}
 
@@ -593,17 +608,15 @@ export default class WebsocketHandler {
 		return eventBytes;
 	}
 
-
-	
-
-
-
+	//this assembles and encodes the queued events into a packet to be sent to the client
 	createPacketForUser()
 	{
 		//var buffer = new ArrayBuffer(this.maxPacketSize);
 		this.calculateBytesUsed();
-		var buffer = new ArrayBuffer(this.currentBytes);
-		var view = new DataView(buffer);
+		// var buffer = new ArrayBuffer(this.currentBytes);
+		// var view = new DataView(buffer);
+		var view = new DataView(this.wsSendBuffer);
+
 		var n = 0; //current byte within the packet
 		var m = 0; //number of events
 
@@ -697,12 +710,16 @@ export default class WebsocketHandler {
 		}
 
 		view.setUint8(4, m); //payload event count
-		
+
+	}
+
+	//this actually sends the packet for the user (this is only seperate from createPacketForUser because its easier to profile with node debug tools to find where slow downs occur)
+	sendPacketForUser() {
 		this.localSequence++;
 		this.localSequence = this.localSequence % this.localSequenceMaxValue;
-
-		this.ws.send(buffer);
+		this.ws.send(this.wsSendBuffer.slice(0, this.currentBytes));
 	}
+
 
 
 

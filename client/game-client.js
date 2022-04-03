@@ -40,6 +40,7 @@ export default class GameClient {
 		this.foundMyCharacter = false;
 
 		this.frameRate = 30; //fps
+		this.currentTick = 0;
 		this.previousTick = 0;
 		this.frameTimeStep = 1000/this.frameRate; //ms
 		this.frameNum = 0; //debugging
@@ -224,7 +225,9 @@ export default class GameClient {
 
 		this.gameState = new GameClientLobby(this);
 		this.gameState.enter();
-		this.gameLoop();
+		// this.gameLoop();
+		window.setInterval(this.gameLoop.bind(this), this.frameTimeStep);
+
 		console.log(this);
 
 		$(document).on("contextmenu", this.contextMenuListener.bind(this));
@@ -342,40 +345,38 @@ export default class GameClient {
 	}
 
 	gameLoop() {
-		var nowTime = performance.now();
+		this.currentTick = performance.now();
 
-		//if its the designated time has passed, run the update function
-		if(this.previousTick + (this.frameTimeStep) <= nowTime)
-		{
-			var dt = nowTime - this.previousTick;
-			this.previousTick = nowTime;
-			try {
-				//console.log("=== FRAME " + this.frameNum + " ===")
-				this.gameState.update(dt);
+		var dt = this.currentTick - this.previousTick;
+		try {
+			//console.log("=== FRAME " + this.frameNum + " ===")
+			this.gameState.update(dt);
 
-				if(this.nextGameState)
-				{
-					this.gameState.exit();
-					this.nextGameState.enter();
-	
-					this.gameState = this.nextGameState;
-					this.nextGameState = null;
-				}
+			if(this.nextGameState)
+			{
+				this.gameState.exit();
+				this.nextGameState.enter();
 
-				//this.frameNum++;
+				this.gameState = this.nextGameState;
+				this.nextGameState = null;
 			}
-			catch(ex) {
-				this.globalfuncs.appendToLog("Exception caught in game loop: " + ex)
-				console.log(ex);
-			}
+
+			//this.frameNum++;
 		}
+		catch(ex) {
+			this.globalfuncs.appendToLog("Exception caught in game loop: " + ex)
+			console.log(ex);
+		}
+	
 
 		//recall the gameloop
-		if(nowTime - this.previousTick < this.frameTimeStep)
-		{
-			//the +1 is because apparently this was getting called BEFORE the 'frameTimeStep'...whatever
-			window.setTimeout(this.gameLoop.bind(this), this.frameTimeStep+1);
-		}
+		// if(this.currentTick - this.previousTick < this.frameTimeStep)
+		// {
+		// 	//the +1 is because apparently this was getting called BEFORE the 'frameTimeStep'...whatever
+		// 	window.setTimeout(this.gameLoop.bind(this), this.frameTimeStep+1);
+		// }
+
+		this.previousTick = this.currentTick;
 	}
 }
 
