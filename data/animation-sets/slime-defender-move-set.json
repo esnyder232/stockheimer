@@ -1,0 +1,7 @@
+{
+	"spriteKey": "data/sprites/slime-defender.json",
+	"frameTagUp": "move-up",
+	"frameTagDown": "move-down",
+	"frameTagLeft": "move-left",
+	"frameTagRight": "move-right"
+}
