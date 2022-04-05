@@ -2,17 +2,20 @@ const planck = require('planck-js');
 const logger = require("../../logger.js");
 
 class CharacterClassState {
-	constructor(gameServer, character, characterClassStateResource) {
+	constructor(gameServer, character, characterClassStateResource, characterClassInput) {
 		this.gs = gameServer;
 		this.character = character;
 		this.characterClassStateResource = characterClassStateResource;
 		this.characterClassStateResourceId = 0;
+		this.characterClassInput = characterClassInput;
 		this.timeAcc = 0;
 		this.type = "one-time";
 
 		this.timeLength = 1000;
 		this.canMove = false;
 		this.canLook = false;
+		this.canFire = false;
+		this.canAltFire = false;
 		this.projectileKey = null;
 		this.projectileTime = 0;
 		
@@ -31,6 +34,8 @@ class CharacterClassState {
 		this.characterClassStateResourceId = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.id);
 		this.canLook = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canLook, this.canLook);
 		this.canMove = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canMove, this.canMove);
+		this.canFire = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canMove, this.canMove);
+		this.canAltFire = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canMove, this.canMove);
 		this.timeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.timeLength, this.timeLength);
 		this.projectileKey = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileKey, this.projectileKey);
 		this.projectileTime = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileTime, this.projectileTime);
@@ -43,9 +48,8 @@ class CharacterClassState {
 		//set characters stuff from data
 		this.character.changeAllowMove(this.canMove);
 		this.character.changeAllowLook(this.canLook);
-
-		//always set character to not allow shooting
-		this.character.changeAllowShoot(false);
+		this.character.changeAllowFire(this.canFire);
+		this.character.changeAllowAltFire(this.canAltFire);
 
 		//apply cooldown to state on character
 		this.character.activateStateCooldown(this.characterClassStateResource.key);
@@ -59,6 +63,11 @@ class CharacterClassState {
 			this.projectileTime = 0;
 		}
 
+		//this is just begging to be split up into different classes
+		if(this.type === "shield") {
+			
+		}
+
 		switch(this.type) {
 			case "one-time":
 				this.updateFunction = this.updateOneTime.bind(this);
@@ -66,6 +75,9 @@ class CharacterClassState {
 			case "special-dash":
 				this.character.startContactDamage(this.contactDmg);
 				this.updateFunction = this.updateSpecialDash.bind(this);
+				break;
+			case "shield": 
+				this.updateFunction = this.updateShield.bind(this);
 				break;
 			default:
 				this.updateFunction = this.updateNoType.bind(this);
@@ -81,7 +93,8 @@ class CharacterClassState {
 	exit(dt) {
 		// console.log("===== EXITED " + this.characterClassStateResource.data.name + " STATE");
 		this.character.changeAllowMove(true);
-		this.character.changeAllowShoot(true);
+		this.character.changeAllowFire(true);
+		this.character.changeAllowAltFire(true);
 		this.character.changeAllowLook(true);
 		this.character.stopContactDamage();
 	}
@@ -172,6 +185,16 @@ class CharacterClassState {
 			this.character.setCharacterClassState(null);
 		}
 	}
+
+	//update for "shield"
+	updateShield(dt) {
+		this.timeAcc += dt;
+
+		if(this.character.frameInputController[this.characterClassInput].state === false) {
+			this.character.setCharacterClassState(null);
+		}
+	}
+
 
 
 }

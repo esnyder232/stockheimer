@@ -1,11 +1,11 @@
 {
-	"name": "Slime Heal Shot",
+	"name": "Slime Block Arc",
 	"type": "one-time",
-	"animationSet": "idle",
+	"animationSet": "cast",
 	"canLook": true,
 	"canMove": true,
 	"timeLength": 250,
-	"projectileKey": "data/projectiles/slime-heal-shot.json",
+	"projectileKey": "data/projectiles/slime-block-arc.json",
 	"projectileTime": 0,
 	"cooldownTimeLength": 250
 }

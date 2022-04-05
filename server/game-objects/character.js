@@ -22,7 +22,8 @@ class Character {
 
 		this.stateName = "";
 		this.state = null;
-		this.nextCharacterClassResource = null;
+		this.nextCharacterClassResource = null;		//the resource key for the next state
+		this.nextCharacterClassInput = "";			//the input that caused the next state (used to keep track of click-hold kind of states)
 		this.exitCurrentState = false;
 
 		this.plBody = null;
@@ -58,7 +59,8 @@ class Character {
 
 		this.bAllowedLook = true;
 		this.bAllowedMove = true;
-		this.bAllowedShoot = true;
+		this.bAllowedFire = true;
+		this.bAllowedAltFire = true;
 		this.bAllowedInput = true;
 
 		this.inputQueue = [];
@@ -82,14 +84,20 @@ class Character {
 		this.projectileStay = [];
 		this.projectileLeave = [];
 		this.projectileIndex = {};
+
+		this.shieldObj = null;
 	}
 
 	changeAllowMove(bAllowedMove) {
 		this.bAllowedMove = bAllowedMove;
 	}
 
-	changeAllowShoot(bAllowedShoot) {
-		this.bAllowedShoot = bAllowedShoot;
+	changeAllowFire(bAllowedFire) {
+		this.bAllowedFire = bAllowedFire;
+	}
+
+	changeAllowAltFire(bAllowedAltFire) {
+		this.bAllowedAltFire = bAllowedAltFire;
 	}
 
 	changeAllowInput(bAllowInput) {
@@ -327,13 +335,20 @@ class Character {
 			}
 
 			//if they are allowed to shoot, get the latest shooting buttons from the client for the frame
-			if(this.bAllowedInput && this.bAllowedShoot) {
+			if(this.bAllowedInput && this.bAllowedFire) {
 				this.frameInputController.isFiring.state = this.clientInputController.isFiring.state;
-				this.frameInputController.isFiringAlt.state = this.clientInputController.isFiringAlt.state;
 			}
 			//if they are not allowed to shoot, treat all shooting buttons as if nothing was pressed
 			else {
 				this.frameInputController.isFiring.state = false;
+			}
+
+			//if they are allowed to shoot, get the latest shooting buttons from the client for the frame
+			if(this.bAllowedInput && this.bAllowedAltFire) {
+				this.frameInputController.isFiringAlt.state = this.clientInputController.isFiringAlt.state;
+			}
+			//if they are not allowed to shoot, treat all shooting buttons as if nothing was pressed
+			else {
 				this.frameInputController.isFiringAlt.state = false;
 			}
 
@@ -348,17 +363,17 @@ class Character {
 
 
 
-			//step 3 - translate the inputs for this frame into events
-			//cooldowns get applied here
-			if(this.frameInputController.isFiring.state) {
+			//step 3 - translate the inputs for this frame into events to set the next states
+			//cooldowns get checked here as well
+			if(this.state == null && this.frameInputController.isFiring.state) {
 				if(!this.stateCooldownsTemplates[this.characterClassResource.data.fireStateKey].onCooldown) {
-					this.frameEventQueue.push(this.characterClassResource.data.fireStateKey);
+					this.frameEventQueue.push({"key": this.characterClassResource.data.fireStateKey, "input": "isFiring"});
 				}
 			}
 
-			if(this.frameInputController.isFiringAlt.state) {
+			if(this.state == null && this.frameInputController.isFiringAlt.state) {
 				if(!this.stateCooldownsTemplates[this.characterClassResource.data.altFireStateKey].onCooldown) {
-					this.frameEventQueue.push(this.characterClassResource.data.altFireStateKey);
+					this.frameEventQueue.push({"key": this.characterClassResource.data.altFireStateKey, "input": "isFiringAlt"});
 				}
 			}
 
@@ -514,10 +529,10 @@ class Character {
 			}
 		}
 
-		//process events
+		//process events to set the next state
 		if(this.frameEventQueue.length > 0) {
 			for(var i = 0; i < this.frameEventQueue.length; i++) {
-				this.setCharacterClassState(this.frameEventQueue[i]);
+				this.setCharacterClassState(this.frameEventQueue[i].key, this.frameEventQueue[i].input);
 			}
 			
 			this.frameEventQueue.length = 0;
@@ -561,12 +576,13 @@ class Character {
 
 		//change state if there is a next one
 		if(this.nextCharacterClassResource !== null) {
-			var nextState = new CharacterClassState.CharacterClassState(this.gs, this, this.nextCharacterClassResource);
+			var nextState = new CharacterClassState.CharacterClassState(this.gs, this, this.nextCharacterClassResource, this.nextCharacterClassInput);
 
 			nextState.enter(dt);
 			
 			this.state = nextState;
 			this.nextCharacterClassResource = null;
+			this.nextCharacterClassInput = "";
 
 			this.isStateDirty = true;
 		}
@@ -737,13 +753,15 @@ class Character {
 	}
 
 
-	setCharacterClassState(characterClassResourceKey) {
+	setCharacterClassState(characterClassResourceKey, nextCharacterClassInput) {
 		var r = this.gs.rm.getResourceByKey(characterClassResourceKey);
 		if(r !== null) {
 			this.nextCharacterClassResource = r;
+			this.nextCharacterClassInput = nextCharacterClassInput;
 		}
 		else {
 			this.nextCharacterClassResource = null;
+			this.nextCharacterClassInput = "";
 		}
 		
 		this.exitCurrentState = true;

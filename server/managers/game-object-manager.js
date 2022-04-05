@@ -3,6 +3,7 @@ const {Character} = require('../game-objects/character.js');
 const {Projectile} = require("../game-objects/projectile.js");
 const {Castle} = require("../game-objects/castle.js");
 const {Wall} = require("../game-objects/wall.js");
+const {Shield} = require("../game-objects/shield.js");
 const logger = require('../../logger.js');
 
 class GameObjectManager {
@@ -38,6 +39,9 @@ class GameObjectManager {
 				break;
 			case "castle":
 				o = new Castle();
+				break;
+			case "shield":
+				o = new Shield();
 				break;
 			case "wall":
 				o = new Wall();

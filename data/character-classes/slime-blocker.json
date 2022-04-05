@@ -22,6 +22,6 @@
 		"cast": "data/animation-sets/slime-mage-fire-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
-	"fireStateKey": "data/character-class-states/slime-mellee-blocker.json",
-	"altFireStateKey": "data/character-class-states/slime-ward-wall.json"
+	"fireStateKey": "data/character-class-states/slime-block-arc.json",
+	"altFireStateKey": "data/character-class-states/slime-block-circle.json"
 }

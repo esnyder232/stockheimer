@@ -1,5 +1,5 @@
 {
-	"name": "Slime Heal Shot",
+	"name": "Slime Shield",
 	"size": 1.0,
 	"planckData": {
 		"plShape": "rect",
@@ -13,33 +13,37 @@
 		"scaleY": 3.0
 	},
 	"physicsData": {
-		"speed": 12,
+		"speed": 0,
 		"mass": 10
 	},
 	"renderData": {
-		"spriteKey": "data/sprites/heal-shot.json",
+		"spriteKey": "data/sprites/slime-shield.json",
 		"frameTag": "",
 		"hideSprite": false,
 		"animationTimeLength": 0,
 		"repeatNum": 0
 	},
 	"collisionData": {
-		"collideSameTeamCharacters": true,
-		"collideOtherTeamCharacters": false,
+		"collideSameTeamCharacters": false,
+		"collideOtherTeamCharacters": true,
 		"collideSelf": false,
-		"collideWalls": true
+		"collideWalls": false,
+		"collideSameTeamProjectiles": false,
+		"collideOtherTeamProjectiles": true
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 0.0,
-		"timeLength": 1000,
+		"timeLength": 60000,
 		"pushbackVecMagnitude": 0,
 		"destroyOnContact": false
 	},
 	"characterEffectData": [
 		{
-			"type": "heal",
-			"value": 2
+			"type": "force",
+			"mag": 30,
+			"dir": "out",
+			"period": 1
 		}
 	]
 }

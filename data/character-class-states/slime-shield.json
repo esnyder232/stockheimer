@@ -1,0 +1,11 @@
+{
+	"name": "Slime Shield",
+	"type": "shield",
+	"animationSet": "cast",
+	"canLook": true,
+	"canMove": true,
+	"canFire": true,
+	"canAltFire": true,
+	"cooldownTimeLength": 0
+
+}

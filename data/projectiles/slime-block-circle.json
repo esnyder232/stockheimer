@@ -1,5 +1,5 @@
 {
-	"name": "Slime ward",
+	"name": "Slime Block Arc",
 	"size": 4.0,
 	"planckData": {
 		"plShape": "circle",
@@ -13,10 +13,10 @@
 	},
 	"physicsData": {
 		"speed": 0,
-		"mass": 100
+		"mass": 10
 	},
 	"renderData": {
-		"spriteKey": "data/sprites/heal-group-smear.json",
+		"spriteKey": "data/sprites/slime-block-circle.json",
 		"frameTag": "main",
 		"hideSprite": false,
 		"animationTimeLength": 100,
@@ -26,13 +26,15 @@
 		"collideSameTeamCharacters": false,
 		"collideOtherTeamCharacters": true,
 		"collideSelf": false,
-		"collideWalls": false
+		"collideWalls": false,
+		"collideSameTeamProjectiles": false,
+		"collideOtherTeamProjectiles": true
 	},
 	"projectileData": {
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 0.0,
-		"timeLength": 10000,
-		"pushbackVecMagnitude": 30,
+		"timeLength": 60000,
+		"pushbackVecMagnitude": 0,
 		"destroyOnContact": false
 	},
 	"characterEffectData": [

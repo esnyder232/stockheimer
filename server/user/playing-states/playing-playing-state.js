@@ -24,7 +24,8 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 			{
 				c.changeAllowLook(true);
 				c.changeAllowMove(false);
-				c.changeAllowShoot(false);
+				c.changeAllowFire(false);
+				c.changeAllowAltFire(false);
 			}
 			
 			//also register for an event for when the character dies
@@ -64,7 +65,8 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 							if(c !== null) {
 								c.changeAllowLook(true);
 								c.changeAllowMove(false);
-								c.changeAllowShoot(false);
+								c.changeAllowFire(false);
+								c.changeAllowAltFire(false);
 							}
 							break;
 						case "round-started":
@@ -73,7 +75,8 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 							if(c !== null) {
 								c.changeAllowLook(true);
 								c.changeAllowMove(true);
-								c.changeAllowShoot(true);
+								c.changeAllowFire(true);
+								c.changeAllowAltFire(true);
 							}
 							break;
 						case "round-restarting":

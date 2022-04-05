@@ -1,11 +1,11 @@
 {
-	"name": "Slime Ward",
+	"name": "Slime Block Circle",
 	"type": "one-time",
 	"animationSet": "cast",
 	"canLook": true,
 	"canMove": false,
 	"timeLength": 400,
-	"projectileKey": "data/projectiles/slime-ward-wall.json",
+	"projectileKey": "data/projectiles/slime-block-circle.json",
 	"projectileTime": 100,
-	"cooldownTimeLength": 100
+	"cooldownTimeLength": 250
 }

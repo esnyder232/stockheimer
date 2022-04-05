@@ -1,5 +1,5 @@
 {
-	"name": "Slime Ward Wall",
+	"name": "Slime Block Arc",
 	"size": 1.0,
 	"planckData": {
 		"plShape": "rect",
@@ -17,7 +17,7 @@
 		"mass": 10
 	},
 	"renderData": {
-		"spriteKey": "data/sprites/heal-shot.json",
+		"spriteKey": "data/sprites/slime-block-arc.json",
 		"frameTag": "",
 		"hideSprite": false,
 		"animationTimeLength": 0,
