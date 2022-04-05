@@ -287,6 +287,25 @@ class GameServerLoadingMap extends GameServerBaseState {
 				this.gs.rm.loadResource(altFireStateKey, "character-class-state", this.cbCharacterClassStateComplete.bind(this));
 			}
 		}
+
+		//load persistent objects resources if there are any
+		if(!bError) {
+			var persistentObjectsObj = this.globalfuncs.getValueDefault(resource?.data?.persistentObjects, null);
+
+			if(resource?.data?.name === "Slime Defender") {
+				var stophere = true;
+			}
+
+			if(persistentObjectsObj !== null) {
+				for (const key in persistentObjectsObj) {
+					if (persistentObjectsObj.hasOwnProperty(key)) {
+						if(persistentObjectsObj[key]) {
+							this.gs.rm.loadResource(persistentObjectsObj[key], "persistent-object", this.cbPersistentObjectComplete.bind(this));
+						}
+					}
+				}
+			}
+		}
 		
 
 		if(bError) {
@@ -344,7 +363,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 		// console.log(resource);
 		var bError = false;
 		var errorMessage = "";
-		var tm = null;
 
 		if(resource.data === null) {
 			bError = true;
@@ -374,7 +392,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 		
 		var bError = false;
 		var errorMessage = "";
-		var tm = null;
 
 		if(resource.data === null) {
 			bError = true;
@@ -395,6 +412,36 @@ class GameServerLoadingMap extends GameServerBaseState {
 			this.mapLoadError = true;
 		}
 	}
+
+	cbPersistentObjectComplete(resource) {
+		console.log("!!! persistent object Resource Loaded !!!!");
+		console.log(resource);
+		
+		var bError = false;
+		var errorMessage = "";
+		var tm = null;
+
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading persistent object '" + resource.key + "': No data found.";
+		}
+
+		//create sprite resources
+		if(!bError) {
+			var spriteKey = this.globalfuncs.getValueDefault(resource?.data?.renderData?.spriteKey, null);
+
+			if(spriteKey !== null) {
+				this.gs.rm.loadResource(spriteKey, "sprite");
+			}
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
+			this.mapLoadError = true;
+		}
+	}
+
+
 }
 
 

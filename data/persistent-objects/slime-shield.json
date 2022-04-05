@@ -31,7 +31,7 @@
 		"collideSameTeamProjectiles": false,
 		"collideOtherTeamProjectiles": true
 	},
-	"projectileData": {
+	"persistentObjectData": {
 		"spawnLocationType": "mouse-direction",
 		"spawnOffsetLength": 0.0,
 		"timeLength": 60000,

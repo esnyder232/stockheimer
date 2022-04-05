@@ -10,6 +10,7 @@ const {TilesetResourceDefinition} = require("../resource-definition/tileset-reso
 const {SpriteResourceDefinition} = require("../resource-definition/sprite-resource-definition.js");
 const {ProjectileResourceDefinition} = require("../resource-definition/projectile-resource-definition.js");
 const {CharacterClassStateResourceDefinition} = require("../resource-definition/character-class-state-resource-definition.js");
+const {PersistentObjectResourceDefinition} = require("../resource-definition/persistent-object-resource-definition.js");
 
 
 class ResourceManager {
@@ -41,6 +42,9 @@ class ResourceManager {
 		this.resourceDefinitions["sprite"] = new SpriteResourceDefinition();
 		this.resourceDefinitions["projectile"] = new ProjectileResourceDefinition();
 		this.resourceDefinitions["character-class-state"] = new CharacterClassStateResourceDefinition();
+		this.resourceDefinitions["persistent-object"] = new PersistentObjectResourceDefinition();
+
+		
 		
 		for(var key in this.resourceDefinitions) {
 			if (this.resourceDefinitions.hasOwnProperty(key)) {
