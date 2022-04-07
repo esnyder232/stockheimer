@@ -288,26 +288,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 			}
 		}
 
-		//load persistent projectiles resources if there are any
-		if(!bError) {
-			var persistentProjectilesObj = this.globalfuncs.getValueDefault(resource?.data?.persistentProjectiles, null);
-
-			if(resource?.data?.name === "Slime Defender") {
-				var stophere = true;
-			}
-
-			if(persistentProjectilesObj !== null) {
-				for (const key in persistentProjectilesObj) {
-					if (persistentProjectilesObj.hasOwnProperty(key)) {
-						if(persistentProjectilesObj[key]) {
-							this.gs.rm.loadResource(persistentProjectilesObj[key], "persistent-projectile", this.cbPersistentProjectileComplete.bind(this));
-						}
-					}
-				}
-			}
-		}
-		
-
 		if(bError) {
 			logger.log("error", errorMessage);
 		}
@@ -398,13 +378,61 @@ class GameServerLoadingMap extends GameServerBaseState {
 			errorMessage = "Error when loading character class state '" + resource.key + "': No data found.";
 		}
 
-		//load projectile resources
+		//load projectile resources if any
 		if(!bError) {
-			var projectileKey = this.globalfuncs.getValueDefault(resource?.data?.projectileKey, null);
 
-			if(projectileKey !== null) {
-				this.gs.rm.loadResource(projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+			var stateType = this.globalfuncs.getValueDefault(resource?.data?.type, "one-time");
+
+			switch(stateType) {
+				case "one-time":
+					var projectileKey = this.globalfuncs.getValueDefault(resource?.data?.projectileKey, null);
+
+					if(projectileKey !== null) {
+						this.gs.rm.loadResource(projectileKey, "projectile", this.cbProjectileComplete.bind(this));
+					}
+					break;
+
+				case "persistent-projectile":
+					var persistentProjectileKey = this.globalfuncs.getValueDefault(resource?.data?.persistentProjectileKey, null);
+
+					if(persistentProjectileKey !== null) {
+						this.gs.rm.loadResource(persistentProjectileKey, "persistent-projectile", this.cbPersistentProjectileComplete.bind(this));
+					}
+					break;
+				
+				case "special-dash":
+					//nothing for now
+					break;
+
+				default:
+					//nothing
+					break;
 			}
+
+
+
+			// //load persistent projectiles resources if there are any
+			// if(!bError) {
+			// 	var persistentProjectilesObj = this.globalfuncs.getValueDefault(resource?.data?.persistentProjectiles, null);
+
+			// 	if(resource?.data?.name === "Slime Defender") {
+			// 		var stophere = true;
+			// 	}
+
+			// 	if(persistentProjectilesObj !== null) {
+			// 		for (const key in persistentProjectilesObj) {
+			// 			if (persistentProjectilesObj.hasOwnProperty(key)) {
+			// 				if(persistentProjectilesObj[key]) {
+			// 					this.gs.rm.loadResource(persistentProjectilesObj[key], "persistent-projectile", this.cbPersistentProjectileComplete.bind(this));
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
+
+
+
+
 		}
 
 		if(bError) {

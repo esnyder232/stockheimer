@@ -5,8 +5,8 @@ class PersistentProjectile {
 	constructor() {
 		this.gs = null;
 		this.id = null;
-		this.characterId = null; //the character that owns the shield
-		this.ownerId = null; //the user/ai that controlles the character owns the shield
+		this.characterId = null; //the character that owns the persistent projectiles
+		this.ownerId = null; //the user/ai that controlles the character owns the persistent projectile
 		this.ownerType = "";
 		this.teamId = null;
 		this.type = "persistent-projectile";

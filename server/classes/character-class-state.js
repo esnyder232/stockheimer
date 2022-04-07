@@ -64,7 +64,7 @@ class CharacterClassState {
 		}
 
 		//this is just begging to be split up into different classes
-		if(this.type === "shield") {
+		if(this.type === "persistent-projectile") {
 			
 		}
 
@@ -76,8 +76,8 @@ class CharacterClassState {
 				this.character.startContactDamage(this.contactDmg);
 				this.updateFunction = this.updateSpecialDash.bind(this);
 				break;
-			case "shield": 
-				this.updateFunction = this.updateShield.bind(this);
+			case "persistent-projectile": 
+				this.updateFunction = this.updatePersistentProjectile.bind(this);
 				break;
 			default:
 				this.updateFunction = this.updateNoType.bind(this);
@@ -186,8 +186,8 @@ class CharacterClassState {
 		}
 	}
 
-	//update for "shield"
-	updateShield(dt) {
+	//update for persistent projectile
+	updatePersistentProjectile(dt) {
 		this.timeAcc += dt;
 
 		if(this.character.frameInputController[this.characterClassInput].state === false) {

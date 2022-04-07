@@ -1,12 +1,12 @@
 {
 	"name": "Slime Shield",
-	"type": "shield",
+	"type": "persistent-projectile",
 	"animationSet": "cast",
 	"canLook": true,
 	"canMove": true,
 	"canFire": true,
 	"canAltFire": true,
 	"cooldownTimeLength": 0,
-	"persistentProjectileKey": "data/persistent-projectile/slime-shield.json",
+	"persistentProjectileKey": "data/persistent-projectiles/slime-shield.json",
 	"persistentProjectileTime": 200
 }
