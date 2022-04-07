@@ -20,6 +20,8 @@ export default class AddActiveCharacterEvent {
 		c.hpCur = e.characterHpCur;
 		c.hpMax = e.characterHpMax;
 		c.characterClassResourceId = e.characterClassResourceId === 0 ? null : e.characterClassResourceId;
+		c.shieldCur = e.characterShieldCur;
+		c.shieldMax = e.characterShieldMax;
 
 		//translate the owner type to a string again
 		//DONT CARE!!!

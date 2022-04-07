@@ -2,6 +2,7 @@
 	"name": "Slime Defender",
 	"hp": 20,
 	"speed": 4,
+	"shield": 100,
 	"planckData": {
 		"plShape": "circle",
 		"plRadius": 0.375

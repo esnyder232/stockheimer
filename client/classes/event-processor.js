@@ -3,6 +3,7 @@ import ClientConfig from '../client-config.json';
 import AddActiveCharacterEvent from "../event-classes/add-active-character-event.js"
 import RemoveActiveCharacterEvent from "../event-classes/remove-active-character-event.js"
 import ActiveCharacterUpdateEvent from "../event-classes/active-character-update-event.js"
+import ActiveCharacterShieldUpdateEvent from "../event-classes/active-character-shield-update-event.js"
 import CharacterDamageEffectEvent from "../event-classes/character-damage-effect-event.js"
 import CharacterHealEffectEvent from "../event-classes/character-heal-effect-event.js"
 import UpdateUserInfoEvent from "../event-classes/update-user-info-event.js"
@@ -65,6 +66,7 @@ export default class EventProcessor {
 			{eventName: "addActiveCharacter", eventClass: new AddActiveCharacterEvent(), enabled: false},
 			{eventName: "removeActiveCharacter", eventClass: new RemoveActiveCharacterEvent(), enabled: false},
 			{eventName: "activeCharacterUpdate", eventClass: new ActiveCharacterUpdateEvent(), enabled: false},
+			{eventName: "activeCharacterShieldUpdate", eventClass: new ActiveCharacterShieldUpdateEvent(), enabled: false},
 			{eventName: "characterDamageEffect", eventClass: new CharacterDamageEffectEvent(), enabled: false},
 			{eventName: "characterHealEffect", eventClass: new CharacterHealEffectEvent(), enabled: false},
 			{eventName: "updateUserInfo", eventClass: new UpdateUserInfoEvent(), enabled: false},

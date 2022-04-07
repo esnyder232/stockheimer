@@ -146,6 +146,9 @@ class UserAgent {
 					else if(e.ent.type == "castle") {
 						e.paWeight = 1;
 					}
+					else if(e.ent.type == "persistent-projectile") {
+						e.paWeight = 1;
+					}
 				}
 				else {
 					e.paWeight = 1;

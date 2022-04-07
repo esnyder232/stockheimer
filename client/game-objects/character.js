@@ -28,10 +28,14 @@ export default class Character {
 
 		this.hpMax = 100;
 		this.hpCur = 100;
+		this.shieldCur = 0;
+		this.shieldMax = 0;
+
 		this.isDirty = false;
 
 		this.boxGraphics = null;
 		this.hpBarGraphics = null;
+		this.shieldBarGraphics = null;
 		this.textGraphics = null;
 		this.spriteGraphics = null;
 		this.glowGraphics = null;
@@ -41,6 +45,7 @@ export default class Character {
 
 		this.serverEventMapping = {
 			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this),
+			"activeCharacterShieldUpdate": this.activeCharacterShieldUpdateEvent.bind(this),
 			"updateCharacterState": this.updateCharacterStateEvent.bind(this)
 		}
 
@@ -50,6 +55,7 @@ export default class Character {
 		this.characterTextFillColor = 0;
 		this.characterTextStrokeThickness = 1;
 		this.characterFillColor = 0x000000;
+		this.characterShieldFillColor = 0x888888;
 		this.usernameText = "???";
 		this.teamShaderKey = "";
 		this.circleShape = null;
@@ -70,9 +76,29 @@ export default class Character {
 		this.hpBarStrokeMin = 1;
 		this.hpBarStrokeMax = 2;
 		this.hpBarStrokeSizeRatio = 1;
-		this.hpBarOffsetYMin = -30;
+		this.hpBarOffsetYMin = -35;
 		this.hpBarOffsetYMax = -999;
 		this.hpBarOffsetYSizeRatio = -20;
+
+
+		this.shieldBarStrokeThickness = 2;
+		this.shieldBarOffsetX = -50;
+		this.shieldBarOffsetY = -45;
+		this.shieldBarHeight = 4;
+		this.shieldBarWidthMax = 50;
+
+		this.shieldBarHeightMin = 4;
+		this.shieldBarHeightMax = 8;
+		this.shieldBarHeightSizeRatio = 3;
+		this.shieldBarStrokeMin = 1;
+		this.shieldBarStrokeMax = 2;
+		this.shieldBarStrokeSizeRatio = 1;
+		this.shieldBarOffsetYMin = -30;
+		this.shieldBarOffsetYMax = -999;
+		this.shieldBarOffsetYSizeRatio = -20;
+
+
+
 
 
 		//Name text variables
@@ -88,6 +114,7 @@ export default class Character {
 		this.textOffsetYSizeRatio = 15;
 
 		this.updateHealthBar = true;
+		this.updateShieldBar = true;
 
 		//glow vatiables
 		this.glowRadius = 8;
@@ -169,12 +196,14 @@ export default class Character {
 		this.scaleY = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.phaserData?.scaleY, this.scaleY);
 		this.idleMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.idleMsPerFrame, this.idleMsPerFrame);
 		this.moveMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.moveMsPerFrame, this.moveMsPerFrame);
+		this.shieldMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shield, this.shieldMax);
 
 		//get colors sorted out
 		this.calculateColors();
 
 		//create the graphics objects
 		this.createHpBarGraphics();
+		this.createShieldBarGraphics();
 		this.createTextGraphics();
 		this.createBoxGraphics();
 		this.createSpriteGraphics();
@@ -185,6 +214,7 @@ export default class Character {
 
 		//draw the graphics objects on activation
 		this.drawHpBarGraphics();
+		this.drawShieldBarGraphics();
 		this.drawTextGraphics();
 		this.drawBoxGraphics();
 		this.drawGlowGraphics();
@@ -245,6 +275,7 @@ export default class Character {
 				this.characterTextFillColor = team.characterTextFillColor;
 				this.characterTextStrokeColor = team.characterTextStrokeColor;
 				this.characterFillColor = team.phaserCharacterFillColor;
+				// this.characterShieldFillColor = team.phaserCharacterShieldFillColor;
 				this.characterTintColor = team.phaserCharacterTintColor;
 				this.teamShaderKey = team.teamShaderKey;
 			}
@@ -282,10 +313,40 @@ export default class Character {
 		}
 	}
 
+	createShieldBarGraphics() {
+		this.shieldBarHeight = this.shieldBarHeightMin + ((this.size - 1) * this.shieldBarHeightSizeRatio);
+		this.shieldBarStrokeThickness = this.shieldBarStrokeMin + ((this.size - 1) * this.shieldBarStrokeSizeRatio)
+		this.shieldBarOffsetY= this.shieldBarOffsetYMin + ((this.size - 1) * this.shieldBarOffsetYSizeRatio)
+
+		this.shieldBarHeight = this.globalfuncs.clamp(this.shieldBarHeight, this.shieldBarHeightMin, this.shieldBarHeightMax);
+		this.shieldBarStrokeThickness = this.globalfuncs.clamp(this.shieldBarStrokeThickness, this.shieldBarStrokeMin, this.shieldBarStrokeMax);
+		this.shieldBarOffsetY = this.globalfuncs.clamp(this.shieldBarOffsetY, this.shieldBarOffsetYMax, this.shieldBarOffsetYMin);
+
+		this.shieldBarOffsetX = -this.shieldBarWidthMax/2;
+
+		this.shieldBarBorderAlpha = 1.0;
+
+		if(this.ownerId !== this.gc.myUserServerId) {
+			this.shieldBarBorderAlpha = 0;
+		}
+
+		this.shieldBarGraphics = this.ms.add.graphics();
+		this.shieldBarGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+		this.shieldBarGraphics.setY((this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1) + this.shieldBarOffsetY);
+
+		//if its your own character, put it on a special layer that is always on top
+		if(this.ownerId === this.gc.myUserServerId) {
+			this.shieldBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
+		}
+		else {
+			this.shieldBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.hpBarLayer);
+		}
+	}
+
+
+
 	drawHpBarGraphics() {
         this.hpBarGraphics.clear();
-
-
 
         //Background + border
         this.hpBarGraphics.fillStyle(0xffffff, this.hpBarBorderAlpha);
@@ -299,9 +360,27 @@ export default class Character {
 		this.hpBarGraphics.fillStyle(this.characterFillColor);
 		var hpCurrentWidth = (this.hpCur/this.hpMax) * this.hpBarWidthMax;
 		this.hpBarGraphics.fillRect(this.hpBarOffsetX, this.hpBarOffsetY, hpCurrentWidth, this.hpBarHeight);
-
-		
 	}
+
+	drawShieldBarGraphics() {
+        this.shieldBarGraphics.clear();
+
+        //Background + border
+		if(this.shieldMax !== 0) {
+			this.shieldBarGraphics.fillStyle(0xffffff, this.shieldBarBorderAlpha);
+			this.shieldBarGraphics.fillRect(this.shieldBarOffsetX - this.shieldBarStrokeThickness, this.shieldBarOffsetY - this.shieldBarStrokeThickness, this.shieldBarWidthMax + (this.shieldBarStrokeThickness*2), this.shieldBarHeight + (this.shieldBarStrokeThickness*2));
+	
+	
+			this.shieldBarGraphics.fillStyle(0x000000);
+			this.shieldBarGraphics.fillRect(this.shieldBarOffsetX, this.shieldBarOffsetY, this.shieldBarWidthMax, this.shieldBarHeight);
+	
+			//shield
+			this.shieldBarGraphics.fillStyle(this.characterShieldFillColor);
+			var shieldCurrentWidth = (this.shieldCur/this.shieldMax) * this.shieldBarWidthMax;
+			this.shieldBarGraphics.fillRect(this.shieldBarOffsetX, this.shieldBarOffsetY, shieldCurrentWidth, this.shieldBarHeight);
+		}
+	}
+
 
 	createTextGraphics() {
 		//calculate text height and offset
@@ -444,6 +523,7 @@ export default class Character {
 	pointeroverEvent() {
 		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
 		this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
+		this.shieldBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
 		this.textGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
 		this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
 		this.glowGraphics.setDepth(ClientConstants.PhaserDrawLayers.mouseOverLayer);
@@ -462,9 +542,10 @@ export default class Character {
 
 		if(this.ownerId === this.gc.myUserServerId) {
 			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
+			this.shieldBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.myTextLayer);
 		}
 		else {
-			this.hpBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.hpBarLayer);
+			this.shieldBarGraphics.setDepth(ClientConstants.PhaserDrawLayers.hpBarLayer);
 		}
 	}
 
@@ -506,6 +587,7 @@ export default class Character {
 		this.boxGraphics.destroy();
 		this.textGraphics.destroy();
 		this.hpBarGraphics.destroy();
+		this.shieldBarGraphics.destroy();
 		this.spriteGraphics.destroy();
 		this.glowGraphics.destroy();
 		this.mouseOverHitbox.destroy();
@@ -651,6 +733,11 @@ export default class Character {
 			this.updateHealthBar = false;
 		}
 
+		if(this.updateShieldBar) {
+			this.drawShieldBarGraphics();
+			this.updateShieldBar = false;
+		}
+
 		this.drawDirectionGraphics();
 
 		if(this.enemyDamageTimer > 0) {
@@ -716,6 +803,15 @@ export default class Character {
 		this.hpCur = e.characterHpCur;
 	}
 
+	activeCharacterShieldUpdateEvent(e) {
+		if(this.shieldCur !== e.characterShieldCur) {
+			this.updateShieldBar = true;
+		}
+
+		this.shieldCur = e.characterShieldCur;
+	}
+
+
 	updateCharacterStateEvent(e) {
 		// console.log("character update event " + e.characterId)
 		var r = this.gc.rm.getResourceByServerId(e.characterClassStateResourceId);
@@ -760,6 +856,9 @@ export default class Character {
 	
 		this.hpBarGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio))
 		this.hpBarGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1))
+
+		this.shieldBarGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio))
+		this.shieldBarGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1))
 
 		this.spriteGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
 		this.spriteGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);

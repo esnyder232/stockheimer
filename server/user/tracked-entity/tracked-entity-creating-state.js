@@ -36,6 +36,9 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 					case "castle":
 						event = this.trackedEntity.ent.serializeAddCastleEvent();
 						break;
+					case "persistent-projectile":
+						event = this.trackedEntity.ent.serializeAddPersistentProjectileEvent();
+						break;
 				}
 				break;
 			case "round":

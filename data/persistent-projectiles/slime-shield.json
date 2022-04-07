@@ -25,21 +25,15 @@
 	},
 	"collisionData": {
 		"collideSameTeamCharacters": false,
-		"collideOtherTeamCharacters": true,
+		"collideOtherTeamCharacters": false,
 		"collideSelf": false,
 		"collideWalls": false,
 		"collideSameTeamProjectiles": false,
-		"collideOtherTeamProjectiles": true
+		"collideOtherTeamProjectiles": false
 	},
 	"persistentProjectileData": {
-		"spawnOffsetLength": 10.0
+		"spawnOffsetLength": 10.0,
+		"hpStatResourceKey": "shield"
 	},
-	"characterEffectData": [
-		{
-			"type": "force",
-			"mag": 30,
-			"dir": "out",
-			"period": 1
-		}
-	]
+	"characterEffectData": []
 }

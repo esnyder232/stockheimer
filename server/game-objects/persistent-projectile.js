@@ -41,6 +41,7 @@ class PersistentProjectile {
 		this.collideWalls = false;
 		this.collideSelf = false;
 		this.characterEffectData = [];
+		this.persistentProjectileData = {};
 	}
 
 
@@ -62,7 +63,6 @@ class PersistentProjectile {
 		this.plHeight = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plHeight);
 		this.speed = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.speed);
 		this.mass = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.mass);
-		this.spawnOffsetLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnOffsetLength);
 		this.size = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.size);
 		this.collideSameTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSameTeamCharacters, this.collideSameTeamCharacters);
 		this.collideOtherTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideOtherTeamCharacters, this.collideOtherTeamCharacters);
@@ -71,6 +71,9 @@ class PersistentProjectile {
 		this.collideWalls = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideWalls);
 		this.collideSelf = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSelf);
 		this.characterEffectData = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.characterEffectData);
+
+		this.spawnOffsetLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.persistentProjectileData?.spawnOffsetLength);
+		this.hpStatResourceKey = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.persistentProjectileData?.hpStatResourceKey);
 
 		//data validation stuff
 		if(this.size <= 0) {

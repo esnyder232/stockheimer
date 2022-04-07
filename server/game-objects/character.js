@@ -33,6 +33,7 @@ class Character {
 		this.lockedLookDirection = 0;
 		this.isInputDirty = false;
 		this.isStateDirty = false;
+		this.isShieldDirty = false;
 		this.characterDirectionChanged = false;
 		
 		this.bigBulletCounter = 0;
@@ -41,6 +42,7 @@ class Character {
 		this.hpMax = 25;
 		this.hpCur = 25;
 		this.isDirty = false;
+		this.isShieldDirty = false;
 		this.xStarting = 15;
 		this.yStarting = -15.0;
 		this.forceImpulses = [];
@@ -85,7 +87,10 @@ class Character {
 		this.projectileLeave = [];
 		this.projectileIndex = {};
 
-		this.persistentProjectiles = {};
+		this.shieldMax = 0;
+		this.shieldCur = 0;
+		this.tempShieldRechargeCounter = 0; //temporary shield recharge counter
+		this.tempShieldRechargeTimeLength = 1000;
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -233,17 +238,10 @@ class Character {
 			this.stateCooldownsTemplates[obj.key] = obj;
 		}
 
-		// //create persistent projectiles for this character
-		// var persistentProjectilesFromResource = this.globalfuncs.getValueDefault(this.characterClassResource.data.persistentProjectiles, null)
-		// if(persistentProjectilesFromResource) {
-		// 	for (const key in persistentProjectilesFromResource) {
-		// 		if (persistentProjectilesFromResource.hasOwnProperty(key)) {
-		// 			if(persistentProjectilesFromResource[key]) {
-		// 				var gothere = true;
-		// 			}
-		// 		}
-		// 	}
-		// }
+
+		//get the stat resources
+		this.shieldCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shield, this.shieldCur);
+		this.shieldMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shield, this.shieldMax);
 
 		this.gs.em.emitEvent("character-activated", {characterId: this.id, teamId: this.teamId});
 	}
@@ -562,12 +560,6 @@ class Character {
 			}
 		}
 
-		// if(this.bigBulletCounter >= 0)
-		// {
-		// 	this.bigBulletCounter -= dt;
-		// }
-		
-
 		//tell the user he has killed a character if applicable
 		if(this.hpCur <= 0) {
 			this.gs.gameState.characterDied(this.id);
@@ -583,6 +575,17 @@ class Character {
 				this.state.exit(dt);
 				this.state = null;
 				this.isStateDirty = true;
+			}
+		} 
+		//if there is no state, temporarily increase the shield recharge counter
+		else {
+			if(this.shieldMax !== 0) {
+				this.tempShieldRechargeCounter += dt;
+
+				if(this.tempShieldRechargeCounter >= this.tempShieldRechargeTimeLength) {
+					this.tempShieldRechargeCounter = 0;
+					this.modShield(5);
+				}
 			}
 		}
 
@@ -762,6 +765,7 @@ class Character {
 	postWebsocketUpdate() {
 		this.isInputDirty = false;
 		this.isStateDirty = false;
+		this.isShieldDirty = false;
 	}
 
 
@@ -800,8 +804,25 @@ class Character {
 		return result || this.isDirty;
 	}
 
+	checkDirtyShield() {
+		return this.isShieldDirty;
+	}
+
+	modShield(shieldChange) {
+		this.shieldCur += shieldChange;
+		if(this.shieldCur < 0) {
+			this.shieldCur = 0;
+		}
+		else if(this.shieldCur > this.shieldMax) {
+			this.shieldCur = this.shieldMax;
+		}
+
+		this.isShieldDirty = true;
+	}
+
+
 	modHealth(hpChange) {
-		this.hpCur -= hpChange;
+		this.hpCur += hpChange;
 		if(this.hpCur < 0) {
 			this.hpCur = 0;
 		}
@@ -865,7 +886,7 @@ class Character {
 	}
 
 	applyDamageEffect(srcUserId, damage) {
-		this.modHealth(damage);
+		this.modHealth(-damage);
 
 		//create event for clients to notify them of damage
 		var userAgents = this.gs.uam.getUserAgents();
@@ -890,7 +911,7 @@ class Character {
 			}
 		}
 
-		this.modHealth(-actualHealAmount);
+		this.modHealth(actualHealAmount);
 
 		//create event for clients to notify them of damage
 		var userAgents = this.gs.uam.getUserAgents();
@@ -950,7 +971,9 @@ class Character {
 			"characterPosY": bodyPos.y,
 			"characterHpMax": this.hpMax,
 			"characterHpCur": this.hpCur,
-			"characterClassResourceId": this.characterClassResourceId
+			"characterClassResourceId": this.characterClassResourceId,
+			"characterShieldMax": this.shieldMax,
+			"characterShieldCur": this.shieldCur
 		};
 		
 		return eventData;
@@ -1003,6 +1026,19 @@ class Character {
 			"characterId": this.id,
 			"characterClassStateResourceId": characterClassStateResourceid,
 			"stateTimeAcc": stateTimeAcc
+		};
+
+		return eventData;
+	}
+
+
+	serializeActiveCharacterShieldUpdateEvent() {
+		var eventData = null;
+		eventData = {
+			"eventName": "activeCharacterShieldUpdate",
+			"id": this.id,
+			"characterShieldCur": this.shieldCur,
+			"characterShieldMax": this.shieldMax
 		};
 
 		return eventData;

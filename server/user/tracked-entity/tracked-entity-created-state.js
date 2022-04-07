@@ -96,29 +96,34 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 	}
 
 	createUpdateEvent(dt) {
-		var eventData = null;
+		var eventData = [];
 		
 		//construct eventData here
 		if(this.trackedEntity.entType == "gameobject") {
 			switch(this.trackedEntity.ent.type) {
 				case "character":
-					//check if its dirty anyway
+					//check if its generally dirty
 					if(this.trackedEntity.ent.checkDirty()) {
-						eventData = this.trackedEntity.ent.serializeActiveCharacterUpdateEvent();
+						eventData.push(this.trackedEntity.ent.serializeActiveCharacterUpdateEvent());
+					}
+
+					//check if the shield stat is dirty
+					if(this.trackedEntity.ent.checkDirtyShield()) {
+						eventData.push(this.trackedEntity.ent.serializeActiveCharacterShieldUpdateEvent());
 					}
 					break;
 				case "castle":
-					eventData = this.trackedEntity.ent.serializeCastleUpdateEvent();
+					eventData.push(this.trackedEntity.ent.serializeCastleUpdateEvent());
 					break;
 			}
-	
-			if(eventData !== null) {
+
+			for(var i = 0; i < eventData.length; i++) {
 				//check if the websocket handler can fit the event
-				var info = this.trackedEntity.ua.wsh.canEventFit(eventData);
+				var info = this.trackedEntity.ua.wsh.canEventFit(eventData[i]);
 	
 				//insert the event, and reset the priority accumulator
 				if(info.canEventFit) {
-					this.trackedEntity.ua.wsh.insertEvent(eventData);
+					this.trackedEntity.ua.wsh.insertEvent(eventData[i]);
 					this.trackedEntity.pa = 0.0;
 				}
 				else {
@@ -126,6 +131,8 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 					//continue with other tracked objects to see if any others will fit
 				}
 			}
+
+			eventData.length = 0;
 		}
 	}
 
