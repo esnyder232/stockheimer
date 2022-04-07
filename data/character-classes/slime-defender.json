@@ -21,8 +21,8 @@
 		"attack": "data/animation-sets/slime-mage-attack-set.json",
 		"cast": "data/animation-sets/slime-mage-fire-set.json"
 	},
-	"persistentObjects": {
-		"shield": "data/persistent-objects/slime-shield.json"
+	"persistentProjectiles": {
+		"shield": "data/persistent-projectiles/slime-shield.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
 	"fireStateKey": "data/character-class-states/slime-shield.json",

@@ -1,6 +1,6 @@
-class PersistentObjectResourceDefinition {
+class PersistentProjectileResourceDefinition {
 	constructor() {
-		this.resourceType = "persistent-object";
+		this.resourceType = "persistent-projectile";
 		this.gs = null;
 	}
 
@@ -15,4 +15,4 @@ class PersistentObjectResourceDefinition {
 	}
 }
 
-exports.PersistentObjectResourceDefinition = PersistentObjectResourceDefinition;
+exports.PersistentProjectileResourceDefinition = PersistentProjectileResourceDefinition;

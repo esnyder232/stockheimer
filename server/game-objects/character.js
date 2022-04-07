@@ -85,7 +85,7 @@ class Character {
 		this.projectileLeave = [];
 		this.projectileIndex = {};
 
-		this.shieldObj = null;
+		this.persistentProjectiles = {};
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -232,6 +232,18 @@ class Character {
 
 			this.stateCooldownsTemplates[obj.key] = obj;
 		}
+
+		// //create persistent projectiles for this character
+		// var persistentProjectilesFromResource = this.globalfuncs.getValueDefault(this.characterClassResource.data.persistentProjectiles, null)
+		// if(persistentProjectilesFromResource) {
+		// 	for (const key in persistentProjectilesFromResource) {
+		// 		if (persistentProjectilesFromResource.hasOwnProperty(key)) {
+		// 			if(persistentProjectilesFromResource[key]) {
+		// 				var gothere = true;
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		this.gs.em.emitEvent("character-activated", {characterId: this.id, teamId: this.teamId});
 	}

@@ -1,7 +1,7 @@
 const planck = require('planck-js');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 
-class Shield {
+class PersistentProjectile {
 	constructor() {
 		this.gs = null;
 		this.id = null;
@@ -9,7 +9,7 @@ class Shield {
 		this.ownerId = null; //the user/ai that controlles the character owns the shield
 		this.ownerType = "";
 		this.teamId = null;
-		this.type = "shield";
+		this.type = "persistent-projectile";
 
 		this.plBody = null;
 		this.plShape = "circle";
@@ -21,9 +21,6 @@ class Shield {
 		this.mass = 100;
 
 		this.size = 1;
-
-		this.spawnLocationType = "mouse-direction";
-		this.timeLength = 1000; //ms
 		this.spawnOffsetLength = 0;
 
 		this.xStarting = 0;
@@ -47,7 +44,7 @@ class Shield {
 	}
 
 
-	shieldInit(gameServer, projectileResource, xc, yc, angle) {
+	persistentProjectileInit(gameServer, projectileResource, xc, yc, angle) {
 		this.gs = gameServer;
 		this.projectileResource = projectileResource;
 		this.projectileResourceId = this.projectileResource.id;
@@ -65,8 +62,6 @@ class Shield {
 		this.plHeight = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.planckData?.plHeight);
 		this.speed = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.speed);
 		this.mass = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.physicsData?.mass);
-		this.spawnLocationType = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnLocationType);
-		this.timeLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.timeLength);
 		this.spawnOffsetLength = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.spawnOffsetLength);
 		this.size = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.size);
 		this.collideSameTeamCharacters = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.collisionData?.collideSameTeamCharacters, this.collideSameTeamCharacters);
@@ -89,13 +84,9 @@ class Shield {
 		//calculate offsets for spawning location. This is mainly so projectiles won't hit walls when the character is right next to them, and aiming away from the wall.
 		var xOffset = 0;
 		var yOffset = 0;
-
-		if(this.spawnLocationType === "mouse-direction") {
-			yOffset = this.spawnOffsetLength * Math.sin(this.angle) * -1;
-			xOffset = this.spawnOffsetLength * Math.cos(this.angle);
-		}
-
-
+		
+		yOffset = this.spawnOffsetLength * Math.sin(this.angle) * -1;
+		xOffset = this.spawnOffsetLength * Math.cos(this.angle);
 
 		var theShape = null;
 
@@ -207,21 +198,15 @@ class Shield {
 	}
 
 	collisionProjectile(otherP, projectileUserData1, projectileUserData2, contactObj, isProjectileA) {
-		otherP.timeLength = 0;
+		console.log("inside persistent-projectile: START colided with projectile");
 	}
 
 	collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA) {
-		
-		//get resource data
-		var destroyOnContact = this.gs.globalfuncs.getValueDefault(this?.projectileResource?.data?.projectileData?.destroyOnContact, true);
-
-		if(destroyOnContact) {
-			this.timeLength = 0;
-		}
+		console.log("inside persistent-projectile: START colided with character");
 	}
 
 	endCollisionCharacter() {
-		
+		console.log("inside persistent-projectile: END colided with character");
 	}
 
 
@@ -294,4 +279,4 @@ class Shield {
 
 }
 
-exports.Shield = Shield;
+exports.PersistentProjectile = PersistentProjectile;

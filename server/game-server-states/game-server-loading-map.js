@@ -288,19 +288,19 @@ class GameServerLoadingMap extends GameServerBaseState {
 			}
 		}
 
-		//load persistent objects resources if there are any
+		//load persistent projectiles resources if there are any
 		if(!bError) {
-			var persistentObjectsObj = this.globalfuncs.getValueDefault(resource?.data?.persistentObjects, null);
+			var persistentProjectilesObj = this.globalfuncs.getValueDefault(resource?.data?.persistentProjectiles, null);
 
 			if(resource?.data?.name === "Slime Defender") {
 				var stophere = true;
 			}
 
-			if(persistentObjectsObj !== null) {
-				for (const key in persistentObjectsObj) {
-					if (persistentObjectsObj.hasOwnProperty(key)) {
-						if(persistentObjectsObj[key]) {
-							this.gs.rm.loadResource(persistentObjectsObj[key], "persistent-object", this.cbPersistentObjectComplete.bind(this));
+			if(persistentProjectilesObj !== null) {
+				for (const key in persistentProjectilesObj) {
+					if (persistentProjectilesObj.hasOwnProperty(key)) {
+						if(persistentProjectilesObj[key]) {
+							this.gs.rm.loadResource(persistentProjectilesObj[key], "persistent-projectile", this.cbPersistentProjectileComplete.bind(this));
 						}
 					}
 				}
@@ -413,8 +413,8 @@ class GameServerLoadingMap extends GameServerBaseState {
 		}
 	}
 
-	cbPersistentObjectComplete(resource) {
-		console.log("!!! persistent object Resource Loaded !!!!");
+	cbPersistentProjectileComplete(resource) {
+		console.log("!!! persistent projectile Resource Loaded !!!!");
 		console.log(resource);
 		
 		var bError = false;
@@ -423,7 +423,7 @@ class GameServerLoadingMap extends GameServerBaseState {
 
 		if(resource.data === null) {
 			bError = true;
-			errorMessage = "Error when loading persistent object '" + resource.key + "': No data found.";
+			errorMessage = "Error when loading persistent projectile '" + resource.key + "': No data found.";
 		}
 
 		//create sprite resources

@@ -7,6 +7,6 @@
 	"canFire": true,
 	"canAltFire": true,
 	"cooldownTimeLength": 0,
-	"characterPersistentKey": "shield",
-	"persistentObjectTime": 200
+	"persistentProjectileKey": "data/persistent-projectile/slime-shield.json",
+	"persistentProjectileTime": 200
 }

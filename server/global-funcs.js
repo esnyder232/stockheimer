@@ -171,7 +171,7 @@ class GlobalFuncs {
 				var yStarting = z.yPlanck - (z.heightPlanck * Math.random());
 
 				c.xStarting = xStarting;
-				c.yStarting = yStarting;					
+				c.yStarting = yStarting;
 
 				broadcastMessage = "Player '" + user.username + "' has spawned.";
 			}
