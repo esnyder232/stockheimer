@@ -442,12 +442,8 @@ class GameServerLoadingMap extends GameServerBaseState {
 	}
 
 	cbPersistentProjectileComplete(resource) {
-		console.log("!!! persistent projectile Resource Loaded !!!!");
-		console.log(resource);
-		
 		var bError = false;
 		var errorMessage = "";
-		var tm = null;
 
 		if(resource.data === null) {
 			bError = true;

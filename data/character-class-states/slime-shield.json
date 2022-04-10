@@ -4,9 +4,10 @@
 	"animationSet": "cast",
 	"canLook": true,
 	"canMove": true,
-	"canFire": true,
+	"canFire": false,
 	"canAltFire": true,
 	"cooldownTimeLength": 0,
+	"timeLength": 200,
 	"persistentProjectileKey": "data/persistent-projectiles/slime-shield.json",
-	"persistentProjectileTime": 200
+	"persistentProjectileTime": 0
 }

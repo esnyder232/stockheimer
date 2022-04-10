@@ -2,7 +2,7 @@
 	"name": "Slime Mellee",
 	"type": "one-time",
 	"animationSet": "attack",
-	"canLook": false,
+	"canLook": true,
 	"canMove": true,
 	"timeLength": 300,
 	"projectileKey": "data/projectiles/slime-mellee.json",

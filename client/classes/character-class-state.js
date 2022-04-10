@@ -14,6 +14,7 @@ export default class CharacterClassState {
 		this.isFrameTagDirectionDirty = false;
 		this.isAnimationSetKeyDirty = false;
 		this.preserveAnimationProgress = false;
+		this.canLook = false;
 		this.cooldownTimeLength = 0;
 	}
 
@@ -36,6 +37,7 @@ export default class CharacterClassState {
 			this.animationSetKey = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.animationSet, this.animationSetKey);
 			this.timeLength = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.timeLength, this.timeLength);
 			this.cooldownTimeLength = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.cooldownTimeLength, this.cooldownTimeLength);
+			this.canLook = this.gc.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.canLook, this.canLook);
 			this.repeatNum = 0;
 			this.preserveAnimationProgress = true;
 			this.frameTagDirection = "frameTagDown";
@@ -53,7 +55,7 @@ export default class CharacterClassState {
 
 	update(dt) {
 
-		if(this.isIdleState) {
+		if(this.isIdleState || this.canLook) {
 			this.updateLookDirection();
 			this.updateAnimationSetKey();
 

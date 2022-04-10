@@ -90,7 +90,9 @@ class Character {
 		this.shieldMax = 0;
 		this.shieldCur = 0;
 		this.tempShieldRechargeCounter = 0; //temporary shield recharge counter
-		this.tempShieldRechargeTimeLength = 1000;
+		this.tempShieldRechargeTimeLength = 250;
+		this.tempShieldRechargeAmount = 8;
+		this.tempShieldRechargeAmountOriginal = 8;
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -584,15 +586,13 @@ class Character {
 				this.isStateDirty = true;
 			}
 		} 
-		//if there is no state, temporarily increase the shield recharge counter
-		else {
-			if(this.shieldMax !== 0) {
-				this.tempShieldRechargeCounter += dt;
+		//temporarily automatically increase the shield recharge counter
+		if(this.shieldMax > 0) {
+			this.tempShieldRechargeCounter += dt;
 
-				if(this.tempShieldRechargeCounter >= this.tempShieldRechargeTimeLength) {
-					this.tempShieldRechargeCounter = 0;
-					this.modShield(5);
-				}
+			if(this.tempShieldRechargeCounter >= this.tempShieldRechargeTimeLength) {
+				this.tempShieldRechargeCounter = 0;
+				this.modShield(this.tempShieldRechargeAmount);
 			}
 		}
 
@@ -816,6 +816,10 @@ class Character {
 	}
 
 	modShield(shieldChange) {
+		if((this.shieldCur + shieldChange) !== this.shieldCur) {
+			this.isShieldDirty = true;
+		}
+
 		this.shieldCur += shieldChange;
 		if(this.shieldCur < 0) {
 			this.shieldCur = 0;
@@ -823,8 +827,6 @@ class Character {
 		else if(this.shieldCur > this.shieldMax) {
 			this.shieldCur = this.shieldMax;
 		}
-
-		this.isShieldDirty = true;
 	}
 
 

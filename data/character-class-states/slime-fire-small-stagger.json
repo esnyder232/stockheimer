@@ -1,0 +1,11 @@
+{
+	"name": "Slime Fire Small",
+	"type": "one-time",
+	"animationSet": "cast",
+	"canLook": false,
+	"canMove": false,
+	"timeLength": 600,
+	"projectileKey": "data/projectiles/slime-fire-small.json",
+	"projectileTime": 150,
+	"cooldownTimeLength": 400
+}

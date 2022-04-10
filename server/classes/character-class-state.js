@@ -28,7 +28,7 @@ class CharacterClassState {
 		this.contactDmg = 0;
 
 		this.persistentProjectileKey = null;
-		this.persistentProjectileTime = 0;
+		this.tempShieldRechargeAmount = 0;
 	}
 
 	enter(dt) {
@@ -72,6 +72,8 @@ class CharacterClassState {
 		//this is just begging to be split up into different classes
 		switch(this.type) {
 			case "one-time":
+				//hacky shit
+				this.character.tempShieldRechargeAmount = Math.floor(this.character.tempShieldRechargeAmountOriginal/4);
 				this.updateFunction = this.updateOneTime.bind(this);
 				break;
 			case "special-dash":
@@ -100,6 +102,8 @@ class CharacterClassState {
 		this.character.changeAllowAltFire(true);
 		this.character.changeAllowLook(true);
 		this.character.stopContactDamage();
+
+		this.character.tempShieldRechargeAmount = this.character.tempShieldRechargeAmountOriginal;
 
 		if(this.type === "persistent-projectile") {
 			this.exitPersistentProjectile(dt);
@@ -213,11 +217,14 @@ class CharacterClassState {
 
 		// create entry for persistent data on character
 		this.tempId = pp.id;
+		
+		//hacky shit
+		this.character.tempShieldRechargeAmount = 0;
 	}
 
 	//update for persistent projectile
 	updatePersistentProjectile(dt) {
-		if(this.character.frameInputController["isFiringAlt"].state === true) {
+		if(this.character.frameInputController[this.characterClassInput].state === false) {
 			this.character.setCharacterClassState(null);
 		}
 	}

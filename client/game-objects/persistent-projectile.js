@@ -136,7 +136,6 @@ export default class PersistentProjectile {
 		var team = this.gc.tm.getTeamByServerID(this.teamId);
 	
 		if(team !== null) {
-			// this.projectileShaderKey = team.projectileShaderKey;
 			this.teamShaderKey = team.teamShaderKey;
 		}
 	}

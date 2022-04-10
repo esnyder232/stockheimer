@@ -2,8 +2,8 @@
 	"name": "Slime Defender",
 	"hp": 20,
 	"speed": 4,
-	"shieldCur": 40,
-	"shieldMax": 40,
+	"shieldCur": 100,
+	"shieldMax": 100,
 	"planckData": {
 		"plShape": "circle",
 		"plRadius": 0.375
@@ -21,9 +21,9 @@
 		"idle": "data/animation-sets/slime-defender-idle-set.json",
 		"move": "data/animation-sets/slime-defender-move-set.json",
 		"attack": "data/animation-sets/slime-mage-attack-set.json",
-		"cast": "data/animation-sets/slime-mage-fire-set.json"
+		"cast": "data/animation-sets/slime-defender-cast-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
-	"fireStateKey": "data/character-class-states/slime-shield.json",
-	"altFireStateKey": "data/character-class-states/slime-fire-small.json"
+	"fireStateKey": "data/character-class-states/slime-fire-small-stagger.json",
+	"altFireStateKey": "data/character-class-states/slime-shield.json"
 }
