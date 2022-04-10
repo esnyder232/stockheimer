@@ -62,10 +62,12 @@ export default class DebugServerCircleEvent {
 		else {
 			o.x = e.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio;
 			o.y = e.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1;
+			o.a = e.a;
 		}
 		
 		//redraw the circle at its location
 		o.boxGraphics.setX(o.x);
 		o.boxGraphics.setY(o.y);
+		o.boxGraphics.setRotation(o.a);
 	}
 }

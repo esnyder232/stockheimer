@@ -3,7 +3,7 @@
 	"size": 1.0,
 	"planckData": {
 		"plShape": "rect",
-		"plWidth": 2,
+		"plWidth": 1,
 		"plHeight": 3
 	},
 	"phaserData": {
@@ -25,15 +25,15 @@
 	},
 	"collisionData": {
 		"collideSameTeamCharacters": false,
-		"collideOtherTeamCharacters": false,
+		"collideOtherTeamCharacters": true,
 		"collideSelf": false,
 		"collideWalls": false,
 		"collideSameTeamProjectiles": false,
-		"collideOtherTeamProjectiles": false
+		"collideOtherTeamProjectiles": true
 	},
 	"persistentProjectileData": {
-		"spawnOffsetLength": 10.0,
-		"hpStatResourceKey": "shield"
+		"spawnOffsetLength": 1.0,
+		"hpStatResourceKey": "shieldCur"
 	},
 	"characterEffectData": []
 }

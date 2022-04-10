@@ -83,7 +83,7 @@ class GameServerRunning extends GameServerBaseState {
 			aiAgents[i].update(dt);
 		}
 
-		//update characters
+		//update game objects
 		for(var i = 0; i < activeGameObjects.length; i++) {
 			activeGameObjects[i].update(dt);
 		}

@@ -32,10 +32,10 @@ import DebugServerCircleEvent from "../event-classes/debug-server-circle-event.j
 import UpdateCharacterStateEvent from "../event-classes/update-character-state-event.js"
 import ServerMapLoadedEvent from "../event-classes/server-map-loaded-event.js"
 import LeaveGameImmediatelyEvent from "../event-classes/leave-game-immediately-event.js"
-
-
-
-
+import AddPersistentProjectileEvent from "../event-classes/add-persistent-projectile-event.js"
+import UpdatePersistentProjectileEvent from "../event-classes/update-persistent-projectile-event.js"
+import RemovePersistentProjectileEvent from "../event-classes/remove-persistent-projectile-event.js"
+import PersistentProjectileDamageEffectEvent from "../event-classes/persistent-projectile-damage-effect-event.js"
 
 export default class EventProcessor {
 	constructor() {
@@ -95,6 +95,10 @@ export default class EventProcessor {
 			{eventName: "updateCharacterState", eventClass: new UpdateCharacterStateEvent(), enabled: false},
 			{eventName: "serverMapLoaded", eventClass: new ServerMapLoadedEvent(), enabled: false},
 			{eventName: "leaveGameImmediately", eventClass: new LeaveGameImmediatelyEvent(), enabled: false},
+			{eventName: "addPersistentProjectile", eventClass: new AddPersistentProjectileEvent(), enabled: false},
+			{eventName: "removePersistentProjectile", eventClass: new RemovePersistentProjectileEvent(), enabled: false},
+			{eventName: "updatePersistentProjectile", eventClass: new UpdatePersistentProjectileEvent(), enabled: false},
+			{eventName: "persistentProjectileDamageEffect", eventClass: new PersistentProjectileDamageEffectEvent(), enabled: false}
 		];
 	}
 

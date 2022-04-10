@@ -240,14 +240,21 @@ class Character {
 
 
 		//get the stat resources
-		this.shieldCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shield, this.shieldCur);
-		this.shieldMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shield, this.shieldMax);
+		this.shieldCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shieldCur, this.shieldCur);
+		this.shieldMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shieldMax, this.shieldMax);
 
 		this.gs.em.emitEvent("character-activated", {characterId: this.id, teamId: this.teamId});
 	}
 
 	//called right before the character is officially deactivated with the characterManager.
 	deactivated() {
+		//final exit out of current state (just in case something needs to be deleted within the state)
+		if(this.state !== null) {
+			this.state.exit();
+			this.state = null;
+		}
+
+
 		if(this.plBody !== null)
 		{
 			this.gs.world.destroyBody(this.plBody);
@@ -884,6 +891,11 @@ class Character {
 			}
 		}
 	}
+
+	collisionPersistentProjectile(persistentProjectile) {
+		//nothing!!!
+	}
+
 
 	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(-damage);

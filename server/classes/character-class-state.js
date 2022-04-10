@@ -195,45 +195,36 @@ class CharacterClassState {
 
 
 	enterPersistentProjectile(dt) {
-		console.log("character-class-state: persistent projectile state ENTER.");
 		//create shield object here
-		// var persistentProjectileResource = this.gs.rm.getResourceByKey(this.persistentProjectileKey);
+		var persistentProjectileResource = this.gs.rm.getResourceByKey(this.persistentProjectileKey);
 
-		// if(persistentProjectileResource !== null) {
-		// 	var pp = this.gs.gom.createGameObject("persistent-projectile");
+		if(persistentProjectileResource !== null) {
+			var pp = this.gs.gom.createGameObject("persistent-projectile");
 
-		// 	pp.characterId = this.character.id;
-		// 	pp.ownerId = this.character.ownerId;
-		// 	pp.ownerType = this.character.ownerType;
-		// 	pp.teamId = this.character.teamId;
+			pp.characterId = this.character.id;
+			pp.ownerId = this.character.ownerId;
+			pp.ownerType = this.character.ownerType;
+			pp.teamId = this.character.teamId;
 	
-		// 	var pos = this.character.plBody.getPosition();
+			var pos = this.character.plBody.getPosition();
 	
-		// 	pp.persistentProjectileInit(this.gs, persistentProjectileResource, pos.x, pos.y, this.character.frameInputController.characterDirection.value);
-		// }
+			pp.persistentProjectileInit(this.gs, persistentProjectileResource, pos.x, pos.y, this.character.frameInputController.characterDirection.value);
+		}
 
-		//create entry for persistent data on character
-		// this.character.savePersistentData();
+		// create entry for persistent data on character
+		this.tempId = pp.id;
 	}
 
 	//update for persistent projectile
 	updatePersistentProjectile(dt) {
-		this.timeAcc += dt;
-		
-		//debugging
-		if(this.timeAcc >= 100) {
-			this.character.modShield(-1);
-			this.timeAcc = 0;
-		}
-
-		if(this.character.frameInputController[this.characterClassInput].state === false) {
+		if(this.character.frameInputController["isFiringAlt"].state === true) {
 			this.character.setCharacterClassState(null);
 		}
 	}
 
 
 	exitPersistentProjectile(dt) {
-		console.log("character-class-state: persistent projectile state EXIT.");
+		this.gs.gom.destroyGameObject(this.tempId);
 	}
 
 

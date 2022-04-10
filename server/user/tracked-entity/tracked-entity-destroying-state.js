@@ -43,6 +43,9 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 					case "castle":
 						se = this.trackedEntity.ent.serializeRemoveCastleEvent();
 						break;
+					case "persistent-projectile":
+						se = this.trackedEntity.ent.serializeRemovePersistentProjectileEvent();
+						break;
 				}
 				break;
 

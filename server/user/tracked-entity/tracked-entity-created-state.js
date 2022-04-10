@@ -115,6 +115,9 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 				case "castle":
 					eventData.push(this.trackedEntity.ent.serializeCastleUpdateEvent());
 					break;
+				case "persistent-projectile":
+					eventData.push(this.trackedEntity.ent.serializeUpdatePersistentProjectileEvent());
+					break;
 			}
 
 			for(var i = 0; i < eventData.length; i++) {
@@ -147,7 +150,8 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 		// if(this.trackedEntity.ent.type === "user") {
 		// 	this.trackedEntity.bAlwaysRegisterUpdate = true;
 		// }
-		if(this.trackedEntity.entType === "gameobject" && this.trackedEntity.ent.type === "character") {
+		if((this.trackedEntity.entType === "gameobject" && this.trackedEntity.ent.type === "character") ||
+		   (this.trackedEntity.entType === "gameobject" && this.trackedEntity.ent.type === "persistent-projectile")) {
 			this.trackedEntity.bAlwaysRegisterUpdate = true;
 			// console.log("tracked-entity-created-state: This tracked entity is marked to alwaysRegisterUpdate. (type: " + this.trackedEntity.entType + ", id: " + this.trackedEntity.entId + ")");
 		}

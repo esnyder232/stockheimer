@@ -8,7 +8,7 @@ export default class Projectile {
 		this.id = null;
 		this.serverId = null;
 		this.serverOwnerId = null;
-		this.type = "character";
+		this.type = "projectile";
 		this.ownerId = null;
 		this.ownerType = "";
 		this.teamId = 0;

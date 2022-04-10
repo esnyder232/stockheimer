@@ -1,7 +1,9 @@
 import GlobalFuncs from '../global-funcs.js';
 import Character from '../game-objects/character.js';
 import Castle from "../game-objects/castle.js";
-import Projectile from "../game-objects/projectile.js"
+import Projectile from "../game-objects/projectile.js";
+import PersistentProjectile from "../game-objects/persistent-projectile.js";
+
 
 export default class GameObjectManager {
 	constructor() {
@@ -37,6 +39,9 @@ export default class GameObjectManager {
 				break;
 			case "castle":
 				o = new Castle();
+				break;
+			case "persistent-projectile":
+				o = new PersistentProjectile();
 				break;
 		}
 

@@ -220,6 +220,10 @@ class Projectile {
 		}
 	}
 
+	collisionPersistentProjectile(persistentProjectile) {
+		this.timeLength = 0;
+	}
+
 	endCollisionCharacter() {
 		
 	}
