@@ -35,6 +35,11 @@ class Team {
 		this.roundWins = 0;
 		this.usersAlive = 0;
 
+		this.kothDirty = true;
+		this.kothTime = 0;
+		this.kothTimeAcc = 0;
+		this.kothTimerOn = false;
+
 		this.eventCallbackMapping = [];
 	}
 
@@ -105,6 +110,29 @@ class Team {
 		}
 	}
 
+	setKothTime(newKothTime) {
+		if(!this.isSpectatorTeam) {
+			this.kothTime = newKothTime;
+			this.kothDirty = true;
+		}
+	}
+
+	resetKothTimeAcc() {
+		if(!this.isSpectatorTeam) {
+			this.kothTimeAcc = 0;
+			this.kothDirty = true;
+		}
+	}
+
+	setKothTimerOn(isOn) {
+		if(!this.isSpectatorTeam) {
+			this.kothTimerOn = isOn;
+			this.kothDirty = true;
+		}
+	}
+	
+
+
 	update(dt) {
 
 		if(this.usersAliveDirty) {
@@ -127,6 +155,19 @@ class Team {
 			}
 
 			this.teamDirty = false;
+		}
+
+
+		if(this.kothDirty) {
+			//send the koth update to all user agents
+			var teamUpdateEvent = this.serializeUpdateTeamKoth();
+
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				userAgents[i].insertTrackedEntityEvent("team", this.id, teamUpdateEvent);
+			}
+
+			this.kothDirty = false;
 		}
 	}
 
@@ -168,7 +209,10 @@ class Team {
 			"projectileColor4Replace": this.projectileColor4Replace,
 			"roundPoints": this.roundPoints,
 			"roundWins": this.roundWins,
-			"usersAlive": this.usersAlive
+			"usersAlive": this.usersAlive,
+			"kothTime": this.kothTime,
+			"kothTimeAcc": this.kothTimeAcc,
+			"kothTimeOn": this.kothTimerOn
 		};
 	}
 
@@ -177,6 +221,16 @@ class Team {
 		return {
 			"eventName": "removeTeam",
 			"id": this.id
+		};
+	}
+
+	serializeUpdateTeamKoth() {
+		return {
+			"eventName": "updateTeamKoth",
+			"id": this.id,
+			"kothTime": this.kothTime,
+			"kothTimeAcc": this.kothTimeAcc,
+			"kothTimeOn": this.kothTimerOn
 		};
 	}
 }

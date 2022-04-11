@@ -140,6 +140,37 @@ export default class TeamScoreMenu {
 
 				this.teamScoreList.append(newItem);
 			}
+		} else if(this.gc.currentGameType === "koth") {
+			this.teamScoreTitle.text("King of the Hill");
+
+			//clear out old scores
+			this.teamScoreList.empty();
+
+			var teams = this.gc.tm.getTeams();
+			var teamsSorted = [];
+
+			for(var i = 0; i < teams.length; i++) {
+				if(!teams[i].isSpectatorTeam) {
+					teamsSorted.push({
+						index: i,
+						slotNum: teams[i].slotNum
+					});
+				}
+			}
+
+			teamsSorted.sort((a, b) => {return b.slotNum - a.slotNum;});
+
+			for(var i = 0; i < teamsSorted.length; i++) {
+				var t = teams[teamsSorted[i].index];
+				
+				var newItem = this.teamScoreItemTemplate.clone();
+				newItem.removeClass("hide");
+				newItem.removeAttr("id");
+				newItem.text(t.name + " - " + t.kothTime);
+				newItem.css("color", t.killFeedTextColor);
+
+				this.teamScoreList.append(newItem);
+			}
 		}
 	}
 

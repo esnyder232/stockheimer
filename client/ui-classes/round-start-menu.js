@@ -64,6 +64,9 @@ export default class RoundResultsMenu {
 		} else if (this.gc.currentGameType === "elimination") {
 			this.gameType = "Elimination";
 			this.gameRules = "First to " + this.gc.matchWinCondition + " wins";
+		} else if (this.gc.currentGameType === "koth") {
+			this.gameType = "King of the Hill";
+			this.gameRules = "First to " + this.gc.matchWinCondition + " wins";
 		}
 
 		this.roundStartGametype.text(this.gameType);

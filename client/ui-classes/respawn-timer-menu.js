@@ -105,6 +105,20 @@ export default class RespawnTimerMenu {
 								this.updateMessageOnUpdate = false;
 								this.respawnMessage.text("Waiting for the round to restart");
 							}
+						} else if (this.gc.currentGameType === "koth") {
+							this.menu.removeClass("hide");
+							if(this.gc.theRound.stateName === "PLAYING" || this.gc.theRound.stateName === "STARTING") {
+								this.updateMessageOnUpdate = true;
+								var secondsLeft = this.gc.myUser?.getRespawnSeconds();
+								if(secondsLeft <= 0) {
+									secondsLeft = 0;
+								}
+								this.respawnMessage.text("Respawning in " + secondsLeft + " seconds");
+							}
+							else if (this.gc.theRound.stateName === "OVER") {
+								this.updateMessageOnUpdate = false;
+								this.respawnMessage.text("Waiting for the round to restart");
+							}
 						}
 						
 						break;

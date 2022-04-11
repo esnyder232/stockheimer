@@ -36,6 +36,9 @@ import AddPersistentProjectileEvent from "../event-classes/add-persistent-projec
 import UpdatePersistentProjectileEvent from "../event-classes/update-persistent-projectile-event.js"
 import RemovePersistentProjectileEvent from "../event-classes/remove-persistent-projectile-event.js"
 import PersistentProjectileDamageEffectEvent from "../event-classes/persistent-projectile-damage-effect-event.js"
+import UpdateTeamKothEvent from "../event-classes/update-team-koth-event.js"
+
+
 
 export default class EventProcessor {
 	constructor() {
@@ -98,7 +101,8 @@ export default class EventProcessor {
 			{eventName: "addPersistentProjectile", eventClass: new AddPersistentProjectileEvent(), enabled: false},
 			{eventName: "removePersistentProjectile", eventClass: new RemovePersistentProjectileEvent(), enabled: false},
 			{eventName: "updatePersistentProjectile", eventClass: new UpdatePersistentProjectileEvent(), enabled: false},
-			{eventName: "persistentProjectileDamageEffect", eventClass: new PersistentProjectileDamageEffectEvent(), enabled: false}
+			{eventName: "persistentProjectileDamageEffect", eventClass: new PersistentProjectileDamageEffectEvent(), enabled: false},
+			{eventName: "updateTeamKoth", eventClass: new UpdateTeamKothEvent(), enabled: false}
 		];
 	}
 

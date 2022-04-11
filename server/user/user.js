@@ -3,7 +3,8 @@ const {UserDisconnectedState} = require("./user-disconnected-state.js");
 const PlayingClassPickingState = require('./playing-states/playing-class-picking-state.js');
 const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js');
 const PlayingRespawningState = require('./playing-states/playing-respawning-state.js');
-const PlayingRespawningEliminationState = require('./playing-states/playing-respawning-elimination-state.js');
+
+
 const {EventEmitter} = require('../classes/event-emitter.js');
 const logger = require('../../logger.js');
 
@@ -109,10 +110,11 @@ class User {
 	determinePlayingState() {
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 
-		//if the player chose any team except the spectator team, put the player in an initial playing state
+		//if the player chose any team except the spectator team, put the player in the next state (class picking state)
 		if(spectatorTeam && this.teamId !== null && this.teamId !== spectatorTeam.id) {
 			this.nextPlayingState = new PlayingClassPickingState.PlayingClassPickingState(this);
 		}
+		//its always safe to default to spectator if something goes wrong lol
 		else {
 			this.nextPlayingState = new PlayingSpectatorState.PlayingSpectatorState(this);
 		}
@@ -121,16 +123,11 @@ class User {
 	determineRespawnState() {
 		var spectatorTeam = this.gs.tm.getSpectatorTeam();
 
-		//just to make sure they are apart of a team and has picked a class already
+		//if the player is on a valid team (non spectator) and they have a class picked out, put the player in the next state (respawning state)
 		if(spectatorTeam && this.teamId !== null && this.teamId !== spectatorTeam.id && this.characterClassResourceId !== null) {
-			if(this.gs.currentGameType === "deathmatch") {
-				this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this);
-			} else if (this.gs.currentGameType === "elimination") {
-				this.nextPlayingState = new PlayingRespawningEliminationState.PlayingRespawningEliminationState(this);
-			}
-			
+			this.nextPlayingState = new PlayingRespawningState.PlayingRespawningState(this);
 		}
-		//its always safe to default to spectator lol
+		//its always safe to default to spectator if something goes wrong lol
 		else {
 			this.nextPlayingState = new PlayingSpectatorState.PlayingSpectatorState(this);
 		}

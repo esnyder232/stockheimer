@@ -61,7 +61,6 @@ export default class RoundResultsMenu {
 			{event: 'close-round-results-menu', func: this.closeMenu.bind(this)},
 			{event: 'round-results', func: this.roundResultsEvent.bind(this)},
 			{event: 'team-wins-updated', func: this.teamWinsUpdated.bind(this)},
-			{event: 'team-wins-updated', func: this.teamWinsUpdated.bind(this)},
 			{event: 'round-started', func: this.roundStarted.bind(this)},
 			{event: 'round-over', func: this.roundOver.bind(this)},
 			{event: 'round-map-end', func: this.roundMapEnd.bind(this)}
@@ -91,7 +90,11 @@ export default class RoundResultsMenu {
 		} else if (this.gc.currentGameType === "elimination") {
 			gameType = "Elimination";
 			gameRules = "First to " + this.gc.matchWinCondition + " wins";
+		} else if (this.gc.currentGameType === "koth") {
+			gameType = "King of the Hill";
+			gameRules = "First to " + this.gc.matchWinCondition + " wins";
 		}
+
 
 		var finalText = "(" + gameType + ": " + gameRules + ")";
 
@@ -284,6 +287,9 @@ export default class RoundResultsMenu {
 				gameRules = "First to " + this.gc.matchWinCondition + " wins";
 			} else if (this.gc.currentGameType === "elimination") {
 				gameType = "Elimination";
+				gameRules = "First to " + this.gc.matchWinCondition + " wins";
+			} else if (this.gc.currentGameType === "koth") {
+				gameType = "King of the Hill";
 				gameRules = "First to " + this.gc.matchWinCondition + " wins";
 			}
 

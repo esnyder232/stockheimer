@@ -93,6 +93,7 @@ class PlayingPlayingState extends PlayingBaseState.PlayingBaseState {
 							break;
 						case "class-changed":
 							//kill the current character, and put user in respawning state
+							//TODO: put in logic to save class selected in elimination mode, and respawning the user on the NEXT round (instead of immediately killing the character in the current round)
 							this.user.gs.gameState.destroyOwnersCharacter(this.user.id, "user");
 							this.user.determineRespawnState();
 							break;

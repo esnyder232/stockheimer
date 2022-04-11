@@ -1,7 +1,9 @@
 const RoundBaseState = require('./round-base-state.js');
 const RoundStarting = require('./round-starting.js');
+const RoundStartingKoth = require('./round-starting-koth.js');
 const RoundMapEnd = require('./round-map-end.js');
 const logger = require('../../logger.js');
+
 
 //do anything here that involves starting the game, Like loading the map, pools, loading saved games, sessions, anything.
 class RoundOver extends RoundBaseState.RoundBaseState {
@@ -130,7 +132,12 @@ class RoundOver extends RoundBaseState.RoundBaseState {
 				this.round.nextState = new RoundMapEnd.RoundMapEnd(this.gs, this.round);
 			} else {
 				this.round.roundNum++;
-				this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
+				if(this.gs.currentGameType === "deathmatch") {
+					this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
+				} else if (this.gs.currentGameType === "koth") {
+					this.round.nextState = new RoundStartingKoth.RoundStartingKoth(this.gs, this.round);
+				}
+				
 			}
 		}
 

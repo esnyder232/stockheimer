@@ -79,6 +79,9 @@ export default class UserListMenu {
 		} else if (this.gc.currentGameType === "elimination") {
 			gameType = "Elimination";
 			gameRules = "First to " + this.gc.matchWinCondition + " wins";
+		} else if (this.gc.currentGameType === "koth") {
+			gameType = "King of the Hill";
+			gameRules = "First to " + this.gc.matchWinCondition + " wins";
 		}
 
 		this.userListGameType.text(gameType);

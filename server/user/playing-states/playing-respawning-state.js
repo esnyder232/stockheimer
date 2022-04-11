@@ -18,53 +18,28 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 		//get the resource respawn time if it exists
 		this.respawnTimer = this.user.globalfuncs.getValueDefault(this.user.gs?.currentMapResource?.data?.gameData?.userRespawningTimeLength, this.respawnTimer);
 		
-		if(this.user.gs.currentGameType === "deathmatch") {
-			//respawn time depends on round state
-			switch(this.user.gs.theRound.getStateEnum())
-			{
-				case GameConstants.RoundStates["MAPSTART"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["STARTING"]:
-					this.user.respawnTimer = 100;
-					break;
-				case GameConstants.RoundStates["PLAYING"]:
-					this.user.respawnTimer = this.respawnTimer;
-					break;
-				case GameConstants.RoundStates["OVER"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["MAPEND"]:
-					this.user.respawnTimer = 999999;
-					break;
-				default: 
-					this.user.respawnTimer = 999999;
-					break;
-			} 
-		}
-		else if (this.user.gs.currentGameType === "elimination") {
-			switch(this.user.gs.theRound.getStateEnum())
-			{
-				case GameConstants.RoundStates["MAPSTART"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["STARTING"]:
-					this.user.respawnTimer = 100;
-					break;
-				case GameConstants.RoundStates["PLAYING"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["OVER"]:
-					this.user.respawnTimer = 999999;
-					break;
-				case GameConstants.RoundStates["MAPEND"]:
-					this.user.respawnTimer = 999999;
-					break;
-				default: 
-					this.user.respawnTimer = 999999;
-					break;
-			} 
-		}
+		//respawn time depends on round state
+		switch(this.user.gs.theRound.getStateEnum())
+		{
+			case GameConstants.RoundStates["MAPSTART"]:
+				this.user.respawnTimer = 999999;
+				break;
+			case GameConstants.RoundStates["STARTING"]:
+				this.user.respawnTimer = 100;
+				break;
+			case GameConstants.RoundStates["PLAYING"]:
+				this.user.respawnTimer = this.determinePlayingRespawnTimer();
+				break;
+			case GameConstants.RoundStates["OVER"]:
+				this.user.respawnTimer = 999999;
+				break;
+			case GameConstants.RoundStates["MAPEND"]:
+				this.user.respawnTimer = 999999;
+				break;
+			default: 
+				this.user.respawnTimer = 999999;
+				break;
+		} 
 
 		this.user.respawnTimeAcc = 0;
 	}
@@ -109,6 +84,18 @@ class PlayingRespawningState extends PlayingBaseState.PlayingBaseState {
 
 		this.user.respawnTimer = 0;
 		this.user.respawnTimeAcc = 0;
+	}
+
+	//this is where we determine what the respawn time should be based on the gametype/other factors
+	determinePlayingRespawnTimer() {
+		var respawnTimer = this.respawnTimer;
+
+		//for elimination mode, you are not allowed to respawn. So just make it something big so that they can't possibly respawn within the round.
+		if (this.user.gs.currentGameType === "elimination") {
+			respawnTimer = 999999; 
+		}
+
+		return respawnTimer;
 	}
 }
 

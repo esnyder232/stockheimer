@@ -28,6 +28,10 @@ export default class AddTeamEvent {
 		t.projectileColor4Replace = e.projectileColor4Replace;
 		t.roundWins = e.roundWins;
 		t.usersAlive = e.usersAlive;
+		t.kothTime = e.kothTime;
+		t.kothTimeAcc = e.kothTimeAcc;
+		t.kothTimerOn = e.kothTimerOn;
+
 
 		t.changeCharacterFillColor(e.characterFillColor);
 		t.changeCharacterStrokeColor(e.characterStrokeColor);

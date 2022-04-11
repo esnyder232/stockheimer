@@ -15,6 +15,9 @@ export default class Team {
 		this.roundPoints = 0;
 		this.roundWins = 0;
 		this.usersAlive = 0;
+		this.kothTime = 0;
+		this.kothTimeAcc = 0;
+		this.kothTimerOn = false;
 
 		this.characterStrokeColor = "#ffffff";
 		this.characterFillColor = "#ffffff";
@@ -48,7 +51,8 @@ export default class Team {
 		this.teamShaderKey = "";
 		
 		this.serverEventMapping = {
-			"updateTeam": this.updateTeamEvent.bind(this)
+			"updateTeam": this.updateTeamEvent.bind(this),
+			"updateTeamKoth": this.updateTeamKothEvent.bind(this)
 		}
 	}
 
@@ -93,6 +97,15 @@ export default class Team {
 			window.dispatchEvent(new CustomEvent("team-wins-updated", {detail: {serverId: this.serverId}}));
 		}
 	}
+
+	updateTeamKothEvent(e) {
+		this.kothTime = e.kothTime;
+		this.kothTimeAcc = e.kothTimeAcc;
+		this.kothTimerOn = e.kothTimerOn;
+
+		window.dispatchEvent(new CustomEvent("team-points-updated", {detail: {serverId: this.serverId}}));
+	}
+
 
 	//Wow look at that...your SOOO good at programming. And all by yourself? Good job!!!
 	changeCharacterFillColor(newColor) {
