@@ -294,8 +294,6 @@ class GlobalFuncs {
 
 		//activate the user
 		gs.um.activateUserId(aiUser.id);
-
-		console.log("Added ai user '" + aiUser.username);
 	}
 
 	//https://stackoverflow.com/questions/511761/js-function-to-get-filename-from-url/48554885

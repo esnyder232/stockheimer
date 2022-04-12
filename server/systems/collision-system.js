@@ -14,11 +14,13 @@ class CollisionSystem {
 	init(gs) {
 		this.gs = gs;
 		this.pl = this.gs.pl;
-
+		
 		this.colList = [
+			// {type1: "ai-agent", 				type2:"control-point", 			beginFunc: this.beginAIAgentCharacterCollision.bind(this), 							endFunc: this.endAIAgentCharacterCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "ai-agent", 				type2:"character", 				beginFunc: this.beginAIAgentCharacterCollision.bind(this), 							endFunc: this.endAIAgentCharacterCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
 			// {type1: "ai-agent", 				type2:"persistent-projectile", 	beginFunc: this.beginAIAgentPersistentProjectileCollision.bind(this), 				endFunc: this.endAIAgentPersistentProjectileCollision.bind(this), 		presolveFunc: this.noPreSolveFunc.bind(this)},
 			// {type1: "ai-agent", 				type2:"aibody", 				beginFunc: this.beginAIAgentAiBodyCollision.bind(this), 							endFunc: this.endAIAgentAiBodyCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
+
 			{type1: "castle", 					type2:"projectile",				beginFunc: this.beginCastleProjectileCollision.bind(this), 							endFunc: this.endCastleProjectileCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "castle", 					type2:"user", 					beginFunc: this.beginCastleUserCollision.bind(this), 								endFunc: this.endCastleUserCollision.bind(this), 						presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "character", 				type2:"character", 				beginFunc: this.beginCharacterCharacterCollision.bind(this), 						endFunc: this.endCharacterCharacterCollision.bind(this), 				presolveFunc: this.noPreSolveFunc.bind(this)},
@@ -26,6 +28,7 @@ class CollisionSystem {
 			{type1: "character", 				type2:"projectile", 			beginFunc: this.beginCharacterProjectileCollision.bind(this), 						endFunc: this.endCharacterProjectileCollision.bind(this), 				presolveFunc: this.noPreSolveFunc.bind(this)},
 			// {type1: "character", 			type2:"wall", 					beginFunc: this.beginCharacterWallCollision.bind(this), 							endFunc: this.endCharacterWallCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "character", 				type2:"user", 					beginFunc: this.beginCharacterUserCollision.bind(this), 							endFunc: this.endCharacterUserCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
+			{type1: "character", 				type2:"control-point", 			beginFunc: this.beginCharacterControlPointCollision.bind(this), 					endFunc: this.endCharacterControlPointCollision.bind(this), 			presolveFunc: this.noPreSolveFunc.bind(this)},
 			// {type1: "persistent-projectile", 	type2:"persistent-projectile", 	beginFunc: this.beginPersistentProjectilePersistentProjectileCollision.bind(this), 	endFunc: this.endPersistentProjectilePersistentProjectileCollision.bind(this), 	presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "persistent-projectile", 	type2:"projectile", 			beginFunc: this.beginPersistentProjectileProjectileCollision.bind(this), 			endFunc: this.endPersistentProjectileProjectileCollision.bind(this), 	presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "projectile", 				type2:"projectile",				beginFunc: this.beginProjectileProjectileCollision.bind(this), 						endFunc: this.endProjectileProjectileCollision.bind(this), 				presolveFunc: this.noPreSolveFunc.bind(this)},
@@ -469,6 +472,22 @@ class CollisionSystem {
 		{
 			ua.deleteTrackedEntity("gameobject", characterUserData.id);
 		}
+	}
+
+	beginCharacterControlPointCollision(characterUserData, controlPointUserData, contactObj, isCastleA)
+	{
+		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
+		var cp = this.gs.gom.getGameObjectByID(controlPointUserData.id);
+
+		if(c !== null && cp !== null) {
+			c.collisionControlPoint(cp);
+			cp.collisionCharacter(c);
+		}
+	}
+
+	endCharacterControlPointCollision(castleUserData, projectileUserData, contactObj, isCastleA)
+	{
+		
 	}
 
 

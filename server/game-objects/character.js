@@ -898,6 +898,10 @@ class Character {
 		//nothing!!!
 	}
 
+	collisionControlPoint(controlPoint) {
+		//nothing yet
+	}
+
 
 	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(-damage);

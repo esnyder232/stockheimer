@@ -4,6 +4,8 @@ const {Projectile} = require("../game-objects/projectile.js");
 const {Castle} = require("../game-objects/castle.js");
 const {Wall} = require("../game-objects/wall.js");
 const {PersistentProjectile} = require("../game-objects/persistent-projectile.js");
+const {ControlPoint} = require("../game-objects/control-point.js");
+
 const logger = require('../../logger.js');
 
 class GameObjectManager {
@@ -39,6 +41,9 @@ class GameObjectManager {
 				break;
 			case "castle":
 				o = new Castle();
+				break;
+			case "control-point":
+				o = new ControlPoint();
 				break;
 			case "persistent-projectile":
 				o = new PersistentProjectile();

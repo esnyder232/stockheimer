@@ -92,7 +92,6 @@ class Wall {
 		}
 
 		this.gs = null;
-		this.id = null;
 	}
 	
 	//returns true if the projectile body's velocity would collide with wall

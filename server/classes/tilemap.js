@@ -18,6 +18,8 @@ class Tilemap {
 		this.tileset = []; //this is a flattened version of the tileset array in the jsonData. The index for this array is the gid from Tiled
 		this.navGridLayer = null;
 		this.playerSpawnLayer = null;
+		this.controlPointsLayer = null;
+		this.controlPoints = [];
 		this.playerSpawnZones = [];
 		this.playerSpawnZonesSlotNumIndex = {};
 		this.tiledUnitsToPlanckUnits = 1;
@@ -53,6 +55,8 @@ class Tilemap {
 		this.playerSpawnLayer = null;
 		this.playerSpawnZones = [];
 		this.playerSpawnZonesSlotNumIndex = {};
+		this.controlPointsLayer = null;
+		this.controlPoints = [];
 
 		for(var i = 0; i < this.navGrids.length; i++) {
 			this.navGrids[i].deinit();
@@ -154,41 +158,66 @@ class Tilemap {
 							{
 								this.playerSpawnLayer = currentLayer;
 							}
-						}
-					}
-				}
-			}
-	
-			//create player spawn zones
-			if(this.playerSpawnLayer !== null && this.playerSpawnLayer.objects)
-			{
-				var xOffset = -this.tilewidth/2;
-				var yOffset = -this.tileheight/2;
-				for(var i = 0; i < this.playerSpawnLayer.objects.length; i++) {
-					var z = this.playerSpawnLayer.objects[i];
 
-					z.xPlanck = ((z.x + xOffset) / this.tilewidth) * this.tiledUnitsToPlanckUnits;
-					z.yPlanck = (((z.y + yOffset) / this.tileheight) * -1) * this.tiledUnitsToPlanckUnits;
-					z.widthPlanck = (z.width / this.tilewidth) * this.tiledUnitsToPlanckUnits;
-					z.heightPlanck = (z.height / this.tileheight) * this.tiledUnitsToPlanckUnits;
-					z.slotNumArr = []; //slotnums assigned to this spawn zone
-
-					this.playerSpawnZones.push(z);
-
-					//look at slotnum for the index
-					if(z.properties) {
-						for(var j = 0; j < z.properties.length; j++) {
-							if(z.properties[j].name
-							&& z.properties[j].name.toLowerCase() === "slotnum"
-							&& z.properties[j].type === "int"
-							&& Number.isInteger(z.properties[j].value)) {
-								this.updateSpawnZoneIndex(z.id, z.properties[j].value, z, "create");
+							//a property with "controlPoints = true" on it will be used for the control points
+							if(currentProperty.name.toLowerCase() === "controlpoints"
+							&& currentProperty.type === "bool"
+							&& currentProperty.value === true)
+							{
+								this.controlPointsLayer = currentLayer;
 							}
 						}
 					}
 				}
 			}
+	
 		}
+
+		//create player spawn zones
+		if(!bError && this.playerSpawnLayer !== null && this.playerSpawnLayer.objects) {
+			var xOffset = -this.tilewidth/2;
+			var yOffset = -this.tileheight/2;
+			for(var i = 0; i < this.playerSpawnLayer.objects.length; i++) {
+				var z = this.playerSpawnLayer.objects[i];
+
+				z.xPlanck = ((z.x + xOffset) / this.tilewidth) * this.tiledUnitsToPlanckUnits;
+				z.yPlanck = (((z.y + yOffset) / this.tileheight) * -1) * this.tiledUnitsToPlanckUnits;
+				z.widthPlanck = (z.width / this.tilewidth) * this.tiledUnitsToPlanckUnits;
+				z.heightPlanck = (z.height / this.tileheight) * this.tiledUnitsToPlanckUnits;
+				z.slotNumArr = []; //slotnums assigned to this spawn zone
+
+				this.playerSpawnZones.push(z);
+
+				//look at slotnum for the index
+				if(z.properties) {
+					for(var j = 0; j < z.properties.length; j++) {
+						if(z.properties[j].name
+						&& z.properties[j].name.toLowerCase() === "slotnum"
+						&& z.properties[j].type === "int"
+						&& Number.isInteger(z.properties[j].value)) {
+							this.updateSpawnZoneIndex(z.id, z.properties[j].value, z, "create");
+						}
+					}
+				}
+			}
+		}
+
+		//create control points if any exist in the layer
+		if(!bError && this.controlPointsLayer !== null && this.controlPointsLayer.objects !== null) {
+			var xOffset = -this.tilewidth/2;
+			var yOffset = -this.tileheight/2;
+			for(var i = 0; i < this.controlPointsLayer.objects.length; i++) {
+				var cp = this.gs.gom.createGameObject("control-point");
+				var xPlanck = ((this.controlPointsLayer.objects[i].x + xOffset) / this.tilewidth) * this.tiledUnitsToPlanckUnits;
+				var yPlanck = (((this.controlPointsLayer.objects[i].y + yOffset) / this.tileheight) * -1) * this.tiledUnitsToPlanckUnits;
+				var widthPlanck = (this.controlPointsLayer.objects[i].width / this.tilewidth) * this.tiledUnitsToPlanckUnits;
+				var heightPlanck = (this.controlPointsLayer.objects[i].height / this.tileheight) * this.tiledUnitsToPlanckUnits;
+				var angle = this.controlPointsLayer.objects[i].rotation;
+				cp.controlPointInit(this.gs, xPlanck, yPlanck, widthPlanck, heightPlanck, angle);
+			}
+		}
+
+
 
 		//create navgrid transformation arrays
 		if(!bError) {
