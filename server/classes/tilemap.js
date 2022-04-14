@@ -214,6 +214,7 @@ class Tilemap {
 				var heightPlanck = (this.controlPointsLayer.objects[i].height / this.tileheight) * this.tiledUnitsToPlanckUnits;
 				var angle = this.controlPointsLayer.objects[i].rotation;
 				cp.controlPointInit(this.gs, xPlanck, yPlanck, widthPlanck, heightPlanck, angle);
+				this.controlPoints.push(cp);
 			}
 		}
 

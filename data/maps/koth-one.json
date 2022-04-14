@@ -7,7 +7,7 @@
 		"type": "koth",
 		"roundMapStartTimeLength": 1000,
 		"roundStartingTimeLength": 700,
-		"roundPlayingTimeLength": 4000,
+		"roundPlayingTimeLength": 900000,
 		"roundOverTimeLength": 4000,
 		"roundOverWinTimeLength": 4000,
 		"roundMapEndTimeLength": 4000,

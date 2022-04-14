@@ -485,9 +485,15 @@ class CollisionSystem {
 		}
 	}
 
-	endCharacterControlPointCollision(castleUserData, projectileUserData, contactObj, isCastleA)
+	endCharacterControlPointCollision(characterUserData, controlPointUserData, contactObj, isCastleA)
 	{
-		
+		var c = this.gs.gom.getGameObjectByID(characterUserData.id);
+		var cp = this.gs.gom.getGameObjectByID(controlPointUserData.id);
+
+		if(c !== null && cp !== null) {
+			c.endCollisionControlPoint(cp);
+			cp.endCollisionCharacter(c);
+		}
 	}
 
 

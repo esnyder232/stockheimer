@@ -902,6 +902,10 @@ class Character {
 		//nothing yet
 	}
 
+	endCollisionControlPoint(controlPoint) {
+		//nothing yet
+	}
+
 
 	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(-damage);
