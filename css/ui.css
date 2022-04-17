@@ -852,7 +852,6 @@ input.menu-button {
 	height: 30px;
 	position: relative;
 	margin: 0% auto;
-	top: 0px;
 	font-size: 32px;
 	background-color: rgba(0, 0, 0, 0.7);
 	overflow-y: auto;
@@ -1011,6 +1010,70 @@ input.menu-button {
 
 
 
+
+.control-point-wrapper {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+	z-index: 40;
+}
+.control-point-container {
+	position: relative;
+	text-align: center;
+	color: #cccccc;
+	font-size: 32px;
+	text-shadow: 3px 3px #000000;
+	margin-bottom: 24px;}
+
+.control-point-item {
+	width: 57px;
+	height: 57px;
+	background-color: rgba(0, 0, 0, 0.7);
+	border-color:#cccccc;
+	border-radius: 20px 20px 20px 20px;
+	border-width: 16px 16px 16px 16px;
+	border-style: solid;
+	display: inline-block;
+}
+
+.control-point-pie-text {
+	float: right;
+	margin-top: 8px;
+	margin-right: 4px;
+}
+
+
+.control-point-pie-filler {
+	width: 23%;
+	height: 100%;
+	background-color: #3391ff;
+}
+
+.control-point-notification-item {
+	position: absolute;
+	font-size: 36px;
+	text-shadow: 2px 2px #000000;
+	text-align: center;
+	background-color: rgba(0, 0, 0, 0.6);
+	border-color:#cccccc;
+	border-radius: 20px 20px 20px 20px;
+	border-width: 8px 8px 8px 8px;
+	padding: 10px;
+	border-style: solid;
+	bottom: 144px;
+	left: 610px;
+}
+
+.control-point-notification-item::after {
+	content: "";
+	bottom: -32px;
+	left: 65px;
+	position: absolute;
+	border-color:#cccccc transparent;
+	border-width: 25px 25px 0px;
+	border-style: solid;
+	width: 0px;
+}
 
 
 
@@ -1222,7 +1285,6 @@ input.menu-button {
 .team-score-item {
 
 }
-
 
 
 .brief-controls {

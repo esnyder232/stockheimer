@@ -9,6 +9,7 @@ import ChatMenu from "../ui-classes/chat-menu.js"
 import ChatMenuMinified from "../ui-classes/chat-menu-minified.js"
 import UserListMenu from "../ui-classes/user-list-menu.js"
 import RoundMenu from "../ui-classes/round-menu.js"
+import ControlPointMenu from "../ui-classes/control-point-menu.js"
 import RespawnTimerMenu from "../ui-classes/respawn-timer-menu.js"
 import KillFeedMenu from "../ui-classes/kill-feed-menu.js"
 import RoundResultsMenu from "../ui-classes/round-results-menu.js"
@@ -121,6 +122,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundResultsMenu = null;
 		this.teamScoreMenu = null;
 		this.roundStartMenu = null;
+		this.controlPointMenu = null;
 
 		this.tilesetArray = [];
 		this.layerArray = [];
@@ -174,6 +176,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundResultsMenu = new RoundResultsMenu();
 		this.teamScoreMenu = new TeamScoreMenu();
 		this.roundStartMenu = new RoundStartMenu();
+		this.controlPointMenu = new ControlPointMenu();
 		
 
 		this.teamMenu.init(this.gc);
@@ -187,6 +190,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundResultsMenu.init(this.gc);
 		this.teamScoreMenu.init(this.gc);
 		this.roundStartMenu.init(this.gc);
+		this.controlPointMenu.init(this.gc);
 	}
 
 	gameout(time, e) {
@@ -286,6 +290,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundResultsMenu.activate();
 		this.teamScoreMenu.activate();
 		this.roundStartMenu.activate();
+		this.controlPointMenu.activate();
 
 		//other things to create
 		this.gc.mainScene.createMap();
@@ -446,6 +451,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundResultsMenu.deactivate();
 		this.teamScoreMenu.deactivate();
 		this.roundStartMenu.deactivate();
+		this.controlPointMenu.deactivate();
 
 		this.teamMenu.deinit();
 		this.characterClassMenu.deinit();
@@ -458,6 +464,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundResultsMenu.deinit();
 		this.teamScoreMenu.deinit();
 		this.roundStartMenu.deinit();
+		this.controlPointMenu.deinit();
 
 		//other stuff
 		this.gc.debugMenu.clearAiControls();
@@ -746,6 +753,7 @@ export default class MainScene extends Phaser.Scene {
 		this.roundMenu.update(dt);
 		this.respawnTimerMenu.update(dt);
 		this.killFeedMenu.update(dt);
+		this.controlPointMenu.update(dt);
 
 		this.frameNum++;
 	}
@@ -763,9 +771,18 @@ export default class MainScene extends Phaser.Scene {
 		var spectatorTeam = this.gc.tm.getSpectatorTeam();
 		var bStop = false;
 
+		//special case. Do NOT open anything if:
+		// - the username has "_spec" at the end (this is just so when I stream on twitch, the spectator cam is auto set for me)
+		var specRegex = /_spec$/;
+		if(specRegex.test(this.gc.myUser?.username)) {
+			bStop = true;
+			this.cameraZoom -= 0.3;
+			this.setCameraZoom();
+		}
+
 		//open the team menu if:
 		// - the player has first entered the game, but does not have a teamId
-		if(bFirstMenuFlow && (this.gc.myUser?.teamId === 0 || this.gc.myUser?.teamId === spectatorTeam.serverId)) {
+		if(!bStop && bFirstMenuFlow && (this.gc.myUser?.teamId === 0 || this.gc.myUser?.teamId === spectatorTeam.serverId)) {
 			this.teamMenu.openMenu();
 			bStop = true;
 		}
