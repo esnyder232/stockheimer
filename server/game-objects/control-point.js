@@ -90,10 +90,8 @@ class ControlPoint {
 			}
 		}
 
-		var stophere = true;
-
 		//tell the active user agents about it
-		// this.gs.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
+		this.gs.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
 	}
 
 	
@@ -104,10 +102,10 @@ class ControlPoint {
 			this.plBody = null;
 		}
 				
-		// var userAgents = this.gs.uam.getUserAgents();
-		// for(var i = 0 ; i < userAgents.length; i++) {
-		// 	userAgents[i].deleteTrackedEntity("gameobject", this.id);
-		// }
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0 ; i < userAgents.length; i++) {
+			userAgents[i].deleteTrackedEntity("gameobject", this.id);
+		}
 	}
 
 	//called right before the bullet is officially deleted by the game object manager.
@@ -204,6 +202,13 @@ class ControlPoint {
 					caprates += "("+teamId+"):" + this.teamCaptureRates[teamId] + "\t\t";
 				}
 			}
+			
+			//give the client an update every now and then
+			var updateEvent = this.serializeUpdateControlPointEvent();
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				userAgents[i].insertTrackedEntityEvent("gameobject", this.id, updateEvent);
+			}
 
 			console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
 		}
@@ -226,8 +231,56 @@ class ControlPoint {
 	}
 
 
+	///////////////////////////////////
+	// EVENT SERIALIZATION FUNCTIONS //
+	///////////////////////////////////
+	serializeAddControlPointEvent() {
+		var eventData = null;
+		var bodyPos = {x: this.x, y: this.y}
+		if(this.plBody !== null)
+		{
+			bodyPos = this.plBody.getPosition();
+		}
+
+		eventData = {
+			"eventName": "addControlPoint",
+			"id": this.id,
+			"x": bodyPos.x,
+			"y": bodyPos.y,
+			"width": this.width,
+			"height": this.height,
+			"capturingTimeRequired": this.capturingTimeRequired,
+			"ownerTeamId": this.ownerTeamId,
+			"capturingTeamId": this.capturingTeamId,
+			"capturingTimeAcc": this.capturingTimeAcc,
+			"capturingRate": this.capturingRate,
+		};
+		
+		return eventData;
+	}
 
 
+	serializeUpdateControlPointEvent() {
+		var eventData = null;
+
+		eventData = {
+			"eventName": "updateControlPoint",
+			"id": this.id,
+			"ownerTeamId": this.ownerTeamId,
+			"capturingTeamId": this.capturingTeamId,
+			"capturingTimeAcc": this.capturingTimeAcc,
+			"capturingRate": this.capturingRate,
+		};
+
+		return eventData;
+	}
+
+	serializeRemoveControlPointEvent() {
+		return {
+			"eventName": "removeControlPoint",
+			"id": this.id
+		};
+	}
 }
 
 exports.ControlPoint = ControlPoint;

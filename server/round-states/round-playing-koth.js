@@ -11,6 +11,7 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 		this.checkTeamCounts = true;
 		this.temp = 0;
 		this.anotherTemp = 1;
+		this.tempKillControlPoint = 15000;
 
 		this.eventCallbackMapping = [ 
 			{eventName: "character-deactivated", cb: this.cbCharacterDeactivated.bind(this), handleId: null}
@@ -53,10 +54,11 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 		// 	}
 		// }
 
+		//testing koth points on teams
 		if(this.temp >= 1000) {
 			this.temp = 0;
 			this.anotherTemp += 1000;
-
+			
 			var teams = this.gs.tm.getTeams();
 			for(var i = 0; i < teams.length; i++) {
 				if(!teams[i].isSpectatorTeam) {
@@ -64,6 +66,17 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 				}
 			}
 		}
+
+		//testing killing a control point
+		// if(this.anotherTemp >= this.tempKillControlPoint) {
+		// 	var cpIds = this.gs.activeTilemap.controlPoints;
+		// 	for(var i = 0; i < cpIds.length; i++) {
+		// 		if(cpIds[i].isActive) {
+		// 			console.log("killing cp #" + cpIds[i]);
+		// 			this.gs.gom.destroyGameObject(cpIds[i].id);
+		// 		}
+		// 	}
+		// }
 
 		if(this.round.roundTimeAcc >= this.round.roundTimer)
 		{

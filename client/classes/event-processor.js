@@ -37,6 +37,9 @@ import UpdatePersistentProjectileEvent from "../event-classes/update-persistent-
 import RemovePersistentProjectileEvent from "../event-classes/remove-persistent-projectile-event.js"
 import PersistentProjectileDamageEffectEvent from "../event-classes/persistent-projectile-damage-effect-event.js"
 import UpdateTeamKothEvent from "../event-classes/update-team-koth-event.js"
+import AddControlPointEvent from "../event-classes/add-control-point-event.js"
+import UpdateControlPointEvent from "../event-classes/update-control-point-event.js"
+import RemoveControlPointEvent from "../event-classes/remove-control-point-event.js"
 
 
 
@@ -102,7 +105,10 @@ export default class EventProcessor {
 			{eventName: "removePersistentProjectile", eventClass: new RemovePersistentProjectileEvent(), enabled: false},
 			{eventName: "updatePersistentProjectile", eventClass: new UpdatePersistentProjectileEvent(), enabled: false},
 			{eventName: "persistentProjectileDamageEffect", eventClass: new PersistentProjectileDamageEffectEvent(), enabled: false},
-			{eventName: "updateTeamKoth", eventClass: new UpdateTeamKothEvent(), enabled: false}
+			{eventName: "updateTeamKoth", eventClass: new UpdateTeamKothEvent(), enabled: false},
+			{eventName: "addControlPoint", eventClass: new AddControlPointEvent(), enabled: false},
+			{eventName: "updateControlPoint", eventClass: new UpdateControlPointEvent(), enabled: false},
+			{eventName: "removeControlPoint", eventClass: new RemoveControlPointEvent(), enabled: false}
 		];
 	}
 

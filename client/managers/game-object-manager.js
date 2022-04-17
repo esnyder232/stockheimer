@@ -3,6 +3,7 @@ import Character from '../game-objects/character.js';
 import Castle from "../game-objects/castle.js";
 import Projectile from "../game-objects/projectile.js";
 import PersistentProjectile from "../game-objects/persistent-projectile.js";
+import ControlPoint from "../game-objects/control-point.js";
 
 
 export default class GameObjectManager {
@@ -42,6 +43,9 @@ export default class GameObjectManager {
 				break;
 			case "persistent-projectile":
 				o = new PersistentProjectile();
+				break;
+			case "control-point":
+				o = new ControlPoint();
 				break;
 		}
 
