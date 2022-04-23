@@ -12,6 +12,13 @@ export default class ControlPoint {
 		this.y = 0;
 		this.globalfuncs = null;
 
+		this.ownerTeamId = 0;
+		this.capturingTeamId = 0;
+		this.capturingTimeAcc = 0;
+		this.capturingRate = 0;
+		this.capturingTimeRequired = 0;
+		this.capturingRateCoeff = 0;
+
 		this.isDirty = false;
 		this.spriteGraphics = null;
 
@@ -30,7 +37,8 @@ export default class ControlPoint {
 	}
 
 	activated() {
-
+		//dispatch event so the UI can keep up
+		window.dispatchEvent(new CustomEvent("control-point-activated", {detail: {serverId: this.serverId}}));
 	}
 
 
@@ -40,6 +48,9 @@ export default class ControlPoint {
 			this.spriteGraphics.destroy();
 			this.spriteGraphics = null;
 		}
+
+		//dispatch event so the UI can keep up
+		window.dispatchEvent(new CustomEvent("control-point-deactivated", {detail: {serverId: this.serverId}}));
 	}
 
 	deinit() {
@@ -48,8 +59,14 @@ export default class ControlPoint {
 	}
 
 	updateControlPoint(e) {
-		// console.log("CONTROL POINT UPDATE");
-		// console.log(e);
+		this.ownerTeamId = e.ownerTeamId;
+		this.capturingTeamId = e.capturingTeamId;
+		this.capturingTimeAcc = e.capturingTimeAcc;
+		this.capturingRate = e.capturingRate;
+		this.capturingRateCoeff = e.capturingRateCoeff;
+
+		//dispatch event so the UI can keep up
+		window.dispatchEvent(new CustomEvent("control-point-updated", {detail: {serverId: this.serverId}}));
 	}
 
 

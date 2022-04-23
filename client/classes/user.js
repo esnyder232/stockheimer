@@ -15,6 +15,7 @@ export default class User {
 		this.roundUserKillCount = 0;//kills in current round
 		this.roundUserDeathCount = 0;	//deaths in current round
 		this.characterClassResourceId = null;
+		this.userAgentId = null;
 
 		this.userRtt = 0;
 		this.teamId = null;

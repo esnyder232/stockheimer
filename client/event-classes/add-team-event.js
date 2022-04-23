@@ -26,6 +26,8 @@ export default class AddTeamEvent {
 		t.projectileColor3Replace = e.projectileColor3Replace;
 		t.projectileColor4 = e.projectileColor4;
 		t.projectileColor4Replace = e.projectileColor4Replace;
+		t.controlPointOwnerColor = e.controlPointOwnerColor;
+		t.controlPointCaptureColor = e.controlPointCaptureColor;
 		t.roundWins = e.roundWins;
 		t.usersAlive = e.usersAlive;
 		t.kothTime = e.kothTime;

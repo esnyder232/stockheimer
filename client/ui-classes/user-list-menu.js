@@ -18,16 +18,6 @@ export default class UserListMenu {
 		this.userListTeamContentsTemplate = null;
 		this.userListGameType = null;
 		this.userListGameRules = null;
-
-	// 	<div class="user-list-game-summary">
-	// 	<div class="user-list-game-type" id="user-list-game-type">
-	// 		Elimination
-	// 	</div>
-	// 	<div class="user-list-game-rules" id="user-list-game-rules">
-	// 		First to 5 round wins.
-	// 	</div>
-	// </div>
-
 		this.contentsWidth = 400; //pixels
 
 		this.activated = false;

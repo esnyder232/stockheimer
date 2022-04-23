@@ -40,7 +40,8 @@ import UpdateTeamKothEvent from "../event-classes/update-team-koth-event.js"
 import AddControlPointEvent from "../event-classes/add-control-point-event.js"
 import UpdateControlPointEvent from "../event-classes/update-control-point-event.js"
 import RemoveControlPointEvent from "../event-classes/remove-control-point-event.js"
-
+import CharacterOnControlPointEvent from "../event-classes/character-on-control-point-event.js"
+import CharacterOffControlPointEvent from "../event-classes/character-off-control-point-event.js"
 
 
 export default class EventProcessor {
@@ -108,7 +109,10 @@ export default class EventProcessor {
 			{eventName: "updateTeamKoth", eventClass: new UpdateTeamKothEvent(), enabled: false},
 			{eventName: "addControlPoint", eventClass: new AddControlPointEvent(), enabled: false},
 			{eventName: "updateControlPoint", eventClass: new UpdateControlPointEvent(), enabled: false},
-			{eventName: "removeControlPoint", eventClass: new RemoveControlPointEvent(), enabled: false}
+			{eventName: "removeControlPoint", eventClass: new RemoveControlPointEvent(), enabled: false},
+			{eventName: "characterOnControlPoint", eventClass: new CharacterOnControlPointEvent(), enabled: false},
+			{eventName: "characterOffControlPoint", eventClass: new CharacterOffControlPointEvent(), enabled: false},
+			
 		];
 	}
 

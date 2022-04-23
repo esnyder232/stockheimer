@@ -20,5 +20,6 @@ export default class AddControlPointEvent {
 		c.capturingTeamId = e.capturingTeamId;
 		c.capturingTimeAcc= e.capturingTimeAcc;
 		c.capturingRate = e.capturingRate;
+		c.capturingRateCoeff = e.capturingRateCoeff;
 	}
 }

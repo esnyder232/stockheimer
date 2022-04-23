@@ -28,6 +28,9 @@ class Team {
 		this.projectileColor3Replace = "#000000ff";
 		this.projectileColor4 = "#ffffffff";
 		this.projectileColor4Replace = "#000000ff";
+		this.controlPointOwnerColor = "#ffffffff";
+		this.controlPointCaptureColor = "#ffffffff";
+
 
 		this.teamDirty = true;
 		this.usersAliveDirty = true;
@@ -207,6 +210,8 @@ class Team {
 			"projectileColor3Replace": this.projectileColor3Replace,
 			"projectileColor4": this.projectileColor4,
 			"projectileColor4Replace": this.projectileColor4Replace,
+			"controlPointOwnerColor": this.controlPointOwnerColor,
+			"controlPointCaptureColor": this.controlPointCaptureColor,
 			"roundPoints": this.roundPoints,
 			"roundWins": this.roundWins,
 			"usersAlive": this.usersAlive,

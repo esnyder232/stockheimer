@@ -1,27 +1,6 @@
 const planck = require('planck-js');
 const {CollisionCategories, CollisionMasks} = require('../data/collision-data.js');
 
-
-///////////////////////////////////////////////////////////////////////////
-//MIGHT NOT NEED THIS ANYMORE, BUT I'M GONNA KEEP IT AROUND INCASE I DO
-//0 - CP_STABLE - control point is occupied by 0 teams, capturingTimeAcc is at 0
-//1 - CP_CAPTURING - control point is occuped by only 1 team, and control point capturingTimeAcc is increasing at the current rate capturingRate
-//2 - CP_CONTESTED - control point is occupied by 2+ teams, and control point capturingTimeAcc does not increase or decrease
-//3 - CP_REVERTING - control point is occupied by an opposing team (opposing the captyringTeamId), and control point capturingTimeAcc is decreasing back to 0:
-//						if the occupying opposing team is the OWNER of the point (ownerTeamId), then decrease the capturingTimeAcc at the naturalRevertingRate
-//						if the occupying opposing team is NOT THE OWNER of the point (ownerTeamId), then decrease the capturingTimeAcc at the capturingRate
-//4 - CP_REVERTING_NATURAL - control point is occupied by 0 teams, and control point capturingTimeAcc is naturally decreasing back to 0 at the naturalRevertingRate
-const CONTROL_POINT_STATES = {
-	CP_STABLE: 0,
-	CP_CAPTURING: 1,
-	CP_CONTESTED: 2,
-	CP_REVERTING: 3,
-	CP_REVERTING_NATURAL: 4
-}
-///////////////////////////////////////////////////////////////////////////
-
-
-
 class ControlPoint {
 	constructor() {
 		this.type = "control-point";
@@ -35,13 +14,13 @@ class ControlPoint {
 		this.width = 1;
 		this.height = 1;
 
-		this.ownerTeamId = -1; 				//the team that is currently owning the control point. -1 means nobody owns this control point		
-		this.capturingTeamId = -1;			//the team that is currently occupying the control point (trying to capture it)
+		this.ownerTeamId = 0; 				//the team that is currently owning the control point. 0 means nobody owns this control point		
+		this.capturingTeamId = 0;			//the team that is currently occupying the control point (trying to capture it). 0 means nobody is currently capturing
 		this.capturingTimeAcc = 0;			//time accumulated for the occupying team
 		this.capturingRate = 0;				//current capturing/reverting rate of the point
 		this.capturingRateCoeff = 0;		//1: capturing, -1: reverting, 0: stable
 
-		this.capturingTimeRequired = 5000;	//time required to fully own the point for the occupying team
+		this.capturingTimeRequired = 15000;	//time required to fully own the point for the occupying team
 		this.teamCaptureRates = {};
 		this.naturalRevertingRate = 1/4;
 		this.isDirty = false;
@@ -128,7 +107,7 @@ class ControlPoint {
 
 	postPhysicsUpdate(dt) {
 		var teamsOccupyingPoint = 0;
-		var currentTeamIdOccupyingPoint = -1;
+		var currentTeamIdOccupyingPoint = 0;
 		var currentTeamcaptureRate = 0;
 		for (var teamId in this.teamCaptureRates) {
 			if (this.teamCaptureRates.hasOwnProperty(teamId)) {
@@ -159,12 +138,12 @@ class ControlPoint {
 			if(currentTeamIdOccupyingPoint !== this.ownerTeamId) {
 				this.capturingTeamId = currentTeamIdOccupyingPoint;
 			} else {
-				this.capturingTeamId = -1;
+				this.capturingTeamId = 0;
 			}
 		}
 
 		//determine if its currently being capped or reverted
-		if(this.capturingRate === 0 || this.capturingTeamId === -1) {
+		if(this.capturingRate === 0 || this.capturingTeamId === 0) {
 			this.capturingRateCoeff = 0;
 		}
 		else {
@@ -177,10 +156,9 @@ class ControlPoint {
 		//control point was captured
 		if(this.capturingTimeAcc >= this.capturingTimeRequired) {
 			this.ownerTeamId = this.capturingTeamId;
-			this.capturingTeamId = -1;
+			this.capturingTeamId = 0;
 			this.capturingTimeAcc = 0;
 		}
-
 
 		//debug report
 		this.tempTimer += dt;
@@ -210,7 +188,7 @@ class ControlPoint {
 				userAgents[i].insertTrackedEntityEvent("gameobject", this.id, updateEvent);
 			}
 
-			console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
+			// console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
 		}
 	}
 
@@ -222,12 +200,32 @@ class ControlPoint {
 		// console.log("INSIDE HILL CONTROL POINT: collision character.");
 		this.teamCaptureRates[c.teamId]++;
 		this.isDirty = true;
+
+		//send to the specific user that their character entered the control point
+		var user = this.gs.um.getUserByID(c.ownerId);
+		if(user !== null) {
+			var userAgent = this.gs.uam.getUserAgentByID(user.userAgentId);
+			if(userAgent !== null) {
+				var eventData = this.serializecharacterOnControlPointEvent();
+				userAgent.insertTrackedEntityEvent("gameobject", this.id, eventData);
+			}
+		}
 	}
 
 	endCollisionCharacter(c) {
 		// console.log("INSIDE HILL CONTROL POINT END: collision character.");
 		this.teamCaptureRates[c.teamId]--;
 		this.isDirty = true;
+
+		//send to the specific user that their character exited the control point
+		var user = this.gs.um.getUserByID(c.ownerId);
+		if(user !== null) {
+			var userAgent = this.gs.uam.getUserAgentByID(user.userAgentId);
+			if(userAgent !== null) {
+				var eventData = this.serializecharacterOffControlPointEvent();
+				userAgent.insertTrackedEntityEvent("gameobject", this.id, eventData);
+			}
+		}
 	}
 
 
@@ -254,6 +252,7 @@ class ControlPoint {
 			"capturingTeamId": this.capturingTeamId,
 			"capturingTimeAcc": this.capturingTimeAcc,
 			"capturingRate": this.capturingRate,
+			"capturingRateCoeff": this.capturingRateCoeff
 		};
 		
 		return eventData;
@@ -270,14 +269,22 @@ class ControlPoint {
 			"capturingTeamId": this.capturingTeamId,
 			"capturingTimeAcc": this.capturingTimeAcc,
 			"capturingRate": this.capturingRate,
+			"capturingRateCoeff": this.capturingRateCoeff
 		};
 
 		return eventData;
 	}
 
-	serializeRemoveControlPointEvent() {
+	serializecharacterOnControlPointEvent() {
 		return {
-			"eventName": "removeControlPoint",
+			"eventName": "characterOnControlPoint",
+			"id": this.id
+		};
+	}
+
+	serializecharacterOffControlPointEvent() {
+		return {
+			"eventName": "characterOffControlPoint",
 			"id": this.id
 		};
 	}

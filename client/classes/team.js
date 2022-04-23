@@ -38,6 +38,8 @@ export default class Team {
 		this.projectileColor3Replace = "#ffffffff";
 		this.projectileColor4 = "#ffffffff";
 		this.projectileColor4Replace = "#ffffffff";
+		this.controlPointOwnerColor = "#ffffffff";
+		this.controlPointCaptureColor = "#ffffffff";
 
 		this.phaserCharacterFillColor = 0xffffff;
 		this.phaserCharacterStrokeColor = 0xffffff;

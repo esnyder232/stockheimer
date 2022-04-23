@@ -46,6 +46,8 @@
 			"projectileColor3Replace": "#000000ff",
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#000000ff",
+			"controlPointOwnerColor": "#646464ff",
+			"controlPointCaptureColor": "#969696ff",
 			"slotNum": 0
 		},
 		{
@@ -69,6 +71,8 @@
 			"projectileColor3Replace": "#ff9d3dff",
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#ffcd3dff",
+			"controlPointOwnerColor": "#da231dff",
+			"controlPointCaptureColor": "#efa19fff",
 			"slotNum": 1
 		},
 		{
@@ -92,6 +96,8 @@
 			"projectileColor3Replace": "#3dabffff",
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#3defffff",
+			"controlPointOwnerColor": "#5b6ee1ff",
+			"controlPointCaptureColor": "#5fede4ff",
 			"slotNum": 2
 		}
 	],

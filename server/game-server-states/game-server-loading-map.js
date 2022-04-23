@@ -224,6 +224,8 @@ class GameServerLoadingMap extends GameServerBaseState {
 				temp.projectileColor3Replace = this.globalfuncs.getValueDefault(teamData[i].projectileColor3Replace, "#ffffffff");
 				temp.projectileColor4 = this.globalfuncs.getValueDefault(teamData[i].projectileColor4, "#ffffffff");
 				temp.projectileColor4Replace = this.globalfuncs.getValueDefault(teamData[i].projectileColor4Replace, "#ffffffff");
+				temp.controlPointOwnerColor = this.globalfuncs.getValueDefault(teamData[i].controlPointOwnerColor, "#ffffffff");
+				temp.controlPointCaptureColor = this.globalfuncs.getValueDefault(teamData[i].controlPointCaptureColor, "#ffffffff");
 
 				if(teamData[i].slotNum === spectatorTeamSlotNum) {
 					this.gs.tm.assignSpectatorTeamById(temp.id);
