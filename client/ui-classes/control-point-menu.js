@@ -92,6 +92,7 @@ export default class ControlPointMenu {
 		if(cpObj !== undefined) {
 			this.updateCpObj(cpObj);
 			this.redrawControlPoint(cpObj);
+			this.redrawControlPointNotification();
 		}
 	}
 
@@ -121,7 +122,9 @@ export default class ControlPointMenu {
 			capturingTimeAcc: 0,
 			capturingRate: 0,
 			capturingRateCoeff: 0,
-			capturingTimeRequired: 0
+			capturingTimeRequired: 0,
+			teamsOccupyingPoint: 0,
+			currentTeamIdOccupyingPoint: 0
 		};
 
 		this.controlPointsMap[cpObj.serverId] = cpObj;
@@ -151,6 +154,8 @@ export default class ControlPointMenu {
 		cpObj.capturingTimeAcc = cpObj.cpRef.capturingTimeAcc;
 		cpObj.capturingRate = Math.round(cpObj.cpRef.capturingRate);
 		cpObj.capturingRateCoeff = cpObj.cpRef.capturingRateCoeff;
+		cpObj.teamsOccupyingPoint = cpObj.cpRef.teamsOccupyingPoint;
+		cpObj.currentTeamIdOccupyingPoint = cpObj.cpRef.currentTeamIdOccupyingPoint;
 	}
 
 
@@ -169,8 +174,15 @@ export default class ControlPointMenu {
 		cpObj.divFiller.style.width = w + "%";
 
 		//cp text
-		var capRateFloored = Math.floor(cpObj.capturingRate);
-		var capRateText = capRateFloored === 0 ? "" : "x" + capRateFloored.toString().padStart(2, " ");
+		//show the rate ONLY if the progress is increasing
+		var capRateFloored = "";
+		var capRateText = "";
+		
+		if(cpObj.capturingRateCoeff > 0) {
+			capRateFloored = Math.floor(cpObj.capturingRate);
+			capRateText = capRateFloored === 0 ? "" : "x" + capRateFloored.toString().padStart(2, " ");
+		}
+		
 		cpObj.divText.textContent = capRateText;
 	}
 
@@ -198,6 +210,21 @@ export default class ControlPointMenu {
 			
 			this.controlPointNotification.css("bottom", cpMenuHeight + 25 + "px");
 			this.controlPointNotification.css("left", cpOffsetLeft - (notOuterWidth/2) + (cpOuterWidth/2) + "px");
+
+			//calculate the text on the notification
+			var notificationText = "";
+			if(cpObj.teamsOccupyingPoint > 1) {
+				notificationText = "Contested";
+			} else if (cpObj.capturingRateCoeff < 0) {
+				notificationText = "Reverting";
+			} else if (cpObj.ownerTeamId === this.gc.myUser.teamId) {
+				notificationText = "Defending";
+			} else {
+				notificationText = "Capturing";
+			}
+
+			this.controlPointNotification.text(notificationText);
+
 		} else {
 			this.controlPointNotification.addClass("hide");
 		}
@@ -210,11 +237,8 @@ export default class ControlPointMenu {
 
 
 	update(dt) {
-		
 		this.internalSampleTimer -= dt;
 		if(this.internalSampleTimer <= 0) {
-			// console.log("updating control point menu")
-			
 			for(var key in this.controlPointsMap) {
 				if (this.controlPointsMap.hasOwnProperty(key)) {
 					this.updateCpObj(this.controlPointsMap[key]);

@@ -19,6 +19,8 @@ class ControlPoint {
 		this.capturingTimeAcc = 0;			//time accumulated for the occupying team
 		this.capturingRate = 0;				//current capturing/reverting rate of the point
 		this.capturingRateCoeff = 0;		//1: capturing, -1: reverting, 0: stable
+		this.teamsOccupyingPoint = 0;			//num of teams occupying the point
+		this.currentTeamIdOccupyingPoint = 0;	//current team id occupying the point
 
 		this.capturingTimeRequired = 5000;	//time required to fully own the point for the occupying team
 		this.teamCaptureRates = {};
@@ -108,28 +110,29 @@ class ControlPoint {
 	}
 
 	postPhysicsUpdate(dt) {
-		var teamsOccupyingPoint = 0;
-		var currentTeamIdOccupyingPoint = 0;
-		var currentTeamcaptureRate = 0;
+		var currentTeamCaptureRate = 0;
+
+		this.teamsOccupyingPoint = 0;
+		this.currentTeamIdOccupyingPoint = 0;
 		for (var teamId in this.teamCaptureRates) {
 			if (this.teamCaptureRates.hasOwnProperty(teamId)) {
 				if(this.teamCaptureRates[teamId] > 0) {
-					teamsOccupyingPoint++;
-					currentTeamIdOccupyingPoint = teamId;
-					currentTeamcaptureRate = this.teamCaptureRates[teamId];
+					this.teamsOccupyingPoint++;
+					this.currentTeamIdOccupyingPoint = teamId;
+					currentTeamCaptureRate = this.teamCaptureRates[teamId];
 				}
 			}
 		}
 
 		//determine cap rate
-		if(teamsOccupyingPoint === 0) {
+		if(this.teamsOccupyingPoint === 0) {
 			this.capturingRate = this.naturalRevertingRate;
-		} else if (teamsOccupyingPoint === 1) {
-			if(currentTeamIdOccupyingPoint === this.ownerTeamId) {
-				this.capturingRate = currentTeamcaptureRate/2;
+		} else if (this.teamsOccupyingPoint === 1) {
+			if(this.currentTeamIdOccupyingPoint === this.ownerTeamId) {
+				this.capturingRate = currentTeamCaptureRate/2;
 			} 
 			else{
-				this.capturingRate = currentTeamcaptureRate;
+				this.capturingRate = currentTeamCaptureRate;
 			}
 		} else {
 			this.capturingRate = 0;
@@ -137,14 +140,15 @@ class ControlPoint {
 
 		//determine who is capturing
 		if(this.capturingTimeAcc === 0 && this.capturingRate !== 0) {
-			if(currentTeamIdOccupyingPoint !== this.ownerTeamId) {
-				this.capturingTeamId = currentTeamIdOccupyingPoint;
-				
-				//if the capturingTeamId changed from one team to another
-				if(this.capturingTeamId !== 0) {
-					this.isDirty = true; 
+			if(this.currentTeamIdOccupyingPoint !== this.ownerTeamId) {
+				if(this.capturingTeamId !== this.currentTeamIdOccupyingPoint) {
+					this.isDirty = true;
 				}
+				this.capturingTeamId = this.currentTeamIdOccupyingPoint;
 			} else {
+				if(this.capturingTeamId !== 0) {
+					this.isDirty = true;
+				}
 				this.capturingTeamId = 0;
 			}
 		}
@@ -154,7 +158,7 @@ class ControlPoint {
 			this.capturingRateCoeff = 0;
 		}
 		else {
-			this.capturingRateCoeff = currentTeamIdOccupyingPoint === this.capturingTeamId ? 1 : -1;
+			this.capturingRateCoeff = this.currentTeamIdOccupyingPoint === this.capturingTeamId ? 1 : -1;
 		}
 
 		//apply cap or revert
@@ -165,6 +169,8 @@ class ControlPoint {
 			this.ownerTeamId = this.capturingTeamId;
 			this.capturingTeamId = 0;
 			this.capturingTimeAcc = 0;
+			this.capturingRate = 0;
+			this.capturingRateCoeff = 0;
 			this.isDirty = true;
 		}
 		
@@ -271,7 +277,9 @@ class ControlPoint {
 			"capturingTeamId": this.capturingTeamId,
 			"capturingTimeAcc": this.capturingTimeAcc,
 			"capturingRate": this.capturingRate,
-			"capturingRateCoeff": this.capturingRateCoeff
+			"capturingRateCoeff": this.capturingRateCoeff,
+			"teamsOccupyingPoint": this.teamsOccupyingPoint,
+			"currentTeamIdOccupyingPoint": this.currentTeamIdOccupyingPoint	
 		};
 		
 		return eventData;
@@ -280,7 +288,6 @@ class ControlPoint {
 
 	serializeUpdateControlPointEvent() {
 		var eventData = null;
-
 		eventData = {
 			"eventName": "updateControlPoint",
 			"id": this.id,
@@ -288,10 +295,10 @@ class ControlPoint {
 			"capturingTeamId": this.capturingTeamId,
 			"capturingTimeAcc": this.capturingTimeAcc,
 			"capturingRate": this.capturingRate,
-			"capturingRateCoeff": this.capturingRateCoeff
+			"capturingRateCoeff": this.capturingRateCoeff,
+			"teamsOccupyingPoint": this.teamsOccupyingPoint,
+			"currentTeamIdOccupyingPoint": this.currentTeamIdOccupyingPoint
 		};
-
-		console.log("serialized update control point event: " + this.capturingRate);
 
 		return eventData;
 	}

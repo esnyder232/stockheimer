@@ -72,7 +72,7 @@
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#ffcd3dff",
 			"controlPointOwnerColor": "#da231dff",
-			"controlPointCaptureColor": "#efa19fff",
+			"controlPointCaptureColor": "#ae201eff",
 			"slotNum": 1
 		},
 		{
@@ -97,7 +97,7 @@
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#3defffff",
 			"controlPointOwnerColor": "#5b6ee1ff",
-			"controlPointCaptureColor": "#5fede4ff",
+			"controlPointCaptureColor": "#108e88ff",
 			"slotNum": 2
 		}
 	],

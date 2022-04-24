@@ -1022,7 +1022,6 @@ input.menu-button {
 	text-align: center;
 	color: #cccccc;
 	font-size: 32px;
-	text-shadow: 3px 3px #000000;
 	margin-bottom: 24px;}
 
 .control-point-item {
@@ -1040,6 +1039,8 @@ input.menu-button {
 	float: right;
 	margin-top: 8px;
 	margin-right: 4px;
+	font-weight: bolder;
+
 }
 
 

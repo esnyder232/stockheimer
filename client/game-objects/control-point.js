@@ -18,6 +18,8 @@ export default class ControlPoint {
 		this.capturingRate = 0;
 		this.capturingTimeRequired = 0;
 		this.capturingRateCoeff = 0;
+		this.teamsOccupyingPoint = 0;
+		this.currentTeamIdOccupyingPoint = 0;
 
 		this.isDirty = false;
 		this.spriteGraphics = null;
@@ -64,6 +66,8 @@ export default class ControlPoint {
 		this.capturingTimeAcc = e.capturingTimeAcc;
 		this.capturingRate = e.capturingRate;
 		this.capturingRateCoeff = e.capturingRateCoeff;
+		this.teamsOccupyingPoint = e.teamsOccupyingPoint;
+		this.currentTeamIdOccupyingPoint = e.currentTeamIdOccupyingPoint;
 
 		//dispatch event so the UI can keep up
 		window.dispatchEvent(new CustomEvent("control-point-updated", {detail: {serverId: this.serverId}}));
