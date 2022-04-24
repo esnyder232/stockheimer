@@ -20,12 +20,14 @@ class ControlPoint {
 		this.capturingRate = 0;				//current capturing/reverting rate of the point
 		this.capturingRateCoeff = 0;		//1: capturing, -1: reverting, 0: stable
 
-		this.capturingTimeRequired = 15000;	//time required to fully own the point for the occupying team
+		this.capturingTimeRequired = 5000;	//time required to fully own the point for the occupying team
 		this.teamCaptureRates = {};
 		this.naturalRevertingRate = 1/4;
 		this.isDirty = false;
 		this.tempTimer = 0;
-
+		this.syncTimerAcc = 0;
+		this.syncTimer = 5000; 				//timer to send updates to clients every now and then
+		
 	}
 
 	controlPointInit(gameServer, xStarting, yStarting, width, height, angle) {
@@ -96,7 +98,7 @@ class ControlPoint {
 		
 	}
 	
-	modCaptureTimeAcc(amount) {
+	modCapturingTimeAcc(amount) {
 		this.capturingTimeAcc += Math.floor(amount);
 		if(this.capturingTimeAcc >= this.capturingTimeRequired) {
 			this.capturingTimeAcc = this.capturingTimeRequired;
@@ -137,6 +139,11 @@ class ControlPoint {
 		if(this.capturingTimeAcc === 0 && this.capturingRate !== 0) {
 			if(currentTeamIdOccupyingPoint !== this.ownerTeamId) {
 				this.capturingTeamId = currentTeamIdOccupyingPoint;
+				
+				//if the capturingTeamId changed from one team to another
+				if(this.capturingTeamId !== 0) {
+					this.isDirty = true; 
+				}
 			} else {
 				this.capturingTeamId = 0;
 			}
@@ -151,45 +158,59 @@ class ControlPoint {
 		}
 
 		//apply cap or revert
-		this.modCaptureTimeAcc(dt * this.capturingRate * this.capturingRateCoeff);
+		this.modCapturingTimeAcc(dt * this.capturingRate * this.capturingRateCoeff);
 
 		//control point was captured
 		if(this.capturingTimeAcc >= this.capturingTimeRequired) {
 			this.ownerTeamId = this.capturingTeamId;
 			this.capturingTeamId = 0;
 			this.capturingTimeAcc = 0;
+			this.isDirty = true;
+		}
+		
+		//give the client an update every now and then
+		this.syncTimerAcc += dt;
+		if(this.syncTimerAcc >= this.syncTimer){
+			this.syncTimerAcc = 0;
+			this.isDirty = true;
 		}
 
-		//debug report
-		this.tempTimer += dt;
-		if(this.tempTimer >= 1000){
-			this.tempTimer = 0;
-			//ownId: -1		capId: 2		timeAcc: 99999		rate: 10		coef: 0
-			var report = [
-				{"key": "ownId", "val": this.ownerTeamId},
-				{"key": "capId", "val": this.capturingTeamId},
-				{"key": "timeAcc", "val": this.capturingTimeAcc},
-				{"key": "rate", "val": this.capturingRate},
-				{"key": "coef", "val": this.capturingRateCoeff}
-			];
-			
-			var caprates = " | ";
-			
-			for (var teamId in this.teamCaptureRates) {
-				if (this.teamCaptureRates.hasOwnProperty(teamId)) {
-					caprates += "("+teamId+"):" + this.teamCaptureRates[teamId] + "\t\t";
-				}
-			}
-			
-			//give the client an update every now and then
+		//if its dirty in anyway, send the updates to the clients
+		if(this.isDirty) {
+			this.isDirty = false;
+			this.syncTimerAcc = 0;
+
 			var updateEvent = this.serializeUpdateControlPointEvent();
 			var userAgents = this.gs.uam.getUserAgents();
 			for(var i = 0; i < userAgents.length; i++) {
 				userAgents[i].insertTrackedEntityEvent("gameobject", this.id, updateEvent);
 			}
-
-			// console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
 		}
+
+
+		// //debug report
+		// this.tempTimer += dt;
+		// if(this.tempTimer >= 1000){
+		// 	this.tempTimer = 0;
+		// 	//ownId: -1		capId: 2		timeAcc: 99999		rate: 10		coef: 0
+		// 	var report = [
+		// 		{"key": "ownId", "val": this.ownerTeamId},
+		// 		{"key": "capId", "val": this.capturingTeamId},
+		// 		{"key": "timeAcc", "val": this.capturingTimeAcc},
+		// 		{"key": "rate", "val": this.capturingRate},
+		// 		{"key": "coef", "val": this.capturingRateCoeff}
+		// 	];
+			
+		// 	var caprates = " | ";
+			
+		// 	for (var teamId in this.teamCaptureRates) {
+		// 		if (this.teamCaptureRates.hasOwnProperty(teamId)) {
+		// 			caprates += "("+teamId+"):" + this.teamCaptureRates[teamId] + "\t\t";
+		// 		}
+		// 	}
+			
+		// 	console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
+		// }
 	}
 
 	postWebsocketUpdate() {
@@ -197,7 +218,6 @@ class ControlPoint {
 	}
 
 	collisionCharacter(c) {
-		// console.log("INSIDE HILL CONTROL POINT: collision character.");
 		this.teamCaptureRates[c.teamId]++;
 		this.isDirty = true;
 
@@ -213,7 +233,6 @@ class ControlPoint {
 	}
 
 	endCollisionCharacter(c) {
-		// console.log("INSIDE HILL CONTROL POINT END: collision character.");
 		this.teamCaptureRates[c.teamId]--;
 		this.isDirty = true;
 
@@ -271,6 +290,8 @@ class ControlPoint {
 			"capturingRate": this.capturingRate,
 			"capturingRateCoeff": this.capturingRateCoeff
 		};
+
+		console.log("serialized update control point event: " + this.capturingRate);
 
 		return eventData;
 	}

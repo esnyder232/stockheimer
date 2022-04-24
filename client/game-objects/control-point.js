@@ -73,5 +73,18 @@ export default class ControlPoint {
 	update(dt) {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
+
+		//continue the capturingTimeAcc until a server update (server correction)
+		this.modCaptureTimeAcc(Math.floor(dt) * this.capturingRate * this.capturingRateCoeff);
 	}
+
+	modCaptureTimeAcc(amount) {
+		this.capturingTimeAcc += Math.floor(amount);
+		if(this.capturingTimeAcc >= this.capturingTimeRequired) {
+			this.capturingTimeAcc = this.capturingTimeRequired;
+		} else if (this.capturingTimeAcc <= 0) {
+			this.capturingTimeAcc = 0;
+		}
+	}
+
 }

@@ -19,7 +19,7 @@ export default class ControlPointMenu {
 		this.controlPointNotification = null;
 		this.controlPointCurrentlyOn = null;
 
-		this.internalSampleTimer = 250; //sample timer so i don't run jquery 60 times a second
+		this.internalSampleTimer = 100; //sample timer so i don't run jquery 60 times a second
 	}
 
 	init(gc) {
@@ -73,7 +73,7 @@ export default class ControlPointMenu {
 		if(cp !== null) {
 			var cpObj = this.controlPointsMap[e.detail.serverId];
 			if(cpObj === undefined) {
-				cpObj = this.addControlPointContents(e.detail.serverId);
+				cpObj = this.addControlPointContents(cp, e.detail.serverId);
 			}
 
 			cpObj.ownerTeamId = cp.ownerTeamId;
@@ -88,15 +88,9 @@ export default class ControlPointMenu {
 	}
 
 	controlPointUpdated(e) {
-		var cp = this.gc.gom.getGameObjectByServerID(e.detail.serverId);
 		var cpObj = this.controlPointsMap[e.detail.serverId];
-		if(cp !== null && cpObj !== undefined) {
-			cpObj.ownerTeamId = cp.ownerTeamId;
-			cpObj.capturingTeamId = cp.capturingTeamId;
-			cpObj.capturingTimeAcc = cp.capturingTimeAcc;
-			cpObj.capturingRate = cp.capturingRate;
-			cpObj.capturingRateCoeff = cp.capturingRateCoeff;
-			
+		if(cpObj !== undefined) {
+			this.updateCpObj(cpObj);
 			this.redrawControlPoint(cpObj);
 		}
 	}
@@ -111,16 +105,17 @@ export default class ControlPointMenu {
 		}
 	}
 
-	addControlPointContents(serverId) {
+	addControlPointContents(cp, serverId) {
 		var newCp = this.controlPointItemTemplate.clone()
 		newCp.removeAttr("id");
 		newCp.removeClass("hide");
 		
 		var cpObj = {
 			serverId: serverId,
-			cpContents: newCp,
-			divText: newCp.find("div[name='control-point-progress-text']"),
-			divFiller: newCp.find("div[name='control-point-progress-filler']"),
+			cpContents: newCp[0],
+			cpRef: cp,
+			divText: newCp.find("div[name='control-point-progress-text']")[0],
+			divFiller: newCp.find("div[name='control-point-progress-filler']")[0],
 			ownerTeamId: 0,
 			capturingTeamId: 0,
 			capturingTimeAcc: 0,
@@ -138,15 +133,24 @@ export default class ControlPointMenu {
 
 
 	removeControlPointContents(cpObj) {
-		cpObj.cpContents.remove();
-		cpObj.divText.remove();
-		cpObj.divFiller.remove();
+		cpObj.divFiller.parentNode.removeChild(cpObj.divFiller);
+		cpObj.divText.parentNode.removeChild(cpObj.divText);
+		cpObj.cpContents.parentNode.removeChild(cpObj.cpContents);
 
 		cpObj.cpContents = null;
 		cpObj.divText = null;
 		cpObj.divFiller = null;
+		cpObj.cpRef = null;
 		
 		delete this.controlPointsMap[cpObj.serverId];
+	}
+
+	updateCpObj(cpObj) {
+		cpObj.ownerTeamId = cpObj.cpRef.ownerTeamId;
+		cpObj.capturingTeamId = cpObj.cpRef.capturingTeamId;
+		cpObj.capturingTimeAcc = cpObj.cpRef.capturingTimeAcc;
+		cpObj.capturingRate = Math.round(cpObj.cpRef.capturingRate);
+		cpObj.capturingRateCoeff = cpObj.cpRef.capturingRateCoeff;
 	}
 
 
@@ -155,19 +159,19 @@ export default class ControlPointMenu {
 		var capturingTeamColor = this.teamObjMap[cpObj.capturingTeamId] !== undefined ? this.teamObjMap[cpObj.capturingTeamId].controlPointCaptureColor : "#999999";
 
 		//owner border
-		cpObj.cpContents.css("border-color", ownerTeamColor);
+		cpObj.cpContents.style.borderColor = ownerTeamColor;
 
 		//filler color
-		cpObj.divFiller.css("background-color", capturingTeamColor);
+		cpObj.divFiller.style.backgroundColor = capturingTeamColor;
 
 		//filler width
 		var w = this.globalfuncs.clamp(Math.round(cpObj.capturingTimeAcc/cpObj.capturingTimeRequired * 100), 0, 100);
-		cpObj.divFiller.css("width", w + "%");
+		cpObj.divFiller.style.width = w + "%";
 
 		//cp text
 		var capRateFloored = Math.floor(cpObj.capturingRate);
 		var capRateText = capRateFloored === 0 ? "" : "x" + capRateFloored.toString().padStart(2, " ");
-		cpObj.divText.text(capRateText);
+		cpObj.divText.textContent = capRateText;
 	}
 
 	characterOnControlPoint(e) {
@@ -188,18 +192,12 @@ export default class ControlPointMenu {
 		if(cpObj !== undefined) {
 			this.controlPointNotification.removeClass("hide");
 			var cpMenuHeight = this.menu.height();
-			var cpOffset = cpObj.cpContents.offset();
+			var cpOffsetLeft = cpObj.cpContents.offsetLeft;
 			var notOuterWidth = this.controlPointNotification.outerWidth();
-			var cpOuterWidth = cpObj.cpContents.outerWidth();
-
-			// console.log(cpMenuHeight);
-			// console.log(cpOffset);
-			// console.log(notOuterWidth);
-			// console.log(cpOuterWidth);
-			// console.log(cpOffset.left - (notOuterWidth/2) + (cpOuterWidth/2));
-
+			var cpOuterWidth = cpObj.cpContents.offsetWidth;
+			
 			this.controlPointNotification.css("bottom", cpMenuHeight + 25 + "px");
-			this.controlPointNotification.css("left", cpOffset.left - (notOuterWidth/2) + (cpOuterWidth/2) + "px");
+			this.controlPointNotification.css("left", cpOffsetLeft - (notOuterWidth/2) + (cpOuterWidth/2) + "px");
 		} else {
 			this.controlPointNotification.addClass("hide");
 		}
@@ -214,11 +212,17 @@ export default class ControlPointMenu {
 	update(dt) {
 		
 		this.internalSampleTimer -= dt;
-		if(this.internalSampleTimer <= 0)
-		{
+		if(this.internalSampleTimer <= 0) {
 			// console.log("updating control point menu")
-			// this.updateRoundTimer();
-			this.internalSampleTimer = 250;
+			
+			for(var key in this.controlPointsMap) {
+				if (this.controlPointsMap.hasOwnProperty(key)) {
+					this.updateCpObj(this.controlPointsMap[key]);
+					this.redrawControlPoint(this.controlPointsMap[key]);
+				}
+			}
+
+			this.internalSampleTimer = 100;
 		}
 	}
 
