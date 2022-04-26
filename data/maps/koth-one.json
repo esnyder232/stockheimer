@@ -7,12 +7,13 @@
 		"type": "koth",
 		"roundMapStartTimeLength": 1000,
 		"roundStartingTimeLength": 700,
-		"roundPlayingTimeLength": 900000,
+		"roundPlayingTimeLength": 0,
 		"roundOverTimeLength": 4000,
 		"roundOverWinTimeLength": 4000,
 		"roundMapEndTimeLength": 4000,
 		"userRespawningTimeLength": 400,
-		"matchWinCondition": 2
+		"matchWinCondition": 1,
+		"kothTimeLength": 60000
 	},
 	
 	"minimumUsersPlaying": 0,

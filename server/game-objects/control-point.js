@@ -22,14 +22,13 @@ class ControlPoint {
 		this.teamsOccupyingPoint = 0;			//num of teams occupying the point
 		this.currentTeamIdOccupyingPoint = 0;	//current team id occupying the point
 
-		this.capturingTimeRequired = 5000;	//time required to fully own the point for the occupying team
+		this.capturingTimeRequired = 1000;	//time required to fully own the point for the occupying team
 		this.teamCaptureRates = {};
 		this.naturalRevertingRate = 1/4;
 		this.isDirty = false;
 		this.tempTimer = 0;
 		this.syncTimerAcc = 0;
 		this.syncTimer = 5000; 				//timer to send updates to clients every now and then
-		
 	}
 
 	controlPointInit(gameServer, xStarting, yStarting, width, height, angle) {
@@ -39,6 +38,27 @@ class ControlPoint {
 		this.angle = angle;
 		this.width = width;
 		this.height = height;
+	}
+
+	
+	resetControlPoint() {
+		this.ownerTeamId = 0;
+		this.capturingTeamId = 0;
+		this.capturingTimeAcc = 0;
+		this.capturingRate = 0;
+		this.capturingRateCoeff = 0;
+		this.teamsOccupyingPoint = 0;
+		this.currentTeamIdOccupyingPoint = 0;
+
+		var teams = this.gs.tm.getTeams();
+		for(var i = 0; i < teams.length; i++) {
+			if(!teams[i].isSpectatorTeam) {
+				this.teamCaptureRates[teams[i].id] = 0;
+			}
+		}
+
+		this.isDirty = true;
+		this.syncTimerAcc = 0;
 	}
 
 	activated() {
@@ -172,6 +192,8 @@ class ControlPoint {
 			this.capturingRate = 0;
 			this.capturingRateCoeff = 0;
 			this.isDirty = true;
+
+			this.gs.em.emitEvent("control-point-captured", {id: this.id, ownerTeamId: this.ownerTeamId});
 		}
 		
 		//give the client an update every now and then
@@ -240,6 +262,9 @@ class ControlPoint {
 
 	endCollisionCharacter(c) {
 		this.teamCaptureRates[c.teamId]--;
+		if(this.teamCaptureRates[c.teamId] < 0) {
+			this.teamCaptureRates[c.teamId] = 0;
+		}
 		this.isDirty = true;
 
 		//send to the specific user that their character exited the control point
@@ -252,6 +277,7 @@ class ControlPoint {
 			}
 		}
 	}
+
 
 
 	///////////////////////////////////
@@ -287,8 +313,7 @@ class ControlPoint {
 
 
 	serializeUpdateControlPointEvent() {
-		var eventData = null;
-		eventData = {
+		return {
 			"eventName": "updateControlPoint",
 			"id": this.id,
 			"ownerTeamId": this.ownerTeamId,
@@ -299,8 +324,13 @@ class ControlPoint {
 			"teamsOccupyingPoint": this.teamsOccupyingPoint,
 			"currentTeamIdOccupyingPoint": this.currentTeamIdOccupyingPoint
 		};
+	}
 
-		return eventData;
+	serializeRemoveControlPointEvent() {
+		return {
+			"eventName": "removeControlPoint",
+			"id": this.id
+		};
 	}
 
 	serializecharacterOnControlPointEvent() {

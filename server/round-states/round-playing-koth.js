@@ -1,5 +1,5 @@
 const RoundBaseState = require('./round-base-state.js');
-const RoundOver = require('./round-over.js');
+const RoundOverKoth = require('./round-over-koth.js');
 const logger = require('../../logger.js');
 
 //do anything here that involves starting the game, Like loading the map, pools, loading saved games, sessions, anything.
@@ -12,9 +12,12 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 		this.temp = 0;
 		this.anotherTemp = 1;
 		this.tempKillControlPoint = 15000;
+		this.currentlyOwningTeamId = 0;
+		this.currentlyOwningTeamRef = null;
+		this.cpRef = null;
 
 		this.eventCallbackMapping = [ 
-			{eventName: "character-deactivated", cb: this.cbCharacterDeactivated.bind(this), handleId: null}
+			{eventName: "control-point-captured", cb: this.cbControlPointCaptured.bind(this), handleId: null},
 		];
 
 		this.gs.em.batchRegisterForEvent(this.eventCallbackMapping);
@@ -25,6 +28,11 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 		super.enter(dt);
 		this.round.roundTimeAcc = 0;
 		this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.gameData?.roundPlayingTimeLength, this.roundTimerDefault);
+
+		//just consider the first controlpoint to be the hill
+		if(this.gs.activeTilemap.controlPoints.length !== 0) {
+			this.cpRef = this.gs.activeTilemap.controlPoints[0];
+		}
 		
 		//tell users that the rouns has started
 		this.round.em.emitEvent("round-started");
@@ -32,55 +40,17 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 	}
 
 	update(dt) {
-		this.round.roundTimeAcc += dt;
 		this.temp += dt;
 
-		// if(this.checkTeamCounts) {
-		// 	this.checkTeamCounts = false;
-
-		// 	var userAliveSumamry = this.gs.um.getUserAliveSummary();
-
-		// 	//check for a winner
-		// 	var teamsAlive = 0;
-		// 	for(var i = 0; i < userAliveSumamry.teamArray.length; i++) {
-		// 		if(userAliveSumamry.teamArray[i].usersAlive > 0) {
-		// 			teamsAlive++;
-		// 		}
-		// 	}
-
-		// 	//if 1 or 0 teams are left alive, move on to round over
-		// 	if(teamsAlive <= 1) {
-		// 		this.round.nextState = new RoundOverKoth.RoundOverKoth(this.gs, this.round);	
-		// 	}
-		// }
-
-		//testing koth points on teams
-		if(this.temp >= 1000) {
-			this.temp = 0;
-			this.anotherTemp += 1000;
-			
-			var teams = this.gs.tm.getTeams();
-			for(var i = 0; i < teams.length; i++) {
-				if(!teams[i].isSpectatorTeam) {
-					teams[i].setKothTime(this.anotherTemp);
-				}
+		//check if there is a winner
+		if(this.currentlyOwningTeamRef !== null && this.currentlyOwningTeamRef.kothTime === this.currentlyOwningTeamRef.kothTimeAcc) {
+			//check if anyone is currently capturing the control point
+			if(this.cpRef !== null && 
+				this.cpRef.ownerTeamId === this.currentlyOwningTeamId && 
+				this.cpRef.capturingTeamId === 0 &&
+				this.cpRef.teamsOccupyingPoint <= 1) {
+					this.round.nextState = new RoundOverKoth.RoundOverKoth(this.gs, this.round, this.currentlyOwningTeamId, this.currentlyOwningTeamRef);
 			}
-		}
-
-		//testing killing a control point
-		// if(this.anotherTemp >= this.tempKillControlPoint) {
-		// 	var cpIds = this.gs.activeTilemap.controlPoints;
-		// 	for(var i = 0; i < cpIds.length; i++) {
-		// 		if(cpIds[i].isActive) {
-		// 			console.log("killing cp #" + cpIds[i]);
-		// 			this.gs.gom.destroyGameObject(cpIds[i].id);
-		// 		}
-		// 	}
-		// }
-
-		if(this.round.roundTimeAcc >= this.round.roundTimer)
-		{
-			this.round.nextState = new RoundOver.RoundOver(this.gs, this.round);
 		}
 
 		super.update(dt);
@@ -89,11 +59,20 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 	exit(dt) {
 		super.exit(dt);
 		this.gs.em.batchUnregisterForEvent(this.eventCallbackMapping);
+		this.currentlyOwningTeamId = 0;
+		this.currentlyOwningTeamRef = null;
+		this.cpRef = null;
 	}
 
-	cbCharacterDeactivated(eventName, owner, eventData) {
-		this.checkTeamCounts = true;
+	cbControlPointCaptured(eventName, owner, eventData) {
+		var owningTeam = this.gs.tm.getTeamByID(eventData.ownerTeamId);
+		if(owningTeam !== null && !owningTeam.isSpectatorTeam) {
+			owningTeam.setKothTimerOn(true);
+			this.currentlyOwningTeamId = eventData.ownerTeamId;
+			this.currentlyOwningTeamRef = owningTeam;
+		}
 	}
+
 }
 
 

@@ -17,16 +17,12 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
 
-		var winningTeamCsv = "";
-		var mvpBestCsv = "";
-		var mvpWorstCsv = "";
+		//calculate and send the results to the users
+		var winningTeamIds = [];
 		var matchWinnerTeamId = "";
-		var bestMvpsHealsCsv = "";
-		var worstMvpsHealsCsv = "";
 
 		/////////////////////////////////////////////////////////////
 		// find winners
-		var winningTeamIds = [];
 		var userAliveSummary = this.gs.um.getUserAliveSummary();
 
 		//sort by users alive desc, hpAverage desc
@@ -93,6 +89,25 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 			}
 		}
 
+		//get MVPs
+		var mvpResults = this.round.globalfuncs.getRoundMVPs(this.gs);
+
+		//finally send the event
+		var userAgents = this.gs.uam.getUserAgents();
+		var roundResultsEventData = {
+			"eventName": "roundResults",
+			"winningTeamCsv": winningTeamIds.join(","),
+			"mvpBestCsv": mvpResults.bestMvps.join(","),
+			"bestMvpsHealsCsv": mvpResults.bestMvpsHeals.join(","),
+			"mvpWorstCsv": mvpResults.worstMvps.join(","),
+			"worstMvpsHealsCsv": mvpResults.worstMvpsHeals.join(","),
+			"matchWon": this.matchWon,
+			"matchWinnerTeamId": matchWinnerTeamId
+		};
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertServerToClientEvent(roundResultsEventData);
+		}
+
 		//reset the timer
 		this.round.roundTimeAcc = 0;
 		if(this.matchWon) {
@@ -101,32 +116,7 @@ class RoundOverElimination extends RoundBaseState.RoundBaseState {
 		else {
 			this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.gameData?.roundOverTimeLength, this.roundTimerDefault);
 		}
-	
-
-		//get MVPs
-		var mvpResults = this.round.globalfuncs.getRoundMVPs(this.gs);
-		
-		//prepare results for event
-		winningTeamCsv = winningTeamIds.join(",");
-		mvpBestCsv = mvpResults.bestMvps.join(",");
-		mvpWorstCsv = mvpResults.worstMvps.join(",");
-		bestMvpsHealsCsv = mvpResults.bestMvpsHeals.join(",");
-		worstMvpsHealsCsv = mvpResults.worstMvpsHeals.join(",");
-		
-		//finally send the event
-		var userAgents = this.gs.uam.getUserAgents();
-		for(var i = 0; i < userAgents.length; i++) {
-			userAgents[i].insertServerToClientEvent({
-				"eventName": "roundResults",
-				"winningTeamCsv": winningTeamCsv,
-				"mvpBestCsv": mvpBestCsv,
-				"bestMvpsHealsCsv": bestMvpsHealsCsv,
-				"mvpWorstCsv": mvpWorstCsv,
-				"worstMvpsHealsCsv": worstMvpsHealsCsv,
-				"matchWon": this.matchWon,
-				"matchWinnerTeamId": matchWinnerTeamId
-			});
-		}
+			
 	}
 
 	update(dt) {

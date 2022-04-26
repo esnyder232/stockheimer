@@ -1,58 +1,38 @@
 const RoundBaseState = require('./round-base-state.js');
-const RoundStarting = require('./round-starting.js');
 const RoundStartingKoth = require('./round-starting-koth.js');
 const RoundMapEnd = require('./round-map-end.js');
 const logger = require('../../logger.js');
 
 
 //do anything here that involves starting the game, Like loading the map, pools, loading saved games, sessions, anything.
-class RoundOver extends RoundBaseState.RoundBaseState {
-	constructor(gs, round) {
+class RoundOverKoth extends RoundBaseState.RoundBaseState {
+	constructor(gs, round, currentlyOwningTeamId, currentlyOwningTeamRef) {
 		super(gs, round);
 		this.stateName = "OVER";
 		this.roundTimerDefault = 90000;
 		this.matchWon = false;
+		this.currentlyOwningTeamId = currentlyOwningTeamId;
+		this.currentlyOwningTeamRef = currentlyOwningTeamRef;
 	}
 	
 	enter(dt) {
 		logger.log("info", 'Round over.');
 		super.enter(dt);
-		
-		
 
 		//calculate and send the results to the users
 		var winningTeamIds = [];
 		var matchWinnerTeamId = "";
-		var teams = this.gs.tm.getTeams();
-		var spectatorTeamId = this.gs.tm.getSpectatorTeam().id;
 
 		/////////////////////////////////////////////////////////////
-		// find the winning team(s)
-		//find the team with the highest number of points
-
-		var highestPointTeam = teams.reduce((acc, cur) => {return  acc.roundPoints > cur.roundPoints ? acc : cur})
-
-		//check if there are any other teams that tied with the highest points
-		var finalTeamWinnersArray = teams.filter((x) => {return x.roundPoints === highestPointTeam.roundPoints});
-		var winningTeamIds = [];
-
-		//get all the winning team's ids (except the spectator team)
-		for(var i = 0; i < finalTeamWinnersArray.length; i++) {
-			if(finalTeamWinnersArray[i].id !== spectatorTeamId) {
-				winningTeamIds.push(finalTeamWinnersArray[i].id);
-			}
-		}
-
-		//if there is only 1 team, give them a round win
-		if(winningTeamIds.length === 1) {
-			var team = this.gs.tm.getTeamByID(winningTeamIds[0]);
-			if(team !== null) {
-				team.modRoundWins(1);
-			}
+		// give a point to the winning team
+		if(this.currentlyOwningTeamRef !== null) {
+			this.currentlyOwningTeamRef.modRoundWins(1);
+			winningTeamIds.push(this.currentlyOwningTeamId);
 		}
 		/////////////////////////////////////////////////////////////
 
 		//check to see if the match was won
+		var teams = this.gs.tm.getTeams();
 		for(var i = 0; i < teams.length; i++) {
 			if(!teams[i].isSpectatorTeam) {
 				if(teams[i].roundWins >= this.round.gs.matchWinCondition) {
@@ -89,7 +69,6 @@ class RoundOver extends RoundBaseState.RoundBaseState {
 		else {
 			this.round.roundTimer = this.round.globalfuncs.getValueDefault(this.gs?.currentMapResource?.data?.gameData?.roundOverTimeLength, this.roundTimerDefault);
 		}
-
 	}
 
 	update(dt) {
@@ -121,11 +100,7 @@ class RoundOver extends RoundBaseState.RoundBaseState {
 				this.round.nextState = new RoundMapEnd.RoundMapEnd(this.gs, this.round);
 			} else {
 				this.round.roundNum++;
-				if(this.gs.currentGameType === "deathmatch") {
-					this.round.nextState = new RoundStarting.RoundStarting(this.gs, this.round);
-				} else if (this.gs.currentGameType === "koth") {
-					this.round.nextState = new RoundStartingKoth.RoundStartingKoth(this.gs, this.round);
-				}
+				this.round.nextState = new RoundStartingKoth.RoundStartingKoth(this.gs, this.round);
 				
 			}
 		}
@@ -147,9 +122,12 @@ class RoundOver extends RoundBaseState.RoundBaseState {
 		for(var i = 0; i < teams.length; i++) {
 			teams[i].setRoundPoints(0);
 		}
+
+		this.currentlyOwningTeamId = 0;
+		this.currentlyOwningTeamRef = null;
 	}
 }
 
 
 
-exports.RoundOver = RoundOver;
+exports.RoundOverKoth = RoundOverKoth;

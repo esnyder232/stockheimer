@@ -166,7 +166,7 @@ export default class TeamScoreMenu {
 				var newItem = this.teamScoreItemTemplate.clone();
 				newItem.removeClass("hide");
 				newItem.removeAttr("id");
-				newItem.text(t.name + " - " + t.kothTime);
+				newItem.text(t.name + " - " + t.kothTimeAcc);
 				newItem.css("color", t.killFeedTextColor);
 
 				this.teamScoreList.append(newItem);

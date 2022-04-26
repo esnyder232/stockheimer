@@ -42,6 +42,8 @@ class Team {
 		this.kothTime = 0;
 		this.kothTimeAcc = 0;
 		this.kothTimerOn = false;
+		this.kothSyncTimer = 3000;
+		this.kothSyncTimeAcc = 0;
 
 		this.eventCallbackMapping = [];
 	}
@@ -131,10 +133,29 @@ class Team {
 		if(!this.isSpectatorTeam) {
 			this.kothTimerOn = isOn;
 			this.kothDirty = true;
+
+			if(this.kothTimerOn) {
+				this.kothSyncTimerAcc = 0;
+			}
+		}
+	}
+
+	modKothTimeAcc(dt) {
+		if(!this.isSpectatorTeam) {
+			this.kothTimeAcc += dt;
+
+			if(this.kothTimeAcc >= this.kothTime) {
+				this.kothTimeAcc = this.kothTime;
+			}
+
+			this.kothSyncTimerAcc += dt;
+			if(this.kothSyncTimerAcc >= this.kothSyncTimer) {
+				this.kothSyncTimerAcc = 0;
+				this.kothDirty = true;
+			}
 		}
 	}
 	
-
 
 	update(dt) {
 
@@ -146,6 +167,12 @@ class Team {
 				this.teamDirty = true;
 			}
 		}
+
+		//update the koth time if its turned on
+		if(this.kothTimerOn) {
+			this.modKothTimeAcc(dt);
+		}
+
 
 		if(this.teamDirty) {
 
