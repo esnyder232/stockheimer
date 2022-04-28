@@ -23,6 +23,8 @@ export default class GameClientUserJoiningGame extends GameClientBaseState {
 		this.gc.ep.setEventEnable("yourUser", true);
 		this.gc.ep.setEventEnable("worldStateDone", true);
 		this.gc.ep.setEventEnable("addTeam", true);
+		this.gc.ep.setEventEnable("updateTeamKoth", true);
+		this.gc.ep.setEventEnable("updateTeam", true);
 		this.gc.ep.setEventEnable("removeTeam", true);
 		this.gc.ep.setEventEnable("addRound", true);
 		this.gc.ep.setEventEnable("updateRoundState", true);

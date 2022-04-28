@@ -66,7 +66,7 @@ class User {
 
 		this.bClientReadyToPlay = false; //flag for when the client has finished loading resources/world state, and is ready to play.
 		this.bClientReadyToWait = false; //flag for when the client has finished unloading resources/world state (user-leaving-game-state), and is ready to go into the user-waiting-for-server-state.
-		this.bDisconnected = false; //flag that gets flipped when the user disconnects or times out
+		this.bDisconnected = false; //flag that gets flipped when the user disconnects or times out. This is false initially because the client MAY NOT be connected yet.
 	}
 
 

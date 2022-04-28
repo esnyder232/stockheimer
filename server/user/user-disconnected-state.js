@@ -23,6 +23,10 @@ class UserDisconnectedState extends UserBaseState {
 
 		//rebalance ai on teams on exit
 		this.user.gs.rebalanceTeams = true;
+
+		//the only way out of this state is to actually BE CONNECTED to the server. So set bDisconnected to false now.
+		//This SHOULD be already set to false...but seemed to be a bug that caused the bDisconnected flag to be set to true.
+		this.user.bDisconnected = false; 
 	}
 
 	processClientEvents(ua) {

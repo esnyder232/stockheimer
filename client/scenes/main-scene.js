@@ -14,6 +14,8 @@ import RespawnTimerMenu from "../ui-classes/respawn-timer-menu.js"
 import KillFeedMenu from "../ui-classes/kill-feed-menu.js"
 import RoundResultsMenu from "../ui-classes/round-results-menu.js"
 import TeamScoreMenu from "../ui-classes/team-score-menu.js"
+import KothTimerMenu from "../ui-classes/koth-timer-menu.js"
+
 import RoundStartMenu from "../ui-classes/round-start-menu.js"
 
 export default class MainScene extends Phaser.Scene {
@@ -121,6 +123,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu = null;
 		this.roundResultsMenu = null;
 		this.teamScoreMenu = null;
+		this.kothTimerMenu = null;
 		this.roundStartMenu = null;
 		this.controlPointMenu = null;
 
@@ -175,6 +178,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu = new KillFeedMenu();
 		this.roundResultsMenu = new RoundResultsMenu();
 		this.teamScoreMenu = new TeamScoreMenu();
+		this.kothTimerMenu = new KothTimerMenu();
 		this.roundStartMenu = new RoundStartMenu();
 		this.controlPointMenu = new ControlPointMenu();
 		
@@ -189,6 +193,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.init(this.gc);
 		this.roundResultsMenu.init(this.gc);
 		this.teamScoreMenu.init(this.gc);
+		this.kothTimerMenu.init(this.gc);
 		this.roundStartMenu.init(this.gc);
 		this.controlPointMenu.init(this.gc);
 	}
@@ -289,6 +294,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.activate();
 		this.roundResultsMenu.activate();
 		this.teamScoreMenu.activate();
+		this.kothTimerMenu.activate();
 		this.roundStartMenu.activate();
 		this.controlPointMenu.activate();
 
@@ -450,6 +456,7 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.deactivate();
 		this.roundResultsMenu.deactivate();
 		this.teamScoreMenu.deactivate();
+		this.kothTimerMenu.deactivate();
 		this.roundStartMenu.deactivate();
 		this.controlPointMenu.deactivate();
 
@@ -463,6 +470,8 @@ export default class MainScene extends Phaser.Scene {
 		this.killFeedMenu.deinit();
 		this.roundResultsMenu.deinit();
 		this.teamScoreMenu.deinit();
+		this.kothTimerMenu.deinit();
+		
 		this.roundStartMenu.deinit();
 		this.controlPointMenu.deinit();
 
@@ -527,6 +536,7 @@ export default class MainScene extends Phaser.Scene {
 		//update round
 		this.gc.theRound.update(dt);
 
+		//update teams
 		var teams = this.gc.tm.getTeams();
 		for(var i = 0; i < teams.length; i++) {
 			teams[i].update(dt);
@@ -754,6 +764,7 @@ export default class MainScene extends Phaser.Scene {
 		this.respawnTimerMenu.update(dt);
 		this.killFeedMenu.update(dt);
 		this.controlPointMenu.update(dt);
+		this.kothTimerMenu.update(dt);
 
 		this.frameNum++;
 	}

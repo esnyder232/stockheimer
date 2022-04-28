@@ -79,9 +79,23 @@ export default class Team {
 		this.seq = null;
 	}
 
-	update() {
+	update(dt) {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
+
+		//update the kothTimer until a server update (server correction)
+		if(this.kothTimerOn) {
+			this.modKothTimeAcc(Math.floor(dt));
+		}
+	}
+	
+	modKothTimeAcc(amount) {
+		this.kothTimeAcc += Math.floor(amount);
+		if(this.kothTimeAcc >= this.kothTime) {
+			this.kothTimeAcc = this.kothTime;
+		} else if (this.kothTimeAcc <= 0) {
+			this.kothTimeAcc = 0;
+		}
 	}
 
 	updateTeamEvent(e) {
@@ -105,7 +119,7 @@ export default class Team {
 		this.kothTimeAcc = e.kothTimeAcc;
 		this.kothTimerOn = e.kothTimerOn;
 
-		window.dispatchEvent(new CustomEvent("team-points-updated", {detail: {serverId: this.serverId}}));
+		window.dispatchEvent(new CustomEvent("team-koth-updated", {detail: {serverId: this.serverId}}));
 	}
 
 
@@ -304,6 +318,14 @@ export default class Team {
 		});
 
 		this.customPipeline = this.gc.resourceLoadingScene.renderer.pipelines.add(this.projectileShaderKey, new CustomPipeline(this.gc.phaserGame, this.gc, this));
+	}
+
+	getKothMinutes() {
+		return Math.floor((this.kothTime - this.kothTimeAcc) / (60 * 1000));
+	}
+
+	getKothSeconds() {
+		return (Math.floor((this.kothTime - this.kothTimeAcc) / 1000) % 60).toString().padStart(2, "0");
 	}
 
 	destroyProjectileShader() {

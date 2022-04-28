@@ -65,6 +65,14 @@ class RoundPlayingKoth extends RoundBaseState.RoundBaseState {
 	}
 
 	cbControlPointCaptured(eventName, owner, eventData) {
+		//turn the previous owner koth timer off
+		if(this.currentlyOwningTeamRef !== null) {
+			this.currentlyOwningTeamRef.setKothTimerOn(false);
+			this.currentlyOwningTeamId = 0;
+			this.currentlyOwningTeamRef = null;
+		}
+
+		//turn the new owner koth timer on
 		var owningTeam = this.gs.tm.getTeamByID(eventData.ownerTeamId);
 		if(owningTeam !== null && !owningTeam.isSpectatorTeam) {
 			owningTeam.setKothTimerOn(true);

@@ -244,7 +244,7 @@ class Team {
 			"usersAlive": this.usersAlive,
 			"kothTime": this.kothTime,
 			"kothTimeAcc": this.kothTimeAcc,
-			"kothTimeOn": this.kothTimerOn
+			"kothTimerOn": this.kothTimerOn
 		};
 	}
 
@@ -262,7 +262,7 @@ class Team {
 			"id": this.id,
 			"kothTime": this.kothTime,
 			"kothTimeAcc": this.kothTimeAcc,
-			"kothTimeOn": this.kothTimerOn
+			"kothTimerOn": this.kothTimerOn
 		};
 	}
 }

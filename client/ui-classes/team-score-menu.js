@@ -44,8 +44,14 @@ export default class TeamScoreMenu {
 		this.teamScoreItemTemplate = $("#team-score-item-template");
 
 		//reset to initial state
-		this.menu.removeClass("hide");
-		this.isVisible = true;
+		if(this.gc.currentGameType === "koth") {
+			this.isVisible = false;
+			this.menu.addClass("hide");
+		} else {
+			this.isVisible = true;
+			this.menu.removeClass("hide");
+		}
+		
 		this.activated = true;
 
 		//build initial team list
@@ -78,98 +84,69 @@ export default class TeamScoreMenu {
 
 	//for now, just redraw all the scores in the correct order.
 	redrawAllTeamScores() {
-		if(this.gc.currentGameType === "deathmatch") {
-			this.teamScoreTitle.text("Deathmatch");
-
-			//clear out old scores
-			this.teamScoreList.empty();
-
-			var teams = this.gc.tm.getTeams();
-			var teamsSorted = [];
-
-			for(var i = 0; i < teams.length; i++) {
-				if(!teams[i].isSpectatorTeam) {
-					teamsSorted.push({
-						index: i,
-						roundPoints: teams[i].roundPoints
-					});
+		if(this.isVisible) {
+			if(this.gc.currentGameType === "deathmatch") {
+				this.teamScoreTitle.text("Deathmatch");
+	
+				//clear out old scores
+				this.teamScoreList.empty();
+	
+				var teams = this.gc.tm.getTeams();
+				var teamsSorted = [];
+	
+				for(var i = 0; i < teams.length; i++) {
+					if(!teams[i].isSpectatorTeam) {
+						teamsSorted.push({
+							index: i,
+							roundPoints: teams[i].roundPoints
+						});
+					}
 				}
-			}
-
-			teamsSorted.sort((a, b) => {return b.roundPoints - a.roundPoints;});
-
-			for(var i = 0; i < teamsSorted.length; i++) {
-				var t = teams[teamsSorted[i].index];
-				
-				var newItem = this.teamScoreItemTemplate.clone();
-				newItem.removeClass("hide");
-				newItem.removeAttr("id");
-				newItem.text(t.name + " - " + t.roundPoints);
-				newItem.css("color", t.killFeedTextColor);
-
-				this.teamScoreList.append(newItem);
-			}
-		} else if(this.gc.currentGameType === "elimination") {
-			this.teamScoreTitle.text("Elimination");
-
-			//clear out old scores
-			this.teamScoreList.empty();
-
-			var teams = this.gc.tm.getTeams();
-			var teamsSorted = [];
-
-			for(var i = 0; i < teams.length; i++) {
-				if(!teams[i].isSpectatorTeam) {
-					teamsSorted.push({
-						index: i,
-						slotNum: teams[i].slotNum
-					});
+	
+				teamsSorted.sort((a, b) => {return b.roundPoints - a.roundPoints;});
+	
+				for(var i = 0; i < teamsSorted.length; i++) {
+					var t = teams[teamsSorted[i].index];
+					
+					var newItem = this.teamScoreItemTemplate.clone();
+					newItem.removeClass("hide");
+					newItem.removeAttr("id");
+					newItem.text(t.name + " - " + t.roundPoints);
+					newItem.css("color", t.killFeedTextColor);
+	
+					this.teamScoreList.append(newItem);
 				}
-			}
-
-			teamsSorted.sort((a, b) => {return b.slotNum - a.slotNum;});
-
-			for(var i = 0; i < teamsSorted.length; i++) {
-				var t = teams[teamsSorted[i].index];
-				
-				var newItem = this.teamScoreItemTemplate.clone();
-				newItem.removeClass("hide");
-				newItem.removeAttr("id");
-				newItem.text(t.name + " - " + t.usersAlive);
-				newItem.css("color", t.killFeedTextColor);
-
-				this.teamScoreList.append(newItem);
-			}
-		} else if(this.gc.currentGameType === "koth") {
-			this.teamScoreTitle.text("King of the Hill");
-
-			//clear out old scores
-			this.teamScoreList.empty();
-
-			var teams = this.gc.tm.getTeams();
-			var teamsSorted = [];
-
-			for(var i = 0; i < teams.length; i++) {
-				if(!teams[i].isSpectatorTeam) {
-					teamsSorted.push({
-						index: i,
-						slotNum: teams[i].slotNum
-					});
+			} else if(this.gc.currentGameType === "elimination") {
+				this.teamScoreTitle.text("Elimination");
+	
+				//clear out old scores
+				this.teamScoreList.empty();
+	
+				var teams = this.gc.tm.getTeams();
+				var teamsSorted = [];
+	
+				for(var i = 0; i < teams.length; i++) {
+					if(!teams[i].isSpectatorTeam) {
+						teamsSorted.push({
+							index: i,
+							slotNum: teams[i].slotNum
+						});
+					}
 				}
-			}
-
-			teamsSorted.sort((a, b) => {return b.slotNum - a.slotNum;});
-
-			for(var i = 0; i < teamsSorted.length; i++) {
-				var t = teams[teamsSorted[i].index];
-				
-				var newItem = this.teamScoreItemTemplate.clone();
-				newItem.removeClass("hide");
-				newItem.removeAttr("id");
-				newItem.text(t.name + " - " + t.kothTimeAcc);
-				newItem.css("color", t.killFeedTextColor);
-
-				this.teamScoreList.append(newItem);
+	
+				teamsSorted.sort((a, b) => {return b.slotNum - a.slotNum;});
+	
+				for(var i = 0; i < teamsSorted.length; i++) {
+					var t = teams[teamsSorted[i].index];
+					
+					var newItem = this.teamScoreItemTemplate.clone();
+					newItem.removeClass("hide");
+					newItem.removeAttr("id");
+					newItem.text(t.name + " - " + t.usersAlive);
+					newItem.css("color", t.killFeedTextColor);
+	
+					this.teamScoreList.append(newItem);
+				}
 			}
 		}
 	}

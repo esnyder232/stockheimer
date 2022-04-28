@@ -14,6 +14,7 @@ export default class RoundMenu {
 		this.menu = null;
 
 		this.internalSampleTimer = 250; //sample timer so i don't run jquery 60 times a second
+		this.bUpdateRoundTimer = true;
 	}
 
 	init(gc) {
@@ -47,6 +48,7 @@ export default class RoundMenu {
 	}
 	
 	roundStateUpdated() {
+		this.updateTimerState();
 		this.updateRoundTimer();
 		this.updateRoundStateDiv();
 	}
@@ -75,17 +77,51 @@ export default class RoundMenu {
 		}
 	}
 
+	updateTimerState() {
+		switch(this.gc.theRound.stateName) {
+			case "MAPSTART":
+				this.roundTimer.removeClass("hide");
+				this.bUpdateRoundTimer = true;
+				break;
+			case "STARTING":
+				this.roundTimer.removeClass("hide");
+				this.bUpdateRoundTimer = true;
+				break;
+			case "PLAYING":
+				//in koth, we hide the time when playing
+				if(this.gc.currentGameType === "koth") {
+					this.roundTimer.addClass("hide");
+					this.bUpdateRoundTimer = false;
+				} else {
+					this.roundTimer.removeClass("hide");
+					this.bUpdateRoundTimer = true;
+				}
+				break;
+			case "OVER":
+				this.roundTimer.removeClass("hide");
+				this.bUpdateRoundTimer = true;
+				break;
+			case "MAPEND":
+				this.roundTimer.removeClass("hide");
+				this.bUpdateRoundTimer = true;
+				break;
+		}
+	}
+
+
 	updateRoundTimer() {
 		this.roundTimer.text(this.gc.theRound.getMinutes() + ":" + this.gc.theRound.getSeconds())
 	}
 	
 
 	update(dt) {
-		this.internalSampleTimer -= dt;
-		if(this.internalSampleTimer <= 0)
-		{
-			this.updateRoundTimer();
-			this.internalSampleTimer = 250;
+		if(this.bUpdateRoundTimer) {
+			this.internalSampleTimer -= dt;
+			if(this.internalSampleTimer <= 0)
+			{
+				this.updateRoundTimer();
+				this.internalSampleTimer = 250;
+			}
 		}
 	}
 

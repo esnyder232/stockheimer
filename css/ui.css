@@ -1022,7 +1022,8 @@ input.menu-button {
 	text-align: center;
 	color: #cccccc;
 	font-size: 32px;
-	margin-bottom: 24px;}
+	margin-bottom: 24px;
+}
 
 .control-point-item {
 	width: 57px;
@@ -1040,9 +1041,7 @@ input.menu-button {
 	margin-top: 8px;
 	margin-right: 4px;
 	font-weight: bolder;
-
 }
-
 
 .control-point-progress-filler {
 	width: 23%;
@@ -1075,6 +1074,58 @@ input.menu-button {
 	border-style: solid;
 	width: 0px;
 }
+
+
+
+
+
+
+
+
+.koth-timer-wrapper {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+	z-index: 40;
+	font-size: 32px;
+}
+.koth-timer-container {
+	position: relative;
+	text-align: center;
+	color: #cccccc;
+	margin-top: 16px
+}
+
+.koth-timer-item {
+	display: inline-block;
+	width: 85px;
+	height: 40px;
+	
+	border-color:#cccccc;
+	border-radius: 20px 20px 20px 20px;
+	border-width: 16px 16px 16px 16px;
+	border-style: solid;
+	margin: 0px 50px;
+	padding: 8px 16px;
+}
+
+.koth-timer-inactive {
+	color:#888888;
+	background-color: rgba(48, 48, 48, 1.0);
+	/* background-color: rgba(0, 0, 0, 1.0); */
+	opacity: 0.75;
+}
+
+.koth-timer-active {
+	color:#cccccc;
+	background-color: rgba(0, 0, 0, 1.0);
+}
+
+
+
+
+
+
 
 
 
