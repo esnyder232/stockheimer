@@ -23,7 +23,7 @@ class CollisionSystem {
 
 			{type1: "castle", 					type2:"projectile",				beginFunc: this.beginCastleProjectileCollision.bind(this), 							endFunc: this.endCastleProjectileCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
 			{type1: "castle", 					type2:"user", 					beginFunc: this.beginCastleUserCollision.bind(this), 								endFunc: this.endCastleUserCollision.bind(this), 						presolveFunc: this.noPreSolveFunc.bind(this)},
-			{type1: "character", 				type2:"character", 				beginFunc: this.beginCharacterCharacterCollision.bind(this), 						endFunc: this.endCharacterCharacterCollision.bind(this), 				presolveFunc: this.noPreSolveFunc.bind(this)},
+			{type1: "character", 				type2:"character", 				beginFunc: this.beginCharacterCharacterCollision.bind(this), 						endFunc: this.endCharacterCharacterCollision.bind(this), 				presolveFunc: this.presolveCharacterCharacterCollision.bind(this)},
 			{type1: "character", 				type2:"persistent-projectile", 	beginFunc: this.beginCharacterPersistentProjectileCollision.bind(this), 			endFunc: this.endCharacterPersistentProjectileCollision.bind(this), 	presolveFunc: this.presolveCharacterPersistentProjectileCollision.bind(this)},
 			{type1: "character", 				type2:"projectile", 			beginFunc: this.beginCharacterProjectileCollision.bind(this), 						endFunc: this.endCharacterProjectileCollision.bind(this), 				presolveFunc: this.noPreSolveFunc.bind(this)},
 			// {type1: "character", 			type2:"wall", 					beginFunc: this.beginCharacterWallCollision.bind(this), 							endFunc: this.endCharacterWallCollision.bind(this), 					presolveFunc: this.noPreSolveFunc.bind(this)},
@@ -306,6 +306,24 @@ class CollisionSystem {
 	endCharacterCharacterCollision(characterUserData1, characterUserData2, contactObj, isCharacterA)
 	{
 		//logger.log("info", 'end character character Collision: A: ' + characterUserData1.type + " " + characterUserData1.id + "==== B: " + characterUserData2.type + " " + characterUserData2.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);
+	}
+
+	presolveCharacterCharacterCollision(characterUserData1, characterUserData2, contactObj, isCharacterA) {
+		var c1 = this.gs.gom.getGameObjectByID(characterUserData1.id);
+		var c2 = this.gs.gom.getGameObjectByID(characterUserData2.id);
+
+		if(c1 !== null && c2 !== null) {
+			var processCollision = true;
+				
+			//team collision check
+			if(c1.teamId === c2.teamId) {
+				processCollision = false;
+			}
+	
+			if(!processCollision) {
+				contactObj.setEnabled(false);
+			}
+		}
 	}
 
 	beginCharacterPersistentProjectileCollision(characterUserData, persistentProjectileUserData, contactObj, isCharacterA)
