@@ -280,8 +280,8 @@
                  "type":"",
                  "visible":true,
                  "width":96,
-                 "x":407,
-                 "y":96
+                 "x":416,
+                 "y":896
                 }, 
                 {
                  "height":96,
@@ -297,8 +297,8 @@
                  "type":"",
                  "visible":true,
                  "width":96,
-                 "x":1121,
-                 "y":109
+                 "x":1024,
+                 "y":544
                 }],
          "opacity":1,
          "properties":[
