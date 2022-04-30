@@ -12,7 +12,7 @@
 		"roundOverWinTimeLength": 12000,
 		"roundMapEndTimeLength": 5000,
 		"userRespawningTimeLength": 4000,
-		"matchWinCondition": 2,
+		"matchWinCondition": 1,
 		"kothTimeLength": 120000
 	},
 	
