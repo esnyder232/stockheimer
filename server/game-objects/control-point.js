@@ -31,13 +31,14 @@ class ControlPoint {
 		this.syncTimer = 5000; 				//timer to send updates to clients every now and then
 	}
 
-	controlPointInit(gameServer, xStarting, yStarting, width, height, angle) {
+	controlPointInit(gameServer, xStarting, yStarting, width, height, angle, capturingTimeRequired) {
 		this.gs = gameServer;
 		this.xStarting = xStarting;
 		this.yStarting = yStarting;
 		this.angle = angle;
 		this.width = width;
 		this.height = height;
+		this.capturingTimeRequired = capturingTimeRequired ? capturingTimeRequired : this.capturingTimeRequired;
 	}
 
 	

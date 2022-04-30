@@ -145,6 +145,11 @@
                  "name":"hill",
                  "properties":[
                         {
+                         "name":"capturingTimeRequired",
+                         "type":"int",
+                         "value":3000
+                        }, 
+                        {
                          "name":"controlPoint",
                          "type":"bool",
                          "value":true

@@ -213,7 +213,20 @@ class Tilemap {
 				var widthPlanck = (this.controlPointsLayer.objects[i].width / this.tilewidth) * this.tiledUnitsToPlanckUnits;
 				var heightPlanck = (this.controlPointsLayer.objects[i].height / this.tileheight) * this.tiledUnitsToPlanckUnits;
 				var angle = this.controlPointsLayer.objects[i].rotation;
-				cp.controlPointInit(this.gs, xPlanck, yPlanck, widthPlanck, heightPlanck, angle);
+
+				//get other properties of the control point
+				var capturingTimeRequired = null;
+				for(var j = 0; j < this.controlPointsLayer.objects[i].properties.length; j++) {
+					var name = this.controlPointsLayer.objects[i].properties[j].name.toLowerCase();
+					switch(name) {
+						case "capturingtimerequired":
+							var capturingTimeRequired = this.controlPointsLayer.objects[i].properties[j].value;
+							break;
+					}
+					
+				}
+				
+				cp.controlPointInit(this.gs, xPlanck, yPlanck, widthPlanck, heightPlanck, angle, capturingTimeRequired);
 				this.controlPoints.push(cp);
 			}
 		}
