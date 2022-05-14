@@ -290,6 +290,17 @@ class GameServerLoadingMap extends GameServerBaseState {
 			}
 		}
 
+
+		//load character class state resources
+		if(!bError) {
+			var aiClassKey = this.globalfuncs.getValueDefault(resource?.data?.aiClass, null);
+
+			if(aiClassKey !== null) {
+				this.gs.rm.loadResource(aiClassKey, "ai-class", this.cbAIClassComplete.bind(this));
+			}
+		}
+
+
 		if(bError) {
 			logger.log("error", errorMessage);
 		}
@@ -410,31 +421,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 					//nothing
 					break;
 			}
-
-
-
-			// //load persistent projectiles resources if there are any
-			// if(!bError) {
-			// 	var persistentProjectilesObj = this.globalfuncs.getValueDefault(resource?.data?.persistentProjectiles, null);
-
-			// 	if(resource?.data?.name === "Slime Defender") {
-			// 		var stophere = true;
-			// 	}
-
-			// 	if(persistentProjectilesObj !== null) {
-			// 		for (const key in persistentProjectilesObj) {
-			// 			if (persistentProjectilesObj.hasOwnProperty(key)) {
-			// 				if(persistentProjectilesObj[key]) {
-			// 					this.gs.rm.loadResource(persistentProjectilesObj[key], "persistent-projectile", this.cbPersistentProjectileComplete.bind(this));
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
-
-
-
-
 		}
 
 		if(bError) {
@@ -467,7 +453,20 @@ class GameServerLoadingMap extends GameServerBaseState {
 		}
 	}
 
+	cbAIClassComplete(resource) {
+		var bError = false;
+		var errorMessage = "";
 
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading AI Class '" + resource.key + "': No data found.";
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
+			this.mapLoadError = true;
+		}
+	}
 }
 
 

@@ -12,6 +12,7 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
+	"aiClass": null,
 	"size": 2,
 	"idleMsPerFrame": 400,
 	"moveMsPerFrame": 200,

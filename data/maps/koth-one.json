@@ -5,25 +5,20 @@
 	"mapMinMatch": 1,
 	"gameData": {
 		"type": "koth",
-		"roundMapStartTimeLength": 8000,
-		"roundStartingTimeLength": 700,
+		"roundMapStartTimeLength": 100,
+		"roundStartingTimeLength": 100,
 		"roundPlayingTimeLength": 0,
 		"roundOverTimeLength": 4000,
 		"roundOverWinTimeLength": 4000,
 		"roundMapEndTimeLength": 4000,
 		"userRespawningTimeLength": 400,
-		"matchWinCondition": 2,
-		"kothTimeLength": 100000
+		"matchWinCondition": 1,
+		"kothTimeLength": 1000
 	},
 	
-	"minimumUsersPlaying": 0,
+	"minimumUsersPlaying": 2,
 	"classData": [
-		"data/character-classes/slime-small.json",
-		"data/character-classes/slime-med.json",
-		"data/character-classes/slime-large.json",
-		"data/character-classes/slime-fighter.json",
-		"data/character-classes/slime-healer.json",
-		"data/character-classes/slime-defender.json"
+		"data/character-classes/slime-small.json"
 	],
 	"teamData": [
 		{
