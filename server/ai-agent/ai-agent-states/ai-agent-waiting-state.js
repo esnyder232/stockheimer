@@ -54,7 +54,7 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 
 				//STOPPED HERE
 				//was going to prepopulate an array with {"action":"score"}. Not sure if i shoudl do it here? in aiAgent in a function? on the enter on ai-agent-playing-state?
-
+				//test push
 
 				logger.log("info", "ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ". Using " + debugClassString + ".");
 			}
