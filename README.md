@@ -1,5 +1,5 @@
 # stockheimer
-test push from prod
+
 To run server on your computer:
  - git clone https://github.com/esnyder232/stockheimer
  - cd into the directory
