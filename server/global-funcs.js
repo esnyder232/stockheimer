@@ -494,6 +494,11 @@ class GlobalFuncs {
 	convertHealingToPoints(roundHealCount, gs) {
 		return Math.floor(roundHealCount / gs.healsToPointsRatio);
 	}
+	
+	clamp(num, min, max) {
+		return Math.min(Math.max(num, min), max);
+	};
+
 }
 
 

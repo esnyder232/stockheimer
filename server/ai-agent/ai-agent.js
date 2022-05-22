@@ -10,7 +10,6 @@ class AIAgent {
 		this.id = null;
 		this.userId = null;
 		this.characterId = null;
-		this.teamId = 0;
 		this.user = null; 			//direct reference to the user
 		this.character = null; 		//direct reference to the character the ai agent is controlling
 		this.username = "";
@@ -30,13 +29,9 @@ class AIAgent {
 			{eventName: "user-stopped-playing", cb: this.cbEventEmitted.bind(this), handleId: null}
 		]
 
-		this.actionArray = [{
-			action: "RUN_TO_ENEMY",
-			score: 0.0
-		}];
 
 		this.aiClassResource = null;
-		this.aiActionScores = [];
+		this.mainActionScores = [];
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -64,7 +59,7 @@ class AIAgent {
 		this.character = null;
 		this.nextState = null;
 		this.aiClassResource = null;
-		this.aiActionScores = [];
+		this.mainActionScores.length = 0;
 	}
 
 	cbEventEmitted(eventName, owner) {

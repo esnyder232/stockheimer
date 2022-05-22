@@ -46,17 +46,14 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			var randomClass = this.aiAgent.globalfuncs.getRandomClass(this.aiAgent.gs);
 			if(randomClass !== null) {
 				this.aiAgent.user.updateCharacterClassId(randomClass.id);
-
-				//assign the ai class as well
 				this.aiAgent.aiClassResource = this.aiAgent.gs.rm.getResourceByKey(randomClass.data?.aiClass);
-				var debugClassString = this.aiAgent.aiClassResource !== null ? this.aiAgent.aiClassResource.key : "NO AI CLASS";
 
-
-				//STOPPED HERE
-				//was going to prepopulate an array with {"action":"score"}. Not sure if i shoudl do it here? in aiAgent in a function? on the enter on ai-agent-playing-state?
-				//test push
-
-				logger.log("info", "ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ". Using " + debugClassString + ".");
+				//prepopulate the scores for the utility ai
+				if(this.aiAgent.aiClassResource !== null) {
+					logger.log("info", "ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ". Using " + this.aiAgent.aiClassResource.key + " ai class.");
+				} else {
+					logger.log("info", "WARNING: ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ", but there is no ai class found for " + randomClass.data?.aiClass + ".");
+				}
 			}
 
 			bContinue = false;

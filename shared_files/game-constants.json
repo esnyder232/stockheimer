@@ -24,5 +24,29 @@
 		"RESPAWNING": 2,
 		"PLAYING": 3,
 		"CLASS_PICKING": 4
+	},
+
+	"ActionTypes": {
+		"NO_TYPE": 				0,
+		"MOVE_TO_ENEMY": 		1,
+		"MOVE_AWAY_ENEMY": 		2,
+		"STOP": 				3
+	}, 
+
+	"ConsiderationTypes": {
+		"NO_TYPE": 							0,
+		"MY_DISTANCE_FROM_ENEMY": 			1,
+		"MY_HEALTH_RATIO_TO_ENEMY": 		2
+	},
+	
+	"ResponseCurves": {
+		"NO_CURVE": 		0,
+		"LINEAR": 			1,
+		"PARABOLA": 		2,
+		"INVERSE": 			3,
+		"LOGARITHMIC": 		4,
+		"LOGISTIC": 		5,
+		"6POLY": 			6
 	}
+
 }
