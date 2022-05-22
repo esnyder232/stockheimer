@@ -35,8 +35,9 @@
 
 	"ConsiderationTypes": {
 		"NO_TYPE": 							0,
-		"MY_DISTANCE_FROM_ENEMY": 			1,
-		"MY_HEALTH_RATIO_TO_ENEMY": 		2
+		"BASE":								1,
+		"MY_DISTANCE_FROM_ENEMY": 			2,
+		"MY_HEALTH_RATIO_TO_ENEMY": 		3
 	},
 	
 	"ResponseCurves": {

@@ -7,7 +7,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		super(aiAgent);
 		this.stateName = "ai-agent-playing-state";
 		this.checkTimer = 0;
-		this.checkTimerInterval = 1000;	//ms
+		this.checkTimerInterval = 100;	//ms
 		this.spectatorTeamId = null;
 	}
 	
@@ -23,7 +23,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.checkTimer += dt;
 
 		if(this.checkTimer >= this.checkTimerInterval) {
-			console.log("I'm in!");
+			// console.log("I'm in!");
 			this.checkTimer = 0;
 
 			this.populateMainActionScores();
@@ -33,8 +33,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				this.aiAgent.mainActionScores[i].score = this.calculateScore(this.aiAgent.mainActionScores[i]);
 			}
 
-			//STOPPED HERE - the linear and parabola work for the small slime ai. YAY!
-			// I will probably need to test the other curves with other parameters yeah...yeah
+			//sort the scores
+			this.aiAgent.mainActionScores.sort((a, b) => {return b.score - a.score;});
+			
 			var debughere = true;
 			//act
 
@@ -103,7 +104,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 
 	calculateScore(action) {
-		console.log("Calculating for AI " + this.aiAgent.id +" - " + action.resource.type + ".");
+		// console.log("Calculating for AI " + this.aiAgent.id +" - " + action.resource.type + ".");
 		var considerationScoreAccum = 1;
 
 		//score all the considerations against each target
@@ -140,6 +141,14 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	//////////////////////////////////////////
 	// These functions take in an action/consideration pair, and returns an x value for the consideration
 	// The x here has no limits. It becomes normalized later.
+
+
+	//returns x as 0 (used for a base value for some actions. Like idling or stopping.)
+	considerationBase(action, consideration) {
+		return 0;
+	}
+
+	//returns x as distance from enemy squared
 	considerationDistanceFromEnemy(action, consideration) {
 		var xSquared = 0;
 
