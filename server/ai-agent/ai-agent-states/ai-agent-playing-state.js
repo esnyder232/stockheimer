@@ -1,19 +1,30 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const GameConstants = require('../../../shared_files/game-constants.json');
 const logger = require("../../../logger.js");
+const AIActionStop = require("../ai-actions/ai-action-stop.js");
+const AIActionMoveToEnemy = require("../ai-actions/ai-action-move-to-enemy.js");
+const AIActionMoveAwayEnemy = require("../ai-actions/ai-action-move-away-enemy.js");
 
 class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
 		super(aiAgent);
 		this.stateName = "ai-agent-playing-state";
 		this.checkTimer = 0;
-		this.checkTimerInterval = 100;	//ms
+		this.checkTimerInterval = 1000;	//ms
 		this.spectatorTeamId = null;
+
+		//for now, just map the enum values to the constructors.
+		this.ActionTypeClassMapping = {};
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["STOP"]] = AIActionStop.AIActionStop;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ENEMY"]] = AIActionMoveToEnemy.AIActionMoveToEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]] = AIActionMoveAwayEnemy.AIActionMoveAwayEnemy;
 	}
 	
 	enter(dt) {
 		logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
+		this.aiAgent.mainAction = null;
+
 		this.spectatorTeamId = this.aiAgent.gs.tm.getSpectatorTeam().id;
 		super.enter(dt);
 	}
@@ -33,14 +44,24 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				this.aiAgent.mainActionScores[i].score = this.calculateScore(this.aiAgent.mainActionScores[i]);
 			}
 
-			//sort the scores
-			this.aiAgent.mainActionScores.sort((a, b) => {return b.score - a.score;});
-			
-			var debughere = true;
-			//act
+			if(this.aiAgent.mainActionScores.length > 0) {
+				//sort the scores and find the winner
+				this.aiAgent.mainActionScores.sort((a, b) => {return b.score - a.score;});
+							
+				// var debughere = true;
+				// logger.log("info", "AI " + this.aiAgent.id + " winning action: " + this.aiAgent.mainActionScores[0].resource.type);
 
-
-
+				//act
+				if(this.aiAgent.mainAction !== null) {
+					//check to see if the action is equivalent to the one the ai agent is already executing
+					if(!this.aiAgent.globalfuncs.areAiActionsEqual(this.aiAgent.mainAction, this.aiAgent.mainActionScores[0])) {
+						//if they are NOT equal, then replace it with the winning action
+						this.aiAgent.nextMainAction = new this.ActionTypeClassMapping[this.aiAgent.mainActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.mainActionScores[0]);
+					}
+				} else {
+					this.aiAgent.nextMainAction = new this.ActionTypeClassMapping[this.aiAgent.mainActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.mainActionScores[0]);
+				}
+			}
 		}
 
 		super.update(dt);
@@ -50,9 +71,18 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	exit(dt) {
 		logger.log("info", this.stateName + ' exit');
 		this.aiAgent.mainActionScores.length = 0;
-		
+		if(this.aiAgent.mainAction !== null) {
+			this.aiAgent.mainAction.exit(dt);
+			this.aiAgent.mainAction = null;
+		}
+		this.aiAgent.nextMainAction = null;
+
 		super.exit(dt);
 	}
+
+	
+	
+
 
 	populateMainActionScores() {
 		this.aiAgent.mainActionScores.length = 0;

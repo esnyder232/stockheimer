@@ -32,6 +32,8 @@ class AIAgent {
 
 		this.aiClassResource = null;
 		this.mainActionScores = [];
+		this.mainAction = null;
+		this.nextMainAction = null;
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -104,6 +106,21 @@ class AIAgent {
 
 			this.state = this.nextState;
 			this.nextState = null;
+		}
+
+		if(this.mainAction !== null) {
+			this.mainAction.update(dt);
+		}
+
+		if(this.nextMainAction !== null)
+		{
+			if(this.mainAction !== null) {
+				this.mainAction.exit();
+			}
+			this.nextMainAction.enter();
+
+			this.mainAction = this.nextMainAction;
+			this.nextMainAction = null;
 		}
 	}
 }

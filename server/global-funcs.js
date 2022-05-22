@@ -499,6 +499,21 @@ class GlobalFuncs {
 		return Math.min(Math.max(num, min), max);
 	};
 
+	//this just checks to see if 2 actions are considered "equal" in terms of the type and context
+	areAiActionsEqual(actionObject, actionScore) {
+		if(actionObject.actionScore.resource.typeEnum === actionScore.resource.typeEnum) {
+			switch(actionObject.actionScore.resource.typeEnum) {
+				case GameConstants.ActionTypes["MOVE_TO_ENEMY"]:
+				case GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]:
+					return actionObject.actionScore.characterId === actionScore.characterId;
+					break;
+				default:
+					return true;
+			}
+		}
+		return false;
+	}
+
 }
 
 
