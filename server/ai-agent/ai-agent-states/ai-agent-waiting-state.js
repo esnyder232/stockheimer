@@ -71,7 +71,6 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 		if(bContinue) {
 			//setup direct references because i use them so much in other states
 			this.aiAgent.character = this.aiAgent.gs.gom.getGameObjectByID(this.aiAgent.user.characterId);
-			
 
 			this.aiAgent.character.em.batchRegisterForEvent(this.aiAgent.characterEventCallbackMapping);
 

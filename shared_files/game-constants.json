@@ -31,14 +31,20 @@
 		"IDLE": 				1,
 		"MOVE_TO_ENEMY": 		2,
 		"MOVE_AWAY_ENEMY": 		3,
-		"STAY_CLOSE_TO_ENEMY":	4
+		"STAY_CLOSE_TO_ENEMY":	4,
+		"MOVE_AWAY_ALLY":		5,
+
+
+		"SHOOT_ENEMY": 			6,
+		"ALT_SHOOT_ENEMY":		7
 	}, 
 
 	"ConsiderationTypes": {
 		"NO_TYPE": 										0,
 		"BASE":											1,
 		"MY_DISTANCE_SQUARED_FROM_ENEMY": 				2,
-		"MY_HEALTH_RATIO_TO_ENEMY": 					3
+		"MY_DISTANCE_SQUARED_FROM_ALLY": 				3,
+		"MY_HEALTH_RATIO_TO_ENEMY": 					4
 	},
 	
 	"ResponseCurves": {

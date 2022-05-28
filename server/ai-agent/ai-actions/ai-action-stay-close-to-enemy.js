@@ -8,18 +8,11 @@ class AIActionStayCloseToEnemy extends AIActionBase.AIActionBase {
 	}
 	
 	enter(dt) {
-		logger.log("info", "AI " + this.aiAgent.id + ", action " + this.actionName + ' enter');
+		// logger.log("info", "AI " + this.aiAgent.id + ", action " + this.actionName + ' enter');
 
 		//stop the aiAgent's character
-		this.aiAgent.user.inputQueue.push({
-			up: false,
-			down: false,
-			left: false,
-			right: false,
-			isFiring: false,
-			isFiringAlt: false,
-			characterDirection: 0.0
-		});
+		this.aiAgent.frameInputChangeMovement(false, false, false, false);
+
 		super.enter(dt);
 	}
 

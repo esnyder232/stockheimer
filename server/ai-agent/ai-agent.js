@@ -36,6 +36,20 @@ class AIAgent {
 		this.mainActionScores = [];
 		this.mainAction = null;
 		this.nextMainAction = null;
+
+		this.skillActionScores = [];
+		this.skillAction = null;
+		this.nextSkillAction = null;
+
+		this.frameInput = {
+			up: false,
+			down: false,
+			left: false,
+			right: false,
+			isFiring: false,
+			isFiringAlt: false,
+			characterDirection: 0.0
+		};
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -62,6 +76,19 @@ class AIAgent {
 		});
 
 		this.mainAction.enter();
+
+
+		//create a fake idle skill
+		this.skillAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+
+		this.skillAction.enter();
+
 	}
 
 	//called before the ai agent is deleted from the ai-agent-manager
@@ -76,17 +103,32 @@ class AIAgent {
 		this.mainAction = null;
 		this.nextMainAction = null;
 
+		this.skillAction.exit();
+		this.skillAction = null;
+		this.nextSkillAction = null;
+
 		this.user = null;
 		this.character = null;
 		this.aiClassResource = null;
 		this.mainActionScores.length = 0;
-
+		this.skillActionScores.length = 0;
 	}
 
 
 	setNextMainActionIdle() {
 		//create a fake "idle" initial state
 		this.nextMainAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+	}
+
+	setNextSkillActionIdle() {
+		//create a fake "idle" initial state
+		this.nextSkillAction = new AIActionIdle.AIActionIdle(this, {
 			"resource": {
 				"type": "IDLE",
 				"typeEnum": GameConstants.ActionTypes["IDLE"]
@@ -132,9 +174,27 @@ class AIAgent {
 		}
 	}
 
+	frameInputChangeMovement(up, down, left, right) {
+		this.frameInput.up = up;
+		this.frameInput.down = down;
+		this.frameInput.left = left;
+		this.frameInput.right = right;
+	}
+
+	frameInputChangeShooting(isFiring, isFiringAlt) {
+		this.frameInput.isFiring = isFiring;
+		this.frameInput.isFiringAlt = isFiringAlt;
+	}
+
+	frameInputChangeDirection(characterDirection) {
+		this.frameInput.characterDirection = characterDirection;
+	}
+
+
 	update(dt) {
 		this.state.update(dt);
 		this.mainAction.update(dt);
+		this.skillAction.update(dt);
 
 		if(this.nextState !== null) {
 			this.state.exit();
@@ -151,6 +211,17 @@ class AIAgent {
 			this.mainAction = this.nextMainAction;
 			this.nextMainAction = null;
 		}
+
+		if(this.nextSkillAction !== null) {
+			this.skillAction.exit();
+			this.nextSkillAction.enter();
+
+			this.skillAction = this.nextSkillAction;
+			this.nextSkillAction = null;
+		}
+
+		//input the frameInput into the user to go to the character
+		this.user.inputQueue.push(this.frameInput);
 	}
 }
 

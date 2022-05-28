@@ -75,6 +75,12 @@ class AIActionMoveToEnemy extends AIActionBase.AIActionBase {
 			var xAngle = Math.cos(angle);
 			var yAngle = Math.sin(angle);
 
+			this.finalInput.left = false;
+			this.finalInput.right = false;
+			this.finalInput.down = false;
+			this.finalInput.up = false;
+
+
 			if(xAngle >= 0.5)
 			{
 				this.finalInput.right = true;
@@ -94,7 +100,7 @@ class AIActionMoveToEnemy extends AIActionBase.AIActionBase {
 			}
 
 			//input the finalInput to the character
-			this.aiAgent.user.inputQueue.push(this.finalInput);
+			this.aiAgent.frameInputChangeMovement(this.finalInput.up, this.finalInput.down, this.finalInput.left, this.finalInput.right);
 			
 		}
 		
@@ -109,16 +115,8 @@ class AIActionMoveToEnemy extends AIActionBase.AIActionBase {
 		}
 
 		//stop the aiAgent's character
-		this.aiAgent.user.inputQueue.push({
-			up: false,
-			down: false,
-			left: false,
-			right: false,
-			isFiring: false,
-			isFiringAlt: false,
-			characterDirection: 0.0
-		});
-
+		this.aiAgent.frameInputChangeMovement(false, false, false, false);
+		
 		super.exit(dt);
 	}
 

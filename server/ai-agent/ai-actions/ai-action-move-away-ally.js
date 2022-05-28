@@ -1,10 +1,10 @@
 const AIActionBase = require('./ai-action-base.js');
 const logger = require("../../../logger.js");
 
-class AIActionMoveAwayEnemy extends AIActionBase.AIActionBase {
+class AIActionMoveAwayAlly extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
-		this.actionName = "MOVE_AWAY_ENEMY";
+		this.actionName = "MOVE_AWAY_ALLY";
 		this.checkTimer = 0;
 		this.checkTimerInterval = 500;	//ms
 
@@ -75,6 +75,12 @@ class AIActionMoveAwayEnemy extends AIActionBase.AIActionBase {
 			var xAngle = Math.cos(angle);
 			var yAngle = Math.sin(angle);
 
+			
+			this.finalInput.left = false;
+			this.finalInput.right = false;
+			this.finalInput.down = false;
+			this.finalInput.up = false;
+
 			if(xAngle >= 0.5)
 			{
 				this.finalInput.right = true;
@@ -120,4 +126,4 @@ class AIActionMoveAwayEnemy extends AIActionBase.AIActionBase {
 	}
 }
 
-exports.AIActionMoveAwayEnemy = AIActionMoveAwayEnemy
+exports.AIActionMoveAwayAlly = AIActionMoveAwayAlly

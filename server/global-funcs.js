@@ -505,6 +505,12 @@ class GlobalFuncs {
 			switch(actionObject.actionScore.resource.typeEnum) {
 				case GameConstants.ActionTypes["MOVE_TO_ENEMY"]:
 				case GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]:
+				case GameConstants.ActionTypes["SHOOT_ENEMY"]:
+				case GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]:
+				case GameConstants.ActionTypes["MOVE_AWAY_ALLY"]:
+					if(actionObject.actionScore.characterId !== actionScore.characterId) {
+						var breakhere = true;
+					}
 					return actionObject.actionScore.characterId === actionScore.characterId;
 					break;
 				default:

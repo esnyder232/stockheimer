@@ -5,6 +5,9 @@ const AIActionIdle = require("../ai-actions/ai-action-idle.js");
 const AIActionMoveToEnemy = require("../ai-actions/ai-action-move-to-enemy.js");
 const AIActionMoveAwayEnemy = require("../ai-actions/ai-action-move-away-enemy.js");
 const AIActionStayCloseToEnemy = require("../ai-actions/ai-action-stay-close-to-enemy.js");
+const AIActionShootEnemy = require("../ai-actions/ai-action-shoot-enemy.js");
+const AIActionAltShootEnemy = require("../ai-actions/ai-action-alt-shoot-enemy.js");
+const AIActionMoveAwayAlly = require("../ai-actions/ai-action-move-away-ally.js");
 
 
 class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
@@ -12,7 +15,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		super(aiAgent);
 		this.stateName = "ai-agent-playing-state";
 		this.checkTimer = 0;
-		this.checkTimerInterval = 1000;	//ms
+		this.checkTimerInterval = 100;	//ms
 		this.spectatorTeamId = null;
 
 		//for now, just map the enum values to the constructors
@@ -21,6 +24,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ENEMY"]] = AIActionMoveToEnemy.AIActionMoveToEnemy;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]] = AIActionMoveAwayEnemy.AIActionMoveAwayEnemy;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["STAY_CLOSE_TO_ENEMY"]] = AIActionStayCloseToEnemy.AIActionStayCloseToEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["SHOOT_ENEMY"]] = AIActionShootEnemy.AIActionShootEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]] = AIActionAltShootEnemy.AIActionAltShootEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ALLY"]] = AIActionMoveAwayAlly.AIActionMoveAwayAlly;
 	}
 	
 	enter(dt) {
@@ -38,13 +44,18 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		if(this.checkTimer >= this.checkTimerInterval) {
 			this.checkTimer = 0;
 
-			this.populateMainActionScores();
+			this.populateActionScores();
 			
 			//think
 			for(var i = 0; i < this.aiAgent.mainActionScores.length; i++) {
 				this.aiAgent.mainActionScores[i].score = this.calculateScore(this.aiAgent.mainActionScores[i]);
 			}
 
+			for(var i = 0; i < this.aiAgent.skillActionScores.length; i++) {
+				this.aiAgent.skillActionScores[i].score = this.calculateScore(this.aiAgent.skillActionScores[i]);
+			}
+
+			//score/act
 			if(this.aiAgent.mainActionScores.length > 0) {
 				//sort the scores and find the winner
 				this.aiAgent.mainActionScores.sort((a, b) => {return b.score - a.score;});
@@ -63,6 +74,27 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 					this.aiAgent.nextMainAction = new this.ActionTypeClassMapping[this.aiAgent.mainActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.mainActionScores[0]);
 				}
 			}
+
+			if(this.aiAgent.skillActionScores.length > 0) {
+				//sort the scores and find the winner
+				this.aiAgent.skillActionScores.sort((a, b) => {return b.score - a.score;});
+							
+				// var debughere = true;
+				// logger.log("info", "AI " + this.aiAgent.id + " winning action: " + this.aiAgent.skillActionScores[0].resource.type);
+
+				//act
+				if(this.aiAgent.skillAction !== null) {
+					//check to see if the action is equivalent to the one the ai agent is already executing
+					if(!this.aiAgent.globalfuncs.areAiActionsEqual(this.aiAgent.skillAction, this.aiAgent.skillActionScores[0])) {
+						//if they are NOT equal, then replace it with the winning action
+						this.aiAgent.nextSkillAction = new this.ActionTypeClassMapping[this.aiAgent.skillActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.skillActionScores[0]);
+					}
+				} else {
+					this.aiAgent.nextSkillAction = new this.ActionTypeClassMapping[this.aiAgent.skillActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.skillActionScores[0]);
+				}
+			}
+
+
 		}
 
 		super.update(dt);
@@ -72,7 +104,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	exit(dt) {
 		// logger.log("info", this.stateName + ' exit');
 		this.aiAgent.mainActionScores.length = 0;
+		this.aiAgent.skillActionScores.length = 0;
 		this.aiAgent.setNextMainActionIdle();
+		this.aiAgent.setNextSkillActionIdle();
 
 		super.exit(dt);
 	}
@@ -81,53 +115,82 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	
 
 
-	populateMainActionScores() {
+	populateActionScores() {
 		this.aiAgent.mainActionScores.length = 0;
+		this.aiAgent.skillActionScores.length = 0;
 
 		if(this.aiAgent.aiClassResource.data !== null)  {
 			for(var i = 0; i < this.aiAgent.aiClassResource.data.mainActions.length; i++) {
-
-				//split the actions based on the type
-				switch(this.aiAgent.aiClassResource.data.mainActions[i].typeEnum) {
-					case GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]:
-					case GameConstants.ActionTypes["MOVE_TO_ENEMY"]:
-					case GameConstants.ActionTypes["STAY_CLOSE_TO_ENEMY"]:
-						//calculate the "enemies" for this ai
-						//for now, just get characters from the playing users. It would overall better to have a list of active characters ready to go, but that requires some effort to do (game object manager should keep track of it i think)
-						var playingUsers = this.aiAgent.gs.um.getPlayingUsers();
-
-						//add the characterid to the list of targets if its NOT on your current team
-						for(var j = 0; j < playingUsers.length; j++) {
-
-							//check to make the user actually has an active character
-							if(playingUsers[j].characterId !== null && 
-								playingUsers[j].teamId !== this.spectatorTeamId &&
-								playingUsers[j].teamId !== this.aiAgent.user.teamId &&
-								this.aiAgent.gs.gom.getGameObjectByID(playingUsers[j].characterId)?.isActive) {
-									this.aiAgent.mainActionScores.push({
-										"resource": this.aiAgent.aiClassResource.data.mainActions[i],
-										"characterId": playingUsers[j].characterId,
-										"score": 0
-									});
-							}
-						}
-
-						break;
-					case GameConstants.ActionTypes["NO_TYPE"]:
-						//intentionally blank
-						break;
-					default:
-						this.aiAgent.mainActionScores.push({
-							"resource": this.aiAgent.aiClassResource.data.mainActions[i],
-							"score": 0
-						});
-						break;
-				}
+				this.populateWithTargets(this.aiAgent.mainActionScores, this.aiAgent.aiClassResource.data.mainActions[i]);
+			}
+			for(var i = 0; i < this.aiAgent.aiClassResource.data.skillActions.length; i++) {
+				this.populateWithTargets(this.aiAgent.skillActionScores, this.aiAgent.aiClassResource.data.skillActions[i]);
 			}
 		}
 	}
 
+	populateWithTargets(actionScoresArr, actionResource) {
+		//split the actions based on the type
+		switch(actionResource.typeEnum) {
+			case GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]:
+			case GameConstants.ActionTypes["MOVE_TO_ENEMY"]:
+			case GameConstants.ActionTypes["STAY_CLOSE_TO_ENEMY"]:
+			case GameConstants.ActionTypes["SHOOT_ENEMY"]:
+			case GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]:
+				//calculate the "enemies" for this ai
+				//for now, just get characters from the playing users. It would overall better to have a list of active characters ready to go, but that requires some effort to do (game object manager should keep track of it i think)
+				var playingUsers = this.aiAgent.gs.um.getPlayingUsers();
 
+				//add the characterid to the list of targets if its NOT on your current team
+				for(var j = 0; j < playingUsers.length; j++) {
+
+					//check to make the user actually has an active character
+					if(playingUsers[j].characterId !== null && 
+						playingUsers[j].teamId !== this.spectatorTeamId &&
+						playingUsers[j].teamId !== this.aiAgent.user.teamId &&
+						this.aiAgent.gs.gom.getGameObjectByID(playingUsers[j].characterId)?.isActive) {
+							actionScoresArr.push({
+								"resource": actionResource,
+								"characterId": playingUsers[j].characterId,
+								"score": 0
+							});
+					}
+				}
+
+				break;
+
+			case GameConstants.ActionTypes["MOVE_AWAY_ALLY"]:
+				//calculate the "allies" for this ai
+				var playingUsers = this.aiAgent.gs.um.getPlayingUsers();
+
+				//add the characterid to the list of targets if its NOT on your current team
+				for(var j = 0; j < playingUsers.length; j++) {
+
+					//check to make the user actually has an active character
+					if(playingUsers[j].characterId !== null && 
+						playingUsers[j].teamId !== this.spectatorTeamId &&
+						playingUsers[j].teamId === this.aiAgent.user.teamId &&
+						playingUsers[j].characterId !== this.aiAgent.character.id &&
+						this.aiAgent.gs.gom.getGameObjectByID(playingUsers[j].characterId)?.isActive) {
+							actionScoresArr.push({
+								"resource": actionResource,
+								"characterId": playingUsers[j].characterId,
+								"score": 0
+							});
+					}
+				}
+				break;
+			case GameConstants.ActionTypes["NO_TYPE"]:
+				//intentionally blank
+				break;
+			default:
+				actionScoresArr.push({
+					"resource": actionResource,
+					"score": 0
+				});
+				break;
+		}
+	}
 
 
 
@@ -142,6 +205,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 			//calculate the 'x' in the correct context
 			switch(action.resource.considerations[i].typeEnum) {
+				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ALLY"]:
 				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ENEMY"]:
 					x = this.considerationDistanceSquaredFromEnemy(action, action.resource.considerations[i])
 					break;
@@ -219,7 +283,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		y = this.calculateFromResponseCurve(x, consideration.responseCurveEnum, consideration.responseCurveParameters);
 
 		//clamp y
-		y = this.aiAgent.globalfuncs.clamp(y, 0, 1);
+		var yMax = consideration.yMax ? consideration.yMax : 1.0;
+		var yMin = consideration.yMin ? consideration.yMin : 0.0;
+		y = this.aiAgent.globalfuncs.clamp(y, yMin, yMax);
 
 		return y;
 	}
