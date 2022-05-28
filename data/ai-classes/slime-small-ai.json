@@ -6,34 +6,34 @@
 			"name": "Move to enemy when far away",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
-						"A": 100,
+						"A": -0.29,
 						"B": 0,
-						"h": 0.2,
-						"k": 0
+						"h": 0.0,
+						"k": 0.4
 					},
 					"xMax": 500,
-					"xMin": 0
+					"xMin": 100
 				}
 			]
 		},
 		{
-			"type": "IDLE",
-			"name": "Stop moving",
+			"type": "STAY_CLOSE_TO_ENEMY",
+			"name": "Stay close to an enemy",
 			"considerations" : [
 				{
-					"type": "BASE",
-					"responseCurve": "LINEAR",
+					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"responseCurve": "6POLY",
 					"responseCurveParameters": {
-						"A": 1,
-						"B": 1,
-						"h": 0,
-						"k": 0.2
+						"A": -20,
+						"B": 0,
+						"h": 0.5,
+						"k": 0.5
 					},
-					"xMax": 1,
-					"xMin": 0
+					"xMax": 100,
+					"xMin": 25
 				}
 			]
 		},
@@ -42,15 +42,33 @@
 			"name": "Run away from enemy when hp is low",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
-						"A": -100,
+						"A": -1000,
 						"B": 0,
 						"h": 0.05,
-						"k": 0
+						"k": 0.0
 					},
 					"xMax": 500,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "IDLE",
+			"name": "Do nothing.",
+			"considerations" : [
+				{
+					"type": "BASE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1,
+						"B": 1,
+						"h": 0,
+						"k": 0.1
+					},
+					"xMax": 1,
 					"xMin": 0
 				}
 			]

@@ -4,6 +4,8 @@ const logger = require("../../../logger.js");
 const AIActionIdle = require("../ai-actions/ai-action-idle.js");
 const AIActionMoveToEnemy = require("../ai-actions/ai-action-move-to-enemy.js");
 const AIActionMoveAwayEnemy = require("../ai-actions/ai-action-move-away-enemy.js");
+const AIActionStayCloseToEnemy = require("../ai-actions/ai-action-stay-close-to-enemy.js");
+
 
 class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
@@ -18,6 +20,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["IDLE"]] = AIActionIdle.AIActionIdle;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ENEMY"]] = AIActionMoveToEnemy.AIActionMoveToEnemy;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]] = AIActionMoveAwayEnemy.AIActionMoveAwayEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["STAY_CLOSE_TO_ENEMY"]] = AIActionStayCloseToEnemy.AIActionStayCloseToEnemy;
 	}
 	
 	enter(dt) {
@@ -88,6 +91,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				switch(this.aiAgent.aiClassResource.data.mainActions[i].typeEnum) {
 					case GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]:
 					case GameConstants.ActionTypes["MOVE_TO_ENEMY"]:
+					case GameConstants.ActionTypes["STAY_CLOSE_TO_ENEMY"]:
 						//calculate the "enemies" for this ai
 						//for now, just get characters from the playing users. It would overall better to have a list of active characters ready to go, but that requires some effort to do (game object manager should keep track of it i think)
 						var playingUsers = this.aiAgent.gs.um.getPlayingUsers();
@@ -138,8 +142,8 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 			//calculate the 'x' in the correct context
 			switch(action.resource.considerations[i].typeEnum) {
-				case GameConstants.ConsiderationTypes["MY_DISTANCE_FROM_ENEMY"]:
-					x = this.considerationDistanceFromEnemy(action, action.resource.considerations[i])
+				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ENEMY"]:
+					x = this.considerationDistanceSquaredFromEnemy(action, action.resource.considerations[i])
 					break;
 				case GameConstants.ConsiderationTypes["MY_HEALTH_RATIO_TO_ENEMY"]:
 					x = this.considerationMyHealthRatioToEnemy(action, action.resource.considerations[i]);
@@ -173,7 +177,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	//returns x as distance from enemy squared
-	considerationDistanceFromEnemy(action, consideration) {
+	considerationDistanceSquaredFromEnemy(action, consideration) {
 		var xSquared = 0;
 
 		//get the context for 'x'
@@ -186,7 +190,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		//at this point, it is okay to calculate X and run through the response curve
 		if(myPos !== null && enemyPos !== null) {
-			//calculate x (for now just use distance squared)
 			xSquared = Math.pow(enemyPos.x - myPos.x, 2) + Math.pow(enemyPos.y - myPos.y, 2);
 		}
 
