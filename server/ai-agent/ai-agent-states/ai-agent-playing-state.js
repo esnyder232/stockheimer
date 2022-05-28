@@ -1,7 +1,7 @@
 const AIAgentBaseState = require('./ai-agent-base-state.js');
 const GameConstants = require('../../../shared_files/game-constants.json');
 const logger = require("../../../logger.js");
-const AIActionStop = require("../ai-actions/ai-action-stop.js");
+const AIActionIdle = require("../ai-actions/ai-action-idle.js");
 const AIActionMoveToEnemy = require("../ai-actions/ai-action-move-to-enemy.js");
 const AIActionMoveAwayEnemy = require("../ai-actions/ai-action-move-away-enemy.js");
 
@@ -13,17 +13,16 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.checkTimerInterval = 1000;	//ms
 		this.spectatorTeamId = null;
 
-		//for now, just map the enum values to the constructors.
+		//for now, just map the enum values to the constructors
 		this.ActionTypeClassMapping = {};
-		this.ActionTypeClassMapping[GameConstants.ActionTypes["STOP"]] = AIActionStop.AIActionStop;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["IDLE"]] = AIActionIdle.AIActionIdle;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ENEMY"]] = AIActionMoveToEnemy.AIActionMoveToEnemy;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]] = AIActionMoveAwayEnemy.AIActionMoveAwayEnemy;
 	}
 	
 	enter(dt) {
-		logger.log("info", this.stateName + ' enter');
+		// logger.log("info", this.stateName + ' enter');
 		this.aiAgent.stateName = this.stateName;
-		this.aiAgent.mainAction = null;
 
 		this.spectatorTeamId = this.aiAgent.gs.tm.getSpectatorTeam().id;
 		super.enter(dt);
@@ -34,7 +33,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.checkTimer += dt;
 
 		if(this.checkTimer >= this.checkTimerInterval) {
-			// console.log("I'm in!");
 			this.checkTimer = 0;
 
 			this.populateMainActionScores();
@@ -69,13 +67,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	}
 
 	exit(dt) {
-		logger.log("info", this.stateName + ' exit');
+		// logger.log("info", this.stateName + ' exit');
 		this.aiAgent.mainActionScores.length = 0;
-		if(this.aiAgent.mainAction !== null) {
-			this.aiAgent.mainAction.exit(dt);
-			this.aiAgent.mainAction = null;
-		}
-		this.aiAgent.nextMainAction = null;
+		this.aiAgent.setNextMainActionIdle();
 
 		super.exit(dt);
 	}

@@ -11,7 +11,7 @@
 					"responseCurveParameters": {
 						"A": 100,
 						"B": 0,
-						"h": 0.8,
+						"h": 0.2,
 						"k": 0
 					},
 					"xMax": 500,
@@ -20,7 +20,7 @@
 			]
 		},
 		{
-			"type": "STOP",
+			"type": "IDLE",
 			"name": "Stop moving",
 			"considerations" : [
 				{
@@ -47,7 +47,7 @@
 					"responseCurveParameters": {
 						"A": -100,
 						"B": 0,
-						"h": 0.2,
+						"h": 0.05,
 						"k": 0
 					},
 					"xMax": 500,

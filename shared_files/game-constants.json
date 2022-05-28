@@ -28,9 +28,9 @@
 
 	"ActionTypes": {
 		"NO_TYPE": 				0,
-		"MOVE_TO_ENEMY": 		1,
-		"MOVE_AWAY_ENEMY": 		2,
-		"STOP": 				3
+		"IDLE": 				1,
+		"MOVE_TO_ENEMY": 		2,
+		"MOVE_AWAY_ENEMY": 		3
 	}, 
 
 	"ConsiderationTypes": {

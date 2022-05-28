@@ -77,6 +77,12 @@ class AIAgentManager {
 								var ai = this.AIAgentArray.findIndex((x) => {return x.id == a.id;});
 								if(ai >= 0)
 								{
+									//call activate function if it exists
+									if(typeof this.AIAgentArray[ai].aiAgentDeinit === "function")
+									{
+										this.AIAgentArray[ai].aiAgentDeinit();
+									}
+
 									this.AIAgentArray.splice(ai, 1);
 									this.updateIndex(a.id, null, "delete");
 								}

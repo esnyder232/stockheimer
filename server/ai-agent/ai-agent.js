@@ -1,5 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const GameConstants = require('../../shared_files/game-constants.json');
 const {AIAgentWaitingState} = require('./ai-agent-states/ai-agent-waiting-state.js');
+const AIActionIdle = require('./ai-actions/ai-action-idle.js');
 
 const logger = require("../../logger.js");
 
@@ -48,21 +50,51 @@ class AIAgent {
 
 		this.state = new AIAgentWaitingState(this);
 		this.nextState = null;
-
 		this.state.enter();
+
+		//create a fake idle action
+		this.mainAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+
+		this.mainAction.enter();
 	}
 
+	//called before the ai agent is deleted from the ai-agent-manager
 	aiAgentDeinit() {
-		if(this.user.bOkayToBeInTheGame && this.aiAgent.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
-			this.aiAgent.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
-		}
+		// console.log("AiAgent " + this.id + " deinit called!");
+		//also exit the current state and action for cleanup purposes
+		this.state.exit();
+		this.state = null;
+		this.nextState = null;
+
+		this.mainAction.exit();
+		this.mainAction = null;
+		this.nextMainAction = null;
 
 		this.user = null;
 		this.character = null;
-		this.nextState = null;
 		this.aiClassResource = null;
 		this.mainActionScores.length = 0;
+
 	}
+
+
+	setNextMainActionIdle() {
+		//create a fake "idle" initial state
+		this.nextMainAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+	}
+
 
 	cbEventEmitted(eventName, owner) {
 		this.playingEventQueue.push({
@@ -85,6 +117,10 @@ class AIAgent {
 						case "user-stopped-playing":
 							//unregister events
 							this.user.em.batchUnregisterForEvent(this.userEventCallbackMapping);
+
+							if(this.character !== null) {
+								this.character.em.batchUnregisterForEvent(this.characterEventCallbackMapping);
+							}
 	
 							//destroy this ai agent
 							this.gs.aim.destroyAIAgent(this.id);
@@ -98,9 +134,9 @@ class AIAgent {
 
 	update(dt) {
 		this.state.update(dt);
+		this.mainAction.update(dt);
 
-		if(this.nextState !== null)
-		{
+		if(this.nextState !== null) {
 			this.state.exit();
 			this.nextState.enter();
 
@@ -108,15 +144,8 @@ class AIAgent {
 			this.nextState = null;
 		}
 
-		if(this.mainAction !== null) {
-			this.mainAction.update(dt);
-		}
-
-		if(this.nextMainAction !== null)
-		{
-			if(this.mainAction !== null) {
-				this.mainAction.exit();
-			}
+		if(this.nextMainAction !== null) {
+			this.mainAction.exit();
 			this.nextMainAction.enter();
 
 			this.mainAction = this.nextMainAction;
