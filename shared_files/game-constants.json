@@ -44,7 +44,8 @@
 		"BASE":											1,
 		"MY_DISTANCE_SQUARED_FROM_ENEMY": 				2,
 		"MY_DISTANCE_SQUARED_FROM_ALLY": 				3,
-		"MY_HEALTH_RATIO_TO_ENEMY": 					4
+		"MY_DISTANCE_SQUARED_FROM_ANY_ENEMY":			4,
+		"MY_HEALTH_RATIO_TO_ENEMY": 					5
 	},
 	
 	"ResponseCurves": {

@@ -209,6 +209,11 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ENEMY"]:
 					x = this.considerationDistanceSquaredFromEnemy(action, action.resource.considerations[i])
 					break;
+				
+				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ANY_ENEMY"]:
+					x = this.considerationDistanceSquaredFromAnyEnemy(action, action.resource.considerations[i])
+					break;
+
 				case GameConstants.ConsiderationTypes["MY_HEALTH_RATIO_TO_ENEMY"]:
 					x = this.considerationMyHealthRatioToEnemy(action, action.resource.considerations[i]);
 					break;
@@ -259,6 +264,31 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		return xSquared;
 	}
+
+	considerationDistanceSquaredFromAnyEnemy(action, consideration) {
+		var xSquared = 99999;
+		
+		var myPos = this.aiAgent.character.getPlanckPosition();
+		
+		if(myPos !== null) {
+			var playingUsers = this.aiAgent.gs.um.getPlayingUsers();
+			
+			for(var j = 0; j < playingUsers.length; j++) {
+				if(playingUsers[j].characterId !== null && 
+					playingUsers[j].teamId !== this.spectatorTeamId &&
+					playingUsers[j].teamId !== this.aiAgent.user.teamId) {
+						var enemyPos = this.aiAgent.gs.gom.getGameObjectByID(playingUsers[j].characterId).getPlanckPosition();
+
+						if(enemyPos !== null) {
+							var temp = Math.pow(enemyPos.x - myPos.x, 2) + Math.pow(enemyPos.y - myPos.y, 2);
+							xSquared = temp < xSquared ? temp : xSquared;
+						}
+				}
+			}
+		}
+		return xSquared;
+	}
+
 
 	considerationMyHealthRatioToEnemy(action, consideration) {
 		var score = 0;
