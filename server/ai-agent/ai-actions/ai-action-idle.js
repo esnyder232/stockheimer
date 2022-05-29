@@ -10,7 +10,7 @@ class AIActionIdle extends AIActionBase.AIActionBase {
 	}
 	
 	enter(dt) {
-		logger.log("info", "AI " + this.aiAgent.id + ", action " + this.actionName + ' enter');
+		// logger.log("info", "AI " + this.aiAgent.id + ", action " + this.actionName + ' enter');
 		super.enter(dt);
 	}
 

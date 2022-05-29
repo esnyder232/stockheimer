@@ -190,6 +190,49 @@ class AIAgent {
 		this.frameInput.characterDirection = characterDirection;
 	}
 
+	lineOfSightTest(pos, pos2) {
+		const Vec2 = this.gs.pl.Vec2;
+		var losResults = {
+			isLOS: true,
+			pathUnobstructed: true
+		}
+
+		var p1 = new Vec2(pos.x, pos.y);
+		var p2 = new Vec2(pos2.x, pos2.y);
+
+		this.lineOfSightObjects = [];
+		this.gs.world.rayCast(p1, p2, this.lineOfSightCallback.bind(this));
+
+		//if objects were detected in front of the ai, then calculate avoidance vector
+		if(this.lineOfSightObjects.length > 0)
+		{
+			for(var i = 0; i < this.lineOfSightObjects.length; i++)			
+			{
+				var userData = this.lineOfSightObjects[i].fixture.getBody().getUserData()
+				if(userData.type === "wall" && userData.collideProjectiles) {
+					losResults.isLOS = false;
+					losResults.pathUnobstructed = false;
+					break;
+				}
+				else if(userData.type === "wall" && !userData.collideProjectiles) {
+					losResults.pathUnobstructed = false;
+				}
+			}
+		}
+
+		return losResults;
+	}
+
+	lineOfSightCallback(fixture, point, normal, fraction) {
+		this.lineOfSightObjects.push({
+			fixture: fixture,
+			point: point,
+			normal: normal,
+			fraction: fraction
+		});
+	}
+
+
 
 	update(dt) {
 		this.state.update(dt);

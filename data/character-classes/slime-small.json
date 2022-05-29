@@ -1,6 +1,6 @@
 {
 	"name": "Slime",
-	"hp": 2000,
+	"hp": 20,
 	"speed": 4,
 	"planckData": {
 		"plShape": "circle",
