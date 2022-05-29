@@ -52,6 +52,18 @@
 					},
 					"xMax": 36,
 					"xMin": 25
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
 				}
 			]
 		},
@@ -69,6 +81,18 @@
 						"k": 0.0
 					},
 					"xMax": 500,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
 					"xMin": 0
 				}
 			]
@@ -108,6 +132,18 @@
 					},
 					"xMax": 100,
 					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
 				}
 			]
 		},
@@ -126,6 +162,18 @@
 					},
 					"xMax": 2500,
 					"xMin": 25
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
 				}
 			]
 		}

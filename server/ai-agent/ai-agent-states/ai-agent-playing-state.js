@@ -214,6 +214,10 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 					x = this.considerationDistanceSquaredFromAnyEnemy(action, action.resource.considerations[i])
 					break;
 
+				case GameConstants.ConsiderationTypes["HAS_LINE_OF_SIGHT_FROM_ENEMY"]:
+					x = this.considerationHasLineOfSightFromEnemy(action, action.resource.considerations[i])
+					break;
+					
 				case GameConstants.ConsiderationTypes["MY_HEALTH_RATIO_TO_ENEMY"]:
 					x = this.considerationMyHealthRatioToEnemy(action, action.resource.considerations[i]);
 					break;
@@ -287,6 +291,26 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 			}
 		}
 		return xSquared;
+	}
+
+	considerationHasLineOfSightFromEnemy(action, consideration) {
+		var bLineOfSight = 0;
+		
+		var myPos = this.aiAgent.character.getPlanckPosition();
+		var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+		var enemyPos = null;
+		if(enemyC !== null) {
+			enemyPos = enemyC.getPlanckPosition();
+		}
+
+		//at this point, it is okay to calculate X and run through the response curve
+		if(myPos !== null && enemyPos !== null) {
+			bLineOfSight = this.aiAgent.lineOfSightTest(myPos, enemyPos).isLOS ? 1 : 0;
+		}
+
+		// console.log("LOS TEST: " + bLineOfSight);
+
+		return bLineOfSight;
 	}
 
 
