@@ -50,6 +50,8 @@ class AIAgent {
 			isFiringAlt: false,
 			characterDirection: 0.0
 		};
+
+		this.actionHistory = [];
 	}
 
 	aiAgentInit(gameServer, userId) {

@@ -62,17 +62,24 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 							
 				// var debughere = true;
 				// logger.log("info", "AI " + this.aiAgent.id + " winning action: " + this.aiAgent.mainActionScores[0].resource.type);
-
-				//act
+				var bReplaceAction = false;
+				
 				if(this.aiAgent.mainAction !== null) {
-					//check to see if the action is equivalent to the one the ai agent is already executing
+					//check to see if the action is equivalent to the one the ai agent is already executing. if they are NOT equal, then replace it with the winning action
 					if(!this.aiAgent.globalfuncs.areAiActionsEqual(this.aiAgent.mainAction, this.aiAgent.mainActionScores[0])) {
-						//if they are NOT equal, then replace it with the winning action
-						this.aiAgent.nextMainAction = new this.ActionTypeClassMapping[this.aiAgent.mainActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.mainActionScores[0]);
+						bReplaceAction = true;
 					}
 				} else {
-					this.aiAgent.nextMainAction = new this.ActionTypeClassMapping[this.aiAgent.mainActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.mainActionScores[0]);
+					bReplaceAction = true;
 				}
+
+				if(bReplaceAction) {
+					this.aiAgent.nextMainAction = new this.ActionTypeClassMapping[this.aiAgent.mainActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.mainActionScores[0]);
+
+					//also mark in the history when this action was chosen
+					this.aiAgent.actionHistory[this.aiAgent.mainActionScores[0].resource.id].tsPrev = this.aiAgent.gs.currentTick;
+				}
+
 			}
 
 			if(this.aiAgent.skillActionScores.length > 0) {
@@ -81,20 +88,24 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 							
 				// var debughere = true;
 				// logger.log("info", "AI " + this.aiAgent.id + " winning action: " + this.aiAgent.skillActionScores[0].resource.type);
+				var bReplaceAction = false;
 
-				//act
 				if(this.aiAgent.skillAction !== null) {
-					//check to see if the action is equivalent to the one the ai agent is already executing
+					//check to see if the action is equivalent to the one the ai agent is already executing. if they are NOT equal, then replace it with the winning action
 					if(!this.aiAgent.globalfuncs.areAiActionsEqual(this.aiAgent.skillAction, this.aiAgent.skillActionScores[0])) {
-						//if they are NOT equal, then replace it with the winning action
-						this.aiAgent.nextSkillAction = new this.ActionTypeClassMapping[this.aiAgent.skillActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.skillActionScores[0]);
+						bReplaceAction = true;
 					}
 				} else {
+					bReplaceAction = true;
+				}
+
+				if(bReplaceAction) {
 					this.aiAgent.nextSkillAction = new this.ActionTypeClassMapping[this.aiAgent.skillActionScores[0].resource.typeEnum](this.aiAgent, this.aiAgent.skillActionScores[0]);
+
+					//also mark in the history when this action was chosen
+					this.aiAgent.actionHistory[this.aiAgent.skillActionScores[0].resource.id].tsPrev = this.aiAgent.gs.currentTick;
 				}
 			}
-
-
 		}
 
 		super.update(dt);
@@ -198,6 +209,19 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		// console.log("Calculating for AI " + this.aiAgent.id +" - " + action.resource.type + ".");
 		var considerationScoreAccum = 1;
 
+
+		//STOPPED HERE
+		// First, put in ai for each class. That way you can see more considerations that are required.
+		//
+		// Do a blackboard based on the following in order:
+		// - per consideration calculation
+		// - per context targets
+		// - check time
+		//
+		// also stagger the ai utility scoring on a frequency basis. And make sure the blackboard caching lasts that long.
+	
+
+
 		//score all the considerations against each target
 		var x = 0;
 		for(var i = 0; i < action.resource.considerations.length; i++) {
@@ -217,7 +241,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["HAS_LINE_OF_SIGHT_FROM_ENEMY"]:
 					x = this.considerationHasLineOfSightFromEnemy(action, action.resource.considerations[i])
 					break;
-					
+				case GameConstants.ConsiderationTypes["MS_PASSED_SINCE_SAME_ACTION"]:
+					x = this.considerationMsPassedSinceSameAction(action, action.resource.considerations[i]);
+					break;
 				case GameConstants.ConsiderationTypes["MY_HEALTH_RATIO_TO_ENEMY"]:
 					x = this.considerationMyHealthRatioToEnemy(action, action.resource.considerations[i]);
 					break;
@@ -312,6 +338,11 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		return bLineOfSight;
 	}
+
+	considerationMsPassedSinceSameAction(action, consideration) {
+		return this.aiAgent.gs.currentTick - this.aiAgent.actionHistory[action.resource.id].tsPrev;
+	}
+
 
 
 	considerationMyHealthRatioToEnemy(action, consideration) {

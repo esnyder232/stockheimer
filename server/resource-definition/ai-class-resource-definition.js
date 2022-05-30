@@ -18,6 +18,8 @@ class AIClassResourceDefinition {
 
 	aiClassFileDone(resource, context, contextKey, contextValue) {
 		if(resource.data !== null) {
+			var idCounter = 0;
+
 			for(var i = 0; i < resource.data.mainActions.length; i++ ) {
 				
 				//translate the action "types" in the resources to the "enum types"
@@ -26,9 +28,14 @@ class AIClassResourceDefinition {
 					resource.data.mainActions[i].typeEnum = GameConstants.ActionTypes["NO_TYPE"];
 				}
 
+				//also add an id
+				resource.data.mainActions[i].id = idCounter++;
+
 				//translate the considerations "types" in the resources to the "enum types"
 				for(var j = 0; j < resource.data.mainActions[i].considerations.length; j++) {
 					resource.data.mainActions[i].considerations[j].typeEnum = GameConstants.ConsiderationTypes[resource.data.mainActions[i].considerations[j].type];
+					
+
 					if(resource.data.mainActions[i].considerations[j].typeEnum === undefined) {
 						resource.data.mainActions[i].considerations[j].typeEnum = GameConstants.ConsiderationTypes["NO_TYPE"];
 					}
@@ -49,9 +56,13 @@ class AIClassResourceDefinition {
 					resource.data.skillActions[i].typeEnum = GameConstants.ActionTypes["NO_TYPE"];
 				}
 
+				//also add an id
+				resource.data.skillActions[i].id = idCounter++;
+
 				//translate the considerations "types" in the resources to the "enum types"
 				for(var j = 0; j < resource.data.skillActions[i].considerations.length; j++) {
 					resource.data.skillActions[i].considerations[j].typeEnum = GameConstants.ConsiderationTypes[resource.data.skillActions[i].considerations[j].type];
+
 					if(resource.data.skillActions[i].considerations[j].typeEnum === undefined) {
 						resource.data.skillActions[i].considerations[j].typeEnum = GameConstants.ConsiderationTypes["NO_TYPE"];
 					}

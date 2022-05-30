@@ -5,7 +5,7 @@ class AIActionMoveAwayAlly extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
 		this.actionName = "MOVE_AWAY_ALLY";
-		this.checkTimer = 0;
+		this.checkTimer = 500;
 		this.checkTimerInterval = 500;	//ms
 
 		this.characterEventCallbackMapping = [ 

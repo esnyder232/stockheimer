@@ -5,7 +5,7 @@ class AIActionAltShootEnemy extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
 		this.actionName = "ALT_SHOOT_ENEMY";
-		this.checkTimer = 0;
+		this.checkTimer = 500;
 		this.checkTimerInterval = 500;	//ms
 
 		this.characterEventCallbackMapping = [ 

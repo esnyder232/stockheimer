@@ -5,7 +5,7 @@ class AIActionMoveToEnemy extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
 		this.actionName = "MOVE_TO_ENEMY";
-		this.checkTimer = 0;
+		this.checkTimer = 1000;
 		this.checkTimerInterval = 1000;	//ms
 		this.nodePath = [];
 		this.currentNode = 0;

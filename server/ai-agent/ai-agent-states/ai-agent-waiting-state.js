@@ -51,6 +51,28 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 				//prepopulate the scores for the utility ai
 				if(this.aiAgent.aiClassResource !== null) {
 					logger.log("info", "ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ". Using " + this.aiAgent.aiClassResource.key + " ai class.");
+
+					//fill in the history arrays
+					this.aiAgent.actionHistory.length = 0;
+
+					for(var i = 0; i < this.aiAgent.aiClassResource.data.mainActions.length; i++) {
+						this.aiAgent.actionHistory.push({
+							id: this.aiAgent.aiClassResource.data.mainActions[i].id,
+							type: this.aiAgent.aiClassResource.data.mainActions[i].type,
+							tsPrev: 0
+						});
+					}
+
+					for(var i = 0; i < this.aiAgent.aiClassResource.data.skillActions.length; i++) {
+						this.aiAgent.actionHistory.push({
+							id: this.aiAgent.aiClassResource.data.skillActions[i].id,
+							type: this.aiAgent.aiClassResource.data.skillActions[i].type,
+							tsPrev: 0
+						});
+					}
+
+
+
 				} else {
 					logger.log("info", "WARNING: ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ", but there is no ai class found for " + randomClass.data?.aiClass + ".");
 				}
