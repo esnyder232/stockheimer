@@ -33,6 +33,8 @@ class AIAgent {
 
 
 		this.aiClassResource = null;
+		this.characterClassResource = null;
+
 		this.mainActionScores = [];
 		this.mainAction = null;
 		this.nextMainAction = null;
@@ -114,6 +116,8 @@ class AIAgent {
 		this.aiClassResource = null;
 		this.mainActionScores.length = 0;
 		this.skillActionScores.length = 0;
+
+		this.characterClassResource = null;
 	}
 
 

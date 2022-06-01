@@ -46,6 +46,7 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 			var randomClass = this.aiAgent.globalfuncs.getRandomClass(this.aiAgent.gs);
 			if(randomClass !== null) {
 				this.aiAgent.user.updateCharacterClassId(randomClass.id);
+				this.aiAgent.characterClassResource = randomClass;
 				this.aiAgent.aiClassResource = this.aiAgent.gs.rm.getResourceByKey(randomClass.data?.aiClass);
 
 				//prepopulate the scores for the utility ai
@@ -70,8 +71,6 @@ class AIAgentWaitingState extends AIAgentBaseState.AIAgentBaseState {
 							tsPrev: 0
 						});
 					}
-
-
 
 				} else {
 					logger.log("info", "WARNING: ai " + this.aiAgent.user.username + " has picked the class " + randomClass.data.name + ", but there is no ai class found for " + randomClass.data?.aiClass + ".");

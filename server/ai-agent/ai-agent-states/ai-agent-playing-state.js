@@ -244,6 +244,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["MS_PASSED_SINCE_SAME_ACTION"]:
 					x = this.considerationMsPassedSinceSameAction(action, action.resource.considerations[i]);
 					break;
+				case GameConstants.ConsiderationTypes["SKILL_OFF_COOLDOWN"]:
+					x = this.considerationSkillOffCooldown(action, action.resource.considerations[i]);
+					break;
 				case GameConstants.ConsiderationTypes["MY_HEALTH_RATIO_TO_ENEMY"]:
 					x = this.considerationMyHealthRatioToEnemy(action, action.resource.considerations[i]);
 					break;
@@ -341,6 +344,19 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 	considerationMsPassedSinceSameAction(action, consideration) {
 		return this.aiAgent.gs.currentTick - this.aiAgent.actionHistory[action.resource.id].tsPrev;
+	}
+
+	considerationSkillOffCooldown(action, consideration) {
+		var x = 0;
+		var resourceKey = "";
+		if(action.resource.typeEnum === GameConstants.ActionTypes["SHOOT_ENEMY"]) 
+			resourceKey = this.aiAgent.characterClassResource.data["fireStateKey"];
+		else if(action.resource.typeEnum === GameConstants.ActionTypes["ALT_SHOOT_ENEMY"])
+			resourceKey = this.aiAgent.characterClassResource.data["altFireStateKey"];
+			
+		var cooldownState = this.aiAgent.character.getStateCooldown(resourceKey);
+		
+		return cooldownState?.onCooldown === false ? 1 : 0;
 	}
 
 

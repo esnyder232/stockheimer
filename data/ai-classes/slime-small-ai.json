@@ -144,6 +144,18 @@
 					},
 					"xMax": 1,
 					"xMin": 0
+				},
+				{
+					"type": "MS_PASSED_SINCE_SAME_ACTION",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 100.0,
+						"B": 0,
+						"h": 0.99,
+						"k": 0.0
+					},
+					"xMax": 500,
+					"xMin": 0
 				}
 			]
 		},
@@ -185,6 +197,18 @@
 						"k": 0.0
 					},
 					"xMax": 2000,
+					"xMin": 0
+				},
+				{
+					"type": "SKILL_OFF_COOLDOWN",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
 					"xMin": 0
 				}
 			]

@@ -906,6 +906,9 @@ class Character {
 		//nothing yet
 	}
 
+	getStateCooldown(characterClassStateResourceKey) {
+		return this.stateCooldownsTemplates[characterClassStateResourceKey] !== undefined ? this.stateCooldownsTemplates[characterClassStateResourceKey] : null;
+	}
 
 	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(-damage);
