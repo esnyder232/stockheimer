@@ -17,7 +17,9 @@
 	
 	"minimumUsersPlaying": 24,
 	"classData": [
-		"data/character-classes/slime-small.json"
+		"data/character-classes/slime-small.json",
+		"data/character-classes/slime-med.json",
+		"data/character-classes/slime-large.json"
 	],
 	"teamData": [
 		{

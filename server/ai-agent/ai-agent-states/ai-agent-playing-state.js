@@ -130,7 +130,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.aiAgent.mainActionScores.length = 0;
 		this.aiAgent.skillActionScores.length = 0;
 
-		if(this.aiAgent.aiClassResource.data !== null)  {
+		if(this.aiAgent.aiClassResource !== null && this.aiAgent.aiClassResource.data !== null)  {
 			for(var i = 0; i < this.aiAgent.aiClassResource.data.mainActions.length; i++) {
 				this.populateWithTargets(this.aiAgent.mainActionScores, this.aiAgent.aiClassResource.data.mainActions[i]);
 			}
@@ -247,8 +247,8 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["SKILL_OFF_COOLDOWN"]:
 					x = this.considerationSkillOffCooldown(action, action.resource.considerations[i]);
 					break;
-				case GameConstants.ConsiderationTypes["MY_HEALTH_RATIO_TO_ENEMY"]:
-					x = this.considerationMyHealthRatioToEnemy(action, action.resource.considerations[i]);
+				case GameConstants.ConsiderationTypes["MY_HEALTH_PERCENTAGE"]:
+					x = this.considerationMyHealthPercentage(action, action.resource.considerations[i]);
 					break;
 				default:
 
@@ -361,10 +361,8 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 
 
-	considerationMyHealthRatioToEnemy(action, consideration) {
-		var score = 0;
-		console.log("-Calculating my health ratio to enemy.");
-		return score;
+	considerationMyHealthPercentage(action, consideration) {
+		return (this.aiAgent.character.hpCur / this.aiAgent.character.hpMax) * 100;
 	}
 
 

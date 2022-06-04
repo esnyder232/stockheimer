@@ -1,5 +1,5 @@
 {
-	"name": "Example AI Brain for slime small.",
+	"name": "Example AI Brain for slime large.",
 	"mainActions": [
 		{
 			"type": "IDLE",
@@ -45,9 +45,9 @@
 					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
 					"responseCurve": "6POLY",
 					"responseCurveParameters": {
-						"A": -20,
+						"A": -1,
 						"B": 0,
-						"h": 0.5,
+						"h": 0.15,
 						"k": 0.5
 					},
 					"xMax": 36,
@@ -94,7 +94,19 @@
 					},
 					"xMax": 1,
 					"xMin": 0
+				},{
+					"type": "MY_HEALTH_PERCENTAGE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -50.0,
+						"B": 0,
+						"h": 0.5,
+						"k": 0.0
+					},
+					"xMax": 100,
+					"xMin": 0
 				}
+
 			]
 		}
 	],

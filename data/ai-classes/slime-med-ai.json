@@ -1,5 +1,5 @@
 {
-	"name": "Example AI Brain for slime small.",
+	"name": "Example AI Brain for slime medium.",
 	"mainActions": [
 		{
 			"type": "IDLE",

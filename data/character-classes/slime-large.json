@@ -12,7 +12,7 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
-	"aiClass": null,
+	"aiClass": "data/ai-classes/slime-large-ai.json",
 	"size": 3.99,
 	"idleMsPerFrame": 500,
 	"moveMsPerFrame": 250,
