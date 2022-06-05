@@ -344,7 +344,7 @@ class GlobalFuncs {
 
 
 		//for testing - always pick the same type
-		//randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-large.json"});
+		// randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-fighter.json"});
 
 
 		//for testing - if the ai choose a particular class, default to something else (useful for testing a new class BUT ONLY you want to be the class)

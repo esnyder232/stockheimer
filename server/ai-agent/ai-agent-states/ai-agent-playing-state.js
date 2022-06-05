@@ -212,6 +212,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		//STOPPED HERE
 		// First, put in ai for each class. That way you can see more considerations that are required.
+		// - do fighter next
+		// - do healer next
+		// 
 		//
 		// Do a blackboard based on the following in order:
 		// - per consideration calculation
@@ -240,6 +243,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 				case GameConstants.ConsiderationTypes["HAS_LINE_OF_SIGHT_FROM_ENEMY"]:
 					x = this.considerationHasLineOfSightFromEnemy(action, action.resource.considerations[i])
+					break;
+				case GameConstants.ConsiderationTypes["HAS_PATH_UNOBSTRUCTED_TO_ENEMY"]:
+					x = this.considerationHasPathUnobstructedToEnemy(action, action.resource.considerations[i])
 					break;
 				case GameConstants.ConsiderationTypes["MS_PASSED_SINCE_SAME_ACTION"]:
 					x = this.considerationMsPassedSinceSameAction(action, action.resource.considerations[i]);
@@ -341,6 +347,29 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		return bLineOfSight;
 	}
+
+
+	considerationHasPathUnobstructedToEnemy(action, consideration) {
+		var bUnobstructedPath = 0;
+		
+		var myPos = this.aiAgent.character.getPlanckPosition();
+		var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+		var enemyPos = null;
+		if(enemyC !== null) {
+			enemyPos = enemyC.getPlanckPosition();
+		}
+
+		//at this point, it is okay to calculate X and run through the response curve
+		if(myPos !== null && enemyPos !== null) {
+			bUnobstructedPath = this.aiAgent.lineOfSightTest(myPos, enemyPos).pathUnobstructed ? 1 : 0;
+		}
+
+		// console.log("Unobstructed TEST: " + bUnobstructedPath);
+
+		return bUnobstructedPath;
+	}
+
+
 
 	considerationMsPassedSinceSameAction(action, consideration) {
 		return this.aiAgent.gs.currentTick - this.aiAgent.actionHistory[action.resource.id].tsPrev;

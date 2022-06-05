@@ -16,9 +16,11 @@
 		"kothTimeLength": 1000000
 	},
 	
-	"minimumUsersPlaying": 2,
+	"minimumUsersPlaying": 24,
 	"classData": [
-		"data/character-classes/slime-large.json"
+		"data/character-classes/slime-small.json",
+		"data/character-classes/slime-med.json",
+		"data/character-classes/slime-fighter.json"
 	],
 	"teamData": [
 		{

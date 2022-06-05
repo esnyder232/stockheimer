@@ -1,0 +1,157 @@
+{
+	"name": "Example AI Brain for slime fighter.",
+	"mainActions": [
+		{
+			"type": "IDLE",
+			"name": "Do nothing.",
+			"considerations" : [
+				{
+					"type": "BASE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 0,
+						"B": 0,
+						"h": 0,
+						"k": 0.1
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_TO_ENEMY",
+			"name": "Move to enemy when far away",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -0.3,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.5
+					},
+					"xMax": 2500,
+					"xMin": 0
+				}
+			]
+		}
+	],
+	"skillActions": [
+		{
+			"type": "IDLE",
+			"name": "Do nothing.",
+			"considerations" : [
+				{
+					"type": "BASE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1,
+						"B": 1,
+						"h": 0,
+						"k": 0.1
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "SHOOT_ENEMY",
+			"name": "Mellee attack the enemy if they are close enough",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -0.5,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.5
+					},
+					"xMax": 36,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_PATH_UNOBSTRUCTED_TO_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "MS_PASSED_SINCE_SAME_ACTION",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 100.0,
+						"B": 0,
+						"h": 0.99,
+						"k": 0.0
+					},
+					"xMax": 500,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "ALT_SHOOT_ENEMY",
+			"name": "Alt fire on an enemy",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 0.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.0
+					},
+					"xMax": 2500,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_PATH_UNOBSTRUCTED_TO_ENEMY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "MS_PASSED_SINCE_SAME_ACTION",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 100.0,
+						"B": 0,
+						"h": 0.99,
+						"k": 0.0
+					},
+					"xMax": 5000,
+					"xMin": 0
+				},
+				{
+					"type": "SKILL_OFF_COOLDOWN",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		}
+	]
+}
