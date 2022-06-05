@@ -12,7 +12,7 @@
 						"A": 1,
 						"B": 1,
 						"h": 0,
-						"k": 0.01
+						"k": 0.1
 					},
 					"xMax": 1,
 					"xMin": 0
@@ -25,14 +25,14 @@
 			"considerations" : [
 				{
 					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
-					"responseCurve": "LINEAR",
+					"responseCurve": "6POLY",
 					"responseCurveParameters": {
-						"A": -0.2,
+						"A": -10.0,
 						"B": 0,
-						"h": 0.0,
+						"h": 0.8,
 						"k": 0.8
 					},
-					"xMax": 500,
+					"xMax": 45,
 					"xMin": 0
 				},
 				{
@@ -44,7 +44,7 @@
 						"h": 0.0,
 						"k": 0.0
 					},
-					"xMax": 80,
+					"xMax": 60,
 					"xMin": 0
 				},
 				{
@@ -52,6 +52,78 @@
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -0.8,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_AWAY_ALLY",
+			"name": "Move away from ally if they are too close",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "6POLY",
+					"responseCurveParameters": {
+						"A": -1,
+						"B": 0,
+						"h": 0.24,
+						"k": 0.2
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_AWAY_ENEMY",
+			"name": "Move away from enemy if they get too close",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "6POLY",
+					"responseCurveParameters": {
+						"A": -1,
+						"B": 0,
+						"h": 0.1,
+						"k": 0.5
+					},
+					"xMax": 9,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "TARGET_CONTAINS_TAG_HEALER",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -1.0,
 						"B": 0,
 						"h": 0.0,
 						"k": 1.0
