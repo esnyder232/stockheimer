@@ -20,7 +20,9 @@
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",
-		"data/character-classes/slime-fighter.json"
+		"data/character-classes/slime-large.json",
+		"data/character-classes/slime-fighter.json",
+		"data/character-classes/slime-healer.json"
 	],
 	"teamData": [
 		{

@@ -2,11 +2,11 @@ const AIAgentBaseState = require('./ai-agent-base-state.js');
 const GameConstants = require('../../../shared_files/game-constants.json');
 const logger = require("../../../logger.js");
 const AIActionIdle = require("../ai-actions/ai-action-idle.js");
-const AIActionMoveToEnemy = require("../ai-actions/ai-action-move-to-enemy.js");
+const AIActionMoveToTarget = require("../ai-actions/ai-action-move-to-target.js");
 const AIActionMoveAwayEnemy = require("../ai-actions/ai-action-move-away-enemy.js");
 const AIActionStayCloseToEnemy = require("../ai-actions/ai-action-stay-close-to-enemy.js");
-const AIActionShootEnemy = require("../ai-actions/ai-action-shoot-enemy.js");
-const AIActionAltShootEnemy = require("../ai-actions/ai-action-alt-shoot-enemy.js");
+const AIActionShootTarget = require("../ai-actions/ai-action-shoot-target.js");
+const AIActionAltShootTarget = require("../ai-actions/ai-action-alt-shoot-target.js");
 const AIActionMoveAwayAlly = require("../ai-actions/ai-action-move-away-ally.js");
 
 
@@ -21,12 +21,19 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		//for now, just map the enum values to the constructors
 		this.ActionTypeClassMapping = {};
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["IDLE"]] = AIActionIdle.AIActionIdle;
-		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ENEMY"]] = AIActionMoveToEnemy.AIActionMoveToEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ENEMY"]] = AIActionMoveToTarget.AIActionMoveToTarget;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_ALLY"]] = AIActionMoveToTarget.AIActionMoveToTarget;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]] = AIActionMoveAwayEnemy.AIActionMoveAwayEnemy;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["STAY_CLOSE_TO_ENEMY"]] = AIActionStayCloseToEnemy.AIActionStayCloseToEnemy;
-		this.ActionTypeClassMapping[GameConstants.ActionTypes["SHOOT_ENEMY"]] = AIActionShootEnemy.AIActionShootEnemy;
-		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]] = AIActionAltShootEnemy.AIActionAltShootEnemy;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["SHOOT_ENEMY"]] = AIActionShootTarget.AIActionShootTarget;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["SHOOT_ALLY"]] = AIActionShootTarget.AIActionShootTarget;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]] = AIActionAltShootTarget.AIActionAltShootTarget;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_ALLY"]] = AIActionAltShootTarget.AIActionAltShootTarget;
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_SELF"]] = AIActionAltShootTarget.AIActionAltShootTarget;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ALLY"]] = AIActionMoveAwayAlly.AIActionMoveAwayAlly;
+
+
+		
 	}
 	
 	enter(dt) {
@@ -171,6 +178,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				break;
 
 			case GameConstants.ActionTypes["MOVE_AWAY_ALLY"]:
+			case GameConstants.ActionTypes["MOVE_TO_ALLY"]:
+			case GameConstants.ActionTypes["SHOOT_ALLY"]:
+			case GameConstants.ActionTypes["ALT_SHOOT_ALLY"]:
 				//calculate the "allies" for this ai
 				var playingUsers = this.aiAgent.gs.um.getPlayingUsers();
 
@@ -194,6 +204,14 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 			case GameConstants.ActionTypes["NO_TYPE"]:
 				//intentionally blank
 				break;
+				
+			case GameConstants.ActionTypes["ALT_SHOOT_SELF"]:
+				actionScoresArr.push({
+					"resource": actionResource,
+					"characterId": this.aiAgent.character.id,
+					"score": 0
+				});
+				break;
 			default:
 				actionScoresArr.push({
 					"resource": actionResource,
@@ -212,7 +230,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		//STOPPED HERE
 		// First, put in ai for each class. That way you can see more considerations that are required.
-		// - do fighter next
 		// - do healer next
 		// 
 		//
@@ -232,19 +249,16 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 			//calculate the 'x' in the correct context
 			switch(action.resource.considerations[i].typeEnum) {
-				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ALLY"]:
-				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ENEMY"]:
+				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_TARGET"]:
 					x = this.considerationDistanceSquaredFromEnemy(action, action.resource.considerations[i])
-					break;
-				
+					break;				
 				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ANY_ENEMY"]:
 					x = this.considerationDistanceSquaredFromAnyEnemy(action, action.resource.considerations[i])
 					break;
-
-				case GameConstants.ConsiderationTypes["HAS_LINE_OF_SIGHT_FROM_ENEMY"]:
+				case GameConstants.ConsiderationTypes["HAS_LINE_OF_SIGHT_FROM_TARGET"]:
 					x = this.considerationHasLineOfSightFromEnemy(action, action.resource.considerations[i])
 					break;
-				case GameConstants.ConsiderationTypes["HAS_PATH_UNOBSTRUCTED_TO_ENEMY"]:
+				case GameConstants.ConsiderationTypes["HAS_PATH_UNOBSTRUCTED_TO_TARGET"]:
 					x = this.considerationHasPathUnobstructedToEnemy(action, action.resource.considerations[i])
 					break;
 				case GameConstants.ConsiderationTypes["MS_PASSED_SINCE_SAME_ACTION"]:
@@ -256,8 +270,16 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["MY_HEALTH_PERCENTAGE"]:
 					x = this.considerationMyHealthPercentage(action, action.resource.considerations[i]);
 					break;
+				case GameConstants.ConsiderationTypes["MY_TARGETS_HEALTH_PERCENTAGE"]:
+					x = this.considerationMyTargetsHealthPercentage(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["MY_TARGETS_HEALTH_CAPACITY"]:
+					x = this.considerationMyTargetsHealthCapacity(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["TARGET_CONTAINS_TAG_HEALER"]:
+					x = this.considerationTargetContainsTagHealer(action, action.resource.considerations[i]);
+					break;
 				default:
-
 					break;
 			}
 
@@ -378,10 +400,23 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	considerationSkillOffCooldown(action, consideration) {
 		var x = 0;
 		var resourceKey = "";
-		if(action.resource.typeEnum === GameConstants.ActionTypes["SHOOT_ENEMY"]) 
-			resourceKey = this.aiAgent.characterClassResource.data["fireStateKey"];
-		else if(action.resource.typeEnum === GameConstants.ActionTypes["ALT_SHOOT_ENEMY"])
-			resourceKey = this.aiAgent.characterClassResource.data["altFireStateKey"];
+		switch(action.resource.typeEnum) {
+			case GameConstants.ActionTypes["SHOOT_ENEMY"]:
+			case GameConstants.ActionTypes["SHOOT_ALLY"]:
+				resourceKey = this.aiAgent.characterClassResource.data["fireStateKey"];
+				break;
+			case GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]:
+			case GameConstants.ActionTypes["ALT_SHOOT_ALLY"]:
+			case GameConstants.ActionTypes["ALT_SHOOT_SELF"]:
+				resourceKey = this.aiAgent.characterClassResource.data["altFireStateKey"];
+				break;
+		}
+
+		// }
+		// if(action.resource.typeEnum === GameConstants.ActionTypes["SHOOT_ENEMY"] || action.resource.typeEnum === GameConstants.ActionTypes["SHOOT_AL_ENEMY"]) 
+		// 	resourceKey = this.aiAgent.characterClassResource.data["fireStateKey"];
+		// else if(action.resource.typeEnum === GameConstants.ActionTypes["ALT_SHOOT_ENEMY"])
+		// 	resourceKey = this.aiAgent.characterClassResource.data["altFireStateKey"];
 			
 		var cooldownState = this.aiAgent.character.getStateCooldown(resourceKey);
 		
@@ -393,6 +428,51 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	considerationMyHealthPercentage(action, consideration) {
 		return (this.aiAgent.character.hpCur / this.aiAgent.character.hpMax) * 100;
 	}
+
+	considerationMyTargetsHealthPercentage(action, consideration) {
+		var targetHealthPercentage = 0;
+		var targetCharacter = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+
+		if(targetCharacter.isActive) {
+			targetHealthPercentage = (targetCharacter.hpCur / targetCharacter.hpMax) * 100;
+		}
+
+		// console.log("target health percentage: " + targetHealthPercentage);
+
+		return targetHealthPercentage;
+	}
+
+	considerationMyTargetsHealthCapacity(action, consideration) {
+		var targetHealthPercentage = 0;
+		var targetCharacter = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+
+		if(targetCharacter.isActive) {
+			targetHealthPercentage = targetCharacter.hpMax;
+		}
+
+		// console.log("target health percentage: " + targetHealthPercentage);
+
+		return targetHealthPercentage;
+	}
+	
+	considerationTargetContainsTagHealer(action, consideration) {
+		var hasHealerTag = 0;
+		var targetCharacter = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+
+		if(targetCharacter.isActive) {
+			hasHealerTag = targetCharacter.characterClassResource.data["aiTagsEnum"].includes(GameConstants.AITags.HEALER) === true ? 1 : 0;
+			if(hasHealerTag === 0) {
+				var stophere = true;
+			}
+		}
+
+		// console.log("target health percentage: " + targetHealthPercentage);
+
+		return hasHealerTag;
+	}
+	
+
+
 
 
 	//////////////////////////////////////////

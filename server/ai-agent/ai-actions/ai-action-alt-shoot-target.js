@@ -1,7 +1,7 @@
 const AIActionBase = require('./ai-action-base.js');
 const logger = require("../../../logger.js");
 
-class AIActionAltShootEnemy extends AIActionBase.AIActionBase {
+class AIActionAltShootTarget extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
 		this.actionName = "ALT_SHOOT_ENEMY";
@@ -76,4 +76,4 @@ class AIActionAltShootEnemy extends AIActionBase.AIActionBase {
 	}
 }
 
-exports.AIActionAltShootEnemy = AIActionAltShootEnemy
+exports.AIActionAltShootTarget = AIActionAltShootTarget

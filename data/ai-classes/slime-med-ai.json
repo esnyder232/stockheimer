@@ -24,7 +24,7 @@
 			"name": "Move to enemy when far away",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -0.2,
@@ -42,7 +42,7 @@
 			"name": "Stay close to an enemy",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "6POLY",
 					"responseCurveParameters": {
 						"A": -20,
@@ -54,7 +54,7 @@
 					"xMin": 25
 				},
 				{
-					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 1.0,
@@ -72,7 +72,7 @@
 			"name": "Run away from enemy when hp is low",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -1000,
@@ -84,7 +84,7 @@
 					"xMin": 0
 				},
 				{
-					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 1.0,
@@ -122,7 +122,7 @@
 			"name": "Fire on an enemy when they are roughly <8 blocks away",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -1.0,
@@ -134,7 +134,7 @@
 					"xMin": 0
 				},
 				{
-					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 1.0,
@@ -164,7 +164,7 @@
 			"name": "Alt fire on an enemy",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -0.29,
@@ -176,7 +176,7 @@
 					"xMin": 25
 				},
 				{
-					"type": "HAS_LINE_OF_SIGHT_FROM_ENEMY",
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 1.0,

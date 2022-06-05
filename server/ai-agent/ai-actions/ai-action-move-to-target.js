@@ -1,7 +1,8 @@
 const AIActionBase = require('./ai-action-base.js');
 const logger = require("../../../logger.js");
 
-class AIActionMoveToEnemy extends AIActionBase.AIActionBase {
+//this is for the actions "MOVE_TO_ENEMY" and "MOVE_TO_ALLY"
+class AIActionMoveToTarget extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
 		this.actionName = "MOVE_TO_ENEMY";
@@ -271,4 +272,4 @@ class AIActionMoveToEnemy extends AIActionBase.AIActionBase {
 
 }
 
-exports.AIActionMoveToEnemy = AIActionMoveToEnemy
+exports.AIActionMoveToTarget = AIActionMoveToTarget

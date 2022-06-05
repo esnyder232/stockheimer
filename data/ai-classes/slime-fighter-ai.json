@@ -24,7 +24,7 @@
 			"name": "Move to enemy when far away",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -0.3,
@@ -62,7 +62,7 @@
 			"name": "Mellee attack the enemy if they are close enough",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": -0.5,
@@ -74,7 +74,7 @@
 					"xMin": 0
 				},
 				{
-					"type": "HAS_PATH_UNOBSTRUCTED_TO_ENEMY",
+					"type": "HAS_PATH_UNOBSTRUCTED_TO_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 1.0,
@@ -104,7 +104,7 @@
 			"name": "Alt fire on an enemy",
 			"considerations" : [
 				{
-					"type": "MY_DISTANCE_SQUARED_FROM_ENEMY",
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 0.0,
@@ -116,7 +116,7 @@
 					"xMin": 0
 				},
 				{
-					"type": "HAS_PATH_UNOBSTRUCTED_TO_ENEMY",
+					"type": "HAS_PATH_UNOBSTRUCTED_TO_TARGET",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
 						"A": 1.0,

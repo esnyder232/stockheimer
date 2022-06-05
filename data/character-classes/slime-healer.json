@@ -12,7 +12,10 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
-	"aiClass": null,
+	"aiClass": "data/ai-classes/slime-healer-ai.json",
+	"aiTags": [
+		"HEALER"
+	],
 	"size": 1,
 	"idleMsPerFrame": 300,
 	"moveMsPerFrame": 300,
