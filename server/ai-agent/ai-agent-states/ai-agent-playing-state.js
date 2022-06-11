@@ -8,7 +8,7 @@ const AIActionStayCloseToEnemy = require("../ai-actions/ai-action-stay-close-to-
 const AIActionShootTarget = require("../ai-actions/ai-action-shoot-target.js");
 const AIActionAltShootTarget = require("../ai-actions/ai-action-alt-shoot-target.js");
 const AIActionMoveAwayAlly = require("../ai-actions/ai-action-move-away-ally.js");
-
+const AIActionMoveToControlPoint = require("../ai-actions/ai-action-move-to-control-point.js");
 
 class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	constructor(aiAgent) {
@@ -31,9 +31,7 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_ALLY"]] = AIActionAltShootTarget.AIActionAltShootTarget;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["ALT_SHOOT_SELF"]] = AIActionAltShootTarget.AIActionAltShootTarget;
 		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_AWAY_ALLY"]] = AIActionMoveAwayAlly.AIActionMoveAwayAlly;
-
-
-		
+		this.ActionTypeClassMapping[GameConstants.ActionTypes["MOVE_TO_CONTROL_POINT"]] = AIActionMoveToControlPoint.AIActionMoveToControlPoint;
 	}
 	
 	enter(dt) {
@@ -201,10 +199,19 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 					}
 				}
 				break;
-			case GameConstants.ActionTypes["NO_TYPE"]:
-				//intentionally blank
+
+			case GameConstants.ActionTypes["MOVE_TO_CONTROL_POINT"]:
+				//add the controlPointId to the list of targets
+				var controlPoints = this.aiAgent.gs.activeTilemap.controlPoints;
+
+				for(var j = 0; j < controlPoints.length; j++) {
+					actionScoresArr.push({
+						"resource": actionResource,
+						"controlPointId": controlPoints[j].id,
+						"score": 0
+					});
+				}
 				break;
-				
 			case GameConstants.ActionTypes["ALT_SHOOT_SELF"]:
 				actionScoresArr.push({
 					"resource": actionResource,
@@ -212,6 +219,10 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 					"score": 0
 				});
 				break;
+			case GameConstants.ActionTypes["NO_TYPE"]:
+				//intentionally blank
+				break;
+				
 			default:
 				actionScoresArr.push({
 					"resource": actionResource,
@@ -278,6 +289,9 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 					break;
 				case GameConstants.ConsiderationTypes["TARGET_CONTAINS_TAG_HEALER"]:
 					x = this.considerationTargetContainsTagHealer(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["CONTROL_POINT_OWNED_BY_MY_TEAM"]:
+					x = this.considerationControlPointOwnedByMyTeam(action, action.resource.considerations[i]);
 					break;
 				default:
 					break;
@@ -411,13 +425,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				resourceKey = this.aiAgent.characterClassResource.data["altFireStateKey"];
 				break;
 		}
-
-		// }
-		// if(action.resource.typeEnum === GameConstants.ActionTypes["SHOOT_ENEMY"] || action.resource.typeEnum === GameConstants.ActionTypes["SHOOT_AL_ENEMY"]) 
-		// 	resourceKey = this.aiAgent.characterClassResource.data["fireStateKey"];
-		// else if(action.resource.typeEnum === GameConstants.ActionTypes["ALT_SHOOT_ENEMY"])
-		// 	resourceKey = this.aiAgent.characterClassResource.data["altFireStateKey"];
-			
 		var cooldownState = this.aiAgent.character.getStateCooldown(resourceKey);
 		
 		return cooldownState?.onCooldown === false ? 1 : 0;
@@ -461,9 +468,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		if(targetCharacter.isActive) {
 			hasHealerTag = targetCharacter.characterClassResource.data["aiTagsEnum"].includes(GameConstants.AITags.HEALER) === true ? 1 : 0;
-			if(hasHealerTag === 0) {
-				var stophere = true;
-			}
 		}
 
 		// console.log("target health percentage: " + targetHealthPercentage);
@@ -471,7 +475,18 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		return hasHealerTag;
 	}
 	
+	considerationControlPointOwnedByMyTeam(action, consideration) {
+		var isOwnedbyMyTeam = 0;
+		
+		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
+		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
+			isOwnedbyMyTeam = controlPoint.ownerTeamId === this.aiAgent.user.teamId ? 1 : 0;
+		}
 
+		// console.log("controlPoint owned by my team. My Team: " + this.aiAgent.user.teamId + ", result: " + isOwnedbyMyTeam);
+
+		return isOwnedbyMyTeam;
+	}
 
 
 

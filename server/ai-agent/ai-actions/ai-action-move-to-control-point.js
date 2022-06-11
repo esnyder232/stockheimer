@@ -1,33 +1,25 @@
 const AIActionBase = require('./ai-action-base.js');
 const logger = require("../../../logger.js");
 
-//this is for the actions "MOVE_TO_ENEMY" and "MOVE_TO_ALLY"
-class AIActionMoveToTarget extends AIActionBase.AIActionBase {
+class AIActionMoveToControlPoint extends AIActionBase.AIActionBase {
 	constructor(aiAgent, actionScore) {
 		super(aiAgent, actionScore);
-		this.actionName = "MOVE_TO_TARGET";
+		this.actionName = "MOVE_TO_CONTROL_POINT";
 		this.checkTimer = 1000;
 		this.checkTimerInterval = 1000;	//ms
 		this.nodePath = [];
 		this.currentNode = 0;
-		this.targetCharacter = null;
-		
-		this.characterEventCallbackMapping = [ 
-			{eventName: "character-deactivated", cb: this.enemyCharacterDeactivated.bind(this), handleId: null}
-		];
+		this.targetControlPoint = null;
 	}
 	
 	enter(dt) {
 		// logger.log("info", "AI " + this.aiAgent.id + ", action " + this.actionName + ' enter');
 
-		this.targetCharacter = this.aiAgent.gs.gom.getGameObjectByID(this.actionScore.characterId);
+		this.targetControlPoint = this.aiAgent.gs.gom.getGameObjectByID(this.actionScore.controlPointId);
 
-		if(this.targetCharacter !== null && this.targetCharacter.em !== null && this.targetCharacter.isActive === true && this.aiAgent.character?.isActive === true) {
-			//register stuff to the character
-			this.targetCharacter.em.batchRegisterForEvent(this.characterEventCallbackMapping);
-
+		if(this.targetControlPoint !== null && this.targetControlPoint.isActive === true && this.aiAgent.character?.isActive === true) {
 			var currentPos = this.aiAgent.character.getPlanckPosition();
-			var targetPos = this.targetCharacter.getPlanckPosition();
+			var targetPos = this.targetControlPoint.getPlanckPosition();
 			if(targetPos !== null) {
 				var pathResults = this.aiAgent.getPathToTarget(currentPos, targetPos, this.aiAgent.character.characterClearance);
 				this.nodePath = pathResults.nodePath;
@@ -43,11 +35,11 @@ class AIActionMoveToTarget extends AIActionBase.AIActionBase {
 	update(dt) {
 		this.checkTimer += dt;
 
-		if(this.targetCharacter?.isActive === true && this.aiAgent.character?.isActive === true) {
+		if(this.aiAgent.character?.isActive === true) {
 			var currentPos = this.aiAgent.character.getPlanckPosition();
-			var targetPos = this.targetCharacter.getPlanckPosition();
+			var targetPos = this.targetControlPoint.getPlanckPosition();
 
-			//update the path incase the target moved around alot
+			//update the path incase the character was moved off the control point
 			if(this.checkTimer >= this.checkTimerInterval) {
 				this.checkTimer = 0;
 				var pathResults = this.aiAgent.getPathToTarget(currentPos, targetPos, this.aiAgent.character.characterClearance);
@@ -64,10 +56,6 @@ class AIActionMoveToTarget extends AIActionBase.AIActionBase {
 	exit(dt) {
 		// logger.log("info", "AI " + this.aiAgent.id + ", action " + this.actionName + ' exit');
 
-		if(this.targetCharacter !== null && this.targetCharacter.em !== null) {
-			this.targetCharacter.em.batchUnregisterForEvent(this.characterEventCallbackMapping);
-		}
-
 		//stop the aiAgent's character
 		this.aiAgent.frameInputChangeMovement(false, false, false, false);
 		this.aiAgent.resetPathingVariables();
@@ -82,4 +70,4 @@ class AIActionMoveToTarget extends AIActionBase.AIActionBase {
 	}
 }
 
-exports.AIActionMoveToTarget = AIActionMoveToTarget
+exports.AIActionMoveToControlPoint = AIActionMoveToControlPoint

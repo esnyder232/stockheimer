@@ -31,21 +31,22 @@
 	},
 
 	"ActionTypes": {
-		"NO_TYPE": 				0,
-		"IDLE": 				1,
-		"MOVE_TO_ENEMY": 		2,
-		"MOVE_AWAY_ENEMY": 		3,
-		"STAY_CLOSE_TO_ENEMY":	4,
-		"MOVE_TO_ALLY":			5,
-		"MOVE_AWAY_ALLY":		6,
+		"NO_TYPE": 					0,
+		"IDLE": 					1,
+		"MOVE_TO_ENEMY": 			2,
+		"MOVE_AWAY_ENEMY": 			3,
+		"STAY_CLOSE_TO_ENEMY":		4,
+		"MOVE_TO_ALLY":				5,
+		"MOVE_AWAY_ALLY":			6,
+		"MOVE_TO_CONTROL_POINT":	7,
 
 
 
-		"SHOOT_ENEMY": 			7,
-		"SHOOT_ALLY":			8,
-		"ALT_SHOOT_ENEMY":		9,
-		"ALT_SHOOT_ALLY":		10,
-		"ALT_SHOOT_SELF":		11
+		"SHOOT_ENEMY": 				8,
+		"SHOOT_ALLY":				9,
+		"ALT_SHOOT_ENEMY":			10,
+		"ALT_SHOOT_ALLY":			11,
+		"ALT_SHOOT_SELF":			12
 	}, 
 
 	"ConsiderationTypes": {
@@ -60,7 +61,8 @@
 		"MY_TARGETS_HEALTH_CAPACITY": 					8,
 		"MS_PASSED_SINCE_SAME_ACTION":					9,
 		"TARGET_CONTAINS_TAG_HEALER":					10,
-		"SKILL_OFF_COOLDOWN":							11
+		"SKILL_OFF_COOLDOWN":							11,
+		"CONTROL_POINT_OWNED_BY_MY_TEAM":				12
 	},
 	
 	"ResponseCurves": {

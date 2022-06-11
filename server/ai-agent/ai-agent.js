@@ -54,6 +54,33 @@ class AIAgent {
 		};
 
 		this.actionHistory = [];
+
+		///////////////////
+		// shimmying stuff used for moving the character along the path
+		this.nodeRadiusSquared = 0.01;	//radius to determine if the character has reached its current node
+		
+		this.shimmyOveride = false;		//this tells the ai to shimmy to the left or right of their intended direction (in case there is an obstacle in the way)
+		this.shimmyCurrentTimer = 0;	//current time to shimmy left or right
+		this.shimmyTimeLength = 300;	//ms to follow shimmy velocity direction
+		this.shimmyTimeLengthVariance = 300; //+-ms variance to shimmyTimeLength
+		this.shimmyDirection = {
+			x: 0,
+			y: 0
+		};
+		this.shimmyOverrideAccumulationValue = 0; 		//basically, number of frames the entity hasn't moved
+		this.shimmyOverrideAccumulationThreshold = 5;	//number of frames to determine if the shimmyOverride should be engaged.
+		this.shimmyInput = {
+			angle: 0,
+			up: false,
+			down: false,
+			left: false,
+			right: false
+		};
+
+		this.prevCharacterPosition = {x: 0, y: 0};
+
+		//
+		///////////////////
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -195,6 +222,233 @@ class AIAgent {
 	frameInputChangeDirection(characterDirection) {
 		this.frameInput.characterDirection = characterDirection;
 	}
+
+
+	//This takes in a nodepath, a character's currentPosition, and the currentNode to travel too, and navigates the character to the currentNode to travel too.
+	//This returns the next node to travel too (it returns the nodePath index of the next node to travel to).
+	//Ex:
+	//If the currentNode is 2, and it was reached, this returns the next path in the character's unobstructed LOS. Example: 3 or 7.
+	//If the currentNode is 2, and it was not reached, this returns 2.
+	//If the currentNode is 2, and the nodePath's length is 2, it returns 2.
+	moveAlongPath(currentPos, nodePath, currentNode, dt) {
+		//check if you have reached your current node
+		if(currentNode < nodePath.length && nodePath[currentNode]) {
+			var errorX = nodePath[currentNode].xPlanck - currentPos.x;
+			var errorY = (nodePath[currentNode].yPlanck * -1) - currentPos.y;
+			var squaredDistance = errorX * errorX + errorY * errorY;
+
+			//if you have reached your current node
+			if(squaredDistance <= this.nodeRadiusSquared) {
+				currentNode++;
+
+				//find the next node in the line of sight
+				currentNode = this.findNextLOSNode(currentPos, nodePath, currentNode);
+				// this.findNextLOSNode(currentPos);
+				
+				//destination reached
+				if(currentNode > nodePath.length-1) {
+					//stop the character
+					this.frameInputChangeMovement(false, false, false, false);
+				}
+			}
+		}
+		
+		//travel to the next node
+		//if shimmy is engaged, do that instead of navigating to the next node
+		if(this.shimmyOveride) {
+			this.frameInputChangeMovement(this.shimmyInput.up, this.shimmyInput.down, this.shimmyInput.left, this.shimmyInput.right);
+			this.shimmyCurrentTimer -= dt;
+
+			//turn off shimmy mode
+			if(this.shimmyCurrentTimer <= 0) {
+				// logger.log("info", 'shimm mode disengaged!');
+				this.shimmyOveride = false;
+				currentNode = this.findNextLOSNode(currentPos, nodePath, currentNode);
+				// this.findNextLOSNode(currentPos);
+			}
+		}
+		//navigate to the current node if there are any left
+		else if(currentNode < nodePath.length && nodePath[currentNode]) {
+			var finalInput = this.calcSteeringStraightLine(currentPos, {x: nodePath[currentNode].xPlanck, y: -1*nodePath[currentNode].yPlanck});
+			this.frameInputChangeMovement(finalInput.up, finalInput.down, finalInput.left, finalInput.right);
+
+			//check position from prev position. If you haven't moved in a while, add to the shimmy accumulator
+			if(!this.shimmyOveride){
+				var dx = Math.abs(this.prevCharacterPosition.x - currentPos.x);
+				var dy = Math.abs(this.prevCharacterPosition.y - currentPos.y);
+				
+				if(dx < 0.01 && dy < 0.01) {
+					this.shimmyOverrideAccumulationValue += 1;
+				}
+
+				//engage shimmy mode
+				if(this.shimmyOverrideAccumulationValue >= this.shimmyOverrideAccumulationThreshold) {
+					// logger.log("info", 'shimm mode engaged!');
+					this.shimmyOveride = true;
+					this.shimmyOverrideAccumulationValue = 0;
+
+					var randAngleMultiplier = Math.floor(Math.random() * 2) + 1; 			//1-2
+					var randAngleDir = Math.floor(Math.random() * 2) === 0 ? 1 : -1;		//-1 or 1
+					var randShimmyTimeLength = Math.floor(Math.random() * this.shimmyTimeLengthVariance);
+
+					//get a random angle between +-45 to 90 degrees from where you want to go
+					this.shimmyInput.angle = ((randAngleMultiplier * Math.PI/4) * randAngleDir) * finalInput.angle;
+
+					//translate the shimmy angle into actual inputs
+					var xAngle = Math.cos(this.shimmyInput.angle);
+					var yAngle = Math.sin(this.shimmyInput.angle);
+					
+					if(xAngle >= 0.5) this.shimmyInput.right = true; else if(xAngle <= -0.5) this.shimmyInput.left = true;
+					if(yAngle >= 0.5) this.shimmyInput.up = true; else if(yAngle <= -0.5) this.shimmyInput.down = true;
+
+					this.shimmyCurrentTimer = this.shimmyTimeLength + randShimmyTimeLength;
+				}
+			}
+		}
+
+		//save the currentPosition for shimmy calculation next time
+		this.prevCharacterPosition.x = currentPos.x;
+		this.prevCharacterPosition.y = currentPos.y;
+
+		return currentNode;
+	}
+
+
+
+
+	//This returns the inputs for steering the character from the starting to the ending position.
+	//The starting and ending positions are assumed to be in planck coordinates.
+	//startingPos: 	{x:0, y:0}
+	//endingPos: 	{x:1, y:0}
+	calcSteeringStraightLine(startingPos, endingPos) {
+		var finalInput = {
+			angle: 0,
+			up: false,
+			down: false,
+			left: false,
+			right: false
+		};
+
+		var dx = endingPos.x - startingPos.x;
+		var dy = endingPos.y - startingPos.y;
+
+		if(Math.abs(dx) === 0 && Math.abs(dy) === 0) {
+			dx = 1;
+		}
+		finalInput.angle = Math.atan(dy / dx);
+		
+		//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
+		//this basically just flips the direction of the x and y
+		finalInput.angle += (endingPos.x - startingPos.x) < 0 ? Math.PI : 0;
+		
+		//hackilicous
+		var xAngle = Math.cos(finalInput.angle);
+		var yAngle = Math.sin(finalInput.angle);
+		
+		if(xAngle >= 0.5) finalInput.right = true; else if(xAngle <= -0.5) finalInput.left = true;
+		if(yAngle >= 0.5) finalInput.up = true; else if(yAngle <= -0.5) finalInput.down = true;
+
+		return finalInput;
+	}
+
+	//Returns a node path from the currentPos to the targetPos.
+	//The node path can be a straight line if the character's LOS is unobstructed.
+	//This takes into account the clearance of the character as well.
+	getPathToTarget(currentPos, targetPos, characterClearance) {
+		var pathResults = {
+			nodePath: [],
+			currentNode: 0
+		};
+		var losResults = null;
+
+
+		//check to see if you have a LOS to them
+		if(targetPos !== null && currentPos !== null) {
+			losResults = this.lineOfSightTest(currentPos, targetPos);
+
+			//if you have line of sight, and the path is onobstructed, move in a straight line to the target.
+			if (losResults.pathUnobstructed) {
+				pathResults.currentNode = 0;
+				var userNode = this.gs.activeTilemap.getNode(targetPos.x, -targetPos.y, characterClearance);
+
+				if(userNode !== null) {
+					pathResults.currentNode = 0;
+					pathResults.nodePath = [];
+					pathResults.nodePath.push(userNode);
+				}
+			}
+			//if the user doesn't even have LOS, find the player with A*
+			else {
+				pathResults.nodePath = this.gs.activeTilemap.AStarSearch(currentPos, targetPos, characterClearance);
+				
+				if(pathResults.nodePath.length > 0) {
+					pathResults.currentNode = this.findNextLOSNode(currentPos, pathResults.nodePath, pathResults.currentNode);
+				}
+			}
+		}
+
+		return pathResults;
+	}
+
+
+	
+	//Returns the next node along the node path that has an unobstructed line of sight of the current position (current character's position).
+	//The returned node will always be < nodePath.length-1
+	findNextLOSNode(currentPos, nodePath, nodeStartLOSTest) {
+		const Vec2 = this.gs.pl.Vec2;
+		//do line of sight tests to get the next logical node
+		var currentNode = nodeStartLOSTest;
+		var pathToNodeUnobstructed = true;
+		var losResults = {};
+		while(pathToNodeUnobstructed) {
+			if(currentNode < nodePath.length-1) {
+				var nodePos = new Vec2(nodePath[currentNode + 1].xPlanck, -nodePath[currentNode + 1].yPlanck);
+
+				losResults = this.lineOfSightTest(currentPos, nodePos);
+				pathToNodeUnobstructed = losResults.pathUnobstructed;
+				if(pathToNodeUnobstructed) {
+					//logger.log("info", 'current node in LOS(' + nodePath[currentNode + 1].x + ',' + nodePath[currentNode + 1].y + '). Skipping the node.')
+					currentNode++
+				}
+				else {
+					//intentionally empty
+					//logger.log("info", 'current node NOT in LOS(' + nodePath[currentNode + 1].x + ',' + nodePath[currentNode + 1].y + ').')
+				}
+			}
+			//final node is reached
+			else {
+				pathToNodeUnobstructed = false;
+			}
+		}
+
+		return currentNode;
+	}
+
+	//this just resets things for pathing purposes. Like shimming counters and inputs.
+	resetPathingVariables() {
+		this.nodeRadiusSquared = 0.01;	//radius to determine if the character has reached its current node
+		
+		this.shimmyOveride = false;		//this tells the ai to shimmy to the left or right of their intended direction (in case there is an obstacle in the way)
+		this.shimmyCurrentTimer = 0;	//current time to shimmy left or right
+		this.shimmyTimeLength = 300;	//ms to follow shimmy velocity direction
+		this.shimmyTimeLengthVariance = 300; //+-ms variance to shimmyTimeLength
+		this.shimmyDirection = {
+			x: 0,
+			y: 0
+		};
+		this.shimmyOverrideAccumulationValue = 0; 		//basically, number of frames the entity hasn't moved
+		this.shimmyOverrideAccumulationThreshold = 5;	//number of frames to determine if the shimmyOverride should be engaged.
+		this.shimmyInput = {
+			angle: 0,
+			up: false,
+			down: false,
+			left: false,
+			right: false
+		};
+
+		this.prevCharacterPosition = {x: 0, y: 0};
+	}
+
 
 	lineOfSightTest(pos, pos2) {
 		const Vec2 = this.gs.pl.Vec2;

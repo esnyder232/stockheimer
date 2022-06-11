@@ -517,6 +517,9 @@ class GlobalFuncs {
 					// }
 					return actionObject.actionScore.characterId === actionScore.characterId;
 					break;
+				case GameConstants.ActionTypes["MOVE_TO_CONTROL_POINT"]:
+					return actionObject.actionScore.controlPointId === actionScore.controlPointId;
+					break;
 				default:
 					return true;
 			}

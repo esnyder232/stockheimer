@@ -291,15 +291,29 @@ class GameServerLoadingMap extends GameServerBaseState {
 		}
 
 
-		//load character class state resources
+		//load character ai class resources
 		if(!bError) {
-			var aiClassKey = this.globalfuncs.getValueDefault(resource?.data?.aiClass, null);
+			var aiClasses = this.globalfuncs.getValueDefault(resource?.data?.aiClasses, null);
+			if(aiClasses !== null) {
+				//first try to use in based on the gametype
+				var aiClassToUse = aiClasses.find((x) => {return x.gameType === this.gs.currentGameType});
 
-			if(aiClassKey !== null) {
-				this.gs.rm.loadResource(aiClassKey, "ai-class", this.cbAIClassComplete.bind(this));
+				//if nothing was found, try to use the ones in the "other" category
+				if(aiClassToUse === undefined) {
+					aiClassToUse = aiClasses.find((x) => {return x.gameType === "other"});
+				}
+
+				var aiClassResourceKey = this.globalfuncs.getValueDefault(aiClassToUse?.aiClassResourceKey, null);
+
+				//also assign the key to the character class resource so other systems can know which one to use
+				resource.data.aiClassResourceKey = aiClassResourceKey;
+
+				//now load in the ai class resource
+				if(aiClassResourceKey !== null) {
+					this.gs.rm.loadResource(aiClassResourceKey, "ai-class", this.cbAIClassComplete.bind(this));
+				}
 			}
 		}
-
 
 		if(bError) {
 			logger.log("error", errorMessage);
