@@ -14,6 +14,10 @@
 	},
 	"aiClasses": [
 		{
+			"gameType": "koth",
+			"aiClassResourceKey": "data/ai-classes/slime-med-ai-koth.json"
+		},
+		{
 			"gameType": "other",
 			"aiClassResourceKey": "data/ai-classes/slime-med-ai.json"
 		}

@@ -15,7 +15,7 @@
 	"aiClasses": [
 		{
 			"gameType": "koth",
-			"aiClassResourceKey": "data/ai-classes/slime-healer-ai.json"
+			"aiClassResourceKey": "data/ai-classes/slime-healer-ai-koth.json"
 		},
 		{
 			"gameType": "other",
