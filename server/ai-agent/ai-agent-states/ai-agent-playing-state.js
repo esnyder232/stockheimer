@@ -305,6 +305,14 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["AM_I_OCCUPYING_POINT"]:
 					x = this.considerationAmIOccupyingPoint(action, action.resource.considerations[i]);
 					break;
+				case GameConstants.ConsiderationTypes["NUM_ENEMIES_OCCUPYING_POINT"]:
+					x = this.considerationNumEnemiesOccupyingPoint(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["NUM_ENEMIES_TO_NUM_ALLIES_RATIO_OCCUPYING_POINT"]:
+					x = this.considerationNumEnemiesToNumAlliesRatioOccupyingPoint(action, action.resource.considerations[i]);
+					break;
+
+					
 					
 
 					
@@ -562,11 +570,45 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		// console.log("Am I occupying point: " + amIOccupyingControlPoint);
 
-		return 1;
+		return amIOccupyingControlPoint;
 	}
 	
+	considerationNumEnemiesOccupyingPoint(action, consideration) {
+		var numEnemiesOccupyingControlPoint = 0;
+		
+		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
+		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
+			for (var teamId in controlPoint.teamCaptureRates) {
+				if (controlPoint.teamCaptureRates.hasOwnProperty(teamId)) {
+					if(controlPoint.teamCaptureRates[teamId].teamId !== this.aiAgent.user.teamId) {
+						numEnemiesOccupyingControlPoint += controlPoint.teamCaptureRates[teamId].charactersOccupyingPoint.length;
+					}
+				}
+			}
+		}
 
-	
+		// console.log("Num enemies occupying point: " + numEnemiesOccupyingControlPoint);
+
+		return numEnemiesOccupyingControlPoint;
+	}
+
+	considerationNumEnemiesToNumAlliesRatioOccupyingPoint(action, consideration) {
+		var ratio = 0;
+		var numAllies = 0;
+		var numEnemies = 0;
+		
+		numAllies = this.considerationNumAlliesOccupyingPoint(action, consideration);
+		numEnemies = this.considerationNumEnemiesOccupyingPoint(action, consideration);
+
+		if(numAllies === 0) {
+			numAllies = 1;
+		}
+
+		ratio = numEnemies / numAllies;
+		// console.log("Num enemies to allies ratio: " + ratio);
+
+		return ratio;
+	}
 
 
 

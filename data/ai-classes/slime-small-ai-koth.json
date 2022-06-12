@@ -99,19 +99,61 @@
 		},
 		{
 			"type": "MOVE_TO_CONTROL_POINT",
-			"name": "Move to control point and capture it",
+			"name": "If you do NOT own the point yet, move to control point and capture it if there are not already allies on the point.",
 			"considerations" : [
 				{
 					"type": "CONTROL_POINT_OWNED_BY_MY_TEAM",
 					"responseCurve": "LINEAR",
 					"responseCurveParameters": {
-						"A": -0.2,
+						"A": -1.0,
 						"B": 0,
 						"h": 0.0,
-						"k": 0.4
+						"k": 1.0
 					},
-					"xMax": 500,
-					"xMin": 100
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "NUM_ALLIES_OCCUPYING_POINT",
+					"responseCurve": "INVERSE",
+					"responseCurveParameters": {
+						"A": 0.02,
+						"B": 0,
+						"h": -0.03,
+						"k": 0.29
+					},
+					"xMax": 3,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_TO_CONTROL_POINT",
+			"name": "If you do own the point yet, if there are enemies trying to capture it and there is not already somebody on it",
+			"considerations" : [
+				{
+					"type": "CONTROL_POINT_OWNED_BY_MY_TEAM",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "NUM_ENEMIES_TO_NUM_ALLIES_RATIO_OCCUPYING_POINT",
+					"responseCurve": "INVERSE",
+					"responseCurveParameters": {
+						"A": -0.02,
+						"B": 0,
+						"h": 1.035,
+						"k": 0.29
+					},
+					"xMax": 1,
+					"xMin": 0
 				}
 			]
 		}
