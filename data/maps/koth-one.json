@@ -12,18 +12,14 @@
 		"roundOverWinTimeLength": 4000,
 		"roundMapEndTimeLength": 4000,
 		"userRespawningTimeLength": 400,
-		"matchWinCondition": 1,
+		"matchWinCondition": 10,
 		"kothTimeLength": 1000000
 	},
 	
-	"minimumUsersPlaying": 24,
+	"minimumUsersPlaying": 3,
 	"classData": [
 		"data/character-classes/slime-small.json",
-		"data/character-classes/slime-med.json",
-		"data/character-classes/slime-large.json",
-		"data/character-classes/slime-fighter.json",
-		"data/character-classes/slime-healer.json",
-		"data/character-classes/slime-defender.json"
+		"data/character-classes/slime-healer.json"
 	],
 	"teamData": [
 		{

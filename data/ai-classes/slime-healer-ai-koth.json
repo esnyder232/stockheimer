@@ -148,9 +148,53 @@
 					},
 					"xMax": 1,
 					"xMin": 0
+				},
+				{
+					"type": "AM_I_OCCUPYING_POINT",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 0.0,
+						"B": 0,
+						"h": 0,
+						"k": 1.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+
+			]
+		},
+		{
+			"type": "MOVE_TO_CONTROL_POINT",
+			"name": "Move to control point and capture it",
+			"considerations" : [
+				{
+					"type": "CONTROL_POINT_CAPTURING_BY_MY_TEAM",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -1.0,
+						"B": 0,
+						"h": 0,
+						"k": 1.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "CONTROL_POINT_CAPTURING_BY_ANY_TEAM",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
 				}
 			]
 		}
+
 	],
 	"skillActions": [
 		{

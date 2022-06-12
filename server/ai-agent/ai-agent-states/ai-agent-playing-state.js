@@ -293,6 +293,24 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["CONTROL_POINT_OWNED_BY_MY_TEAM"]:
 					x = this.considerationControlPointOwnedByMyTeam(action, action.resource.considerations[i]);
 					break;
+				case GameConstants.ConsiderationTypes["CONTROL_POINT_CAPTURING_BY_MY_TEAM"]:
+					x = this.considerationControlPointCapturingByMyTeam(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["CONTROL_POINT_CAPTURING_BY_ANY_TEAM"]:
+					x = this.considerationControlPointCapturingByAnyTeam(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["NUM_ALLIES_OCCUPYING_POINT"]:
+					x = this.considerationNumAlliesOccupyingPoint(action, action.resource.considerations[i]);
+					break;
+				case GameConstants.ConsiderationTypes["AM_I_OCCUPYING_POINT"]:
+					x = this.considerationAmIOccupyingPoint(action, action.resource.considerations[i]);
+					break;
+					
+
+					
+					
+
+					
 				default:
 					break;
 			}
@@ -476,17 +494,79 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	}
 	
 	considerationControlPointOwnedByMyTeam(action, consideration) {
-		var isOwnedbyMyTeam = 0;
+		var isOwnedByMyTeam = 0;
 		
 		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
 		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
-			isOwnedbyMyTeam = controlPoint.ownerTeamId === this.aiAgent.user.teamId ? 1 : 0;
+			isOwnedByMyTeam = controlPoint.ownerTeamId === this.aiAgent.user.teamId ? 1 : 0;
 		}
 
-		// console.log("controlPoint owned by my team. My Team: " + this.aiAgent.user.teamId + ", result: " + isOwnedbyMyTeam);
+		// console.log("controlPoint owned by my team. My Team: " + this.aiAgent.user.teamId + ", result: " + isOwnedByMyTeam);
 
-		return isOwnedbyMyTeam;
+		return isOwnedByMyTeam;
 	}
+
+	considerationControlPointCapturingByMyTeam(action, consideration) {
+		var isCapturingByMyTeam = 0;
+		
+		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
+		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
+			if(controlPoint.capturingTeamId === this.aiAgent.user.teamId) {
+				isCapturingByMyTeam = 1;
+			}
+		}
+
+		// console.log("controlPoint capturing by my team. My Team: " + this.aiAgent.user.teamId + ", result: " + isCapturingByMyTeam);
+
+		return isCapturingByMyTeam;
+	}
+
+	considerationControlPointCapturingByAnyTeam(action, consideration) {
+		var isCapturingByAnyTeam = 0;
+		
+		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
+		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
+			if(controlPoint.capturingTeamId !== 0) {
+				isCapturingByAnyTeam = 1;
+			}
+		}
+
+		// console.log("controlPoint capturing by ANY team. My Team: " + this.aiAgent.user.teamId + ", result: " + isCapturingByAnyTeam);
+
+		return isCapturingByAnyTeam;
+	}
+
+	considerationNumAlliesOccupyingPoint(action, consideration) {
+		var numAlliesOccupyingControlPoint = 0;
+		
+		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
+		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
+			for(var i = 0; i < controlPoint.teamCaptureRates[this.aiAgent.user.teamId].charactersOccupyingPoint.length; i++) {
+				numAlliesOccupyingControlPoint += controlPoint.teamCaptureRates[this.aiAgent.user.teamId].charactersOccupyingPoint[i] !== this.aiAgent.character.id ? 1 : 0;
+			}
+		}
+
+		// console.log("Num allies occupying point: " + numAlliesOccupyingControlPoint);
+
+		return numAlliesOccupyingControlPoint;
+	}
+
+
+	considerationAmIOccupyingPoint(action, consideration) {
+		var amIOccupyingControlPoint = 0;
+		
+		var controlPoint = this.aiAgent.gs.gom.getGameObjectByID(action.controlPointId);
+		if(this.aiAgent.user.teamId !== this.spectatorTeamId && controlPoint.isActive) {
+			amIOccupyingControlPoint = controlPoint.teamCaptureRates[this.aiAgent.user.teamId].charactersOccupyingPoint.find((x) => {return x === this.aiAgent.character.id}) >= 0 ? 1 : 0;
+		}
+
+		// console.log("Am I occupying point: " + amIOccupyingControlPoint);
+
+		return 1;
+	}
+	
+
+	
 
 
 
