@@ -292,11 +292,16 @@ class AIAgent {
 					var randShimmyTimeLength = Math.floor(Math.random() * this.shimmyTimeLengthVariance);
 
 					//get a random angle between +-45 to 90 degrees from where you want to go
-					this.shimmyInput.angle = ((randAngleMultiplier * Math.PI/4) * randAngleDir) * finalInput.angle;
+					this.shimmyInput.angle = ((randAngleMultiplier * Math.PI/4) * randAngleDir) + finalInput.angle;
 
 					//translate the shimmy angle into actual inputs
 					var xAngle = Math.cos(this.shimmyInput.angle);
 					var yAngle = Math.sin(this.shimmyInput.angle);
+
+					this.shimmyInput.up = false;
+					this.shimmyInput.down = false;
+					this.shimmyInput.left = false;
+					this.shimmyInput.right = false;
 					
 					if(xAngle >= 0.5) this.shimmyInput.right = true; else if(xAngle <= -0.5) this.shimmyInput.left = true;
 					if(yAngle >= 0.5) this.shimmyInput.up = true; else if(yAngle <= -0.5) this.shimmyInput.down = true;
