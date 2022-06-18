@@ -239,17 +239,14 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		var considerationScoreAccum = 1;
 
 
-		//STOPPED HERE
-		// First, put in ai for each class. That way you can see more considerations that are required.
-		// - do healer next
-		// 
-		//
-		// Do a blackboard based on the following in order:
+		// Do a consideration caching system based on the following in order:
 		// - per consideration calculation
 		// - per context targets
-		// - check time
+		// 
+		// 
 		//
-		// also stagger the ai utility scoring on a frequency basis. And make sure the blackboard caching lasts that long.
+		//
+		// also stagger the ai utility scoring on a frequency basis. And make sure the caching lasts that long.
 	
 
 
@@ -261,19 +258,19 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 			//calculate the 'x' in the correct context
 			switch(action.resource.considerations[i].typeEnum) {
 				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_TARGET"]:
-					x = this.considerationDistanceSquaredFromEnemy(action, action.resource.considerations[i])
-					break;				
+					x = this.considerationDistanceSquaredFromEnemy(action, action.resource.considerations[i]);
+					break;
 				case GameConstants.ConsiderationTypes["MY_DISTANCE_SQUARED_FROM_ANY_ENEMY"]:
-					x = this.considerationDistanceSquaredFromAnyEnemy(action, action.resource.considerations[i])
+					x = this.considerationDistanceSquaredFromAnyEnemy(action, action.resource.considerations[i]);
 					break;
 				case GameConstants.ConsiderationTypes["HAS_LINE_OF_SIGHT_FROM_TARGET"]:
-					x = this.considerationHasLineOfSightFromEnemy(action, action.resource.considerations[i])
+					x = this.considerationHasLineOfSightFromEnemy(action, action.resource.considerations[i]);
 					break;
 				case GameConstants.ConsiderationTypes["HAS_PATH_UNOBSTRUCTED_TO_TARGET"]:
-					x = this.considerationHasPathUnobstructedToEnemy(action, action.resource.considerations[i])
+					x = this.considerationHasPathUnobstructedToEnemy(action, action.resource.considerations[i]);
 					break;
 				case GameConstants.ConsiderationTypes["MS_PASSED_SINCE_SAME_ACTION"]:
-					x = this.considerationMsPassedSinceSameAction(action, action.resource.considerations[i]);
+					x = this.considerationMsPassedSinceSameAction(action, action.resource.considerations[i]);;
 					break;
 				case GameConstants.ConsiderationTypes["SKILL_OFF_COOLDOWN"]:
 					x = this.considerationSkillOffCooldown(action, action.resource.considerations[i]);
@@ -311,14 +308,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["NUM_ENEMIES_TO_NUM_ALLIES_RATIO_OCCUPYING_POINT"]:
 					x = this.considerationNumEnemiesToNumAlliesRatioOccupyingPoint(action, action.resource.considerations[i]);
 					break;
-
-					
-					
-
-					
-					
-
-					
 				default:
 					break;
 			}
@@ -390,25 +379,67 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		return xSquared;
 	}
 
+
 	considerationHasLineOfSightFromEnemy(action, consideration) {
 		var bLineOfSight = 0;
-		
-		var myPos = this.aiAgent.character.getPlanckPosition();
-		var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
-		var enemyPos = null;
-		if(enemyC !== null) {
-			enemyPos = enemyC.getPlanckPosition();
-		}
 
-		//at this point, it is okay to calculate X and run through the response curve
-		if(myPos !== null && enemyPos !== null) {
-			bLineOfSight = this.aiAgent.lineOfSightTest(myPos, enemyPos).isLOS ? 1 : 0;
+		//order the character ids in order ascending
+		var params = [];
+		var param1 = this.aiAgent.character.id < action.characterId ? this.aiAgent.character.id : action.characterId;
+		var param2 = this.aiAgent.character.id < action.characterId ? action.characterId : this.aiAgent.character.id;
+		params.push(param1);
+		params.push(param2);
+		var ttl = 1000;
+
+		var cacheKey = "calcLOS=" + params.join("=");
+		var cacheObj = this.aiAgent.gs.cache.getCacheValue(cacheKey);
+
+		if(cacheObj === null || (cacheObj.ts + ttl) <= this.aiAgent.gs.currentTick) {
+			// console.log("calculating LOS for " + cacheKey);
+			var myPos = this.aiAgent.character.getPlanckPosition();
+			var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+			var enemyPos = null;
+			if(enemyC !== null) {
+				enemyPos = enemyC.getPlanckPosition();
+			}
+	
+			//at this point, it is okay to calculate X and run through the response curve
+			if(myPos !== null && enemyPos !== null) {
+				bLineOfSight = this.aiAgent.lineOfSightTest(myPos, enemyPos).isLOS ? 1 : 0;
+
+				this.aiAgent.gs.cache.setCacheValue(cacheKey, bLineOfSight);
+			}
+		} else {
+			bLineOfSight = cacheObj.value
 		}
+		
 
 		// console.log("LOS TEST: " + bLineOfSight);
 
 		return bLineOfSight;
 	}
+
+
+	
+	// considerationHasLineOfSightFromEnemy(action, consideration) {
+	// 	var bLineOfSight = 0;
+		
+	// 	var myPos = this.aiAgent.character.getPlanckPosition();
+	// 	var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+	// 	var enemyPos = null;
+	// 	if(enemyC !== null) {
+	// 		enemyPos = enemyC.getPlanckPosition();
+	// 	}
+
+	// 	//at this point, it is okay to calculate X and run through the response curve
+	// 	if(myPos !== null && enemyPos !== null) {
+	// 		bLineOfSight = this.aiAgent.lineOfSightTest(myPos, enemyPos).isLOS ? 1 : 0;
+	// 	}
+
+	// 	// console.log("LOS TEST: " + bLineOfSight);
+
+	// 	return bLineOfSight;
+	// }
 
 
 	considerationHasPathUnobstructedToEnemy(action, consideration) {

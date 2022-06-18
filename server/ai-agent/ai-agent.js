@@ -243,7 +243,6 @@ class AIAgent {
 
 				//find the next node in the line of sight
 				currentNode = this.findNextLOSNode(currentPos, nodePath, currentNode);
-				// this.findNextLOSNode(currentPos);
 				
 				//destination reached
 				if(currentNode > nodePath.length-1) {

@@ -16,7 +16,7 @@
 		"kothTimeLength": 1000000
 	},
 	
-	"minimumUsersPlaying": 24,
+	"minimumUsersPlaying": 25,
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",

@@ -18,6 +18,7 @@ class GameServerLoadingMap extends GameServerBaseState {
 
 		//reset some stuff
 		this.gs.minimumUsersPlaying = 0;
+		this.gs.cache.clearCache();
 
 		if(this.gs.currentMapIndex >= 0 && this.gs.currentMapIndex < this.gs.mapRotation.length) {
 			this.gs.currentMapResourceKey = this.gs.mapRotation[this.gs.currentMapIndex];

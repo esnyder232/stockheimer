@@ -7,7 +7,6 @@ const {UserManager} = require('./managers/user-manager.js');
 const {WebsocketManager} = require('./managers/websocket-manager.js');
 const {GameServerStopped} = require('./game-server-states/game-server-stopped.js');
 const UserWaitingForServerState = require('./user/user-waiting-for-server-state.js');
-const {CollisionSystem} = require ('./systems/collision-system.js');
 const {GameObjectManager} = require ('./managers/game-object-manager.js');
 const {TilemapManager} = require ('./managers/tilemap-manager.js');
 const {AIAgentManager} = require ('./managers/ai-agent-manager.js');
@@ -16,6 +15,10 @@ const {TeamManager} = require('./managers/team-manager.js');
 const {ProcessManager} = require('./managers/process-manager.js');
 const {ResourceManager} = require('./managers/resource-manager.js');
 const {FileManager} = require('./managers/file-manager.js');
+
+const {CollisionSystem} = require ('./systems/collision-system.js');
+const {CachingSystem} = require ('./systems/caching-system.js');
+
 
 const serverConfig = require('./server-config.json');
 const GameConstants = require('../shared_files/game-constants.json');
@@ -101,7 +104,6 @@ class GameServer {
 		this.um = new UserManager();
 		this.gom = new GameObjectManager();
 		this.tmm = new TilemapManager();
-		this.cs = new CollisionSystem();
 		this.aim = new AIAgentManager();
 		this.tm = new TeamManager();
 		this.pm = new ProcessManager();
@@ -110,13 +112,15 @@ class GameServer {
 		this.fm = new FileManager();
 		this.em = new EventEmitter.EventEmitter(this);
 
+		this.cs = new CollisionSystem();
+		this.cache = new CachingSystem();
+
 		
 		//logger.log("info", 'creating gameworld done');
 
 		this.wsm.init(this);
 		this.um.init(this);
 		this.gom.init(this);
-		this.cs.init(this);
 		this.tmm.init(this);
 		this.aim.init(this);
 		this.tm.init(this);
@@ -124,6 +128,9 @@ class GameServer {
 		this.uam.init(this);
 		this.rm.init(this);
 		this.fm.init(this);
+
+		this.cs.init(this);
+		this.cache.init(this);
 
 		this.gameState = new GameServerStopped(this);
 
@@ -368,7 +375,10 @@ class GameServer {
 			//report timer
 			this.reportTimer += dt;
 			if(this.reportTimer >= this.reportTimerInterval) {
-				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + ". AI: " + this.aim.getAIAgents().length + ". Gameobjects: " + this.gom.getActiveGameObjects().length);
+				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + 
+				". AI: " + this.aim.getAIAgents().length + 
+				". Gameobjects: " + this.gom.getActiveGameObjects().length + 
+				", cached keys: " + this.cache.cacheKeyLength);
 				this.reportTimer = 0;
 				// var temp = this.um.getActiveUsersGroupedByTeams();
 				// console.log(temp);
