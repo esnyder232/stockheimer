@@ -1,24 +1,22 @@
 {
-	"name": "One - koth",
-	"tilemapResource": "assets/tilemaps/koth-one.json",
-	"mapTimeLength": 100,
+	"name": "Team Map Square - Elimination for debugging purposes",
+	"tilemapResource": "assets/tilemaps/team-map-square-debugging.json",
+	"mapTimeLength": 10000,
 	"mapMinMatch": 1,
 	"gameData": {
-		"type": "koth",
-		"roundMapStartTimeLength": 100,
-		"roundStartingTimeLength": 2000,
-		"roundPlayingTimeLength": 0,
-		"roundOverTimeLength": 4000,
-		"roundOverWinTimeLength": 4000,
-		"roundMapEndTimeLength": 4000,
-		"userRespawningTimeLength": 400,
-		"matchWinCondition": 10,
-		"kothTimeLength": 1000000
+		"type": "elimination",
+		"roundMapStartTimeLength": 5000,
+		"roundStartingTimeLength": 3000,
+		"roundPlayingTimeLength": 6000000,
+		"roundOverTimeLength": 7000,
+		"roundOverWinTimeLength": 12000,
+		"roundMapEndTimeLength": 5000,
+		"userRespawningTimeLength": 4000,
+		"matchWinCondition": 30
 	},
-	
-	"minimumUsersPlaying": 24,
+	"minimumUsersPlaying": 2,
 	"classData": [
-		"data/character-classes/slime-small.json"
+		"data/character-classes/slime-large.json"
 	],
 	"teamData": [
 		{
@@ -42,8 +40,6 @@
 			"projectileColor3Replace": "#000000ff",
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#000000ff",
-			"controlPointOwnerColor": "#646464ff",
-			"controlPointCaptureColor": "#969696ff",
 			"slotNum": 0
 		},
 		{
@@ -67,8 +63,6 @@
 			"projectileColor3Replace": "#ff9d3dff",
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#ffcd3dff",
-			"controlPointOwnerColor": "#da231dff",
-			"controlPointCaptureColor": "#ae201eff",
 			"slotNum": 1
 		},
 		{
@@ -92,8 +86,6 @@
 			"projectileColor3Replace": "#3dabffff",
 			"projectileColor4": "#C8C8C8ff",
 			"projectileColor4Replace": "#3defffff",
-			"controlPointOwnerColor": "#2034af",
-			"controlPointCaptureColor": "#108e88ff",
 			"slotNum": 2
 		}
 	],

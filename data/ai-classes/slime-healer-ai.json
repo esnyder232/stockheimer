@@ -1,0 +1,283 @@
+{
+	"name": "Example AI Brain for slime healer.",
+	"mainActions": [
+		{
+			"type": "IDLE",
+			"name": "Do nothing.",
+			"considerations" : [
+				{
+					"type": "BASE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1,
+						"B": 1,
+						"h": 0,
+						"k": 0.1
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_TO_ALLY",
+			"name": "Move to ally when far away",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "6POLY",
+					"responseCurveParameters": {
+						"A": -10.0,
+						"B": 0,
+						"h": 0.8,
+						"k": 0.8
+					},
+					"xMax": 45,
+					"xMin": 0
+				},
+				{
+					"type": "MY_TARGETS_HEALTH_CAPACITY",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 60,
+					"xMin": 0
+				},
+				{
+					"type": "TARGET_CONTAINS_TAG_HEALER",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -0.8,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_AWAY_ALLY",
+			"name": "Move away from ally if they are too close",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "6POLY",
+					"responseCurveParameters": {
+						"A": -1,
+						"B": 0,
+						"h": 0.24,
+						"k": 0.2
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "MOVE_AWAY_ENEMY",
+			"name": "Move away from enemy if they get too close",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "6POLY",
+					"responseCurveParameters": {
+						"A": -1,
+						"B": 0,
+						"h": 0.1,
+						"k": 0.5
+					},
+					"xMax": 9,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "TARGET_CONTAINS_TAG_HEALER",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		}
+	],
+	"skillActions": [
+		{
+			"type": "IDLE",
+			"name": "Do nothing.",
+			"considerations" : [
+				{
+					"type": "BASE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1,
+						"B": 1,
+						"h": 0,
+						"k": 0.01
+					},
+					"xMax": 1,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "SHOOT_ALLY",
+			"name": "Fire on an ally when they are roughly <8 blocks away",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.0
+					},
+					"xMax": 75,
+					"xMin": 0
+				},
+				{
+					"type": "HAS_LINE_OF_SIGHT_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "MS_PASSED_SINCE_SAME_ACTION",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 100.0,
+						"B": 0,
+						"h": 0.99,
+						"k": 0.0
+					},
+					"xMax": 500,
+					"xMin": 0
+				},
+				{
+					"type": "MY_TARGETS_HEALTH_PERCENTAGE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -0.8,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.8
+					},
+					"xMax": 100,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "ALT_SHOOT_ALLY",
+			"name": "Alt fire on an ally when they are roughly <4 blocks away",
+			"considerations" : [
+				{
+					"type": "MY_DISTANCE_SQUARED_FROM_TARGET",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.0
+					},
+					"xMax": 16,
+					"xMin": 0
+				},
+				{
+					"type": "SKILL_OFF_COOLDOWN",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "MY_TARGETS_HEALTH_PERCENTAGE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -30.0,
+						"B": 0,
+						"h": 0.75,
+						"k": 0.0
+					},
+					"xMax": 100,
+					"xMin": 0
+				}
+			]
+		},
+		{
+			"type": "ALT_SHOOT_SELF",
+			"name": "Alt fire on yourself if your hp is low",
+			"considerations" : [
+				{
+					"type": "SKILL_OFF_COOLDOWN",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 0.0
+					},
+					"xMax": 1,
+					"xMin": 0
+				},
+				{
+					"type": "MY_HEALTH_PERCENTAGE",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": -2.0,
+						"B": 0,
+						"h": 0.0,
+						"k": 1.6
+					},
+					"xMax": 100,
+					"xMin": 0
+				}
+			]
+		}
+	]
+}

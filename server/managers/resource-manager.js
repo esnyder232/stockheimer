@@ -11,7 +11,7 @@ const {SpriteResourceDefinition} = require("../resource-definition/sprite-resour
 const {ProjectileResourceDefinition} = require("../resource-definition/projectile-resource-definition.js");
 const {CharacterClassStateResourceDefinition} = require("../resource-definition/character-class-state-resource-definition.js");
 const {PersistentProjectileResourceDefinition} = require("../resource-definition/persistent-projectile-resource-definition.js");
-
+const {AIClassResourceDefinition} = require("../resource-definition/ai-class-resource-definition.js");
 
 class ResourceManager {
 	constructor() {
@@ -43,6 +43,8 @@ class ResourceManager {
 		this.resourceDefinitions["projectile"] = new ProjectileResourceDefinition();
 		this.resourceDefinitions["character-class-state"] = new CharacterClassStateResourceDefinition();
 		this.resourceDefinitions["persistent-projectile"] = new PersistentProjectileResourceDefinition();
+		this.resourceDefinitions["ai-class"] = new AIClassResourceDefinition();
+		
 
 		
 		

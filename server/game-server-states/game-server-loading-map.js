@@ -18,6 +18,7 @@ class GameServerLoadingMap extends GameServerBaseState {
 
 		//reset some stuff
 		this.gs.minimumUsersPlaying = 0;
+		this.gs.cache.clearCache();
 
 		if(this.gs.currentMapIndex >= 0 && this.gs.currentMapIndex < this.gs.mapRotation.length) {
 			this.gs.currentMapResourceKey = this.gs.mapRotation[this.gs.currentMapIndex];
@@ -290,6 +291,31 @@ class GameServerLoadingMap extends GameServerBaseState {
 			}
 		}
 
+
+		//load character ai class resources
+		if(!bError) {
+			var aiClasses = this.globalfuncs.getValueDefault(resource?.data?.aiClasses, null);
+			if(aiClasses !== null) {
+				//first try to use in based on the gametype
+				var aiClassToUse = aiClasses.find((x) => {return x.gameType === this.gs.currentGameType});
+
+				//if nothing was found, try to use the ones in the "other" category
+				if(aiClassToUse === undefined) {
+					aiClassToUse = aiClasses.find((x) => {return x.gameType === "other"});
+				}
+
+				var aiClassResourceKey = this.globalfuncs.getValueDefault(aiClassToUse?.aiClassResourceKey, null);
+
+				//also assign the key to the character class resource so other systems can know which one to use
+				resource.data.aiClassResourceKey = aiClassResourceKey;
+
+				//now load in the ai class resource
+				if(aiClassResourceKey !== null) {
+					this.gs.rm.loadResource(aiClassResourceKey, "ai-class", this.cbAIClassComplete.bind(this));
+				}
+			}
+		}
+
 		if(bError) {
 			logger.log("error", errorMessage);
 		}
@@ -410,31 +436,6 @@ class GameServerLoadingMap extends GameServerBaseState {
 					//nothing
 					break;
 			}
-
-
-
-			// //load persistent projectiles resources if there are any
-			// if(!bError) {
-			// 	var persistentProjectilesObj = this.globalfuncs.getValueDefault(resource?.data?.persistentProjectiles, null);
-
-			// 	if(resource?.data?.name === "Slime Defender") {
-			// 		var stophere = true;
-			// 	}
-
-			// 	if(persistentProjectilesObj !== null) {
-			// 		for (const key in persistentProjectilesObj) {
-			// 			if (persistentProjectilesObj.hasOwnProperty(key)) {
-			// 				if(persistentProjectilesObj[key]) {
-			// 					this.gs.rm.loadResource(persistentProjectilesObj[key], "persistent-projectile", this.cbPersistentProjectileComplete.bind(this));
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
-
-
-
-
 		}
 
 		if(bError) {
@@ -467,7 +468,20 @@ class GameServerLoadingMap extends GameServerBaseState {
 		}
 	}
 
+	cbAIClassComplete(resource) {
+		var bError = false;
+		var errorMessage = "";
 
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading AI Class '" + resource.key + "': No data found.";
+		}
+
+		if(bError) {
+			logger.log("error", errorMessage);
+			this.mapLoadError = true;
+		}
+	}
 }
 
 

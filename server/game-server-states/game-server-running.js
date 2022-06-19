@@ -148,6 +148,8 @@ class GameServerRunning extends GameServerBaseState {
 		this.gs.uam.update(dt);
 		this.gs.em.update(dt);
 
+		this.gs.cache.update(dt);
+
 		this.gs.frameNum++;
 
 		this.gs.mapTimeAcc += dt;
@@ -159,6 +161,8 @@ class GameServerRunning extends GameServerBaseState {
 		if(this.gs.rotateMapNow) {
 			this.gs.nextGameState = new GameServerUnloadingMap(this.gs);
 		}
+
+		
 
 		super.update(dt);
 	}

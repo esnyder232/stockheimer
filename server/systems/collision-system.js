@@ -197,10 +197,6 @@ class CollisionSystem {
 		}
 	}
 
-
-	// STOPPED HERE - just make the "character" body for every character the same. And just filter for the team on the aiagent level.
-
-
 	beginAIAgentAiBodyCollision(AIAgentUserData, aiBodyUserData, contactObj, isAIAgentA)
 	{
 		//logger.log("info", 'begin character projectile Collision: A: ' + characterUserData.type + " " + characterUserData.id + "==== B: " + projectileUserData.type + " " + projectileUserData.id + "=== ischaracterA: " + isCharacterA + " === fixtureA type: " + contactObj.getFixtureA().getBody().getUserData().type);

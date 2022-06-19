@@ -54,7 +54,11 @@ class ControlPoint {
 		var teams = this.gs.tm.getTeams();
 		for(var i = 0; i < teams.length; i++) {
 			if(!teams[i].isSpectatorTeam) {
-				this.teamCaptureRates[teams[i].id] = 0;
+				this.teamCaptureRates[teams[i].id] = {
+					teamId: teams[i].id,
+					captureRate: 0,
+					charactersOccupyingPoint: [] //array of character ids currently occupying the point for the specific point
+				};
 			}
 		}
 
@@ -90,10 +94,13 @@ class ControlPoint {
 		var teams = this.gs.tm.getTeams();
 		for(var i = 0; i < teams.length; i++) {
 			if(!teams[i].isSpectatorTeam) {
-				this.teamCaptureRates[teams[i].id] = 0;
+				this.teamCaptureRates[teams[i].id] = {
+					teamId: teams[i].id,
+					captureRate: 0,
+					charactersOccupyingPoint: [] //array of character ids currently occupying the point for the specific point
+				};
 			}
 		}
-
 		//tell the active user agents about it
 		this.gs.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
 	}
@@ -137,10 +144,10 @@ class ControlPoint {
 		this.currentTeamIdOccupyingPoint = 0;
 		for (var teamId in this.teamCaptureRates) {
 			if (this.teamCaptureRates.hasOwnProperty(teamId)) {
-				if(this.teamCaptureRates[teamId] > 0) {
+				if(this.teamCaptureRates[teamId].captureRate > 0) {
 					this.teamsOccupyingPoint++;
-					this.currentTeamIdOccupyingPoint = teamId;
-					currentTeamCaptureRate = this.teamCaptureRates[teamId];
+					this.currentTeamIdOccupyingPoint = this.teamCaptureRates[teamId].teamId;
+					currentTeamCaptureRate = this.teamCaptureRates[teamId].captureRate;
 				}
 			}
 		}
@@ -238,7 +245,19 @@ class ControlPoint {
 		// 		}
 		// 	}
 			
-		// 	console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
+		// 	// console.log("CP Report: " + report.reduce((prev, curr, index) => {return prev + curr.key + ": " + curr.val + "\t\t";}, "") + caprates);
+
+
+
+		// 	//character ids
+		// 	var cidReport = [];
+		// 	for (var teamId in this.teamCaptureRates) {
+		// 		if (this.teamCaptureRates.hasOwnProperty(teamId)) {
+		// 			cidReport.push(this.teamCaptureRates[teamId].teamId + ": " + this.teamCaptureRates[teamId].charactersOccupyingPoint.join(","));
+		// 		}
+		// 	}
+
+		// 	console.log("CP Report for character ids: \n" + cidReport.join("\n") + "\n");
 		// }
 	}
 
@@ -247,7 +266,8 @@ class ControlPoint {
 	}
 
 	collisionCharacter(c) {
-		this.teamCaptureRates[c.teamId]++;
+		this.teamCaptureRates[c.teamId].captureRate++;
+		this.teamCaptureRates[c.teamId].charactersOccupyingPoint.push(c.id);
 		this.isDirty = true;
 
 		//send to the specific user that their character entered the control point
@@ -262,9 +282,14 @@ class ControlPoint {
 	}
 
 	endCollisionCharacter(c) {
-		this.teamCaptureRates[c.teamId]--;
-		if(this.teamCaptureRates[c.teamId] < 0) {
-			this.teamCaptureRates[c.teamId] = 0;
+		this.teamCaptureRates[c.teamId].captureRate--;
+		var index = this.teamCaptureRates[c.teamId].charactersOccupyingPoint.findIndex((x) => {return x === c.id;});
+		if(index >= 0) {
+			this.teamCaptureRates[c.teamId].charactersOccupyingPoint.splice(index);
+		}
+
+		if(this.teamCaptureRates[c.teamId].captureRate < 0) {
+			this.teamCaptureRates[c.teamId].captureRate = 0;
 		}
 		this.isDirty = true;
 
@@ -279,6 +304,13 @@ class ControlPoint {
 		}
 	}
 
+	getPlanckPosition() {
+		if(this.plBody !== null)
+		{
+			return this.plBody.getPosition();
+		}
+		return null;
+	}
 
 
 	///////////////////////////////////

@@ -1,5 +1,7 @@
 const {GlobalFuncs} = require('../global-funcs.js');
+const GameConstants = require('../../shared_files/game-constants.json');
 const {AIAgentWaitingState} = require('./ai-agent-states/ai-agent-waiting-state.js');
+const AIActionIdle = require('./ai-actions/ai-action-idle.js');
 
 const logger = require("../../logger.js");
 
@@ -10,60 +12,15 @@ class AIAgent {
 		this.id = null;
 		this.userId = null;
 		this.characterId = null;
-		this.teamId = null;
-		this.user = null; //direct reference to the user
+		this.user = null; 			//direct reference to the user
+		this.character = null; 		//direct reference to the character the ai agent is controlling
+		this.username = "";
 
 		this.playingEventQueue = [];
-
-		this.username = "";
-		this.pathSet = false;
-		this.nodePathToCastle = [];
-		this.currentNode = 0;
-		this.followPath = false;
 		
-		this.currentNodeReached = false;
-		this.nodeRadiusSquared = 0.01; //radius to determine if the character has reached its current node
-
-		this.shimmyOveride = false;		//this tells the ai to shimmy to the left or right of their intended direction (in case there is an obstacle in the way)
-		this.shimmyCurrentTimer = 0;	//current time to shimmy left or right
-		this.shimmyTimeLength = 300;	//ms to follow shimmy velocity direction
-		this.shimmyTimeLengthVariance = 300; //+-ms variance to shimmyTimeLength
-		this.shimmyDirection = {
-			x: 0,
-			y: 0
-		};
-		this.shimmyOverrideAccumulationValue = 0; //basically, number of frames the entity hasn't moved
-		this.shimmyOverrideAccumulationThreshold = 5; //number of frames to determine if the shimmyOverride should be engaged.
-		this.agentPrevPosition = {
-			x: 0,
-			y: 0
-		}
-
-		//this.attackTarget = false;
-		this.targetCharacterIdToAttack = null;
-		this.targetCharacter = null;
-		this.targetCharacterDistanceSquared = 0;
-		this.attackingRangeSquared = 1;
-		this.playerSeekingRange = 10;
-
-		this.castleDistanceSquared = 0;
-
-		this.allyCharactersInVision = [];
-		this.enemyCharactersInVision = [];
-		this.isAttackInterval = 500; //ms
-		this.isAttackCurrentTimer = 0; //ms
-
 		this.state = null;
 		this.nextState = null;
 		this.stateName = "";
-
-		this.bForceIdle = false;	//used to force the ai-agent to go to the "forced idle" state. Mainly for debugging.
-
-		this.character = null; 		//direct reference to the character the ai agent is controlling
-		this.characterPos = null;	//direct reference to the character's planck position vector
-		this.angle = 0.0; 			//angle that the ai wants to face in (changes depnding on the state of the ai)
-		this.teamId = 0;
-
 		this.targetCharacterDeactivatedHandleId = null;
 
 		this.characterEventCallbackMapping = [ 
@@ -74,9 +31,56 @@ class AIAgent {
 			{eventName: "user-stopped-playing", cb: this.cbEventEmitted.bind(this), handleId: null}
 		]
 
-		//just assume your a damage dealing role in the beginning
-		this.characterRole = "damage";
-		this.characterClearance = 0.7;
+
+		this.aiClassResource = null;
+		this.characterClassResource = null;
+
+		this.mainActionScores = [];
+		this.mainAction = null;
+		this.nextMainAction = null;
+
+		this.skillActionScores = [];
+		this.skillAction = null;
+		this.nextSkillAction = null;
+
+		this.frameInput = {
+			up: false,
+			down: false,
+			left: false,
+			right: false,
+			isFiring: false,
+			isFiringAlt: false,
+			characterDirection: 0.0
+		};
+
+		this.actionHistory = [];
+
+		///////////////////
+		// shimmying stuff used for moving the character along the path
+		this.nodeRadiusSquared = 0.01;	//radius to determine if the character has reached its current node
+		
+		this.shimmyOveride = false;		//this tells the ai to shimmy to the left or right of their intended direction (in case there is an obstacle in the way)
+		this.shimmyCurrentTimer = 0;	//current time to shimmy left or right
+		this.shimmyTimeLength = 300;	//ms to follow shimmy velocity direction
+		this.shimmyTimeLengthVariance = 300; //+-ms variance to shimmyTimeLength
+		this.shimmyDirection = {
+			x: 0,
+			y: 0
+		};
+		this.shimmyOverrideAccumulationValue = 0; 		//basically, number of frames the entity hasn't moved
+		this.shimmyOverrideAccumulationThreshold = 5;	//number of frames to determine if the shimmyOverride should be engaged.
+		this.shimmyInput = {
+			angle: 0,
+			up: false,
+			down: false,
+			left: false,
+			right: false
+		};
+
+		this.prevCharacterPosition = {x: 0, y: 0};
+
+		//
+		///////////////////
 	}
 
 	aiAgentInit(gameServer, userId) {
@@ -91,20 +95,81 @@ class AIAgent {
 
 		this.state = new AIAgentWaitingState(this);
 		this.nextState = null;
-
 		this.state.enter();
+
+		//create a fake idle action
+		this.mainAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+
+		this.mainAction.enter();
+
+
+		//create a fake idle skill
+		this.skillAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+
+		this.skillAction.enter();
+
 	}
 
+	//called before the ai agent is deleted from the ai-agent-manager
 	aiAgentDeinit() {
-		if(this.user.bOkayToBeInTheGame && this.aiAgent.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
-			this.aiAgent.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
-		}
+		// console.log("AiAgent " + this.id + " deinit called!");
+		//also exit the current state and action for cleanup purposes
+		this.state.exit();
+		this.state = null;
+		this.nextState = null;
+
+		this.mainAction.exit();
+		this.mainAction = null;
+		this.nextMainAction = null;
+
+		this.skillAction.exit();
+		this.skillAction = null;
+		this.nextSkillAction = null;
 
 		this.user = null;
 		this.character = null;
-		this.characterPos = null;
-		this.nextState = null;
+		this.aiClassResource = null;
+		this.mainActionScores.length = 0;
+		this.skillActionScores.length = 0;
+
+		this.characterClassResource = null;
 	}
+
+
+	setNextMainActionIdle() {
+		//create a fake "idle" initial state
+		this.nextMainAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+	}
+
+	setNextSkillActionIdle() {
+		//create a fake "idle" initial state
+		this.nextSkillAction = new AIActionIdle.AIActionIdle(this, {
+			"resource": {
+				"type": "IDLE",
+				"typeEnum": GameConstants.ActionTypes["IDLE"]
+			},
+			"score": 0
+		});
+	}
+
 
 	cbEventEmitted(eventName, owner) {
 		this.playingEventQueue.push({
@@ -127,6 +192,10 @@ class AIAgent {
 						case "user-stopped-playing":
 							//unregister events
 							this.user.em.batchUnregisterForEvent(this.userEventCallbackMapping);
+
+							if(this.character !== null) {
+								this.character.em.batchUnregisterForEvent(this.characterEventCallbackMapping);
+							}
 	
 							//destroy this ai agent
 							this.gs.aim.destroyAIAgent(this.id);
@@ -138,469 +207,254 @@ class AIAgent {
 		}
 	}
 
-
-
-	characterEnteredVision(c) {
-		//make sure it is not yourself
-		if(c.id !== this.characterId) {
-
-			//enemy
-			if(c.teamId !== this.user.teamId) {
-				//make sure the character is not already in vision		
-				var existing = this.enemyCharactersInVision.find((x) => {return x.c === c});
-				if(existing === undefined) {
-					var characterDistanceObj = {
-						c: c,
-						distanceSquared: 99999
-					};
-	
-					this.enemyCharactersInVision.push(characterDistanceObj);
-				}
-			} 
-			//ally
-			else {
-				//make sure the character is not already in vision		
-				var existing = this.allyCharactersInVision.find((x) => {return x.c === c});
-				if(existing === undefined) {
-					var characterHealthObj = {
-						c: c,
-						distanceSquared: 99999,
-						hpDiff: 0,
-						hpPerc: 0,
-						hpMax: 1
-					};
-	
-					this.allyCharactersInVision.push(characterHealthObj);
-				}
-			}
-		}
+	frameInputChangeMovement(up, down, left, right) {
+		this.frameInput.up = up;
+		this.frameInput.down = down;
+		this.frameInput.left = left;
+		this.frameInput.right = right;
 	}
 
-	characterExitedVision(c) {
-		//enemy
-		if(c.teamId !== this.user.teamId) {
-			var index = this.enemyCharactersInVision.findIndex((x) => {return x.c === c});
-			if(index >= 0) {
-				this.enemyCharactersInVision.splice(index, 1);
-			}
-		} 
-		//ally
-		else {
-			var index = this.allyCharactersInVision.findIndex((x) => {return x.c === c});
-			if(index >= 0) {
-				this.allyCharactersInVision.splice(index, 1);
-			}
-		}
+	frameInputChangeShooting(isFiring, isFiringAlt) {
+		this.frameInput.isFiring = isFiring;
+		this.frameInput.isFiringAlt = isFiringAlt;
 	}
 
-	sortEnemyCharactersInVision() {
-		if(this.characterPos !== null && this.enemyCharactersInVision.length > 0)
-		{
-			//first get the squared distance for each user character
-			for(var i = 0; i < this.enemyCharactersInVision.length; i++)
-			{
-				var co = this.enemyCharactersInVision[i];
-				var cop = co.c.getPlanckPosition();
-				if(cop !== null)
-				{
-					var dx = cop.x - this.characterPos.x;
-					var dy = cop.y - this.characterPos.y;
-					co.distanceSquared = dx*dx + dy*dy;
-				}
-				else
-				{
-					co.distanceSquared = 999999;
-				}
-			}
-
-			//next, sort
-			this.enemyCharactersInVision.sort((a, b) => {return a.distanceSquared - b.distanceSquared;});
-
-			// //debug
-			// logger.log("info", "+++" + this.username + " distances: ");
-			// for(var i = 0; i < this.enemyCharactersInVision.length; i++)
-			// {
-			// 	var u = this.gs.um.getUserByID(this.enemyCharactersInVision[i].c.ownerId);
-			// 	if(u !== null)
-			// 	{
-			// 		logger.log("info", "User: " + u.username + " distance squared is: " + this.enemyCharactersInVision[i].distanceSquared)
-			// 	}
-			// }
-		}
+	frameInputChangeDirection(characterDirection) {
+		this.frameInput.characterDirection = characterDirection;
 	}
 
 
-	sortAllyCharactersInVision() {
-		if(this.characterPos !== null && this.allyCharactersInVision.length > 0)
-		{
-			//first calculate the hp diff and distance saquared
-			for(var i = 0; i < this.allyCharactersInVision.length; i++) {
-				this.allyCharactersInVision[i].hpDiff = this.allyCharactersInVision[i].c.hpMax - this.allyCharactersInVision[i].c.hpCur;
-				this.allyCharactersInVision[i].hpPerc = this.allyCharactersInVision[i].c.hpCur /  this.allyCharactersInVision[i].c.hpMax;
-				this.allyCharactersInVision[i].hpMax = this.allyCharactersInVision[i].c.hpMax;
+	//This takes in a nodepath, a character's currentPosition, and the currentNode to travel too, and navigates the character to the currentNode to travel too.
+	//This returns the next node to travel too (it returns the nodePath index of the next node to travel to).
+	//Ex:
+	//If the currentNode is 2, and it was reached, this returns the next path in the character's unobstructed LOS. Example: 3 or 7.
+	//If the currentNode is 2, and it was not reached, this returns 2.
+	//If the currentNode is 2, and the nodePath's length is 2, it returns 2.
+	moveAlongPath(currentPos, nodePath, currentNode, dt) {
+		//check if you have reached your current node
+		if(currentNode < nodePath.length && nodePath[currentNode]) {
+			var errorX = nodePath[currentNode].xPlanck - currentPos.x;
+			var errorY = (nodePath[currentNode].yPlanck * -1) - currentPos.y;
+			var squaredDistance = errorX * errorX + errorY * errorY;
 
-				var cop = this.allyCharactersInVision[i].c.getPlanckPosition();
-				if(cop !== null)
-				{
-					var dx = cop.x - this.characterPos.x;
-					var dy = cop.y - this.characterPos.y;
-					this.allyCharactersInVision[i].distanceSquared = dx*dx + dy*dy;
-				}
-				else
-				{
-					this.allyCharactersInVision[i].distanceSquared = 999999;
+			//if you have reached your current node
+			if(squaredDistance <= this.nodeRadiusSquared) {
+				currentNode++;
+
+				//find the next node in the line of sight
+				currentNode = this.findNextLOSNode(currentPos, nodePath, currentNode);
+				
+				//destination reached
+				if(currentNode > nodePath.length-1) {
+					//stop the character
+					this.frameInputChangeMovement(false, false, false, false);
 				}
 			}
-
-			//next, sort by hpPerc asc, then hpMax desc
-			this.allyCharactersInVision.sort((a, b) => {return a.hpPerc - b.hpPerc || b.hpMax - a.hpMax;});
-
-			//debug
-			// logger.log("info", "+++" + this.user.username + " hpdiff: ");
-			// for(var i = 0; i < this.allyCharactersInVision.length; i++)
-			// {
-			// 	var u = this.gs.um.getUserByID(this.allyCharactersInVision[i].c.ownerId);
-			// 	if(u !== null) {
-			// 		logger.log("info", "User: " + u.username + " hpdiff is: " + this.allyCharactersInVision[i].hpDiff);
-			// 	}
-
-			// 	var stophere = true;
-			// }
 		}
+		
+		//travel to the next node
+		//if shimmy is engaged, do that instead of navigating to the next node
+		if(this.shimmyOveride) {
+			this.frameInputChangeMovement(this.shimmyInput.up, this.shimmyInput.down, this.shimmyInput.left, this.shimmyInput.right);
+			this.shimmyCurrentTimer -= dt;
+
+			//turn off shimmy mode
+			if(this.shimmyCurrentTimer <= 0) {
+				// logger.log("info", 'shimm mode disengaged!');
+				this.shimmyOveride = false;
+				currentNode = this.findNextLOSNode(currentPos, nodePath, currentNode);
+				// this.findNextLOSNode(currentPos);
+			}
+		}
+		//navigate to the current node if there are any left
+		else if(currentNode < nodePath.length && nodePath[currentNode]) {
+			var finalInput = this.calcSteeringStraightLine(currentPos, {x: nodePath[currentNode].xPlanck, y: -1*nodePath[currentNode].yPlanck});
+			this.frameInputChangeMovement(finalInput.up, finalInput.down, finalInput.left, finalInput.right);
+
+			//check position from prev position. If you haven't moved in a while, add to the shimmy accumulator
+			if(!this.shimmyOveride){
+				var dx = Math.abs(this.prevCharacterPosition.x - currentPos.x);
+				var dy = Math.abs(this.prevCharacterPosition.y - currentPos.y);
+				
+				if(dx < 0.01 && dy < 0.01) {
+					this.shimmyOverrideAccumulationValue += 1;
+				}
+
+				//engage shimmy mode
+				if(this.shimmyOverrideAccumulationValue >= this.shimmyOverrideAccumulationThreshold) {
+					// logger.log("info", 'shimm mode engaged!');
+					this.shimmyOveride = true;
+					this.shimmyOverrideAccumulationValue = 0;
+
+					var randAngleMultiplier = Math.floor(Math.random() * 2) + 1; 			//1-2
+					var randAngleDir = Math.floor(Math.random() * 2) === 0 ? 1 : -1;		//-1 or 1
+					var randShimmyTimeLength = Math.floor(Math.random() * this.shimmyTimeLengthVariance);
+
+					//get a random angle between +-45 to 90 degrees from where you want to go
+					this.shimmyInput.angle = ((randAngleMultiplier * Math.PI/4) * randAngleDir) + finalInput.angle;
+
+					//translate the shimmy angle into actual inputs
+					var xAngle = Math.cos(this.shimmyInput.angle);
+					var yAngle = Math.sin(this.shimmyInput.angle);
+
+					this.shimmyInput.up = false;
+					this.shimmyInput.down = false;
+					this.shimmyInput.left = false;
+					this.shimmyInput.right = false;
+					
+					if(xAngle >= 0.5) this.shimmyInput.right = true; else if(xAngle <= -0.5) this.shimmyInput.left = true;
+					if(yAngle >= 0.5) this.shimmyInput.up = true; else if(yAngle <= -0.5) this.shimmyInput.down = true;
+
+					this.shimmyCurrentTimer = this.shimmyTimeLength + randShimmyTimeLength;
+				}
+			}
+		}
+
+		//save the currentPosition for shimmy calculation next time
+		this.prevCharacterPosition.x = currentPos.x;
+		this.prevCharacterPosition.y = currentPos.y;
+
+		return currentNode;
 	}
 
 
-	updateTargetCharacterDistance() {
-		if(this.characterPos !== null && this.targetCharacter !== null)
-		{
-			var cop = this.targetCharacter.getPlanckPosition();
-			if(cop !== null)
-			{
-				var dx = cop.x - this.characterPos.x;
-				var dy = cop.y - this.characterPos.y;
-				this.targetCharacterDistanceSquared = dx*dx + dy*dy;
-			}
-			else
-			{
-				this.targetCharacterDistanceSquared = 999999;
-			}
-		}
 
-		//debugging
-		//logger.log("info", 'updateing target character distance: ' + this.targetCharacterDistanceSquared);
-	}
 
-	insertStopInput() {
+	//This returns the inputs for steering the character from the starting to the ending position.
+	//The starting and ending positions are assumed to be in planck coordinates.
+	//startingPos: 	{x:0, y:0}
+	//endingPos: 	{x:1, y:0}
+	calcSteeringStraightLine(startingPos, endingPos) {
 		var finalInput = {
+			angle: 0,
 			up: false,
 			down: false,
 			left: false,
-			right: false,
-			isFiring: false,
-			isFiringAlt: false,
-			characterDirection: 0.0
-		}
+			right: false
+		};
 
-		//stop the character
-		this.user.inputQueue.push(finalInput);
-	}
+		var dx = endingPos.x - startingPos.x;
+		var dy = endingPos.y - startingPos.y;
 
-	update(dt) {
-		this.state.update(dt);
-
-		if(this.nextState !== null)
-		{
-			this.state.exit();
-			this.nextState.enter();
-
-			this.state = this.nextState;
-			this.nextState = null;
-		}
-	}
-
-	//finds the nearest opponent based on true distance (not manhattan distance, and not path finding)
-	findNearestOpponentTrueDistance() {
-		var nearestOpponent = null;
-
-		if(this.character !== null && this.characterPos !== null) {
-			var opponents = [];
-			var activeGameObjects = this.gs.gom.getActiveGameObjects();
-			var spectatorTeamId = this.gs.tm.getSpectatorTeam().id;
-	
-			//get all opponents
-			for(var i = 0; i < activeGameObjects.length; i++) {
-				//meh...don't care about the string comparison for now
-				if(activeGameObjects[i].type === "character" 
-				&& activeGameObjects[i].teamId !== spectatorTeamId 
-				&& activeGameObjects[i].teamId !== this.user.teamId
-				&& activeGameObjects[i].id !== this.user.characterId) {
-					opponents.push({
-						c: activeGameObjects[i],
-						distanceSquared: 9999
-					});
-				}
-			}
-	
-			//go through opponents, and calculate true distance squared
-			for(var i = 0; i < opponents.length; i++) {
-				var opponentPos = opponents[i].c.plBody.getPosition();
-				var dx = opponentPos.x - this.characterPos.x;
-				var dy = opponentPos.y - this.characterPos.y;
-				opponents[i].distanceSquared = dx*dx + dy*dy;
-			}
-
-			//find the closest opponent
-			if(opponents.length > 0) {
-				nearestOpponent = opponents.reduce((acc, cur) => {return  cur.distanceSquared < acc.distanceSquared ? cur : acc})
-			}
-		}
-
-		return nearestOpponent;
-	}
-
-	//finds an ally that has the lowest hp precentage (hpcur/hpMax). If there are none, it returns the ally with the highest max hp.
-	findAllyToHeal() {
-		var nearestAlly = null;
-
-		if(this.character !== null && this.characterPos !== null) {
-			var allies = [];
-			var activeGameObjects = this.gs.gom.getActiveGameObjects();
-			var spectatorTeamId = this.gs.tm.getSpectatorTeam().id;
-	
-			//get all allies
-			for(var i = 0; i < activeGameObjects.length; i++) {
-				//meh...don't care about the string comparison for now
-				if(activeGameObjects[i].type === "character" 
-				&& activeGameObjects[i].teamId !== spectatorTeamId 
-				&& activeGameObjects[i].teamId === this.user.teamId
-				&& activeGameObjects[i].id !== this.user.characterId) {
-					
-					allies.push({
-						c: activeGameObjects[i],
-						distanceSquared: 9999,
-						hpDiff: 999,
-						hpPerc: 100,
-						hpMax: 1000
-					});
-				}
-			}
-	
-			//go through allies, and calculate true distance squared and hp stuff
-			for(var i = 0; i < allies.length; i++) {
-				allies[i].hpDiff = allies[i].c.hpMax - allies[i].c.hpCur;
-				allies[i].hpPerc = allies[i].c.hpCur /  allies[i].c.hpMax;
-				allies[i].hpMax = allies[i].c.hpMax;
-
-				var allyPos = allies[i].c.plBody.getPosition();
-				var dx = allyPos.x - this.characterPos.x;
-				var dy = allyPos.y - this.characterPos.y;
-				allies[i].distanceSquared = dx*dx + dy*dy;
-			}
-
-			//filter allies that don't have any hp loss
-			var alliesWithHpLoss = allies.filter((x) => {return x.hpDiff > 0;});
-
-			//if there are no allies with hploss, just find the one with the largets maxHp (probably a tank of somekind)
-			if(alliesWithHpLoss.length === 0 && allies.length > 0) {
-				nearestAlly = allies.reduce((acc, cur) => {return  cur.hpMax > acc.hpMax ? cur : acc});
-
-				//debugging
-				// var u = this.gs.um.getUserByID(nearestAlly.c.ownerId);
-				// console.log("+++ ai-agent: " + this.user.username + ": no hploss detected on map. Targeting: " + u.username);
-			}
-			//otherwise, return the ally with the lowest hpPerc
-			else if(alliesWithHpLoss.length > 0) {
-				nearestAlly = alliesWithHpLoss.reduce((acc, cur) => {return  cur.hpPerc < acc.hpPerc ? cur : acc});
-			}
-		}
-
-		return nearestAlly;
-	}
-
-
-
-
-
-
-
-
-
-	findaStarPathToPlayer() {
-		//contact the nav grid to get a path
-		var aiPos = this.characterPos;
-		var userPos = this.targetCharacter.getPlanckPosition();
-
-		if(aiPos !== null && userPos !== null) {
-			this.nodePathToCastle = this.gs.activeTilemap.AStarSearch(aiPos, userPos, this.characterClearance);
-			
-			if(this.nodePathToCastle.length > 0)
-			{
-				this.currentNode = 0;
-
-				this.findNextLOSNode(aiPos);
-			}
-		}
-	}
-
-	//this is already assuming the ai has LOS to the player
-	findStraightPathToPlayer() {
-		var userPos = this.targetCharacter.getPlanckPosition();
-
-		this.currentNode = 0;
-
-		if(userPos !== null) {
-			//stupid
-			var userNode = this.gs.activeTilemap.getNode(userPos.x, -userPos.y, this.characterClearance);
-
-			if(userNode !== null)
-			{
-				this.nodePathToCastle = [];
-				this.nodePathToCastle.push(userNode);
-
-				this.currentNode = 0;
-			}
-		}
-	}
-
-
-	assignTargetCharacter(character) {
-		// logger.log("info", 'assign target called for ' + this.id);
-
-		//if there was an old targetCharacter, unregister from their event emitter
-		if(this.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
-			if(this.targetCharacter.em === null) {
-				var stopHere = true;
-			}
-
-			this.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
-			this.targetCharacterDeactivatedHandleId = null;
-		}
-
-		this.targetCharacter = character;
-
-		//register a function for when the target character is deactivated
-		if(this.targetCharacter !== null && this.targetCharacter.em !== null) {
-			this.targetCharacterDeactivatedHandleId = this.targetCharacter.em.registerForEvent("character-deactivated", this.cbTargetCharacterDeactivated.bind(this));
-		}
-	}
-
-	cbTargetCharacterDeactivated() {
-		// logger.log("info", 'cbTargetCharacterDeactivated called for ' + this.id);
-		
-		if(this.targetCharacter !== null && this.targetCharacterDeactivatedHandleId !== null) {
-			this.targetCharacter.em.unregisterForEvent("character-deactivated", this.targetCharacterDeactivatedHandleId)
-		}
-
-		this.targetCharacter = null;
-		this.targetCharacterDeactivatedHandleId = null;
-	}
-
-
-
-	calcSeekSteering(pos) {
-		var velVec = {
-			x: 0,
-			y: 0
-		}
-		var nodeTarget = this.nodePathToCastle[this.currentNode];
-
-		//the *-1 is to flip the y coordinates for planck cooridnate plane
-		var dx = nodeTarget.xPlanck - pos.x;
-		var dy = (nodeTarget.yPlanck*-1) - pos.y;
-
-		if(Math.abs(dx) === 0 && Math.abs(dy) === 0)
-		{
+		if(Math.abs(dx) === 0 && Math.abs(dy) === 0) {
 			dx = 1;
 		}
-		var angle = Math.atan(dy / dx);
+		finalInput.angle = Math.atan(dy / dx);
 		
 		//this is added to the end if we need to travel quadrant 2 or 3 of the unit circle...best comment ever.
 		//this basically just flips the direction of the x and y
-		var radiansToAdd = (nodeTarget.xPlanck - pos.x) < 0 ? Math.PI : 0;
-
-		angle += radiansToAdd;
-
-		velVec.x = Math.cos(angle);
-		velVec.y = Math.sin(angle);
+		finalInput.angle += (endingPos.x - startingPos.x) < 0 ? Math.PI : 0;
 		
-		return velVec;
+		//hackilicous
+		var xAngle = Math.cos(finalInput.angle);
+		var yAngle = Math.sin(finalInput.angle);
 		
+		if(xAngle >= 0.5) finalInput.right = true; else if(xAngle <= -0.5) finalInput.left = true;
+		if(yAngle >= 0.5) finalInput.up = true; else if(yAngle <= -0.5) finalInput.down = true;
+
+		return finalInput;
 	}
 
+	//Returns a node path from the currentPos to the targetPos.
+	//The node path can be a straight line if the character's LOS is unobstructed.
+	//This takes into account the clearance of the character as well.
+	getPathToTarget(currentPos, targetPos, characterClearance) {
+		var pathResults = {
+			nodePath: [],
+			currentNode: 0
+		};
+		var losResults = null;
 
-	calcAvoidanceSteering(pos, seekVelVec) {
-		const Vec2 = this.gs.pl.Vec2;
-		var velVec = {
-			x: 0,
-			y: 0
+
+		//check to see if you have a LOS to them
+		if(targetPos !== null && currentPos !== null) {
+			losResults = this.lineOfSightTest(currentPos, targetPos);
+
+			//if you have line of sight, and the path is onobstructed, move in a straight line to the target.
+			if (losResults.pathUnobstructed) {
+				pathResults.currentNode = 0;
+				var userNode = this.gs.activeTilemap.getNode(targetPos.x, -targetPos.y, characterClearance);
+
+				if(userNode !== null) {
+					pathResults.currentNode = 0;
+					pathResults.nodePath = [];
+					pathResults.nodePath.push(userNode);
+				}
+			}
+			//if the user doesn't even have LOS, find the player with A*
+			else {
+				pathResults.nodePath = this.gs.activeTilemap.AStarSearch(currentPos, targetPos, characterClearance);
+				
+				if(pathResults.nodePath.length > 0) {
+					pathResults.currentNode = this.findNextLOSNode(currentPos, pathResults.nodePath, pathResults.currentNode);
+				}
+			}
 		}
 
-		var p1 = new Vec2(pos.x, pos.y);
-		var p2 = new Vec2(pos.x + (seekVelVec.x * 0.5), pos.y + (seekVelVec.y * 0.5));
-
-		this.raycastObjects = [];
-		this.gs.world.rayCast(p1, p2, this.fixtureCallback.bind(this));
-
-		//if objects were detected in front of the ai, then calculate avoidance vector
-		if(this.raycastObjects.length > 0)
-		{
-			var avoidanceForce = 15;
-			var firstObjectPos = this.raycastObjects[0].fixture.getBody().getPosition();
-			velVec.x = (pos.x - firstObjectPos.x) * avoidanceForce;
-			velVec.y = (pos.y - firstObjectPos.y) * avoidanceForce;
-		}
-
-		
-		return velVec;
+		return pathResults;
 	}
 
-	fixtureCallback(fixture, point, normal, fraction) {
-		this.raycastObjects.push({
-			fixture: fixture,
-			point: point,
-			normal: normal,
-			fraction: fraction
-		});
-	}
 
-	//Reassigns the this.currentNode to be the next node that is in the lino of sight of the current position.
-	//this.currentNode will always be < this.nodePathToCastle.length-1
-	findNextLOSNode(pos)
-	{
+	
+	//Returns the next node along the node path that has an unobstructed line of sight of the current position (current character's position).
+	//The returned node will always be < nodePath.length-1
+	findNextLOSNode(currentPos, nodePath, nodeStartLOSTest) {
 		const Vec2 = this.gs.pl.Vec2;
 		//do line of sight tests to get the next logical node
+		var currentNode = nodeStartLOSTest;
 		var pathToNodeUnobstructed = true;
 		var losResults = {};
-		while(pathToNodeUnobstructed)
-		{
-			if(this.currentNode < this.nodePathToCastle.length-1)
-			{
-				var nodePos = new Vec2(this.nodePathToCastle[this.currentNode + 1].xPlanck, -this.nodePathToCastle[this.currentNode + 1].yPlanck);
+		while(pathToNodeUnobstructed) {
+			if(currentNode < nodePath.length-1) {
+				var nodePos = new Vec2(nodePath[currentNode + 1].xPlanck, -nodePath[currentNode + 1].yPlanck);
 
-				losResults = this.lineOfSightTest(pos, nodePos);
+				losResults = this.lineOfSightTest(currentPos, nodePos);
 				pathToNodeUnobstructed = losResults.pathUnobstructed;
-				if(pathToNodeUnobstructed)
-				{
-					//logger.log("info", 'current node in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + '). Skipping the node.')
-					this.currentNode++
+				if(pathToNodeUnobstructed) {
+					//logger.log("info", 'current node in LOS(' + nodePath[currentNode + 1].x + ',' + nodePath[currentNode + 1].y + '). Skipping the node.')
+					currentNode++
 				}
-				else
-				{
-					//logger.log("info", 'current node NOT in LOS(' + this.nodePathToCastle[this.currentNode + 1].x + ',' + this.nodePathToCastle[this.currentNode + 1].y + ').')
+				else {
+					//intentionally empty
+					//logger.log("info", 'current node NOT in LOS(' + nodePath[currentNode + 1].x + ',' + nodePath[currentNode + 1].y + ').')
 				}
 			}
 			//final node is reached
-			else
-			{
+			else {
 				pathToNodeUnobstructed = false;
 			}
 		}
+
+		return currentNode;
+	}
+
+	//this just resets things for pathing purposes. Like shimming counters and inputs.
+	resetPathingVariables() {
+		this.nodeRadiusSquared = 0.01;	//radius to determine if the character has reached its current node
+		
+		this.shimmyOveride = false;		//this tells the ai to shimmy to the left or right of their intended direction (in case there is an obstacle in the way)
+		this.shimmyCurrentTimer = 0;	//current time to shimmy left or right
+		this.shimmyTimeLength = 300;	//ms to follow shimmy velocity direction
+		this.shimmyTimeLengthVariance = 300; //+-ms variance to shimmyTimeLength
+		this.shimmyDirection = {
+			x: 0,
+			y: 0
+		};
+		this.shimmyOverrideAccumulationValue = 0; 		//basically, number of frames the entity hasn't moved
+		this.shimmyOverrideAccumulationThreshold = 5;	//number of frames to determine if the shimmyOverride should be engaged.
+		this.shimmyInput = {
+			angle: 0,
+			up: false,
+			down: false,
+			left: false,
+			right: false
+		};
+
+		this.prevCharacterPosition = {x: 0, y: 0};
 	}
 
 
-
-	lineOfSightTest(pos, pos2)
-	{
+	lineOfSightTest(pos, pos2) {
 		const Vec2 = this.gs.pl.Vec2;
 		var losResults = {
 			isLOS: true,
@@ -640,6 +494,41 @@ class AIAgent {
 			normal: normal,
 			fraction: fraction
 		});
+	}
+
+
+
+	update(dt) {
+		this.state.update(dt);
+		this.mainAction.update(dt);
+		this.skillAction.update(dt);
+
+		if(this.nextState !== null) {
+			this.state.exit();
+			this.nextState.enter();
+
+			this.state = this.nextState;
+			this.nextState = null;
+		}
+
+		if(this.nextMainAction !== null) {
+			this.mainAction.exit();
+			this.nextMainAction.enter();
+
+			this.mainAction = this.nextMainAction;
+			this.nextMainAction = null;
+		}
+
+		if(this.nextSkillAction !== null) {
+			this.skillAction.exit();
+			this.nextSkillAction.enter();
+
+			this.skillAction = this.nextSkillAction;
+			this.nextSkillAction = null;
+		}
+
+		//input the frameInput into the user to go to the character
+		this.user.inputQueue.push(this.frameInput);
 	}
 }
 

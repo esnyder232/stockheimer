@@ -344,7 +344,7 @@ class GlobalFuncs {
 
 
 		//for testing - always pick the same type
-		//randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-large.json"});
+		// randomClass = availableClasses.find((x) => {return x.key === "data/character-classes/slime-healer.json"});
 
 
 		//for testing - if the ai choose a particular class, default to something else (useful for testing a new class BUT ONLY you want to be the class)
@@ -368,6 +368,17 @@ class GlobalFuncs {
 
 		return randomClass;
 	}
+
+
+	getSpecificClass(gameServer, classResourceName) {
+		var randomClass = null;
+		var availableClasses = gameServer.rm.getResourceByType("character-class");
+
+		randomClass = availableClasses.find((x) => {return x.key === classResourceName});
+
+		return randomClass;
+	}
+
 
 	//function that only inserts tracked entities into user agents with users who are "playing" (meaning they are connected and are playing)
 	insertTrackedEntityToPlayingUsers(gameServer, entType, entId) {
@@ -494,6 +505,39 @@ class GlobalFuncs {
 	convertHealingToPoints(roundHealCount, gs) {
 		return Math.floor(roundHealCount / gs.healsToPointsRatio);
 	}
+	
+	clamp(num, min, max) {
+		return Math.min(Math.max(num, min), max);
+	};
+
+	//this just checks to see if 2 actions are considered "equal" in terms of the type and context
+	areAiActionsEqual(actionObject, actionScore) {
+		if(actionObject.actionScore.resource.typeEnum === actionScore.resource.typeEnum) {
+			switch(actionObject.actionScore.resource.typeEnum) {
+				case GameConstants.ActionTypes["MOVE_TO_ENEMY"]:
+				case GameConstants.ActionTypes["MOVE_AWAY_ENEMY"]:
+				case GameConstants.ActionTypes["SHOOT_ENEMY"]:
+				case GameConstants.ActionTypes["SHOOT_ALLY"]:
+				case GameConstants.ActionTypes["ALT_SHOOT_ENEMY"]:
+				case GameConstants.ActionTypes["ALT_SHOOT_ALLY"]:
+				case GameConstants.ActionTypes["ALT_SHOOT_SELF"]:
+				case GameConstants.ActionTypes["MOVE_AWAY_ALLY"]:
+				case GameConstants.ActionTypes["MOVE_TO_ALLY"]:
+					// if(actionObject.actionScore.characterId !== actionScore.characterId) {
+					// 	var breakhere = true;
+					// }
+					return actionObject.actionScore.characterId === actionScore.characterId;
+					break;
+				case GameConstants.ActionTypes["MOVE_TO_CONTROL_POINT"]:
+					return actionObject.actionScore.controlPointId === actionScore.controlPointId;
+					break;
+				default:
+					return true;
+			}
+		}
+		return false;
+	}
+
 }
 
 

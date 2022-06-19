@@ -1,3 +1,5 @@
+const GameConstants = require('../../shared_files/game-constants.json');
+
 class CharacterClassResourceDefinition {
 	constructor() {
 		this.resourceType = "character-class";
@@ -29,6 +31,19 @@ class CharacterClassResourceDefinition {
 				this.gs.rm.linkFile(resource.id, contextValue.animationSets, animationSetKey, fileKey, this.cbAnimationSetFileComplete.bind(this));
 			}
 		}
+
+		//also translate the ai tags into enum
+		contextValue.aiTagsEnum = [];
+		if(contextValue.aiTags !== undefined) {
+			for(var i = 0; i < contextValue.aiTags.length; i++) {
+				var temp = GameConstants.AITags[contextValue.aiTags[i]];
+				if(temp !== undefined) {
+					contextValue.aiTagsEnum.push(temp);
+				}
+			}
+		}
+
+		var stophere = true;
 	}
 
 	///////////////////////////////

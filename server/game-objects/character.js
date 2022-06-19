@@ -81,6 +81,7 @@ class Character {
 		//resource data
 		this.size = 1;
 		this.planckRadius = 1;
+		this.characterClearance = 1;
 
 		this.projectileEnter = [];
 		this.projectileStay = [];
@@ -213,6 +214,10 @@ class Character {
 			filterCategoryBits: collisionCategory,
 			filterMaskBits: collisionMask
 		});
+
+		//calculate clearance
+		this.characterClearance = this.planckRadius * 2 * this.size;
+
 
 		//tell the active user agents about it
 		this.globalfuncs.insertTrackedEntityToPlayingUsers(this.gs, "gameobject", this.id);
@@ -906,6 +911,9 @@ class Character {
 		//nothing yet
 	}
 
+	getStateCooldown(characterClassStateResourceKey) {
+		return this.stateCooldownsTemplates[characterClassStateResourceKey] !== undefined ? this.stateCooldownsTemplates[characterClassStateResourceKey] : null;
+	}
 
 	applyDamageEffect(srcUserId, damage) {
 		this.modHealth(-damage);

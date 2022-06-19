@@ -17,7 +17,9 @@ class PlayingClassPickingState extends PlayingBaseState.PlayingBaseState {
 		//if the name is "beepboop", pick a class
 		if(ServerConfig.allow_simulated_user_ai_agents && this.user.username.indexOf("beepboop") === 0) {
 			logger.log("info", "Detected a 'beepboop'. Picking a class for '" + this.user.username + "'");
-			var randomClass = this.user.globalfuncs.getRandomClass(this.user.gs);
+			// var randomClass = this.user.globalfuncs.getRandomClass(this.user.gs);
+			var randomClass = this.user.globalfuncs.getSpecificClass(this.user.gs, "data/character-classes/slime-defender.json")
+
 			if(randomClass !== null) {
 				this.user.updateCharacterClassId(randomClass.id);
 			}

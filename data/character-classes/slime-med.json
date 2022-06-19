@@ -12,6 +12,16 @@
 		"scaleX": 0.08,
 		"scaleY": 0.08
 	},
+	"aiClasses": [
+		{
+			"gameType": "koth",
+			"aiClassResourceKey": "data/ai-classes/slime-med-ai-koth.json"
+		},
+		{
+			"gameType": "other",
+			"aiClassResourceKey": "data/ai-classes/slime-med-ai.json"
+		}
+	],
 	"size": 2,
 	"idleMsPerFrame": 400,
 	"moveMsPerFrame": 200,
