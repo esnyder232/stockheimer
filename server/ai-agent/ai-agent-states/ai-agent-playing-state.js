@@ -240,8 +240,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 
 		// Do a consideration caching system based on the following in order:
-		// - per consideration calculation
-		// - per context targets
 		// 
 		// 
 		//
@@ -339,22 +337,42 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	considerationDistanceSquaredFromEnemy(action, consideration) {
 		var xSquared = 0;
 
-		//get the context for 'x'
-		var myPos = this.aiAgent.character.getPlanckPosition();
-		var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
-		var enemyPos = null;
-		if(enemyC !== null) {
-			enemyPos = enemyC.getPlanckPosition();
-		}
+		//order the character ids in order ascending
+		var params = [];
+		var param1 = this.aiAgent.character.id < action.characterId ? this.aiAgent.character.id : action.characterId;
+		var param2 = this.aiAgent.character.id < action.characterId ? action.characterId : this.aiAgent.character.id;
+		params.push(param1);
+		params.push(param2);
+		var ttl = 1000;
 
-		//at this point, it is okay to calculate X and run through the response curve
-		if(myPos !== null && enemyPos !== null) {
-			xSquared = Math.pow(enemyPos.x - myPos.x, 2) + Math.pow(enemyPos.y - myPos.y, 2);
-		}
+		var cacheKey = "calcDistanceSquared=" + params.join("=");
+		var cacheObj = this.aiAgent.gs.cache.getCacheValue(cacheKey);
 
+		if(cacheObj === null || (cacheObj.ts + ttl) <= this.aiAgent.gs.currentTick) {
+			// console.log("Calculating distance sqaured for: " + cacheKey);
+			//get the context for 'x'
+			var myPos = this.aiAgent.character.getPlanckPosition();
+			var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+			var enemyPos = null;
+			if(enemyC !== null) {
+				enemyPos = enemyC.getPlanckPosition();
+			}
+
+			//at this point, it is okay to calculate X and run through the response curve
+			if(myPos !== null && enemyPos !== null) {
+				xSquared = Math.pow(enemyPos.x - myPos.x, 2) + Math.pow(enemyPos.y - myPos.y, 2);
+
+				this.aiAgent.gs.cache.setCacheValue(cacheKey, xSquared);
+			}
+		} else {
+			xSquared = cacheObj.value
+		}
+		
 		return xSquared;
 	}
 
+
+	//This could be rewritten to use the 'considerationDistanceSquaredFromEnemy' function so i can reuse the cache (or make a general function that both considerations can call)
 	considerationDistanceSquaredFromAnyEnemy(action, consideration) {
 		var xSquared = 99999;
 		
@@ -405,12 +423,14 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 	
 			//at this point, it is okay to calculate X and run through the response curve
 			if(myPos !== null && enemyPos !== null) {
-				bLineOfSight = this.aiAgent.lineOfSightTest(myPos, enemyPos).isLOS ? 1 : 0;
+				var losResults = this.aiAgent.lineOfSightTest(myPos, enemyPos);
 
-				this.aiAgent.gs.cache.setCacheValue(cacheKey, bLineOfSight);
+				bLineOfSight = losResults.isLOS ? 1 : 0;
+
+				this.aiAgent.gs.cache.setCacheValue(cacheKey, losResults);
 			}
 		} else {
-			bLineOfSight = cacheObj.value
+			bLineOfSight = cacheObj.value.isLOS
 		}
 		
 
@@ -418,51 +438,47 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		return bLineOfSight;
 	}
-
-
 	
-	// considerationHasLineOfSightFromEnemy(action, consideration) {
-	// 	var bLineOfSight = 0;
-		
-	// 	var myPos = this.aiAgent.character.getPlanckPosition();
-	// 	var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
-	// 	var enemyPos = null;
-	// 	if(enemyC !== null) {
-	// 		enemyPos = enemyC.getPlanckPosition();
-	// 	}
 
-	// 	//at this point, it is okay to calculate X and run through the response curve
-	// 	if(myPos !== null && enemyPos !== null) {
-	// 		bLineOfSight = this.aiAgent.lineOfSightTest(myPos, enemyPos).isLOS ? 1 : 0;
-	// 	}
-
-	// 	// console.log("LOS TEST: " + bLineOfSight);
-
-	// 	return bLineOfSight;
-	// }
 
 
 	considerationHasPathUnobstructedToEnemy(action, consideration) {
 		var bUnobstructedPath = 0;
+
+		//order the character ids in order ascending
+		var params = [];
+		var param1 = this.aiAgent.character.id < action.characterId ? this.aiAgent.character.id : action.characterId;
+		var param2 = this.aiAgent.character.id < action.characterId ? action.characterId : this.aiAgent.character.id;
+		params.push(param1);
+		params.push(param2);
+		var ttl = 1000;
+
+		var cacheKey = "calcLOS=" + params.join("=");
+		var cacheObj = this.aiAgent.gs.cache.getCacheValue(cacheKey);
+
+		if(cacheObj === null || (cacheObj.ts + ttl) <= this.aiAgent.gs.currentTick) {
+			// console.log("calculating Unobstructive for " + cacheKey);
+			var myPos = this.aiAgent.character.getPlanckPosition();
+			var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
+			var enemyPos = null;
+			if(enemyC !== null) {
+				enemyPos = enemyC.getPlanckPosition();
+			}
+	
+			//at this point, it is okay to calculate X and run through the response curve
+			if(myPos !== null && enemyPos !== null) {
+				var losResults = this.aiAgent.lineOfSightTest(myPos, enemyPos);
+
+				bUnobstructedPath = losResults.pathUnobstructed ? 1 : 0;
+
+				this.aiAgent.gs.cache.setCacheValue(cacheKey, losResults);
+			}
+		} else {
+			bUnobstructedPath = cacheObj.value.pathUnobstructed;
+		}
 		
-		var myPos = this.aiAgent.character.getPlanckPosition();
-		var enemyC = this.aiAgent.gs.gom.getGameObjectByID(action.characterId);
-		var enemyPos = null;
-		if(enemyC !== null) {
-			enemyPos = enemyC.getPlanckPosition();
-		}
-
-		//at this point, it is okay to calculate X and run through the response curve
-		if(myPos !== null && enemyPos !== null) {
-			bUnobstructedPath = this.aiAgent.lineOfSightTest(myPos, enemyPos).pathUnobstructed ? 1 : 0;
-		}
-
-		// console.log("Unobstructed TEST: " + bUnobstructedPath);
-
 		return bUnobstructedPath;
 	}
-
-
 
 	considerationMsPassedSinceSameAction(action, consideration) {
 		return this.aiAgent.gs.currentTick - this.aiAgent.actionHistory[action.resource.id].tsPrev;

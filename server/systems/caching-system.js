@@ -52,8 +52,6 @@ class CachingSystem {
 		this.cache[key].key = key;
 		this.cache[key].ts = this.gs.currentTick;
 		this.cache[key].value = value;
-
-		
 	}
 
 	getCacheValue(key) {
