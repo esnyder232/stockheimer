@@ -210,6 +210,18 @@
 					},
 					"xMax": 1,
 					"xMin": 0
+				},
+				{
+					"type": "RANDOM_NUMBER",
+					"responseCurve": "LINEAR",
+					"responseCurveParameters": {
+						"A": 1.0,
+						"B": 0,
+						"h": 0.0,
+						"k": -0.8
+					},
+					"xMax": 1,
+					"xMin": 0
 				}
 			]
 		}

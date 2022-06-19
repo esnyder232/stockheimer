@@ -239,14 +239,6 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 		var considerationScoreAccum = 1;
 
 
-		// Do a consideration caching system based on the following in order:
-		// 
-		// 
-		//
-		//
-		// also stagger the ai utility scoring on a frequency basis. And make sure the caching lasts that long.
-	
-
 
 		//score all the considerations against each target
 		var x = 0;
@@ -306,6 +298,11 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 				case GameConstants.ConsiderationTypes["NUM_ENEMIES_TO_NUM_ALLIES_RATIO_OCCUPYING_POINT"]:
 					x = this.considerationNumEnemiesToNumAlliesRatioOccupyingPoint(action, action.resource.considerations[i]);
 					break;
+				case GameConstants.ConsiderationTypes["RANDOM_NUMBER"]:
+					x = this.considerationRandomNumber(action, action.resource.considerations[i]);
+					break;
+
+					
 				default:
 					break;
 			}
@@ -656,6 +653,17 @@ class AIAgentPlayingState extends AIAgentBaseState.AIAgentBaseState {
 
 		return ratio;
 	}
+	
+	//generates a random number from 0-1
+	considerationRandomNumber(action, consideration) {
+		var num = Math.random();
+		
+		// console.log("Random number: " + num);
+
+		return num;
+	}
+
+	
 
 
 
