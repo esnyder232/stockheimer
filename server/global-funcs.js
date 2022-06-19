@@ -369,6 +369,17 @@ class GlobalFuncs {
 		return randomClass;
 	}
 
+
+	getSpecificClass(gameServer, classResourceName) {
+		var randomClass = null;
+		var availableClasses = gameServer.rm.getResourceByType("character-class");
+
+		randomClass = availableClasses.find((x) => {return x.key === classResourceName});
+
+		return randomClass;
+	}
+
+
 	//function that only inserts tracked entities into user agents with users who are "playing" (meaning they are connected and are playing)
 	insertTrackedEntityToPlayingUsers(gameServer, entType, entId) {
 		var playingUsers = gameServer.um.getPlayingUsers();
