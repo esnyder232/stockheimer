@@ -216,10 +216,9 @@ class UserPlayingState extends UserBaseState {
 						}
 						break;
 
-
-					case "fragmentStart":
-					case "fragmentContinue":
-					case "fragmentEnd":
+					case "fromClientFragmentStart":
+					case "fromClientFragmentContinue":
+					case "fromClientFragmentEnd":
 						ua.fromClientFragmentEvent(e);
 						break;
 					default:

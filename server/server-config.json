@@ -5,7 +5,7 @@
 	"https_enabled": false,
 	"cookie_same_site": "strict",
 	"max_allowed_bandwidth_bits": 7000000,
-	"max_packet_event_bytes_until_fragmentation": 30,
+	"max_packet_event_bytes_until_fragmentation": 100,
 	"fps": 30,
 	"max_players": 32,
 	"log_dir_fullpath": "C:\\phaser_projects\\stockheimer\\logs",

@@ -2,6 +2,7 @@ const GlobalFuncs = require('../global-funcs.js');
 const {TrackedEntity} = require("./tracked-entity/tracked-entity.js");
 const serverConfig = require('../server-config.json');
 const logger = require('../../logger.js');
+const GameConstants = require('../../shared_files/game-constants.json');
 
 class UserAgent {
 	constructor() {
@@ -21,9 +22,14 @@ class UserAgent {
 
 		this.fragmentedClientToServerEvents = []; //fragmented events from client to the server
 		this.fragmentedServerToClientEvents = []; //fragmented events to be sent to the client. ONLY 1 fragmented message is sent at a time.
-		
+
 		this.fragmentIdCounter = 0;
 		this.fragmentationLimit = Math.round(serverConfig.max_packet_event_bytes_until_fragmentation);
+		this.fragmentedClientToServerIdIndex = {}; //index for fragmentedClientToServerEvents
+
+		this.fragmentedClientToServerContinueQueue = [];
+		this.fragmentedClientToServerEndQueue = [];
+		this.fragmentedClientToServerErrorQueue = [];
 
 		this.rtt = 0; //ms
 		this.rttCalcTimer = 0; //ms
@@ -70,6 +76,17 @@ class UserAgent {
 		this.trackedEntityUpdateListDeleteTransactions = [];
 	}
 
+
+	getClientToServerFragmentByID(id) {
+		var f = null;
+
+		if(this.fragmentedClientToServerIdIndex[id] !== undefined) {
+			f = this.fragmentedClientToServerIdIndex[id];
+		}
+
+		return f;
+	}
+
 	userAgentInit(gameServer, userId, wsId) {
 		this.gs = gameServer;
 		this.globalfuncs = new GlobalFuncs.GlobalFuncs();
@@ -106,6 +123,11 @@ class UserAgent {
 			"team": {}
 		}; 
 		this.trackedEntityUpdateListDeleteTransactions.length = 0;
+
+		this.fragmentedClientToServerIdIndex = {};
+		this.fragmentedClientToServerContinueQueue.length = 0;
+		this.fragmentedClientToServerEndQueue.length = 0;
+		this.fragmentedClientToServerErrorQueue.length = 0;
 	}
 
 	//inserts the event into the serverToclient array so it can be processed later in the update loop
@@ -158,67 +180,207 @@ class UserAgent {
 		}
 	}
 
+	//this just translates the current state of the fragment to an error code
+	getFragmentErrorCodeState(existingFragmentInfo) {
+		var errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_STATE_IS_ERROR"];
+		switch(existingFragmentInfo.fragmentState) {
+			case GameConstants.FragmentStates["FRAGMENT_CONTINUE"]:
+				errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_STATE_IS_CONTINUE"];
+				break;
+			case GameConstants.FragmentStates["FRAGMENT_END"]:
+				errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_STATE_IS_END"];
+				break;
+			case GameConstants.FragmentStates["FRAGMENT_ERROR"]:
+				errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_STATE_IS_ERROR"];
+				break;
+		}
+		return errorCode;
+	}
+
 	fromClientFragmentEvent(e) {
+		// console.log("Total: " + this.fragmentedClientToServerEvents.length + ". Continue: " + this.fragmentedClientToServerContinueQueue.length + ". End: " + this.fragmentedClientToServerEndQueue.length + ". Error:" + 
+		// 	this.fragmentedClientToServerErrorQueue.length);
+		var bError = false;
+		var errorCode = GameConstants.FragmentErrorCodes["NONE"];
+		var putFragmentInErrorQueue = false;
+		var fragmentInfo = null;
+
 		switch(e.eventName) {
-			case "fragmentStart":
-				var fragmentInfo = {
-					fragmentLength: e.fragmentLength,
-					fragmentData: new ArrayBuffer(e.fragmentLength),
-					fragmentDataView: null,
-					fragmentId: e.fragmentId,
-					n: 0
-				};
+			case "fromClientFragmentStart":
+				//see if the fragment exists already (meaning the state must be continued/ended/errored)
+				var temp = this.getClientToServerFragmentByID(e.fragmentId);
+				if(temp !== null) {
+					errorCode = this.getFragmentErrorCodeState(temp);
+					bError = true;
+				} else {
+					fragmentInfo = {
+						fragmentState: GameConstants.FragmentStates["FRAGMENT_START"],
+						fragmentLength: e.fragmentLength,
+						fragmentData: null,
+						fragmentDataView: null,
+						fragmentId: e.fragmentId,
+						n: 0,
+						timeAcc: 0		//time accumulated for timeout
+					};
+					this.fragmentedClientToServerEvents.push(fragmentInfo);
+					this.fragmentedClientToServerIdIndex[fragmentInfo.fragmentId] = fragmentInfo;
+				}
 
-				fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+				//validate length
+				if(!bError && e.fragmentLength > GameConstants.Fragments["MAX_TOTAL_BYTES"]) {
+					errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_DATA_TOO_LONG"];
+					bError = true;
+					putFragmentInErrorQueue = true;
+				}
+
+				//if no error, process the fragment like normal
+				if(!bError) {
+					//create data buffer and view for the data coming in
+					fragmentInfo.fragmentData = new ArrayBuffer(e.fragmentLength),
+					fragmentInfo.fragmentDataView = new DataView(fragmentInfo.fragmentData);
+
+					errorCode = this.copyFragmentDataFromEventToInfo(e.fragmentData, fragmentInfo, false);
+					
+					if(errorCode !== GameConstants.FragmentErrorCodes["NONE"]) {
+						bError = true;
+						putFragmentInErrorQueue = true;
+					}
+					//if there was no copy error, push it to the next queue (continue)
+					else {
+						fragmentInfo.fragmentState = GameConstants.FragmentStates["FRAGMENT_CONTINUE"];
+						this.fragmentedClientToServerContinueQueue.push(fragmentInfo);
+					}
+				}
+
+				break;
+			case "fromClientFragmentContinue":
+				//check if the fragment exists
+				fragmentInfo = this.getClientToServerFragmentByID(e.fragmentId);
+				if(fragmentInfo === null) {
+					errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_NOT_FOUND"];
+					bError = true;
+				} 
 				
-				//copy the fragment in this message to the fragmentedClientToServerEvents
-				var dv = new DataView(e.fragmentData);
-				for(var j = 0; j < dv.byteLength; j++)
-				{
-					fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-					fragmentInfo.n++;
+				//check the state of the fragment
+				if(!bError && fragmentInfo.fragmentState !== GameConstants.FragmentStates["FRAGMENT_CONTINUE"]) {
+					errorCode = this.getFragmentErrorCodeState(fragmentInfo);
+					bError = true;
 				}
 
-				this.fragmentedClientToServerEvents.push(fragmentInfo);
-
-				break;
-			case "fragmentContinue":
-				var fragmentInfo = this.fragmentedClientToServerEvents.find((x) => {return x.fragmentId === e.fragmentId;});
-
-				if(fragmentInfo)
-				{
-					//copy the fragment in this message to the fragmentedClientToServerEvents
-					var dv = new DataView(e.fragmentData);
+				//if no error, continue process the fragment like normal
+				if(!bError) {
+					fragmentInfo.timeAcc = 0;
+					errorCode = this.copyFragmentDataFromEventToInfo(e.fragmentData, fragmentInfo, false);
 					
-					for(var j = 0; j < dv.byteLength; j++)
-					{
-						fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-						fragmentInfo.n++;
+					if(errorCode !== GameConstants.FragmentErrorCodes["NONE"]) {
+						bError = true;
+						putFragmentInErrorQueue = true;
 					}
 				}
+
 				break;
-			case "fragmentEnd":
-				var fragmentInfoIndex = this.fragmentedClientToServerEvents.findIndex((x) => {return x.fragmentId === e.fragmentId;});
+			case "fromClientFragmentEnd":
+				//check if the fragment exists
+				fragmentInfo = this.getClientToServerFragmentByID(e.fragmentId);
+				if(fragmentInfo === null) {
+					errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_NOT_FOUND"];
+					bError = true;
+				} 
+				
+				//check the state of the fragment
+				if(!bError && fragmentInfo.fragmentState !== GameConstants.FragmentStates["FRAGMENT_CONTINUE"]) {
+					errorCode = this.getFragmentErrorCodeState(fragmentInfo);
+					bError = true;
+				}
 
-				if(fragmentInfoIndex >= 0)
-				{
-					var fragmentInfo = this.fragmentedClientToServerEvents[fragmentInfoIndex];
+				//if no error, continue process the fragment like normal
+				if(!bError) {
+					errorCode = this.copyFragmentDataFromEventToInfo(e.fragmentData, fragmentInfo, true);
+
 					
-					//copy the fragment in this message to the fragmentedClientToServerEvents
-					var dv = new DataView(e.fragmentData);
-					for(var j = 0; j < dv.byteLength; j++)
-					{
-						fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
-						fragmentInfo.n++;
-					}
+					if(errorCode !== GameConstants.FragmentErrorCodes["NONE"]) {
+						bError = true;
+						putFragmentInErrorQueue = true;
+					} 
+					//if no error from copying the data, then the fragment is completed, and we can now decode it an parse it like normal.
+					else {
+						this.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
+						fragmentInfo.fragmentState = GameConstants.FragmentStates["FRAGMENT_END"];
 
-					this.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
-					this.fragmentedClientToServerEvents.splice(fragmentInfoIndex, 1);
+						//splice it off the continue queue if it exists (thats the only queue it could possibly exist in if it is ended)
+						var index = this.fragmentedClientToServerContinueQueue.findIndex(x => x.fragmentId === fragmentInfo.fragmentId);
+						if(index >= 0) {
+							this.fragmentedClientToServerContinueQueue.splice(index, 1);
+						}
+		
+						//push it into end queue
+						this.fragmentedClientToServerEndQueue.push(fragmentInfo);
+					}
 				}
 				break;
 		}
-		
+
+
+		//if there was an error, send an error back to the client
+		if(bError) {
+			this.insertServerToClientEvent({
+				"eventName": "fragmentError",
+				"fragmentId": e.fragmentId,
+				"fragmentErrorCode": errorCode
+			});
+
+			logger.log("info", 'Fragment Error occured. UserName: ' + this.user?.username + ". Error code: " + errorCode + ". FragmentInfo: " + JSON.stringify(fragmentInfo));
+
+			//if there was a serious error, send the fragment info to the error queue so it doesn't get processed ever again
+			if(putFragmentInErrorQueue && fragmentInfo !== null) {
+				fragmentInfo.fragmentState = GameConstants.FragmentStates["FRAGMENT_ERROR"];
+
+				//splice it off the continue queue if it exists (thats the only queue it could possibly exist in if it errored)
+				var index = this.fragmentedClientToServerContinueQueue.findIndex(x => x.fragmentId === fragmentInfo.fragmentId);
+				if(index >= 0) {
+					this.fragmentedClientToServerContinueQueue.splice(index, 1);
+				}
+
+				//push it into error queue
+				this.fragmentedClientToServerErrorQueue.push(fragmentInfo);
+			}
+		}
 	}
+
+
+	//This attempts to copy the fragment event to the fragment info.
+	//It returns a fragment error code from GameConstants.FragmentErrorCodes if there is an error.
+	//It returns GameConstants.FragmentErrorCodes["NONE"] if no error occured.
+	copyFragmentDataFromEventToInfo(eventFragmentData, fragmentInfo, isFinalFragment) {
+		var bError = false;
+		var errorCode = GameConstants.FragmentErrorCodes["NONE"];
+		var dv = new DataView(eventFragmentData);
+
+		//check to make sure the resulting data isn't too long
+		if(fragmentInfo.n + dv.byteLength > fragmentInfo.fragmentLength) {
+			bError = true;
+			errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_RESULT_TOO_LONG"];
+		}
+
+		//if no error, copy the fragment in event to the fragmentInfo
+		if(!bError) {
+			for(var j = 0; j < dv.byteLength; j++)
+			{
+				fragmentInfo.fragmentDataView.setUint8(fragmentInfo.n, dv.getUint8(j));
+				fragmentInfo.n++;
+			}	
+		}
+
+		//if its the final fragment, check to make sure the resulting data isn't too short
+		if(!bError && isFinalFragment && fragmentInfo.n < fragmentInfo.fragmentLength) {
+			bError = true;
+			errorCode = GameConstants.FragmentErrorCodes["FRAGMENT_RESULT_TOO_SHORT"];
+		}
+
+		return errorCode;
+	}
+	
+
 
 	//this pushes an event to the tracked entity to delete itself. (like a soft delete)
 	//The tracked entity will create a "permDeleteTrackedEntity" transaction itself if it detects it won't be created again. The "permDeleteTrackedEntity" will ACTUALLY delete the tracked entity from the list
@@ -369,6 +531,10 @@ class UserAgent {
 	}
 
 	update(dt) {
+		//debugging fragments
+		// console.log("Total: " + this.fragmentedClientToServerEvents.length + ". Continue: " + this.fragmentedClientToServerContinueQueue.length + ". End: " + this.fragmentedClientToServerEndQueue.length + ". Error:" + 
+		// 	this.fragmentedClientToServerErrorQueue.length);
+
 		//update rtt if its time
 		this.rttCalcTimer += dt;
 		if(this.rttCalcTimer >= this.rttCalcThreshold)
@@ -381,6 +547,28 @@ class UserAgent {
 			for(var i = 0; i < userAgents.length; i++)
 			{
 				userAgents[i].insertTrackedEntityEvent("user", this.userId, this.serializeUpdateUserRttEvent());
+			}
+		}
+
+		//update fragment list to see if any timed out
+		for(var i = this.fragmentedClientToServerContinueQueue.length - 1; i >= 0; i--) {
+			this.fragmentedClientToServerContinueQueue[i].timeAcc += dt;
+			if(this.fragmentedClientToServerContinueQueue[i].timeAcc >= 1000) {
+				this.insertServerToClientEvent({
+					"eventName": "fragmentError",
+					"fragmentId": this.fragmentedClientToServerContinueQueue[i].fragmentId,
+					"fragmentErrorCode": GameConstants.FragmentErrorCodes["FRAGMENT_TIMEOUT"]
+				});
+	
+				logger.log("info", 'Fragment Error occured. UserName: ' + this.user?.username + ". Error code: " + GameConstants.FragmentErrorCodes["FRAGMENT_TIMEOUT"] + 
+					". FragmentInfo: " + JSON.stringify(this.fragmentedClientToServerContinueQueue[i]));
+				this.fragmentedClientToServerContinueQueue[i].fragmentState = GameConstants.FragmentStates["FRAGMENT_ERROR"];
+
+				//push it into error queue
+				this.fragmentedClientToServerErrorQueue.push(this.fragmentedClientToServerContinueQueue[i]);
+
+				//splice it off the continue queue
+				this.fragmentedClientToServerContinueQueue.splice(i, 1);
 			}
 		}
 

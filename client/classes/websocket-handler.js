@@ -509,7 +509,7 @@ export default class WebsocketHandler {
 		result.canEventFit = result.bytesRequired <= (this.maxPacketSize - this.currentBytes);
 
 		//see if its a fragment
-		if(eventData.eventName == "fragmentStart" || eventData.eventName == "fragmentContinue" || eventData.eventName == "fragmentEnd")
+		if(eventData.eventName == "fromClientFragmentStart" || eventData.eventName == "fromClientFragmentContinue" || eventData.eventName == "fromClientFragmentEnd")
 		{
 			result.isFragment = true;
 		}

@@ -131,6 +131,11 @@ class UserLeavingGameState extends UserBaseState {
 				"team": {}
 			};
 
+			ua.fragmentedClientToServerIdIndex = {};
+			ua.fragmentedClientToServerContinueQueue.length = 0;
+			ua.fragmentedClientToServerEndQueue.length = 0;
+			ua.fragmentedClientToServerErrorQueue.length = 0;
+
 			//remove all callbacks from the websocket handler as well
 			ua.wsh.removeAllCallbacks()
 		}

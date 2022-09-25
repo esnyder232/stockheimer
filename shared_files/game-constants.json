@@ -81,6 +81,40 @@
 		"LOGARITHMIC": 		4,
 		"LOGISTIC": 		5,
 		"6POLY": 			6
-	}
+	},
 
+	"Fragments": {
+		"MAX_TOTAL_BYTES": 	1000
+	},
+
+	"FragmentStates": {
+		"FRAGMENT_START": 0,
+		"FRAGMENT_CONTINUE": 1,
+		"FRAGMENT_END": 2,
+		"FRAGMENT_ERROR": 3
+	},
+
+	"FragmentErrorCodes": {
+		"NONE": 						0,
+		"FRAGMENT_NOT_FOUND": 			1,
+		"FRAGMENT_STATE_IS_CONTINUE":	2,
+		"FRAGMENT_STATE_IS_END":		3,
+		"FRAGMENT_STATE_IS_ERROR":		4,
+		"FRAGMENT_DATA_TOO_LONG": 		5,
+		"FRAGMENT_RESULT_TOO_SHORT": 	6,
+		"FRAGMENT_RESULT_TOO_LONG": 	7,
+		"FRAGMENT_TIMEOUT": 			8
+	},
+
+	"FragmentErrorMessages": {
+		"NONE": 						"",
+		"FRAGMENT_NOT_FOUND": 			"The fragment Id was not found.",
+		"FRAGMENT_STATE_IS_CONTINUE":	"The fragment state is 'continue'.",
+		"FRAGMENT_STATE_IS_END":		"The fragment state is 'end'.",
+		"FRAGMENT_STATE_IS_ERROR":		"The fragment state is 'error'.",
+		"FRAGMENT_DATA_TOO_LONG":		"Total data length is too long to send as a fragmented event.",
+		"FRAGMENT_RESULT_TOO_SHORT": 	"The resulting data was shorter than the request.",
+		"FRAGMENT_RESULT_TOO_LONG": 	"The resulting data was longer than the request.",
+		"FRAGMENT_TIMEOUT": 			"Fragment data timeout."
+	}
 }

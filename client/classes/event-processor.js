@@ -155,6 +155,7 @@ export default class EventProcessor {
 		this.eventFunctions[this.wsh.eventNameIndex["fragmentStart"].event_id] = {processEvent: this.fragmentStart.bind(this)};
 		this.eventFunctions[this.wsh.eventNameIndex["fragmentContinue"].event_id] = {processEvent: this.fragmentContinue.bind(this)};
 		this.eventFunctions[this.wsh.eventNameIndex["fragmentEnd"].event_id] = {processEvent: this.fragmentEnd.bind(this)};
+		this.eventFunctions[this.wsh.eventNameIndex["fragmentError"].event_id] = {processEvent: this.fragmentError.bind(this)};
 	}
 
 	reset() {
@@ -222,7 +223,7 @@ export default class EventProcessor {
 						var nextBytes = this.calculateNextFragmentBytes(fragmentInfo.n, fragmentInfo.bytesRequired, this.fragmentationLimit);
 
 						var fragmentEvent = {
-							eventName: "fragmentStart",
+							eventName: "fromClientFragmentStart",
 							fragmentLength: fragmentInfo.eventDataView.byteLength,
 							fragmentData: fragmentInfo.eventDataBuffer.slice(0, nextBytes),
 							fragmentId: fragmentInfo.fragmentId
@@ -233,8 +234,7 @@ export default class EventProcessor {
 
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId});
-							fragmentInfo.n += nextBytes;
+							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, bytesAcked: nextBytes});
 							fragmentInfo.currentFragmentNumber++;
 						}
 						else
@@ -250,7 +250,7 @@ export default class EventProcessor {
 
 						//queue up the next fragment 
 						var fragmentEvent = {
-							eventName: "fragmentContinue",
+							eventName: "fromClientFragmentContinue",
 							fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes),
 							fragmentId: fragmentInfo.fragmentId
 						};
@@ -260,8 +260,7 @@ export default class EventProcessor {
 						
 						if(info.canEventFit)
 						{
-							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId});
-							fragmentInfo.n += nextBytes;
+							this.wsh.insertEvent(fragmentEvent, this.cbFragmentSendAck.bind(this), null, {fragmentId: fragmentInfo.fragmentId, bytesAcked: nextBytes});
 							fragmentInfo.currentFragmentNumber++;
 						}
 						else
@@ -277,7 +276,7 @@ export default class EventProcessor {
 
 						//queue up the next fragment 
 						var fragmentEvent = {
-							eventName: "fragmentEnd",
+							eventName: "fromClientFragmentEnd",
 							fragmentData: fragmentInfo.eventDataBuffer.slice(fragmentInfo.n, fragmentInfo.n + nextBytes),
 							fragmentId: fragmentInfo.fragmentId
 						};
@@ -359,7 +358,8 @@ export default class EventProcessor {
 		if(index >= 0)
 		{
 			this.fragmentedClientToServerEvents[index].ackedFragmentNumber++;
-			//console.log('fragment found. Increasing now. ' + this.fragmentedClientToServerEvents[index].ackedFragmentNumber);
+			this.fragmentedClientToServerEvents[index].n += miscData.bytesAcked;
+			// console.log('fragment found. Increasing now. ' + this.fragmentedClientToServerEvents[index].ackedFragmentNumber + ". bytes acked: " + this.fragmentedClientToServerEvents[index].n);
 		}
 	}
 
@@ -462,5 +462,27 @@ export default class EventProcessor {
 			this.fragmentedServerToClientEvents.splice(fragmentInfoIndex, 1);
 		}
 	}
+
+	//this gets called when there is an error in sending a fragmented message from client to server
+	fragmentError(e) {
+		var errorMsg = "Fragment Error code: " + e.fragmentErrorCode + 
+		". Message: " + this.gc.gameConstants.FragmentErrorMessages[this.gc.gameConstantsInverse.FragmentErrorCodes[e.fragmentErrorCode]];
+
+		console.error(errorMsg);
+
+		//if its a serious error, find the fragment in the list and splice it off because it errored on the server
+		if(e.fragmentErrorCode === this.gc.gameConstants.FragmentErrorCodes["FRAGMENT_DATA_TOO_LONG"] ||
+		   e.fragmentErrorCode === this.gc.gameConstants.FragmentErrorCodes["FRAGMENT_RESULT_TOO_SHORT"] ||
+		   e.fragmentErrorCode === this.gc.gameConstants.FragmentErrorCodes["FRAGMENT_RESULT_TOO_LONG"] ||
+		   e.fragmentErrorCode === this.gc.gameConstants.FragmentErrorCodes["FRAGMENT_TIMEOUT"]) {
+			var index = this.fragmentedClientToServerEvents.findIndex(x => x.fragmentId === e.fragmentId);
+			if(index >= 0) {
+				this.fragmentedClientToServerEvents.splice(index, 1);
+			}
+			
+			this.gc.modalMenu.openMenu("error", errorMsg);
+		}
+	}
+
 
 }
