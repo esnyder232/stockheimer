@@ -553,7 +553,7 @@ class UserAgent {
 		//update fragment list to see if any timed out
 		for(var i = this.fragmentedClientToServerContinueQueue.length - 1; i >= 0; i--) {
 			this.fragmentedClientToServerContinueQueue[i].timeAcc += dt;
-			if(this.fragmentedClientToServerContinueQueue[i].timeAcc >= 1000) {
+			if(this.fragmentedClientToServerContinueQueue[i].timeAcc >= this.gs.inactivePeriod) {
 				this.insertServerToClientEvent({
 					"eventName": "fragmentError",
 					"fragmentId": this.fragmentedClientToServerContinueQueue[i].fragmentId,

@@ -1,5 +1,42 @@
 # Change log
 
+## Version - 2022.9.25
+* Fragment validation added to server side. 
+  - This decreases the severity of someone fuzzing the packets and sending garbage to the server.
+  - This is also for preparation for chat message validation.
+* More map modes
+  - Elimination - Teams have rounds to kill each other. The team with the surviving members at the end of the time limit wins.
+  - Deathmatch - Teams have rounds to kil leach other. The team with the most points at the end of the time limit wins.
+  - King of the Hill - Teams must capture the point and stay in control of it for the alotted time to win.
+
+
+
+## Version - 2022.9.24
+* Too many things have changed. I have been working on it on/off for the past year or so. Here is the gist of it:
+* More map modes
+  - Elimination - Teams have rounds to kill each other. The team with the surviving members at the end of the time limit wins.
+  - Deathmatch - Teams have rounds to kil leach other. The team with the most points at the end of the time limit wins.
+  - King of the Hill - Teams must capture the point and stay in control of it for the alotted time to win.
+* More maps
+  - Island Map - Elimination
+  - KOTH Map - king of the hill
+* More classes
+  - Defender class added. 
+    - Primary Fire - small fireball
+	- Secondary Fire - Shield that blocks enemies shots. Can also move enemies around.
+* Better AI
+  - Turned off the old AI, and implemented a Utility AI system (still a little janky, but its still better than the old one)
+  - Each slime will get its own AI based on the map and prioritize different goals. In general:
+    - Small/Med slimes - will fire at the closest enemy, while running away from any enemy that gets too close.
+	- Large slime - will fire at closest enemy, while running away from enemies if it loses too muich HP.
+	- Fighter slime - will target the closest enemy and attack. Usually doesn't run away.
+	- Healer slime - will try to stay near the slime with the largest max HP. Tries to prioritize heals between the max HP slime and lowest HP slimes.
+	- Defender slime - not implemented.
+* Other changes
+  - Teammates can now move through each other, but not through enemies. 
+  - Implemented a caching system for the Utility AI. Could use it for other things though.
+
+
 ## Version - 2021.5.19
 * Lots of logic added
   - Rounds added
