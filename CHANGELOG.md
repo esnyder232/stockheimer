@@ -1,14 +1,15 @@
 # Change log
 
+## Version - 2022.9.27
+* Packet validation added to server side. 
+  - This decreases the severity of someone fuzzing the packets and sending garbage to the server.
+  - This is also even MORE preparation for chat message validation.
+
+
 ## Version - 2022.9.25
 * Fragment validation added to server side. 
   - This decreases the severity of someone fuzzing the packets and sending garbage to the server.
   - This is also for preparation for chat message validation.
-* More map modes
-  - Elimination - Teams have rounds to kill each other. The team with the surviving members at the end of the time limit wins.
-  - Deathmatch - Teams have rounds to kil leach other. The team with the most points at the end of the time limit wins.
-  - King of the Hill - Teams must capture the point and stay in control of it for the alotted time to win.
-
 
 
 ## Version - 2022.9.24
