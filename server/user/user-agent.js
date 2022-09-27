@@ -304,7 +304,7 @@ class UserAgent {
 					} 
 					//if no error from copying the data, then the fragment is completed, and we can now decode it an parse it like normal.
 					else {
-						this.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, true);
+						this.wsh.decodeEvent(0, fragmentInfo.fragmentDataView, fragmentInfo.fragmentDataView.byteLength);
 						fragmentInfo.fragmentState = GameConstants.FragmentStates["FRAGMENT_END"];
 
 						//splice it off the continue queue if it exists (thats the only queue it could possibly exist in if it is ended)
@@ -841,9 +841,10 @@ class UserAgent {
 		return result;
 	}
 
-	forceDisconnect() {
+	//call this to force disconnect the user. It will eventually flip the "bDisconnected" flag, which will safely remove the user from the game.
+	forceDisconnect(reason) {
 		if(this.wsh !== null) {
-			this.wsh.disconnectClient(1000, "User timed out when leaving game.");
+			this.wsh.disconnectClient(1000, reason);
 		}
 	}
 

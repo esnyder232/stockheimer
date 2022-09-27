@@ -133,10 +133,15 @@ export default class WebsocketHandler {
 	}
 
 
-	onclose(e) {
+	onclose(e, a, b) {
+		console.log(e);
 		if(e.reason)
 		{
 			this.globalfuncs.appendToLog("WebsocketHandler: Websocket is now closed. Reason: " + e.reason);
+		}
+
+		if(e.code === 1011) {
+			this.gc.modalMenu.openMenu("error", e.reason);
 		}
 		this.gc.websocketClosed();
 	}
@@ -146,10 +151,8 @@ export default class WebsocketHandler {
 	}
 
 	onerror(e) {
-		var msg = "WebSocket connection failed. See the console for more details.";
-		this.globalfuncs.appendToLog("WebsocketHandler: " + msg);
-		this.gc.modalMenu.openMenu("error", msg);
-		
+		this.globalfuncs.appendToLog("WebsocketHandler: " + e.reason);
+		this.gc.modalMenu.openMenu("error", e.reason);
 		this.gc.websocketErrored();
 	}
 

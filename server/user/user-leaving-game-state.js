@@ -39,7 +39,7 @@ class UserLeavingGameState extends UserBaseState {
 		if(this.kickTimerAcc > this.kickTimer) {
 			var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
 			if(ua !== null) {
-				ua.forceDisconnect();
+				ua.forceDisconnect("User timed out when leaving game.");
 			}
 		}
 

@@ -30,6 +30,8 @@ class WebsocketHandler {
 		this.ack = -1;				//most current ack returned by the client
 		
 		this.localSequenceMaxValue = 600;
+		this.remoteSequenceMaxValue = 600;
+		this.prevRemoteSequence = this.remoteSequenceMaxValue-1;
 
 		this.maxPacketSize = 100; 					//bytes. Dynamically set based on current number of players and max bandwidth set in server config.
 		this.MTU = 1000; 							//bytes. following Glenn Fiedler's advice. 1000 bytes for MTU just to be safe from IP fragmentation
@@ -49,6 +51,7 @@ class WebsocketHandler {
 
 		this.wsSendOptions = {};
 		this.wsSendBuffer = null;
+		this.bPacketValidationError = false;		//flag to force disconnect the client on update.
 	}
 
 	init(gameServer, userId, userAgentId, ws) {
@@ -135,34 +138,105 @@ class WebsocketHandler {
 
 	}
 
+	logPacketError(errorMsg, dvPacket, n, byteLength, eventSchema) {
+		var packetDataArr = [];
+		var packetDataStr = "";
+		var username = "";
+		
+		for(var i = 0; i < dvPacket.byteLength; i++) {
+			packetDataArr.push(dvPacket.getUint8(i).toString(16).padStart(2, "0"));
+		}
+		packetDataStr = packetDataArr.join(" ");
+
+		var u = this.gs.um.getUserByID(this.userId);
+		if(u !== null) {
+			username = u.username;
+		} else {
+			username = "(userid) " + this.userId
+		}
+
+		
+		logger.log("error", "Packet Error: " + errorMsg + 
+		". User name: " + username + 
+		". n: " + n + 
+		". ByteLength: " + byteLength + 
+		". EventSchema: " + JSON.stringify(eventSchema) + 
+		". Packet data: " + packetDataStr);
+
+	}
+
 	//this function actually decodes the packets that came in from the client
 	processClientPackets() {
-		while(this.recievedPacketQueue.length > 0) {
+		while(this.recievedPacketQueue.length > 0 && !this.bPacketValidationError) {
 			var view = new DataView(this.recievedPacketQueue.shift());
+			var byteLength = view.byteLength;
+			var onMessageAck = 0;
+			var onMessageAck = 0;
+
 			var n = 0; //number of bytes in
 			var m = 0; //event count
-			var bytesRead = 0;
 	
+			// this.logPacketError("Error test.", view, 0, 10, null);
+
 			//parse the packet header
-			this.remoteSequence = view.getUint16(n); //sequence number
-			n += 2;
-			bytesRead += 2;
-	
-			var onMessageAck = view.getUint16(n); //ack
-			n += 2;
-			bytesRead += 2;
+			 //sequence number
+			if(n + 2 < byteLength) {
+				this.remoteSequence = view.getUint16(n);
+				n += 2;
+			} else {
+				this.bPacketValidationError = true;
+				this.logPacketError("Packet sequence number could not be read; offset is outside the bounds of the dataview", view, n, byteLength, null);
+			}
+
+			//the sequence number should be exactly 1 from the previous because of TCP
+			// console.log("current: " + this.remoteSequence + "prev: " + this.prevRemoteSequence);
+			if((this.remoteSequence - 1) !== this.prevRemoteSequence) {
+				//check wrap around
+				if(this.remoteSequence === 0 && this.prevRemoteSequence === (this.remoteSequenceMaxValue-1)) {
+					//numbers wrapped around. Intentionally blank.
+					// console.log("Numbers wrapped around.");
+				} else {
+					this.bPacketValidationError = true;
+					this.logPacketError("Remote packet sequence number was not sequential. Remote sequence: " + this.remoteSequence + ". Previous sequence: " + this.prevRemoteSequence, view, n, byteLength, null);
+				}
+			}
+
+			//ack
+			if(n + 2 <= byteLength) {
+				onMessageAck = view.getUint16(n);
+				n += 2;
+			} else {
+				this.bPacketValidationError = true;
+				this.logPacketError("Packet ack could not be read; offset is outside the bounds of the dataview", view, n, byteLength, null);
+			}
 			
-			m = view.getUint8(n); //event count
-			n++;
-			bytesRead += 1;
+			//event count. This one could be less than or equal to because there could be no events.
+			if(n + 1 <= byteLength) {
+				m = view.getUint8(n); //event count
+				n++;
+			} else {
+				this.bPacketValidationError = true;
+				this.logPacketError("Event count could not be read; offset is outside the bounds of the dataview", view, n, byteLength, null);
+			}
+
+
 	
 			//logger.log("info", 'ONMESSAGE ' + this.remoteSequence + ", LOCALSEQUENCE: " + this.localSequence);
 	
 			//start going through the events
-			for(var i = 0; i < m; i++)
-			{
-				n += this.decodeEvent(n, view);
+			for(var i = 0; i < m; i++) {
+				n += this.decodeEvent(n, view, byteLength);
+				if(this.bPacketValidationError) {
+					break;
+				}
 			}
+
+			//at this point, validate the bytes read did not cut short from the entire data buffer (at this point, ALL bytes should have been read)
+			if(!this.bPacketValidationError && n < byteLength) {
+				this.bPacketValidationError = true;
+				this.logPacketError("Packet error: The bytes read was less than the bytes in the packet", view, n, byteLength, null);
+			}
+
 	
 			//process any callbacks from the most recent ack from the client
 			//EXAMPLE 1
@@ -199,7 +273,7 @@ class WebsocketHandler {
 			// ackStart would be 65531. Correct.
 			// ackRange would be: 10. Correct.
 	
-			if(onMessageAck != this.ack)
+			if(!this.bPacketValidationError && onMessageAck != this.ack)
 			{
 				var ackStart = this.ack + 1; 
 				var ackRange = onMessageAck - ackStart;
@@ -240,6 +314,8 @@ class WebsocketHandler {
 				}
 				this.ack = onMessageAck;
 			}
+
+			this.prevRemoteSequence = this.remoteSequence;
 		}
 	}
 
@@ -277,27 +353,44 @@ class WebsocketHandler {
 	}
 
 
-	decodeEvent(n, view, debugMe) {
+	decodeEvent(n, view, byteLength, debugMe) {
 		var oldN = n;
+		var eventId = 0;
+		var schema = null;
 
 		//event id
-		var eventId = view.getUint8(n);
-		n++;
+		if(!this.bPacketValidationError && (n + 1) <= byteLength) {
+			eventId = view.getUint8(n);
+			n++;
+		} else {
+			this.bPacketValidationError = true;
+			this.logPacketError("Event id could not be read; offset is outside the bounds of the dataview", view, n, byteLength, null);
+		}
+		
+		//get schema from event id
+		if(!this.bPacketValidationError)  {
+			schema = EventIdIndex[eventId];
+			if(!schema) {
+				this.bPacketValidationError = true;
+				this.logPacketError("Schema does not exist for event id: " + eventId, view, n, byteLength, null);
+			}
+		}
 
-		var schema = EventIdIndex[eventId];
+		//check for out of bounds access (strings/buffers go through another check in the for loop)
+		if(!this.bPacketValidationError && (n + schema.sum_min_bytes) > byteLength) {
+			this.bPacketValidationError = true;
+			this.logPacketError("Event could not be read; offset is outside the bounds of the dataview", view, n, byteLength, schema);
+		}
 
-		if(schema) 
-		{
+		if(!this.bPacketValidationError) {
 			var eventData = {};
 			eventData.eventName = schema.txt_event_name;
 
 			//go through each parameter for the event
-			for(var p = 0; p < schema.parameters.length; p++)
-			{
+			for(var p = 0; p < schema.parameters.length; p++) {
 				var value = 0;
 
-				switch(schema.parameters[p].txt_actual_data_type)
-				{
+				switch(schema.parameters[p].txt_actual_data_type) {
 					//standard decodings
 					case "int8":
 						value = view.getInt8(n);
@@ -331,11 +424,16 @@ class WebsocketHandler {
 						n++;
 
 						//string value
-						for(var j = 0; j < l; j++)
-						{
-							value += String.fromCharCode(view.getUint16(n)); 
-							n += 2;
+						if((n+l) <= byteLength) {
+							for(var j = 0; j < l; j++) {
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+							}
+						} else {
+							this.bPacketValidationError = true;
+							this.logPacketError("Str8 value could not be read; offset is outside the bounds of the dataview", view, n, byteLength, schema);
 						}
+						
 						break;
 					case "str16":
 						value = "";
@@ -345,11 +443,16 @@ class WebsocketHandler {
 						n += 2;
 
 						//string value
-						for(var j = 0; j < l; j++)
-						{
-							value += String.fromCharCode(view.getUint16(n)); 
-							n += 2;
+						if((n+l) <= byteLength) {
+							for(var j = 0; j < l; j++) {
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+							}
+						} else {
+							this.bPacketValidationError = true;
+							this.logPacketError("Str16 value could not be read; offset is outside the bounds of the dataview", view, n, byteLength, schema);
 						}
+						
 						break;
 					case "str32":
 						value = "";
@@ -359,11 +462,16 @@ class WebsocketHandler {
 						n++;
 
 						//string value
-						for(var j = 0; j < l; j++)
-						{
-							value += String.fromCharCode(view.getUint16(n)); 
-							n += 2;
+						if((n+l) <= byteLength) {
+							for(var j = 0; j < l; j++) {
+								value += String.fromCharCode(view.getUint16(n)); 
+								n += 2;
+							}
+						} else {
+							this.bPacketValidationError = true;
+							this.logPacketError("Str32 value could not be read; offset is outside the bounds of the dataview", view, n, byteLength, schema);
 						}
+						
 						break;
 					case "float32":
 						value = view.getFloat32(n);
@@ -424,10 +532,14 @@ class WebsocketHandler {
 						var tempView = new DataView(value);
 
 						//dataBuffer value
-						for(var j = 0; j < l; j++)
-						{
-							tempView.setUint8(j, view.getUint8(n));
-							n += 1;
+						if((n+l) <= byteLength) {
+							for(var j = 0; j < l; j++) {
+								tempView.setUint8(j, view.getUint8(n));
+								n += 1;
+							}
+						} else {
+							this.bPacketValidationError = true;
+							this.logPacketError("dataBuffer8 value could not be read; offset is outside the bounds of the dataview", view, n, byteLength, schema);
 						}
 
 						break;
@@ -437,11 +549,18 @@ class WebsocketHandler {
 
 				}
 
+				//errors could still occur if the data is a string/buffer
+				if(this.bPacketValidationError) {
+					break;
+				}
+
 				//create the key value pair on eventData
 				eventData[schema.parameters[p].txt_param_name] = value;
 			}
 
-			this.userAgent.clientToServerEvents.push(eventData);
+			if(!this.bPacketValidationError) {
+				this.userAgent.clientToServerEvents.push(eventData);
+			}
 		}
 
 		return n - oldN;
@@ -849,6 +968,13 @@ class WebsocketHandler {
 			var u = this.gs.um.getUserByID(this.userId);
 			logger.log("info", 'A user has been timed out. username: ' + u.username + '.  userId: ' + u.id);
 			this.disconnectClient(1000, "User timed out server side.");
+		}
+
+		//disconnect the client if any packet validation error occured
+		if(this.bPacketValidationError) {
+			var u = this.gs.um.getUserByID(this.userId);
+			logger.log("info", 'Packet validation error. username: ' + u.username + '.  userId: ' + u.id + ". User disconnected.");
+			this.disconnectClient(1011, "Server packet validation error.");
 		}
 	}
 }
