@@ -1,6 +1,11 @@
 # Change log
 
 ## Version - 2022.9.27
+* Chat message validation added to server and client side.
+  - Finally was able to add chat message validation. Max character length is currently 400 characters.
+
+
+## Version - 2022.9.27
 * Packet validation added to server side. 
   - This decreases the severity of someone fuzzing the packets and sending garbage to the server.
   - This is also even MORE preparation for chat message validation.

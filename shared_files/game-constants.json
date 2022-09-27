@@ -119,6 +119,6 @@
 	},
 
 	"Chat": {
-		"MAX_CHAT_LENGTH_CHAR": 100
+		"MAX_CHAT_LENGTH_CHAR": 400
 	}
 }
