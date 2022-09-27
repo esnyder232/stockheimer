@@ -129,6 +129,9 @@ export default class MainScene extends Phaser.Scene {
 
 		this.tilesetArray = [];
 		this.layerArray = [];
+
+		this.currentTick = 0;
+		this.previousTick = 0;
 	}
 
 	init(data) {
@@ -252,6 +255,9 @@ export default class MainScene extends Phaser.Scene {
 
 	create() {
 		console.log('create on ' + this.scene.key + ' start');
+		
+		this.currentTick = performance.now();
+		this.previousTick = this.currentTick;
 	}
 
 	//prepending "stockheimer" just in case this name conflicts with Phaser's scene life cycle....I don't see it anywhere in the api, but i don't want to risk it.
@@ -501,11 +507,11 @@ export default class MainScene extends Phaser.Scene {
 		}
 	}
 
-	update(timeElapsed, dt) {
+	update(timeElapsed, fakeDt) {
+		this.currentTick = performance.now();
+		var dt = this.currentTick - this.previousTick;
 		var pointer = this.input.activePointer;
 		var sendInputEvent = false;
-		//console.log('dt ' + dt);
-		//console.log("=== Client Framenum " + this.frameNum + " ===")
 
 		//update any dmg texts
 		for(var i = this.damageTexts.length - 1; i >= 0; i--) {
@@ -766,6 +772,7 @@ export default class MainScene extends Phaser.Scene {
 		this.controlPointMenu.update(dt);
 		this.kothTimerMenu.update(dt);
 
+		this.previousTick = this.currentTick;
 		this.frameNum++;
 	}
 
