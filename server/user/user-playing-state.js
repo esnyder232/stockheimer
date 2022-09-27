@@ -1,7 +1,7 @@
 const {UserBaseState} = require('./user-base-state.js');
 const {UserLeavingGameState} = require('./user-leaving-game-state.js');
 const PlayingSpectatorState = require('./playing-states/playing-spectator-state.js')
-
+const GameConstants = require("../../shared_files/game-constants.json");
 const logger = require('../../logger.js');
 
 class UserPlayingState extends UserBaseState {
@@ -138,15 +138,32 @@ class UserPlayingState extends UserBaseState {
 				switch(e.eventName)
 				{
 					case "fromClientChatMessage":
-						var userAgents = this.user.gs.uam.getUserAgents();
 						logger.log("info", "Player: " + this.user.username + ", event: fromClientChatMessage: " + e.chatMsg);
-						for(var j = 0; j < userAgents.length; j++) {
-							userAgents[j].insertTrackedEntityEvent('user', this.user.id, {
-								"eventName": "fromServerChatMessage",
-								"userId": this.user.id,
-								"chatMsg": e.chatMsg,
-								"isServerMessage": false
-							})
+						var isValidated = this.globalfuncs.fromClientChatMessageValidation(e);
+
+						//send out to all playing users
+						if(isValidated) {
+							var userAgents = this.user.gs.uam.getUserAgents();
+							for(var j = 0; j < userAgents.length; j++) {
+								userAgents[j].insertTrackedEntityEvent('user', this.user.id, {
+									"eventName": "fromServerChatMessage",
+									"userId": this.user.id,
+									"chatMsg": e.chatMsg,
+									"isServerMessage": false
+								});
+							}
+						} 
+						//send a message back to the user that the message was too long.
+						else {
+							var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
+							if(ua !== null) {
+								ua.insertTrackedEntityEvent('user', this.user.id, {
+									"eventName": "fromServerChatMessage",
+									"userId": 0,
+									"chatMsg": "Your message was too long. Max length: " + GameConstants.Chat["MAX_CHAT_LENGTH_CHAR"] + " characters.",
+									"isServerMessage": true
+								});
+							}
 						}
 						
 						break;

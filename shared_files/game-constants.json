@@ -116,5 +116,9 @@
 		"FRAGMENT_RESULT_TOO_SHORT": 	"The resulting data was shorter than the request.",
 		"FRAGMENT_RESULT_TOO_LONG": 	"The resulting data was longer than the request.",
 		"FRAGMENT_TIMEOUT": 			"Fragment data timeout."
+	},
+
+	"Chat": {
+		"MAX_CHAT_LENGTH_CHAR": 100
 	}
 }

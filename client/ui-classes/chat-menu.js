@@ -24,7 +24,7 @@ export default class ChatMenu {
 		this.reset();
 
 		this.gc = gc;
-		this.globalfuncs = new GlobalFuncs();
+		this.globalfuncs = new GlobalFuncs(this.gc);
 	}
 
 	activate() {
@@ -32,7 +32,8 @@ export default class ChatMenu {
 		this.windowsEventMapping = [
 			{event: 'toggle-chat-menu',  func: this.toggleMenu.bind(this)},
 			{event: 'close-chat-menu', func: this.closeMenu.bind(this)},
-			{event: 'from-server-chat-message', func: this.fromServerchatMessageEvent.bind(this)}
+			{event: 'from-server-chat-message', func: this.fromServerchatMessageEvent.bind(this)},
+			{event: 'tb-chat-submit-click', func: this.tbChatSubmitClick.bind(this)},
 		];
 
 		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
@@ -50,6 +51,9 @@ export default class ChatMenu {
 		//custom event registration
 		this.chatInput.on("keyup", this.tbChatInputKeyup.bind(this));
 		this.activated = true;
+
+		//modify max length for chatbox
+		this.chatInput.attr("maxlength", this.gc.gameConstants.Chat["MAX_CHAT_LENGTH_CHAR"]);
 	}
 
 	toggleMenu() {
@@ -88,16 +92,36 @@ export default class ChatMenu {
 
 	tbChatSubmitClick() {
 		var chatMsg = "";
+		var isValidated = false;
 		chatMsg = this.chatInput.val();
 
-		if(chatMsg !== "")
-		{
+		if(chatMsg !== "") {
+			//clear the chat
 			this.chatInput.val("");
 
-			this.gc.ep.insertClientToServerEvent({
-				"eventName": "fromClientChatMessage",
-				"chatMsg": chatMsg
-			});
+			//client side validation
+			isValidated = this.globalfuncs.chatMessageValidation(chatMsg);
+
+			//send chat message to server
+			if(isValidated) {
+				this.gc.ep.insertClientToServerEvent({
+					"eventName": "fromClientChatMessage",
+					"chatMsg": chatMsg
+				});
+			} 
+			//put in fake server message
+			else {
+				window.dispatchEvent(new CustomEvent("from-server-chat-message", {
+					detail: {
+						e: {
+							"eventName": "fromServerChatMessage",
+							"userId": 0,
+							"chatMsg": "Your message was too long. Max length: " + this.gc.gameConstants.Chat["MAX_CHAT_LENGTH_CHAR"] + " characters.",
+							"isServerMessage": true
+						}
+					}
+				}));
+			}
 		}
 
 		this.closeMenu();

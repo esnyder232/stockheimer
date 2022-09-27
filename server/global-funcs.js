@@ -538,6 +538,15 @@ class GlobalFuncs {
 		return false;
 	}
 
+	fromClientChatMessageValidation(e) {
+		var isValidated = true;
+		if(e.chatMsg.length > GameConstants.Chat["MAX_CHAT_LENGTH_CHAR"]) {
+			isValidated = false;
+		}
+
+		return isValidated;
+	}
+
 }
 
 

@@ -1,7 +1,8 @@
 import $ from "jquery"
 
 export default class GlobalFuncs {
-	constructor() {
+	constructor(gc) {
+		this.gc = gc;
 	}
 
 	
@@ -271,6 +272,13 @@ export default class GlobalFuncs {
 		vec4Final = "vec4(" + vec4InternalStr + ")";
 		return vec4Final;
 	}
+	
+	chatMessageValidation(chatMsg) {
+		var isValidated = true;
+		if(chatMsg.length > this.gc.gameConstants.Chat["MAX_CHAT_LENGTH_CHAR"]) {
+			isValidated = false;
+		}
 
-
+		return isValidated;
+	}
 }
