@@ -42,6 +42,9 @@ class TrackedEntityCreatingState extends TrackedEntityBaseState {
 					case "control-point":
 						event = this.trackedEntity.ent.serializeAddControlPointEvent();
 						break;
+					case "wall":
+						event = this.trackedEntity.ent.serializeAddWallEvent();
+						break;
 				}
 				break;
 			case "round":

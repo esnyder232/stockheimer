@@ -240,7 +240,7 @@ class NavGrid {
 				for(var j = 0; j < this.nodes.length; j++) {
 					for(var i = 0; i < this.nodes[j].length; i++) {
 						if(this.nodes[j][i].impassable) {
-							var w = this.gs.gom.createGameObject("wall");
+							var w = this.gs.gom.createStaticGameObject("wall");
 							w.x = i * this.tiledUnitsToPlanckUnits;
 							w.y = (j * this.tiledUnitsToPlanckUnits) * -1;
 							w.size = this.tiledUnitsToPlanckUnits;

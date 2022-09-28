@@ -1,19 +1,19 @@
 {
 	"name": "Team Map Square - Elimination",
 	"tilemapResource": "assets/tilemaps/team-map-square.json",
-	"mapTimeLength": 10000,
+	"mapTimeLength": 1000,
 	"gameData": {
 		"type": "elimination",
-		"roundMapStartTimeLength": 10000,
-		"roundStartingTimeLength": 10000,
-		"roundPlayingTimeLength": 60000,
+		"roundMapStartTimeLength": 1000,
+		"roundStartingTimeLength": 1000,
+		"roundPlayingTimeLength": 600,
 		"roundOverTimeLength": 7000,
-		"roundOverWinTimeLength": 12000,
+		"roundOverWinTimeLength": 1000,
 		"roundMapEndTimeLength": 5000,
 		"userRespawningTimeLength": 4000,
-		"matchWinCondition": 3
+		"matchWinCondition": 1
 	},
-	"minimumUsersPlaying": 24,
+	"minimumUsersPlaying": 0,
 	"classData": [
 		"data/character-classes/slime-small.json",
 		"data/character-classes/slime-med.json",

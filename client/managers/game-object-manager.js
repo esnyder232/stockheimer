@@ -4,6 +4,7 @@ import Castle from "../game-objects/castle.js";
 import Projectile from "../game-objects/projectile.js";
 import PersistentProjectile from "../game-objects/persistent-projectile.js";
 import ControlPoint from "../game-objects/control-point.js";
+import Wall from "../game-objects/wall.js";
 
 
 export default class GameObjectManager {
@@ -14,7 +15,11 @@ export default class GameObjectManager {
 		this.idIndex = {};
 
 		this.activeGameObjectArray = [];
+		this.staticGameObjectArray = [];
 		this.activeIdIndex = {};
+		this.staticIdIndex = {};
+
+		
 		this.serverIdClientIdMap = {};
 		
 		this.isDirty = false;
@@ -47,9 +52,6 @@ export default class GameObjectManager {
 			case "control-point":
 				o = new ControlPoint();
 				break;
-			case "wall":
-				o = new Wall();
-				break;
 		}
 
 		o.id = this.idCounter++;
@@ -60,16 +62,44 @@ export default class GameObjectManager {
 		if(serverId !== undefined)
 		{
 			this.serverIdClientIdMap[serverId] = o.id;
-			o.serverId = serverId
+			o.serverId = serverId;
 		}
 		
 		this.updateIndex(o.id, o, 'create');
-
-		//go ahead and put in the activate transaction as well
 		this.activateGameObjectId(o.id);
-		
+
 		return o;
 	}
+
+	//create static game objects. Mostly game objects from level data like walls
+	//these objects don't have an 'activation' in the life cycle. They just exist when them map is being loaded and thats it.
+	createStaticGameObject(type, serverId) {
+		var o = null;
+
+		switch(type)
+		{
+			case "wall":
+				o = new Wall();
+				break;
+		}
+		
+		o.id = this.idCounter++;
+		o.isStatic = true;
+		o.type = type;
+
+		if(serverId !== undefined)
+		{
+			this.serverIdClientIdMap[serverId] = o.id;
+			o.serverId = serverId;
+		}
+
+		this.gameObjectArray.push(o);
+		this.staticGameObjectArray.push(o);
+		this.updateStaticIndex(o.id, o, 'create');
+
+		return o;
+	}
+
 
 
 	destroyGameObjectServerId(serverId) {
@@ -120,6 +150,36 @@ export default class GameObjectManager {
 		}
 	}
 
+	
+
+	updateStaticIndex(id, obj, transaction) {
+		if(transaction == 'create')
+		{
+			this.idIndex[id] = obj;
+			this.staticIdIndex[id] = obj;
+		}
+		else if(transaction == 'delete')
+		{
+			if(this.idIndex[id] !== undefined)
+			{
+				delete this.idIndex[id];
+			}
+
+			if(this.staticIdIndex[id] !== undefined)
+			{
+				delete this.staticIdIndex[id];
+			}
+
+			if(this.serverIdClientIdMap[obj.serverId] !== undefined)
+			{
+				delete this.serverIdClientIdMap[obj.serverId];
+			}
+		}
+	}
+
+
+
+
 
 	//For objectDestruction:
 	//if an object is activated...
@@ -162,7 +222,22 @@ export default class GameObjectManager {
 											{
 												this.gameObjectArray[oi].deinit();
 											}
-											this.updateIndex(this.gameObjectArray[oi].id, this.gameObjectArray[oi], "delete");
+
+											//check if its a regular game object or a 'static' game object
+											if(!this.gameObjectArray[oi].isStatic) {
+												
+												this.updateIndex(this.gameObjectArray[oi].id, this.gameObjectArray[oi], "delete");
+											}
+											//if its static, we also need to splice it off the staticGameObjectArray as well as the index
+											else {
+												var oiStatic = this.staticGameObjectArray.findIndex((x) => {return x.id == o.id;});
+
+												if(oiStatic >= 0) {
+													this.staticGameObjectArray.splice(oiStatic, 1);	
+												}
+												this.updateStaticIndex(this.gameObjectArray[oi].id, this.gameObjectArray[oi], "delete");
+											}
+
 											this.gameObjectArray.splice(oi, 1);
 										}
 									}

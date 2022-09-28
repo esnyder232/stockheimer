@@ -35,14 +35,25 @@ class UserPlayingState extends UserBaseState {
 				this.user.gs.theRound.em.batchRegisterForEvent(this.user.roundEventCallbackMapping);
 			}
 
+
+			
 			//get all the existing gameobjects and put them in tracked entities for the player
-			var gobs = this.user.gs.gom.getActiveGameObjects();
 			var ua = this.user.gs.uam.getUserAgentByID(this.user.userAgentId);
+			var gobs = this.user.gs.gom.getActiveGameObjects();
 			if(ua !== null) {
 				for(var i = 0; i < gobs.length; i++) {
 					ua.insertTrackedEntity("gameobject", gobs[i].id);
 				}
 			}
+
+			//also send the static game objects to the player
+			var staticGobs = this.user.gs.gom.getStaticGameObjects();
+			if(ua !== null) {
+				for(var i = 0; i < staticGobs.length; i++) {
+					ua.insertTrackedEntity("gameobject", staticGobs[i].id);
+				}
+			}
+
 		}		
 
 		super.enter(dt);

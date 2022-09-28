@@ -7,6 +7,7 @@ class Wall {
 		this.type = "wall";
 		this.plBody = null;
 		this.id = null;
+		this.isStatic = true;
 
 		this.x = 0;
 		this.y = 0;
@@ -117,6 +118,35 @@ class Wall {
 
 		return collided;
 	}
+
+	serializeAddWallEvent() {
+		var eventData = null;
+		var bodyPos = {x: this.x, y: this.y};
+		if(this.plBody !== null)
+		{
+			bodyPos = this.plBody.getPosition();
+		}
+
+		eventData = {
+			"eventName": "addWall",
+			"id": this.id,
+			"x": bodyPos.x,
+			"y": bodyPos.y,
+			"size": this.size,
+			"impassable": this.impassable,
+			"collideProjectiles": this.collideProjectiles
+		};
+		
+		return eventData;
+	}
+
+	serializeRemoveWallEvent() {
+		return {
+			"eventName": "removeWall",
+			"id": this.id,
+		};	
+	}
+
 }
 
 exports.Wall = Wall;

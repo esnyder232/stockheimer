@@ -12,7 +12,6 @@
 	"log_level": "debug",
 	"allow_simulated_user_ai_agents": true,
 	"map_rotation": [
-		"data/maps/elimination-team-map-square.json",
-		"data/maps/koth-two.json"
+		"data/maps/deathmatch-team-map-square-no-walls.json"
 	]
 }

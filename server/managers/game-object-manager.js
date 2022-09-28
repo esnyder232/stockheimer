@@ -16,7 +16,9 @@ class GameObjectManager {
 		this.idIndex = {};
 
 		this.activeGameObjectArray = [];
+		this.staticGameObjectArray = [];
 		this.activeIdIndex = {};
+		this.staticIdIndex = {};
 		
 		this.isDirty = false;
 		this.transactionQueue = [];
@@ -29,7 +31,6 @@ class GameObjectManager {
 
 	createGameObject(type) {
 		var o = null;
-		var activate = true;
 
 		switch(type)
 		{
@@ -48,11 +49,6 @@ class GameObjectManager {
 			case "persistent-projectile":
 				o = new PersistentProjectile();
 				break;
-			case "wall":
-				o = new Wall();
-				//feels kinda hacky...but don't activate a wall object. Because its not really "active", is it?
-				activate = false; 
-				break;
 		}
 
 		o.id = this.gs.getGlobalGameObjectID();
@@ -61,11 +57,32 @@ class GameObjectManager {
 
 		this.gameObjectArray.push(o);
 		this.updateIndex(o.id, o, 'create');
-
-		if(activate) {
-			this.activateGameObjectId(o.id);
-		}
+		this.activateGameObjectId(o.id);
 		
+		
+		return o;
+	}
+
+	//create static game objects. Mostly game objects from level data like walls
+	//these objects don't have an 'activation' in the life cycle. They just exist when them map is being loaded and thats it.
+	createStaticGameObject(type) {
+		var o = null;
+
+		switch(type)
+		{
+			case "wall":
+				o = new Wall();
+				break;
+		}
+
+		o.id = this.gs.getGlobalGameObjectID();
+		o.isStatic = true;
+		o.type = type;
+
+		this.gameObjectArray.push(o);
+		this.staticGameObjectArray.push(o);
+		this.updateStaticIndex(o.id, o, 'create');
+
 		return o;
 	}
 
@@ -105,6 +122,28 @@ class GameObjectManager {
 			}
 		}
 	}
+
+
+	updateStaticIndex(id, obj, transaction) {
+		if(transaction == 'create')
+		{
+			this.idIndex[id] = obj;
+			this.staticIdIndex[id] = obj;
+		}
+		else if(transaction == 'delete')
+		{
+			if(this.idIndex[id] !== undefined)
+			{
+				delete this.idIndex[id];
+			}
+
+			if(this.staticIdIndex[id] !== undefined)
+			{
+				delete this.staticIdIndex[id];
+			}
+		}
+	}
+
 
 
 
@@ -149,7 +188,21 @@ class GameObjectManager {
 											{
 												this.gameObjectArray[oi].deinit();
 											}
-											this.updateIndex(this.gameObjectArray[oi].id, null, "delete");
+
+											//check if its a regular game object or a 'static' game object
+											if(!this.gameObjectArray[oi].isStatic) {
+												this.updateIndex(this.gameObjectArray[oi].id, null, "delete");
+											}
+											//if its static, we also need to splice it off the staticGameObjectArray as well as the index
+											else {
+												var oiStatic = this.staticGameObjectArray.findIndex((x) => {return x.id == o.id;});
+
+												if(oiStatic >= 0) {
+													this.staticGameObjectArray.splice(oiStatic, 1);	
+												}
+												this.updateStaticIndex(this.gameObjectArray[oi].id, null, "delete");
+											}
+
 											this.gameObjectArray.splice(oi, 1);
 										}
 									}
@@ -319,6 +372,10 @@ class GameObjectManager {
 
 	getActiveGameObjects() {
 		return this.activeGameObjectArray;
+	}
+
+	getStaticGameObjects() {
+		return this.staticGameObjectArray;
 	}
 
 	getGameObjects() {

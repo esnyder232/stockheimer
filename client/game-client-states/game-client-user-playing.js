@@ -4,6 +4,8 @@ import GameClientUserLeavingGame from './game-client-user-leaving-game.js';
 export default class GameClientUserPlaying extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
+
+		this.wallObj = null;
 	}
 	
 	enter(dt) {
@@ -19,11 +21,21 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 			"eventName": "fromClientReadyToPlay"
 		});
 
-		
 		this.gc.mainScene.stockheimerActivate();
 		this.gc.quickMenu.showMainSceneIcons();
-
 		this.gc.ep.setAllEventEnable(true);
+
+		//test making walls
+		// this.wallObj = this.gc.gom.createStaticGameObject("wall", 99999);
+		// this.wallObj.serverId = 99999;
+		// console.log("====== CREATED WALL ====");
+		// console.log(this.wallObj);
+
+		// window.setTimeout(() => {
+		// 	console.log("=== NOW DESTORY IODNIGSNODFLGJEMDOIRTJH ====");
+		// 	this.gc.gom.destroyGameObjectServerId(this.wallObj.serverId);
+		// }, 10000)
+
 	}
 
 	update(dt) {

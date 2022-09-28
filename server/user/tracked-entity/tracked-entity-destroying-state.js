@@ -49,6 +49,9 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 					case "control-point":
 						se = this.trackedEntity.ent.serializeRemoveControlPointEvent();
 						break;
+					case "wall":
+						se = this.trackedEntity.ent.serializeRemoveWallEvent();
+						break;
 				}
 				break;
 

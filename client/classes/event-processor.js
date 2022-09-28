@@ -42,6 +42,8 @@ import UpdateControlPointEvent from "../event-classes/update-control-point-event
 import RemoveControlPointEvent from "../event-classes/remove-control-point-event.js"
 import CharacterOnControlPointEvent from "../event-classes/character-on-control-point-event.js"
 import CharacterOffControlPointEvent from "../event-classes/character-off-control-point-event.js"
+import AddWallEvent from "../event-classes/add-wall-event.js"
+import RemoveWallEvent from "../event-classes/remove-wall-event.js"
 
 
 export default class EventProcessor {
@@ -112,7 +114,8 @@ export default class EventProcessor {
 			{eventName: "removeControlPoint", eventClass: new RemoveControlPointEvent(), enabled: false},
 			{eventName: "characterOnControlPoint", eventClass: new CharacterOnControlPointEvent(), enabled: false},
 			{eventName: "characterOffControlPoint", eventClass: new CharacterOffControlPointEvent(), enabled: false},
-			
+			{eventName: "addWall", eventClass: new AddWallEvent(), enabled: false},
+			{eventName: "removeWall", eventClass: new RemoveWallEvent(), enabled: false},
 		];
 	}
 
