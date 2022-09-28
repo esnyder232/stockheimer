@@ -538,26 +538,10 @@ export default class MainScene extends Phaser.Scene {
 			}
 		}
 
-
-		//update round
-		this.gc.theRound.update(dt);
-
-		//update teams
-		var teams = this.gc.tm.getTeams();
-		for(var i = 0; i < teams.length; i++) {
-			teams[i].update(dt);
-		}
-
-		//update users
-		var activeUsers = this.gc.um.getActiveUsers();
-		for(var i = 0; i < activeUsers.length; i++) {
-			activeUsers[i].update(dt);
-		}
-
 		//update gameobjects
 		var activeGameObjects = this.gc.gom.getActiveGameObjects();
 		for(var i = 0; i < activeGameObjects.length; i++) {
-			activeGameObjects[i].update(dt);
+			activeGameObjects[i].sceneUpdate(dt);
 		}
 
 		//if you control your character, read input and send it to the server if its dirty.

@@ -73,14 +73,18 @@ export default class ControlPoint {
 		window.dispatchEvent(new CustomEvent("control-point-updated", {detail: {serverId: this.serverId}}));
 	}
 
-
+	//update called by state
 	update(dt) {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
+	}
 
+	//update called by mainScene
+	sceneUpdate(dt) {
 		//continue the capturingTimeAcc until a server update (server correction)
 		this.modCaptureTimeAcc(Math.floor(dt) * this.capturingRate * this.capturingRateCoeff);
 	}
+
 
 	modCaptureTimeAcc(amount) {
 		this.capturingTimeAcc += Math.floor(amount);

@@ -3,13 +3,13 @@ import GlobalFuncs from "../global-funcs.js"
 import ClientConstants from "../client-constants.js"
 import ServerEventQueue from "../classes/server-event-queue.js"
 
-export default class PersistentProjectile {
+export default class Wall {
 	constructor() {
 		this.gc = null;
 		this.id = null;
 		this.serverId = null;
 		this.serverOwnerId = null;
-		this.type = "persistent-projectile";
+		this.type = "wall";
 		this.ownerId = null;
 		this.ownerType = "";
 		this.serverCharacterId = null;	//characterId of the server
@@ -244,39 +244,11 @@ export default class PersistentProjectile {
 
 	//update called by state
 	update(dt) {
-		this.seq.processOrderedEvents();
-		this.seq.processEvents();
+	
 	}
 
-	
 	//update called by mainScene
 	sceneUpdate(dt) {
-		this.updateRenderTarget();
 
-		if(this.enemyDamageTimer > 0) {
-			this.enemyDamageTimer -= dt;
-			if(this.enemyDamageTimer <= 0) {
-				this.hideDamageTint();
-			}
-		}
-
-		if(this.selfDamageTimer > 0) {
-			this.selfDamageTimer -= dt;
-			if(this.selfDamageTimer <= 0) {
-				this.hideDamageTint();
-			}
-		}
-
-		if(this.character !== null) {
-			this.spriteGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
-			this.spriteGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
-			this.spriteGraphics.setAngle(this.angle * (180/Math.PI));
-
-			if(this.character[this.hpStatResourceKey] <= 0) {
-				this.spriteGraphics.visible = false;
-			} else {
-				this.spriteGraphics.visible = true;
-			}
-		}
 	}
 }

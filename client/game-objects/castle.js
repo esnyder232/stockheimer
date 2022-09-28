@@ -67,6 +67,7 @@ export default class Castle {
 		this.ownerType = null;
 	}
 
+	//update called by state
 	update(dt) {
 		//change state
 		// if(this.nextState)
@@ -77,6 +78,12 @@ export default class Castle {
 		// 	this.state = this.nextState;
 		// 	this.nextState = null;
 		// }
+	}
+
+	
+	//update called by mainScene
+	sceneUpdate(dt) {
+
 	}
 
 	castleUpdate(e) {

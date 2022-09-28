@@ -33,6 +33,28 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		this.gc.wsh.processServerPackets();
 		this.gc.ep.processServerEvents();
 
+		//update gameobjects
+		var activeGameObjects = this.gc.gom.getActiveGameObjects();
+		for(var i = 0; i < activeGameObjects.length; i++) {
+			activeGameObjects[i].update(dt);
+		}
+
+		//update round
+		this.gc.theRound.update(dt);
+
+		//update teams
+		var teams = this.gc.tm.getTeams();
+		for(var i = 0; i < teams.length; i++) {
+			teams[i].update(dt);
+		}
+
+		//update users
+		var activeUsers = this.gc.um.getActiveUsers();
+		for(var i = 0; i < activeUsers.length; i++) {
+			activeUsers[i].update(dt);
+		}
+
+
 		//put the packet algorithm here (insert from clientToServerEvents 1st, then fragmented events 2nd)
 		this.gc.ep.insertEventsIntoPacket();
 

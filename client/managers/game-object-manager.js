@@ -47,6 +47,9 @@ export default class GameObjectManager {
 			case "control-point":
 				o = new ControlPoint();
 				break;
+			case "wall":
+				o = new Wall();
+				break;
 		}
 
 		o.id = this.idCounter++;

@@ -711,7 +711,7 @@ export default class Character {
 	}
 
 
-
+	//update called by state
 	update(dt) {
 		this.seq.processOrderedEvents();
 		this.seq.processEvents();
@@ -727,6 +727,11 @@ export default class Character {
 			this.nextState = null;
 		}
 
+		this.updateClientInputs();
+	}
+
+	//update called by mainScene
+	sceneUpdate(dt) {
 		//update other graphic stuff
 		if(this.updateHealthBar) {
 			this.drawHpBarGraphics();
@@ -780,8 +785,6 @@ export default class Character {
 
 		this.updateRenderTarget(dt);
 		this.render(dt);
-
-		this.updateClientInputs();
 	}
 
 

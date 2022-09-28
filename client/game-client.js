@@ -15,7 +15,7 @@ import ConfirmMenu from "./ui-classes/confirm-menu.js"
 import QuickMenu from "./ui-classes/quick-menu.js"
 import DebugMenu from "./ui-classes/debug-menu.js"
 import MainMenu from "./ui-classes/main-menu.js"
-
+import Planck from "planck-js";
 
 export default class GameClient {
 	constructor() {
@@ -91,6 +91,9 @@ export default class GameClient {
 
 	init() {
 		console.log('init on game client');
+		
+		// console.log("HELLO");
+		// console.log(Planck);
 		this.globalfuncs = new GlobalFuncs();
 		this.wsh = new WebsocketHandler();
 		this.ep = new EventProcessor();

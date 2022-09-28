@@ -205,7 +205,14 @@ export default class Projectile {
 		this.projectileResource = null;
 	}
 
+	//update called by state
 	update(dt) {
+		
+	}
+
+	
+	//update called by mainScene
+	sceneUpdate(dt) {
 		/////////////
 		// LAG TECHNIQUE		
 		// if(this.lagTimeBeforeDrawAcc >= this.lagTimeBeforeDraw) {
@@ -262,12 +269,5 @@ export default class Projectile {
 
 		this.spriteGraphics.setX(this.x);
 		this.spriteGraphics.setY(this.y);
-
-
-
-
-
-
-
 	}
 }
