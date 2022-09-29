@@ -80,6 +80,10 @@ export default class Castle {
 		// }
 	}
 
+	postPhysicsUpdate(dt) {
+		
+	}
+
 	
 	//update called by mainScene
 	sceneUpdate(dt) {

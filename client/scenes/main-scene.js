@@ -306,7 +306,7 @@ export default class MainScene extends Phaser.Scene {
 
 		//other things to create
 		this.gc.mainScene.createMap();
-		this.gc.debugMenu.populateAiControls();
+		this.gc.debugMenu.populateDebugMenu();
 
 		this.respawnMenuFlowControl(true);
 
@@ -482,7 +482,7 @@ export default class MainScene extends Phaser.Scene {
 		this.controlPointMenu.deinit();
 
 		//other stuff
-		this.gc.debugMenu.clearAiControls();
+		this.gc.debugMenu.clearDebugMenu();
 	}
 
 

@@ -71,6 +71,8 @@ export default class GameClientUserLeavingGame extends GameClientBaseState {
 		//essentially ignore all events coming from the server. 
 		//In this state, the client should just be cleaning up any resources on their side, then either going to wait for the server to load the next map, or go straight to disconnecting.
 		this.gc.ep.setAllEventEnable(false);
+
+		//need to disable the planck collision system here as well (whenever it gets created)
 	}
 
 	update(dt) {
@@ -92,6 +94,11 @@ export default class GameClientUserLeavingGame extends GameClientBaseState {
 		this.updateCounter++;
 
 		if(this.updateCounter >= this.updateCounterLimit) {
+			//last minute cleanup
+			if(this.gc.world !== null) {
+				this.gc.world = null;
+			}
+
 			if(this.gc.bDisconnect || !this.gc.wsConnected) {
 				this.gc.nextGameState = new GameClientUserDisconnecting(this.gc);
 			}

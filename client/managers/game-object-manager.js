@@ -424,6 +424,11 @@ export default class GameObjectManager {
 		return this.activeGameObjectArray;
 	}
 
+	
+	getStaticGameObjects() {
+		return this.staticGameObjectArray;
+	}
+
 	getGameObjects() {
 		return this.gameObjectArray;
 	}

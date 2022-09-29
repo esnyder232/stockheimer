@@ -248,6 +248,9 @@ export default class PersistentProjectile {
 		this.seq.processEvents();
 	}
 
+	postPhysicsUpdate(dt) {
+		
+	}
 	
 	//update called by mainScene
 	sceneUpdate(dt) {

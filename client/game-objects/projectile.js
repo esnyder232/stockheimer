@@ -210,6 +210,9 @@ export default class Projectile {
 		
 	}
 
+	postPhysicsUpdate(dt) {
+		
+	}
 	
 	//update called by mainScene
 	sceneUpdate(dt) {

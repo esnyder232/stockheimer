@@ -10,14 +10,17 @@ export default class AddWallEvent {
 	processEvent(e)
 	{
 		// console.log("CREATING WALL " + e.id);
-		var p = this.gc.gom.createStaticGameObject("wall", e.id);
-		// p.projectileInit(this.gc);
-		// p.x = e.x;
-		// p.y = e.y;
-		// p.angle = e.angle;
-		// p.size = e.size;
-		// p.speed = e.speed;
-		// p.teamId = e.teamId;
-		// p.projectileResourceId = e.projectileResourceId === 0 ? null : e.projectileResourceId;
+		var w = this.gc.gom.createStaticGameObject("wall", e.id);
+		w.wallInit(this.gc);
+		w.x = e.x;
+		w.y = e.y;
+		w.size = e.size;
+		w.impassable = e.impassable;
+		w.collideProjectiles = e.collideProjectiles;
+
+		w.bShow = this.gc.bDisplayClientCollisions;
+
+		w.createWall();
+		w.createWallGraphic();
 	}
 }

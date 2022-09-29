@@ -730,6 +730,10 @@ export default class Character {
 		this.updateClientInputs();
 	}
 
+	postPhysicsUpdate(dt) {
+		
+	}
+
 	//update called by mainScene
 	sceneUpdate(dt) {
 		//update other graphic stuff

@@ -79,6 +79,10 @@ export default class ControlPoint {
 		this.seq.processEvents();
 	}
 
+	postPhysicsUpdate(dt) {
+		
+	}
+
 	//update called by mainScene
 	sceneUpdate(dt) {
 		//continue the capturingTimeAcc until a server update (server correction)

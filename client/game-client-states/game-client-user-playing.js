@@ -4,13 +4,21 @@ import GameClientUserLeavingGame from './game-client-user-leaving-game.js';
 export default class GameClientUserPlaying extends GameClientBaseState {
 	constructor(gc) {
 		super(gc);
-
-		this.wallObj = null;
 	}
 	
 	enter(dt) {
 		super.enter(dt);
 		this.globalfuncs.appendToLog("Now playing.");
+		
+		//create planck world for client side prediction
+		if(this.gc.world === null) {
+			this.gc.world = this.gc.pl.World({
+				gravity: this.gc.pl.Vec2(0, 0)
+			});
+		}
+		
+		
+
 
 		//sleep the connectin scene, and wkae up the main scene
 		this.gc.userConnectingScene.scene.sleep();
@@ -24,18 +32,6 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		this.gc.mainScene.stockheimerActivate();
 		this.gc.quickMenu.showMainSceneIcons();
 		this.gc.ep.setAllEventEnable(true);
-
-		//test making walls
-		// this.wallObj = this.gc.gom.createStaticGameObject("wall", 99999);
-		// this.wallObj.serverId = 99999;
-		// console.log("====== CREATED WALL ====");
-		// console.log(this.wallObj);
-
-		// window.setTimeout(() => {
-		// 	console.log("=== NOW DESTORY IODNIGSNODFLGJEMDOIRTJH ====");
-		// 	this.gc.gom.destroyGameObjectServerId(this.wallObj.serverId);
-		// }, 10000)
-
 	}
 
 	update(dt) {
@@ -49,6 +45,14 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		var activeGameObjects = this.gc.gom.getActiveGameObjects();
 		for(var i = 0; i < activeGameObjects.length; i++) {
 			activeGameObjects[i].update(dt);
+		}
+
+		//physics update
+		this.gc.world.step(dt/1000, this.gc.velocityIterations, this.gc.positionIterations);
+
+		//post physics update for gameobjects
+		for(var i = 0; i < activeGameObjects.length; i++) {
+			activeGameObjects[i].postPhysicsUpdate(dt);
 		}
 
 		//update round

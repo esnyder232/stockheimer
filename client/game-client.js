@@ -33,6 +33,11 @@ export default class GameClient {
 		this.tm = null;
 		this.rm = null;
 
+		this.pl = null;			//planck to create the world
+		this.world = null;		//the world for client side prediction
+		this.velocityIterations = 1;
+		this.positionIterations = 1;
+
 		this.myUserServerId = null;
 		this.myUser = null;
 		this.myCharacter = null;
@@ -77,6 +82,7 @@ export default class GameClient {
 		this.theRound = null;
 		this.activeTilemap = null;
 		this.bDisplayServerSightlines = false;
+		this.bDisplayClientCollisions = false;
 		this.currentMapResource = null;
 		this.currentGameType = "";
 		this.matchWinCondition = 1;
@@ -108,6 +114,8 @@ export default class GameClient {
 		this.um.init(this);
 		this.tm.init(this);
 		this.rm.init(this);
+
+		this.pl = Planck;
 
 		this.phaserConfig = {
 			type: Phaser.AUTO,
