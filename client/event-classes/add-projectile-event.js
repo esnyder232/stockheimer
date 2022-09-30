@@ -11,6 +11,7 @@ export default class AddProjectileEvent {
 	{
 		var p = this.gc.gom.createGameObject("projectile", e.id);
 		p.projectileInit(this.gc);
+		p.characterId = e.characterId;
 		p.x = e.x;
 		p.y = e.y;
 		p.angle = e.angle;

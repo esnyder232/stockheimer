@@ -70,13 +70,7 @@ export default class DebugMenu {
 
 	cbDisplayClientCollisionsClick(e) {
 		this.gc.bDisplayClientCollisions = this.cbDisplayClientCollisions[0].checked;
-		
-		var staticGobs = this.gc.gom.getStaticGameObjects();
-		for(var i = 0; i < staticGobs.length; i++) {
-			if(staticGobs[i].type === "wall") {
-				staticGobs[i].showCollisions(this.gc.bDisplayClientCollisions);
-			}
-		}
+		window.dispatchEvent(new CustomEvent("toggle-display-client-collisions", {detail: {bDisplayClientCollisions: this.gc.bDisplayClientCollisions}}));
 	}
 
 	toggleMenu() {

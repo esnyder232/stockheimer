@@ -23,6 +23,8 @@ export default class AddActiveCharacterEvent {
 		c.shieldCur = e.characterShieldCur;
 		c.shieldMax = e.characterShieldMax;
 
+		// c.bShowPlanckSprite = this.gc.bDisplayClientCollisions;
+
 		//translate the owner type to a string again
 		//DONT CARE!!!
 		for (const key in this.gc.gameConstants.OwnerTypes) {

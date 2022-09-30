@@ -18,7 +18,7 @@ export default class AddWallEvent {
 		w.impassable = e.impassable;
 		w.collideProjectiles = e.collideProjectiles;
 
-		w.bShow = this.gc.bDisplayClientCollisions;
+		w.bShowPlanckSprite = this.gc.bDisplayClientCollisions;
 
 		w.createWall();
 		w.createWallGraphic();

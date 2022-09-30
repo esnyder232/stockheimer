@@ -22,6 +22,8 @@ export default class Character {
 		this.serverCharacterDirection = 0.0;
 		this.clientInputs = {};
 		
+		this.windowsEventMapping = [];
+
 		this.globalfuncs = null;
 		this.state = null;
 		this.nextState = null;
@@ -167,6 +169,13 @@ export default class Character {
 		this.healTimer = 0;
 
 		this.characterTintColor = 0xffffff;
+
+		//planck stuff
+		this.plBody = null;
+		this.bShowPlanckSprite = false;
+		this.planckSpriteGraphics = null;
+
+		
 	}
 
 	characterInit(gameClient) {
@@ -234,6 +243,61 @@ export default class Character {
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);
+		}
+
+
+
+		//planck stuff
+		// const pl = this.gc.pl;
+		// const Vec2 = pl.Vec2;
+		// const world = this.gc.world;
+
+		// //create a circle for phaser to draw
+		// this.planckSpriteGraphics = this.gc.mainScene.add.graphics();
+		// this.planckSpriteGraphics.setX(this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio);
+		// this.planckSpriteGraphics.setY(this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1);
+		// this.planckSpriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.serverHitboxLayer);
+
+		// var circleShape = new Phaser.Geom.Circle(0, 0, this.gc.mainScene.planckUnitsToPhaserUnitsRatio * this.planckRadius * this.size);
+		// this.planckSpriteGraphics.lineStyle(1, 0xff00ff);
+		// this.planckSpriteGraphics.strokeCircleShape(circleShape);
+		// this.planckSpriteGraphics.visible = this.bShowPlanckSprite;
+
+		// //create planck shape
+		// var circleShape = pl.Circle(Vec2(0, 0), this.planckRadius * this.size);
+
+		// //create planck body
+		// this.plBody = world.createBody({
+		// 	position: Vec2(this.x, this.y),
+		// 	type: pl.Body.DYNAMIC,
+		// 	fixedRotation: true,
+		// 	userData: {type:"character", id: this.id}
+		// });
+
+		// // var collisionCategory = CollisionCategories["character_body"];
+		// // var collisionMask = CollisionMasks["character_body"];
+		
+		// //create planck fixture
+		// this.plBody.createFixture({
+		// 	shape: circleShape,
+		// 	density: 2.0,
+		// 	friction: 0.0,
+		// 	// filterCategoryBits: collisionCategory,
+		// 	// filterMaskBits: collisionMask
+		// });
+
+		//register window event mapping
+		this.windowsEventMapping = [
+			{event: 'toggle-display-client-collisions',  func: this.toggleDisplayClientCollisions.bind(this)}
+		];
+
+		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
+	}
+
+	toggleDisplayClientCollisions(e) {
+		this.bShowPlanckSprite = e.detail.bDisplayClientCollisions;
+		if(this.planckSpriteGraphics !== null) {
+			this.planckSpriteGraphics.visible = this.bShowPlanckSprite;
 		}
 	}
 
@@ -592,11 +656,20 @@ export default class Character {
 		this.glowGraphics.destroy();
 		this.mouseOverHitbox.destroy();
 		this.directionGraphics.destroy();
+		// this.planckSpriteGraphics.destroy();
 
 		if(this.cooldownGraphics !== null) {
 			this.cooldownGraphics.destroy();
 			this.cooldownGraphics = null;
 		}
+
+		if(this.plBody !== null) {
+			this.gc.world.destroyBody(this.plBody);
+			this.plBody = null;
+		}
+		
+		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
+
 
 		//put gravestone where the character was removed
 		var gravestone = {
@@ -877,5 +950,11 @@ export default class Character {
 			this.cooldownGraphics.setX((this.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio) + this.cooldownOffsetX);
 			this.cooldownGraphics.setY((this.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1) + this.cooldownOffsetY);
 		}
+
+		// if(this.bShowPlanckSprite) {
+		// 	var pos = this.plBody.getPosition();
+		// 	this.planckSpriteGraphics.setX((pos.x * this.gc.mainScene.planckUnitsToPhaserUnitsRatio))
+		// 	this.planckSpriteGraphics.setY((pos.y * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1))
+		// }
 	}
 }

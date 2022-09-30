@@ -173,11 +173,7 @@ class Projectile {
 		
 		/////////////////////////////////////
 
-		if(this.plBody) {
-			if(this.timeLength <= 0) {
-				this.gs.gom.destroyGameObject(this.id);
-			}
-		}
+
 	}
 	
 
@@ -185,7 +181,11 @@ class Projectile {
 	}
 
 	postPhysicsUpdate() {
-
+		if(this.plBody) {
+			if(this.timeLength <= 0) {
+				this.gs.gom.destroyGameObject(this.id);
+			}
+		}
 	}
 
 	getPlanckPosition() {
@@ -262,6 +262,7 @@ class Projectile {
 			"speed": this.speed,
 			"teamId": this.teamId,
 			"projectileResourceId": this.projectileResourceId,
+			"characterId": this.characterId
 		};
 		
 		return eventData;

@@ -11,6 +11,7 @@ export default class Projectile {
 		this.type = "projectile";
 		this.ownerId = null;
 		this.ownerType = "";
+		this.characterId = null;
 		this.teamId = 0;
 		this.x = 0;
 		this.y = 0;
@@ -59,6 +60,9 @@ export default class Projectile {
 		this.hideSprite = false;
 		this.animationTimeLength = 1000;
 		this.repeatNum = -1;
+
+		this.tempLagMs = 0;
+
 	}
 
 	projectileInit(gameClient) {
@@ -67,7 +71,7 @@ export default class Projectile {
 		this.globalfuncs = new GlobalFuncs();
 	}
 
-	activated() {
+	activated(dt) {
 		//get resource data
 		this.projectileResource = this.gc.rm.getResourceByServerId(this.projectileResourceId);
 
@@ -98,7 +102,14 @@ export default class Projectile {
 
 		//create the graphics objects
 		this.createBoxGraphics();
-		this.createSpriteGraphics();
+		this.createSpriteGraphics(dt);
+		
+		//backout 1 frame worth of velocity (a little quirk I have to deal with to interpolate projectiles correctly)
+		this.x -= this.xSpeedPhaser * (dt/1000);
+		this.y -= this.ySpeedPhaser * (dt/1000);
+
+		this.spriteGraphics.setX(this.x);
+		this.spriteGraphics.setY(this.y);
 
 		//draw the graphics objects on activation
 		this.drawBoxGraphics();
@@ -106,16 +117,10 @@ export default class Projectile {
 
 		this.spriteGraphics.setPipeline(this.projectileShaderKey);
 
-		//destruction compensation for fast moving projectiles. This is to help time the destruction of fast moving projectiles with the sprite drawn on the screen (cheap client side destruction prediction)
-		//Also only do this for projectiles that have a longer time length than 100 ms (ie, not melee or flash heal projectiles)
-		if(this.timeLength > 100) {
-			var u = this.gc.um.getUserByServerID(this.gc.myUserServerId);
-			if(u !== null) {
-				this.timeLengthAcc = u.userRtt*2;
-			}
-		} else {
-			this.timeLengthAcc = 0;
-		}
+		// //another cheap attempt for client side projectiles. only do this for the user's projectiles
+		// if(this.gc.myCharacter !== null && this.characterId === this.gc.myCharacter.serverId) {
+		// 	this.tempLagMs = 100;
+		// }
 		
 	}
 
@@ -131,10 +136,10 @@ export default class Projectile {
 
 
 	createBoxGraphics() {
-		this.boxGraphics = this.ms.add.graphics();
-		this.boxGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
-		this.boxGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
-		this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
+		// this.boxGraphics = this.ms.add.graphics();
+		// this.boxGraphics.setX(this.x);
+		// this.boxGraphics.setY(this.y);
+		// this.boxGraphics.setDepth(ClientConstants.PhaserDrawLayers.hitboxLayer);
 	}
 
 	drawBoxGraphics() {
@@ -143,10 +148,10 @@ export default class Projectile {
 		// this.boxGraphics.strokeCircleShape(circleShape);
 	}
 
-	createSpriteGraphics() {
+	createSpriteGraphics(dt) {
 		if(!this.hideSprite) {
 			
-			this.spriteGraphics = this.ms.add.sprite((this.x * this.ms.planckUnitsToPhaserUnitsRatio), (this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1), this.spriteKey);
+			this.spriteGraphics = this.ms.add.sprite(this.x, this.y * -1, this.spriteKey);
 			this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 			this.spriteGraphics.setOrigin(this.originX, this.originY);
 			this.spriteGraphics.setScale(this.size * this.scaleX, this.size * this.scaleY);
@@ -261,6 +266,21 @@ export default class Projectile {
 		// 			this.spriteGraphics = null;
 		// 		}
 		// 	}
+		// }
+
+		
+		// if(this.tempLagMs > 0) {
+		// 	this.tempLagMs -= dt;
+		// }
+		// else {
+		// 	this.x += this.xSpeedPhaser * (dt/1000);
+		// 	this.y += this.ySpeedPhaser * (dt/1000);
+	
+		// 	// this.boxGraphics.setX(this.x);
+		// 	// this.boxGraphics.setY(this.y);
+	
+		// 	this.spriteGraphics.setX(this.x);
+		// 	this.spriteGraphics.setY(this.y);
 		// }
 
 

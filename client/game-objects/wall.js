@@ -11,8 +11,6 @@ export default class Wall {
 		this.type = "wall";
 		this.isStatic = true;
 
-		this.plBody = null;
-
 		this.x = 0;
 		this.y = 0;
 		this.size = 1;
@@ -20,14 +18,18 @@ export default class Wall {
 		this.impassable = true; //default is impassable
 		this.collideProjectiles = true; //default is blocking projectiles
 		this.collideProjectilesAllDirections = true;
-		
-		this.bShow = false;
-		this.spriteGraphics = null;
+
+		this.windowsEventMapping = [];
+
+		this.plBody = null;
+		this.bShowPlanckSprite = false;
+		this.planckSpriteGraphics = null;
 	}
 
 	wallInit(gameClient) {
 		this.gc = gameClient;
 		this.ms = this.gc.mainScene;
+		this.globalfuncs = new GlobalFuncs();
 	}
 
 	//actually creates the wall in client side planck
@@ -51,28 +53,32 @@ export default class Wall {
 			friction: 0.0
 		});
 
-		//STOPPED HERE
-		//...make the graphic show up on the scene next? idk
+		//register window event mapping
+		this.windowsEventMapping = [
+			{event: 'toggle-display-client-collisions',  func: this.toggleDisplayClientCollisions.bind(this)}
+		];
+
+		this.globalfuncs.registerWindowEvents(this.windowsEventMapping);
 
 	}
 
 	//this creats the wall in phaser (normally not shown. Just for debugging)
 	createWallGraphic() {
-		if(this.spriteGraphics === null) {
-			this.spriteGraphics = this.ms.add.graphics();
-			this.spriteGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
-			this.spriteGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
-			this.spriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.serverHitboxLayer);
+		if(this.planckSpriteGraphics === null) {
+			this.planckSpriteGraphics = this.ms.add.graphics();
+			this.planckSpriteGraphics.setX(this.x * this.ms.planckUnitsToPhaserUnitsRatio);
+			this.planckSpriteGraphics.setY(this.y * this.ms.planckUnitsToPhaserUnitsRatio * -1);
+			this.planckSpriteGraphics.setDepth(ClientConstants.PhaserDrawLayers.serverHitboxLayer);
 	
 			var ph = this.ms.planckUnitsToPhaserUnitsRatio * this.size;
 			var pw = this.ms.planckUnitsToPhaserUnitsRatio * this.size;
 			var px = 0 - pw/2;
 			var py = 0 - ph/2;
 			var rectShape = new Phaser.Geom.Rectangle(px, py, pw, ph);
-			this.spriteGraphics.lineStyle(1, 0xff00ff);
-			this.spriteGraphics.strokeRectShape(rectShape);
+			this.planckSpriteGraphics.lineStyle(1, 0xff00ff);
+			this.planckSpriteGraphics.strokeRectShape(rectShape);
 
-			this.spriteGraphics.visible = this.bShow;
+			this.planckSpriteGraphics.visible = this.bShowPlanckSprite;
 		}
 	}
 
@@ -82,16 +88,20 @@ export default class Wall {
 			this.plBody = null;
 		}
 
-		if(this.spriteGraphics !== null) {
-			this.spriteGraphics.destroy();
-			this.spriteGraphics = null;
+		if(this.planckSpriteGraphics !== null) {
+			this.planckSpriteGraphics.destroy();
+			this.planckSpriteGraphics = null;
 		}
+
+		this.globalfuncs.unregisterWindowEvents(this.windowsEventMapping);
 
 		this.gc = null;
 	}
 
-	showCollisions(bShow) {
-		this.bShow = bShow;
-		this.spriteGraphics.visible = this.bShow;
+	toggleDisplayClientCollisions(e) {
+		this.bShowPlanckSprite = e.detail.bDisplayClientCollisions;
+		if(this.planckSpriteGraphics !== null) {
+			this.planckSpriteGraphics.visible = this.bShowPlanckSprite;
+		}
 	}
 }

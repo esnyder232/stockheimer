@@ -1,15 +1,18 @@
 const {TrackedEntityBaseState} = require('./tracked-entity-base-state.js');
-const {TrackedEntityWaitDestroyAckState} = require('./tracked-entity-wait-destroy-ack-state.js');
+const TrackedEntityDestroyedState = require('./tracked-entity-destroyed-state.js');
 
 class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 	constructor(trackedEntity) {
 		super(trackedEntity);
 		this.stateName = "tracked-entity-destroying-state";
+		this.bDestroyEventSent = false;
 	}
 
 	enter(dt) {
 		super.enter(dt);
 		this.trackedEntity.stateName = this.stateName;
+
+		this.bDestroyEventSent = this.trySendingCreateEvent(dt);
 
 		//register for updates until the tracked entity is officially destroyed
 		this.trackedEntity.ua.registerTrackedEntityUpdateList(this.trackedEntity.entType, this.trackedEntity.entId);
@@ -18,6 +21,52 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 	update(dt) {
 		super.update(dt);
 
+		if(!this.bDestroyEventSent) {
+			this.bDestroyEventSent = this.trySendingCreateEvent(dt);
+		} else {
+			//wait for the ack from the client (the ack will create an event in the eventQueue)
+			var processedIndexes = [];
+			for(var i = 0; i < this.trackedEntity.eventQueue.length; i++)
+			{
+				var event = this.trackedEntity.eventQueue[i];
+				if(event.eventName == "destroyTrackedEntityAck")
+				{
+					this.trackedEntity.nextState = new TrackedEntityDestroyedState.TrackedEntityDestroyedState(this.trackedEntity);
+					processedIndexes.push(i);
+				}
+			}
+
+			//splice out any processed events
+			for(var i = processedIndexes.length - 1; i >= 0; i--)
+			{
+				this.trackedEntity.eventQueue.splice(processedIndexes[i], 1);
+			}
+		}
+		
+	}
+
+	exit(dt) {
+		super.exit(dt);
+		
+		//check if there exists any "create" events for the entity. If there isn't, insert a "permanentDestroy" event
+		var permDelete = true;
+		for(var i = 0; i < this.trackedEntity.eventQueue.length; i++)
+		{
+			if(this.trackedEntity.eventQueue[i].eventName === "createTrackedEntity")
+			{
+				permDelete = false;
+			}
+		}
+
+		if(permDelete)
+		{
+			this.trackedEntity.ua.permDeleteTrackedEntity(this.trackedEntity.entType, this.trackedEntity.entId);
+		}
+	}
+
+
+	trySendingCreateEvent(dt) {
+		var bEventSent = false;
 		var se = null; //serialized event
 
 		//try to create an event to tell the client about this entity being destroyed
@@ -70,19 +119,14 @@ class TrackedEntityDestroyingState extends TrackedEntityBaseState {
 			if(info.canEventFit)
 			{
 				this.trackedEntity.ua.wsh.insertEvent(se, this.trackedEntity.cbDestroyAck.bind(this.trackedEntity));
-
-				//for right now, just move on to the next state
-				this.trackedEntity.nextState = new TrackedEntityWaitDestroyAckState(this.trackedEntity);
+				bEventSent = true;
 			}
 			else
 			{
 				//do nothing...the event couldn't fit. Maybe next frame it can.
 			}
 		}
-	}
-
-	exit(dt) {
-		super.exit(dt);
+		return bEventSent;
 	}
 }
 

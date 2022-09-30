@@ -188,7 +188,7 @@ export default class GameObjectManager {
 
 	//if an object is deactivated already...
 	// end of frame 0 - call deinit, splice
-	update() {
+	update(dt) {
 		if(this.isDirty)
 		{
 			//temp array for follow up transactions to be processed on the next frame (usually for objectDestruction)
@@ -258,7 +258,7 @@ export default class GameObjectManager {
 											//call deactivate function if it exists
 											if(typeof o.deactivated === "function")
 											{
-												o.deactivated();
+												o.deactivated(dt);
 											}
 
 											this.activeGameObjectArray[oi].isActive = false;
@@ -317,7 +317,7 @@ export default class GameObjectManager {
 										//call activate function if it exists
 										if(typeof o.activated === "function")
 										{
-											o.activated();
+											o.activated(dt);
 										}
 									}
 									break;
