@@ -432,6 +432,14 @@ class GameServerLoadingMap extends GameServerBaseState {
 					//nothing for now
 					break;
 
+				case "hitscan":
+					var hitscanKey = this.globalfuncs.getValueDefault(resource?.data?.hitscanKey, null);
+
+					if(hitscanKey !== null) {
+						this.gs.rm.loadResource(hitscanKey, "hitscan", this.cbHitscanComplete.bind(this));
+					}
+					break;
+
 				default:
 					//nothing
 					break;
@@ -467,6 +475,34 @@ class GameServerLoadingMap extends GameServerBaseState {
 			this.mapLoadError = true;
 		}
 	}
+
+
+	cbHitscanComplete(resource) {
+		var bError = false;
+		var errorMessage = "";
+
+		if(resource.data === null) {
+			bError = true;
+			errorMessage = "Error when loading hitscan resource '" + resource.key + "': No data found.";
+		}
+
+		// //create sprite resources
+		// if(!bError) {
+		// 	var spriteKey = this.globalfuncs.getValueDefault(resource?.data?.renderData?.spriteKey, null);
+
+		// 	if(spriteKey !== null) {
+		// 		this.gs.rm.loadResource(spriteKey, "sprite");
+		// 	}
+		// }
+
+		if(bError) {
+			logger.log("error", errorMessage);
+			this.mapLoadError = true;
+		}
+	}
+
+	
+
 
 	cbAIClassComplete(resource) {
 		var bError = false;

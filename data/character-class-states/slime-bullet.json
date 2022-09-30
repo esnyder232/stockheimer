@@ -1,0 +1,12 @@
+{
+	"name": "Slime Bullet",
+	"type": "hitscan",
+	"animationSet": "cast",
+	"canLook": true,
+	"canMove": true,
+	"timeLength": 150,
+	"projectileKey": "data/projectiles/slime-fire.json",
+	"projectileTime": 0,
+	"hitscanKey": "data/hitscans/slime-bullet.json",
+	"cooldownTimeLength": 150
+}

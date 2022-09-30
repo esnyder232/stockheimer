@@ -1,0 +1,37 @@
+{
+	"name": "Slime Sniper",
+	"hp": 20,
+	"speed": 4,
+	"planckData": {
+		"plShape": "circle",
+		"plRadius": 0.375
+	},
+	"phaserData": {
+		"originX": 0.5,
+		"originY": 0.55,
+		"scaleX": 0.08,
+		"scaleY": 0.08
+	},
+	"aiClasses": [
+		{
+			"gameType": "koth",
+			"aiClassResourceKey": "data/ai-classes/slime-small-ai-koth.json"
+		},
+		{
+			"gameType": "other",
+			"aiClassResourceKey": "data/ai-classes/slime-small-ai.json"
+		}
+	],
+	"size": 1,
+	"idleMsPerFrame": 300,
+	"moveMsPerFrame": 150,
+	"animationSets": {
+		"idle": "data/animation-sets/slime-mage-idle-set.json",
+		"move": "data/animation-sets/slime-mage-move-set.json",
+		"attack": "data/animation-sets/slime-mage-attack-set.json",
+		"cast": "data/animation-sets/slime-mage-fire-set.json"
+	},
+	"deathSpriteKey": "data/sprites/gravestone.json",
+	"fireStateKey": "data/character-class-states/slime-bullet.json",
+	"altFireStateKey": "data/character-class-states/slime-fire-small.json"
+}
