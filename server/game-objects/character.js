@@ -756,7 +756,7 @@ class Character {
 				if(pPos !== null && cPos !== null) {
 					var mag = this.gs.globalfuncs.getValueDefault(characterEffectData.mag, 0);
 					var dir = this.gs.globalfuncs.getValueDefault(characterEffectData.dir, "out");
-					var dirMult
+					var dirMult = 1;
 					if(dir === "out") {
 						dirMult = 1;
 					} else {
@@ -887,6 +887,61 @@ class Character {
 	endCollisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA) {
 		this.projectileLeave.push(p);
 	}
+	
+
+	collisionHitscan(hitscanResult) {
+		//update last hit by
+		if(hitscanResult.ownerId !== null) {
+			this.lastHitByOwnerId = hitscanResult.ownerId;
+			this.lastHitByOwnerType = hitscanResult.ownerType;
+		}
+
+		//process the hit effects
+		var characterEffectData = [];
+		var hitscanResource = this.gs.rm.getResourceByKey(hitscanResult.hitscanKey);
+		if(hitscanResource !== null) {
+			characterEffectData = this.gs.globalfuncs.getValueDefault(hitscanResource?.data?.characterEffectData, []);
+		}
+		for(var i = 0; i < characterEffectData.length; i++) {
+			this.processHitscanHitEffects(hitscanResult, characterEffectData[i]);
+		}
+	}
+
+	processHitscanHitEffects(hitscanResult, characterEffectData) {
+		//go through each character hit effect
+		switch(characterEffectData.type) {
+			case "damage":
+				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
+				this.applyDamageEffect(hitscanResult.ownerId, value);
+				break;
+			case "heal":
+				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
+				this.applyHealEffect(hitscanResult.ownerId, value);
+				break;
+			case "hitscan-force":
+				var p1 = hitscanResult.raycastResult.originPoint1;
+				var p2 = hitscanResult.raycastResult.originPoint2;
+
+				var mag = this.gs.globalfuncs.getValueDefault(characterEffectData.mag, 0);
+				var dir = this.gs.globalfuncs.getValueDefault(characterEffectData.dir, "out");
+				var dirMult = 1;
+
+				if(dir === "out") {
+					dirMult = 1;
+				} else {
+					dirMult = -1;
+				}
+
+				var temp = this.gs.pl.Vec2((p2.x - p1.x) * dirMult, (p2.y -p1.y) * dirMult);
+				temp.normalize();
+				this.addForceImpulse(temp.x, temp.y, mag);
+				
+				break;
+		}
+		
+	}
+
+
 
 	
 	collisionCharacter(otherCharacter) {

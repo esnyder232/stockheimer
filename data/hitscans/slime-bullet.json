@@ -28,17 +28,18 @@
 		"collideSelf": false,
 		"collideWalls": true
 	},
-	"projectileData": {
-		"spawnLocationType": "mouse-direction",
-		"spawnOffsetLength": 0,
-		"timeLength": 1000,
-		"pushbackVecMagnitude": 10,
-		"destroyOnContact": true
+	"hitscanData": {
+		"distance": 100
 	},
 	"characterEffectData": [
 		{
 			"type": "damage",
 			"value": 2
+		},
+		{
+			"type": "hitscan-force",
+			"mag": 30,
+			"dir": "out"
 		}
 	]
 }

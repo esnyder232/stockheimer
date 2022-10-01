@@ -266,6 +266,53 @@ class PersistentProjectile {
 		otherP.timeLength = 0;
 	}
 
+	collisionHitscan(hitscanResult) {
+		//process the hit effects
+		var characterEffectData = [];
+		var hitscanResource = this.gs.rm.getResourceByKey(hitscanResult.hitscanKey);
+		if(hitscanResource !== null) {
+			characterEffectData = this.gs.globalfuncs.getValueDefault(hitscanResource?.data?.characterEffectData, []);
+		}
+
+		for(var i = 0; i < characterEffectData.length; i++) {
+			this.processHitscanHitEffects(hitscanResult, characterEffectData[i]);
+		}
+	}
+
+	processHitscanHitEffects(hitscanResult, characterEffectData) {
+		//go through each character hit effect
+		switch(characterEffectData.type) {
+			case "damage":
+				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
+				this.character.modShield(-value);
+				this.applyShieldDamageEffect(hitscanResult.ownerId, value);
+				break;
+			case "hitscan-force":
+				var p1 = hitscanResult.raycastResult.originPoint1;
+				var p2 = hitscanResult.raycastResult.originPoint2;
+
+				var mag = this.gs.globalfuncs.getValueDefault(characterEffectData.mag, 0) / 4;
+				var dir = this.gs.globalfuncs.getValueDefault(characterEffectData.dir, "out");
+				var dirMult = 1;
+
+				if(dir === "out") {
+					dirMult = 1;
+				} else {
+					dirMult = -1;
+				}
+
+				var temp = this.gs.pl.Vec2((p2.x - p1.x) * dirMult, (p2.y -p1.y) * dirMult);
+				temp.normalize();
+				this.character.addForceImpulse(temp.x, temp.y, mag);
+			break;
+			default:
+				//nothing
+				break;
+		}
+	}
+
+
+
 	collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA) {
 	
 	}

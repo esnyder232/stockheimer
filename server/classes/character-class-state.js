@@ -155,37 +155,62 @@ class CharacterClassState {
 
 		//create 1 hitscan bullet for testing
 		if(pos !== null && hitscanResource !== null) {
-			console.log("creating 1 hitscan bullet");
 			const Vec2 = this.gs.pl.Vec2;
-			var raycastLength = 100;
+			var raycastLength = this.gs.globalfuncs.getValueDefault(hitscanResource?.data?.hitscanData?.distance, 1);
+			raycastLength = raycastLength > this.gs.activeTilemap.diagonalLength ? this.gs.activeTilemap.diagonalLength : raycastLength;
 	
 			var angle = this.character.frameInputController.characterDirection.value;
 			var planckPosTo = new Vec2(pos.x + raycastLength * Math.cos(angle), pos.y + raycastLength * Math.sin(angle) * -1);
 			var collisionFilters = this.gs.globalfuncs.getValueDefault(hitscanResource?.data?.collisionData, null);
 
-			//do a hitscan for the first applicable object
-			var hitscanResult = this.hitscanFirst(pos, planckPosTo, collisionFilters);
-
-			//put in hitscan reactions here
+			//do a raycast for the first applicable object
+			var raycastResult = this.raycastFirst(pos, planckPosTo, collisionFilters);
 
 			/////////////////////////////////////
 			//debugging raycast stuff
-			var x2 = hitscanResult.point !== null ? hitscanResult.point.x : planckPosTo.x;
-			var y2 = hitscanResult.point !== null ? hitscanResult.point.y : planckPosTo.y;
-			var eventData = {
-				"eventName": "debugServerRaycast",
-				"gameObjectId": hitscanResult.gameObjectId,
-				"x1": pos.x,
-				"y1": pos.y,
-				"x2": x2,
-				"y2": y2
-			};
-			var userAgents = this.gs.uam.getUserAgents();
-			for(var i = 0; i < userAgents.length; i++) {
-				userAgents[i].insertServerToClientEvent(eventData);
-			}
-			
+			// var x2 = raycastResult.point !== null ? raycastResult.point.x : planckPosTo.x;
+			// var y2 = raycastResult.point !== null ? raycastResult.point.y : planckPosTo.y;
+			// var eventData = {
+			// 	"eventName": "debugServerRaycast",
+			// 	"gameObjectId": raycastResult.gameObjectId,
+			// 	"x1": pos.x,
+			// 	"y1": pos.y,
+			// 	"x2": x2,
+			// 	"y2": y2
+			// };
+			// var userAgents = this.gs.uam.getUserAgents();
+			// for(var i = 0; i < userAgents.length; i++) {
+			// 	userAgents[i].insertServerToClientEvent(eventData);
+			// }
 			/////////////////////////////////////
+
+			if(raycastResult.gameObject !== null) {
+				//create object for hitscan collisions
+				var hitscanResult = {
+					raycastResult: raycastResult,
+					ownerId: this.character.ownerId,
+					ownerType: this.character.ownerType,
+					hitscanKey: this.hitscanKey
+				}
+
+				switch(raycastResult.gameObjectType) {
+					case "wall":
+						//for now, there is no 'reaction' from hitting a wall
+						break;
+					case "character":
+						raycastResult.gameObject.collisionHitscan(hitscanResult);
+						break;
+					case "projectile":
+						//for now, just never hit projectiles
+						break;
+					case "persistent-projectile":
+						raycastResult.gameObject.collisionHitscan(hitscanResult);
+						break;
+				}
+			}
+
+
+
 		}
 	}
 
@@ -202,7 +227,7 @@ class CharacterClassState {
 
 	//gets the first object hit in the raycast. The collision filters are from the resource for the hitscan.
 	//Returns the first game object + collision data if there is a hit.
-	hitscanFirst(planckPosFrom, planckPosTo, collisionFilters) {
+	raycastFirst(planckPosFrom, planckPosTo, collisionFilters) {
 		if(!collisionFilters) {
 			collisionFilters = {
 				"collideSameTeamCharacters": false,
@@ -214,18 +239,20 @@ class CharacterClassState {
 			};
 		}
 		
-		var hitscanResult = {
+		var raycastResult = {
 			gameObjectId: null,
 			gameObject: null,
 			gameObjectType: "",
-			point: null
+			point: null,
+			originPoint1: planckPosFrom,
+			originPoint2: planckPosTo
 		};
-		this.gs.world.rayCast(planckPosFrom, planckPosTo, this.hitscanFirstCallback.bind(this, hitscanResult, collisionFilters, this.character.id, this.character.ownderId, this.character.teamId));
+		this.gs.world.rayCast(planckPosFrom, planckPosTo, this.raycastFirstCallback.bind(this, raycastResult, collisionFilters, this.character.teamId));
 
-		return hitscanResult;
+		return raycastResult;
 	}
 
-	hitscanFirstCallback(hitscanResult, collisionFilters, hitscanCharacterId, hitscanOwnerId, hitscanTeamId, fixture, point, normal, fraction) {
+	raycastFirstCallback(raycastResult, collisionFilters, raycastTeamId, fixture, point, normal, fraction) {
 		var planckReturnValue = -1.0; 
 		
 		var userData = fixture.getBody().getUserData()
@@ -237,24 +264,15 @@ class CharacterClassState {
 				if(collisionFilters.collideWalls && obj.collideProjectiles) {
 					raycastHit = true;
 				}
-
-				// if(processCollision) {
-				// 	p.collisionWall(w, projectileUserData, wallUserData, contactObj, isProjectileA);
-				// }
 				break;
 			case "character":
 				//team collision check
-				if(collisionFilters.collideSameTeamCharacters && hitscanTeamId === obj.teamId) {
+				if(collisionFilters.collideSameTeamCharacters && raycastTeamId === obj.teamId) {
 					raycastHit = true;
 				}
-				else if(collisionFilters.collideOtherTeamCharacters && hitscanTeamId !== obj.teamId) {
+				else if(collisionFilters.collideOtherTeamCharacters && raycastTeamId !== obj.teamId) {
 					raycastHit = true;
 				}
-		
-				// if(processCollision) {
-				// 	p.collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA);
-				// 	c.collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA);
-				// }
 				break;
 			case "projectile":
 				//for now, just never hit projectiles
@@ -262,24 +280,20 @@ class CharacterClassState {
 				break;
 			case "persistent-projectile":
 				//team collision check
-				if(obj.collideSameTeamProjectiles && hitscanTeamId === obj.teamId) {
+				if(obj.collideSameTeamProjectiles && raycastTeamId === obj.teamId) {
 					raycastHit = true;
 				}
-				else if(obj.collideOtherTeamProjectiles && hitscanTeamId !== obj.teamId) {
+				else if(obj.collideOtherTeamProjectiles && raycastTeamId !== obj.teamId) {
 					raycastHit = true;
 				}
-
-				// if(ppCollision) {
-				// 	pp.collisionProjectile(proj, persistentProjectileUserData, projectileUserData, contactObj, isProjectileA);
-				// }
 				break;
 		}
 
 		if(raycastHit) {
-			hitscanResult.gameObjectId = obj.id;
-			hitscanResult.gameObject = obj;
-			hitscanResult.gameObjectType = userData.type;
-			hitscanResult.point = point;
+			raycastResult.gameObjectId = obj.id;
+			raycastResult.gameObject = obj;
+			raycastResult.gameObjectType = userData.type;
+			raycastResult.point = point;
 			planckReturnValue = fraction;
 		} else {
 			planckReturnValue = -1.0;

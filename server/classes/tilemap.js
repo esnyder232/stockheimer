@@ -23,6 +23,7 @@ class Tilemap {
 		this.playerSpawnZones = [];
 		this.playerSpawnZonesSlotNumIndex = {};
 		this.tiledUnitsToPlanckUnits = 1;
+		this.diagonalLength = 1;
 
 		// this.navGrid = null;
 
@@ -101,7 +102,10 @@ class Tilemap {
 			this.height = this.jsonData.height;
 			this.tilewidth = this.jsonData.tilewidth;
 			this.tileheight = this.jsonData.tileheight;
-	
+
+			//calculate other stuff
+			this.diagonalLength = Math.ceil(Math.sqrt(this.width*this.width + this.height*this.height));
+
 			//create tileset
 			//create a '0' gid tile (in Tiled, a 0 gid means there is no tile assigned at all)
 			var gid0 = this.createTileForTileset(0, []);
