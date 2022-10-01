@@ -47,7 +47,7 @@ export default class MainScene extends Phaser.Scene {
 
 		this.damageTexts = []; //little array of damage texts to popup when someone gets hurt
 		this.gravestones = []; //array of gravestones to put on the game when characters die
-		this.debugServerCircles = []; //temp array for debugging circles
+		this.debugServerCircles = []; //temp array for debugging server objects, like projectiles and raycasts
 
 		this.cameraTarget = {
 			x: 0,

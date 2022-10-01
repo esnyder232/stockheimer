@@ -18,6 +18,8 @@ class CharacterClassState {
 		this.canAltFire = false;
 		this.projectileKey = null;
 		this.projectileTime = 0;
+
+		this.hitscanKey = null;
 		
 		this.projectileFired = false;
 		this.cooldownTimeLength = 1000;
@@ -47,6 +49,8 @@ class CharacterClassState {
 		this.specialDashMag = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashMag, this.specialDashMag);
 		this.specialDashTimeStop = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashTimeStop, this.specialDashTimeStop);
 		this.contactDmg = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.contactDmg, this.contactDmg);
+		
+		this.hitscanKey = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.hitscanKey, this.hitscanKey);
 
 		this.persistentProjectileKey = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.persistentProjectileKey, this.persistentProjectileKey);
 		this.persistentProjectileTime = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.persistentProjectileTime, this.persistentProjectileTime);
@@ -83,6 +87,10 @@ class CharacterClassState {
 			case "persistent-projectile": 
 				this.enterPersistentProjectile(dt);
 				this.updateFunction = this.updatePersistentProjectile.bind(this);
+				break;
+			case "hitscan": 
+				this.enterHitscan(dt)
+				this.updateFunction = this.updateHitscan.bind(this);
 				break;
 			default:
 				this.updateFunction = this.updateNoType.bind(this);
@@ -139,6 +147,151 @@ class CharacterClassState {
 			this.character.setCharacterClassState(null);
 		}
 	}
+
+	//enter for "hitscan" type of states
+	enterHitscan(dt) {
+		var pos = this.character.getPlanckPosition();
+		var hitscanResource = this.gs.rm.getResourceByKey(this.hitscanKey);
+
+		//create 1 hitscan bullet for testing
+		if(pos !== null && hitscanResource !== null) {
+			console.log("creating 1 hitscan bullet");
+			const Vec2 = this.gs.pl.Vec2;
+			var raycastLength = 100;
+	
+			var angle = this.character.frameInputController.characterDirection.value;
+			var planckPosTo = new Vec2(pos.x + raycastLength * Math.cos(angle), pos.y + raycastLength * Math.sin(angle) * -1);
+			var collisionFilters = this.gs.globalfuncs.getValueDefault(hitscanResource?.data?.collisionData, null);
+
+			//do a hitscan for the first applicable object
+			var hitscanResult = this.hitscanFirst(pos, planckPosTo, collisionFilters);
+
+			//put in hitscan reactions here
+
+			/////////////////////////////////////
+			//debugging raycast stuff
+			var x2 = hitscanResult.point !== null ? hitscanResult.point.x : planckPosTo.x;
+			var y2 = hitscanResult.point !== null ? hitscanResult.point.y : planckPosTo.y;
+			var eventData = {
+				"eventName": "debugServerRaycast",
+				"gameObjectId": hitscanResult.gameObjectId,
+				"x1": pos.x,
+				"y1": pos.y,
+				"x2": x2,
+				"y2": y2
+			};
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				userAgents[i].insertServerToClientEvent(eventData);
+			}
+			
+			/////////////////////////////////////
+		}
+	}
+
+	//update function for "hitscan" type of states
+	//for now, just wait until its over
+	updateHitscan(dt) {
+		this.timeAcc += dt;
+		// console.log("UPDATING HITSCAN");
+
+		if(this.timeAcc >= this.timeLength) {
+			this.character.setCharacterClassState(null);
+		}
+	}
+
+	//gets the first object hit in the raycast. The collision filters are from the resource for the hitscan.
+	//Returns the first game object + collision data if there is a hit.
+	hitscanFirst(planckPosFrom, planckPosTo, collisionFilters) {
+		if(!collisionFilters) {
+			collisionFilters = {
+				"collideSameTeamCharacters": false,
+				"collideOtherTeamCharacters": true,
+				"collideSelf": false,
+				"collideWalls": true,
+				"collideSameTeamProjectiles": false,
+				"collideOtherTeamProjectiles": false
+			};
+		}
+		
+		var hitscanResult = {
+			gameObjectId: null,
+			gameObject: null,
+			gameObjectType: "",
+			point: null
+		};
+		this.gs.world.rayCast(planckPosFrom, planckPosTo, this.hitscanFirstCallback.bind(this, hitscanResult, collisionFilters, this.character.id, this.character.ownderId, this.character.teamId));
+
+		return hitscanResult;
+	}
+
+	hitscanFirstCallback(hitscanResult, collisionFilters, hitscanCharacterId, hitscanOwnerId, hitscanTeamId, fixture, point, normal, fraction) {
+		var planckReturnValue = -1.0; 
+		
+		var userData = fixture.getBody().getUserData()
+		var obj = this.gs.gom.getGameObjectByID(userData.id);
+		var raycastHit = false;
+
+		switch(userData.type) {
+			case "wall":
+				if(collisionFilters.collideWalls && obj.collideProjectiles) {
+					raycastHit = true;
+				}
+
+				// if(processCollision) {
+				// 	p.collisionWall(w, projectileUserData, wallUserData, contactObj, isProjectileA);
+				// }
+				break;
+			case "character":
+				//team collision check
+				if(collisionFilters.collideSameTeamCharacters && hitscanTeamId === obj.teamId) {
+					raycastHit = true;
+				}
+				else if(collisionFilters.collideOtherTeamCharacters && hitscanTeamId !== obj.teamId) {
+					raycastHit = true;
+				}
+		
+				// if(processCollision) {
+				// 	p.collisionCharacter(c, characterUserData, projectileUserData, contactObj, isCharacterA);
+				// 	c.collisionProjectile(p, characterUserData, projectileUserData, contactObj, isCharacterA);
+				// }
+				break;
+			case "projectile":
+				//for now, just never hit projectiles
+				raycastHit = false;
+				break;
+			case "persistent-projectile":
+				//team collision check
+				if(obj.collideSameTeamProjectiles && hitscanTeamId === obj.teamId) {
+					raycastHit = true;
+				}
+				else if(obj.collideOtherTeamProjectiles && hitscanTeamId !== obj.teamId) {
+					raycastHit = true;
+				}
+
+				// if(ppCollision) {
+				// 	pp.collisionProjectile(proj, persistentProjectileUserData, projectileUserData, contactObj, isProjectileA);
+				// }
+				break;
+		}
+
+		if(raycastHit) {
+			hitscanResult.gameObjectId = obj.id;
+			hitscanResult.gameObject = obj;
+			hitscanResult.gameObjectType = userData.type;
+			hitscanResult.point = point;
+			planckReturnValue = fraction;
+		} else {
+			planckReturnValue = -1.0;
+		}
+		
+		return planckReturnValue;
+	}
+
+
+
+
+
 
 
 	//update function for "channel" type of states
