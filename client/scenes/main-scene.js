@@ -48,6 +48,7 @@ export default class MainScene extends Phaser.Scene {
 		this.damageTexts = []; //little array of damage texts to popup when someone gets hurt
 		this.gravestones = []; //array of gravestones to put on the game when characters die
 		this.debugServerCircles = []; //temp array for debugging server objects, like projectiles and raycasts
+		this.hitscanArray = [];
 
 		this.cameraTarget = {
 			x: 0,
@@ -132,6 +133,7 @@ export default class MainScene extends Phaser.Scene {
 
 		this.currentTick = 0;
 		this.previousTick = 0;
+
 	}
 
 	init(data) {
@@ -422,18 +424,22 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		//clear gravestones
-		for(var i = this.gravestones.length - 1; i >= 0; i--)
-		{
-			if(this.gravestones[i].gravestoneImage !== null)
-			{
+		for(var i = this.gravestones.length - 1; i >= 0; i--) {
+			if(this.gravestones[i].gravestoneImage !== null) {
 				this.gravestones[i].gravestoneImage.destroy();
 			}
-			if(this.gravestones[i].gravestoneText !== null)
-			{
+			if(this.gravestones[i].gravestoneText !== null) {
 				this.gravestones[i].gravestoneText.destroy();
 			}
 			this.gravestones.splice(i, 1);
 		}
+
+		//clear hitscans
+		for(var i = this.hitscanArray.length - 1; i >= 0; i--) {
+			this.hitscanArray[i].deinit();
+		}
+
+		this.hitscanArray.length = 0;
 
 		$(window).off("keyup");
 		$(document).off("keyup");
@@ -535,6 +541,15 @@ export default class MainScene extends Phaser.Scene {
 					this.gravestones[i].gravestoneText.destroy();
 				}
 				this.gravestones.splice(i, 1);
+			}
+		}
+
+		//update hitscans
+		for(var i = this.hitscanArray.length - 1; i >= 0; i--) {
+			this.hitscanArray[i].sceneUpdate(dt);
+			if(this.hitscanArray[i].timeLengthAcc >= this.hitscanArray[i].timeLength) {
+				this.hitscanArray[i].deinit();
+				this.hitscanArray.splice(i, 1);
 			}
 		}
 

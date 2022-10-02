@@ -34,11 +34,11 @@
 	"characterEffectData": [
 		{
 			"type": "damage",
-			"value": 2
+			"value": 80
 		},
 		{
 			"type": "hitscan-force",
-			"mag": 30,
+			"mag": 10,
 			"dir": "out"
 		}
 	]

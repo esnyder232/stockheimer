@@ -165,11 +165,11 @@ class CharacterClassState {
 
 			//do a raycast for the first applicable object
 			var raycastResult = this.raycastFirst(pos, planckPosTo, collisionFilters);
+			var x2 = raycastResult.point !== null ? raycastResult.point.x : planckPosTo.x;
+			var y2 = raycastResult.point !== null ? raycastResult.point.y : planckPosTo.y;
 
 			/////////////////////////////////////
 			//debugging raycast stuff
-			// var x2 = raycastResult.point !== null ? raycastResult.point.x : planckPosTo.x;
-			// var y2 = raycastResult.point !== null ? raycastResult.point.y : planckPosTo.y;
 			// var eventData = {
 			// 	"eventName": "debugServerRaycast",
 			// 	"gameObjectId": raycastResult.gameObjectId,
@@ -209,7 +209,19 @@ class CharacterClassState {
 				}
 			}
 
-
+			var eventData = {
+				"eventName": "addHitscan",
+				"gameObjectId": raycastResult.gameObjectId,
+				"teamId": this.character.teamId,
+				"x1": pos.x,
+				"y1": pos.y,
+				"x2": x2,
+				"y2": y2
+			};
+			var userAgents = this.gs.uam.getUserAgents();
+			for(var i = 0; i < userAgents.length; i++) {
+				userAgents[i].insertServerToClientEvent(eventData);
+			}
 
 		}
 	}

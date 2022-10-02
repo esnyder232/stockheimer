@@ -1,6 +1,6 @@
 {
 	"name": "Slime Sniper",
-	"hp": 20,
+	"hp": 12,
 	"speed": 4,
 	"planckData": {
 		"plShape": "circle",

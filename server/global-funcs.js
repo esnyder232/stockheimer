@@ -348,7 +348,7 @@ class GlobalFuncs {
 
 
 		//for testing - if the ai choose a particular class, default to something else (useful for testing a new class BUT ONLY you want to be the class)
-		if (randomClass.key === "data/character-classes/slime-defender.json") {
+		if (randomClass.key === "data/character-classes/slime-defender.json" || randomClass.key === "data/character-classes/slime-sniper.json") {
 			//default it to slime-mage
 			randomClass = availableClasses.find((x) => {
 				return x.key === "data/character-classes/slime-small.json"

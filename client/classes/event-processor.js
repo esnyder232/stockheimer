@@ -45,6 +45,8 @@ import CharacterOffControlPointEvent from "../event-classes/character-off-contro
 import AddWallEvent from "../event-classes/add-wall-event.js"
 import RemoveWallEvent from "../event-classes/remove-wall-event.js"
 import DebugServerRaycastEvent from "../event-classes/debug-server-raycast-event.js"
+import AddHitscanEvent from "../event-classes/add-hitscan-event.js"
+
 
 export default class EventProcessor {
 	constructor() {
@@ -117,6 +119,9 @@ export default class EventProcessor {
 			{eventName: "addWall", eventClass: new AddWallEvent(), enabled: false},
 			{eventName: "removeWall", eventClass: new RemoveWallEvent(), enabled: false},
 			{eventName: "debugServerRaycast", eventClass: new DebugServerRaycastEvent(), enabled: false},
+			{eventName: "addHitscan", eventClass: new AddHitscanEvent(), enabled: false},
+
+			
 		];
 	}
 
