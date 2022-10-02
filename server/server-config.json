@@ -12,6 +12,6 @@
 	"log_level": "debug",
 	"allow_simulated_user_ai_agents": true,
 	"map_rotation": [
-		"data/maps/koth-two.json"
+		"data/maps/deathmatch-zelda-2-test.json"
 	]
 }
