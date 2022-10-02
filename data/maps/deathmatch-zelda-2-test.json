@@ -5,12 +5,12 @@
 	"mapMinMatch": 1,
 	"gameData": {
 		"type": "deathmatch",
-		"roundMapStartTimeLength": 1000,
-		"roundStartingTimeLength": 700,
-		"roundPlayingTimeLength": 900000,
-		"roundOverTimeLength": 700,
-		"roundOverWinTimeLength": 1200,
-		"roundMapEndTimeLength": 500,
+		"roundMapStartTimeLength": 10000,
+		"roundStartingTimeLength": 7000,
+		"roundPlayingTimeLength": 90000,
+		"roundOverTimeLength": 7000,
+		"roundOverWinTimeLength": 12000,
+		"roundMapEndTimeLength": 5000,
 		"userRespawningTimeLength": 4000,
 		"matchWinCondition": 2
 	},

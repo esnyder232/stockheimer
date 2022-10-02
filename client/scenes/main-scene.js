@@ -141,6 +141,8 @@ export default class MainScene extends Phaser.Scene {
 		this.tempMouseCameraY = 0;
 		this.tempMouseCameraMovePrevX = 0;
 		this.tempMouseCameraMovePrevY = 0;
+		this.tempMouseWorldPrevX = 0;
+		this.tempMouseWorldPrevY = 0;
 		this.tempIsSniperClass = false;
 	}
 
@@ -722,32 +724,32 @@ export default class MainScene extends Phaser.Scene {
 			}
 		}
 
-		//temp testing for camera zoom
-		if(this.tempIsSniperClass && this.prevIsFiringAlt != this.isFiringAlt) {
-			if(this.isFiringAlt === true) {
-				this.switchCameraMode(3);
-				this.tempMouseCameraX = pointer.worldX - this.cameras.main.width/2;
-				this.tempMouseCameraY = pointer.worldY - this.cameras.main.height/2;
-				this.input.mouse.requestPointerLock();
-				this.targetLineLength = this.targetLineLengthSniper;
-			} else {
-				this.switchCameraMode(1);
-				this.targetLineLength = this.targetLineLengthStandard;
-			}
-		}
-
-		// //temp testing for sniper camera zoom alternate
-		// if(this.tempIsSniperClass &&  this.prevIsFiringAlt != this.isFiringAlt) {
-		// 	if(this.isFiringAlt === true) { 
-		// 		this.switchCameraMode(4);
-		// 		this.tempMouseCameraX = (pointer.worldX) / this.planckUnitsToPhaserUnitsRatio;
-		// 		this.tempMouseCameraY = (pointer.worldY) / this.planckUnitsToPhaserUnitsRatio * -1;
+		// //temp testing for camera zoom
+		// if(this.tempIsSniperClass && this.prevIsFiringAlt != this.isFiringAlt) {
+		// 	if(this.isFiringAlt === true) {
+		// 		this.switchCameraMode(3);
+		// 		this.tempMouseCameraX = pointer.worldX - this.cameras.main.width/2;
+		// 		this.tempMouseCameraY = pointer.worldY - this.cameras.main.height/2;
+		// 		this.input.mouse.requestPointerLock();
 		// 		this.targetLineLength = this.targetLineLengthSniper;
 		// 	} else {
 		// 		this.switchCameraMode(1);
 		// 		this.targetLineLength = this.targetLineLengthStandard;
 		// 	}
 		// }
+
+		//temp testing for sniper camera zoom alternate
+		if(this.tempIsSniperClass &&  this.prevIsFiringAlt != this.isFiringAlt) {
+			if(this.isFiringAlt === true) { 
+				this.switchCameraMode(4);
+				this.tempMouseCameraX = (pointer.worldX) / this.planckUnitsToPhaserUnitsRatio;
+				this.tempMouseCameraY = (pointer.worldY) / this.planckUnitsToPhaserUnitsRatio * -1;
+				this.targetLineLength = this.targetLineLengthSniper;
+			} else {
+				this.switchCameraMode(1);
+				this.targetLineLength = this.targetLineLengthStandard;
+			}
+		}
 
 
 
@@ -854,6 +856,9 @@ export default class MainScene extends Phaser.Scene {
 
 		this.tempMouseCameraMovePrevX = pointer.movementX;
 		this.tempMouseCameraMovePrevY = pointer.movementY;
+		this.tempMouseWorldPrevX = pointer.worldX;
+		this.tempMouseWorldPrevY = pointer.worldY;
+
 
 		this.previousTick = this.currentTick;
 		this.frameNum++;
