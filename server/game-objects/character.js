@@ -674,12 +674,6 @@ class Character {
 			// apply a 1 time hit back vector (legacy. Maybe removed eventually.)
 			//get resource data
 			var pushbackVecMagnitude = this.gs.globalfuncs.getValueDefault(o.p?.projectileResource?.data?.projectileData?.pushbackVecMagnitude, 10);
-			
-			//update last hit by
-			if(o.p.ownerId !== null) {
-				this.lastHitByOwnerId = o.p.ownerId;
-				this.lastHitByOwnerType = o.p.ownerType;
-			}
 
 			//add a push back to the character
 			var pVel = o.p.plBody.getLinearVelocity();
@@ -734,17 +728,11 @@ class Character {
 	}
 
 	processProjectileHitEffects(p, characterEffectData) {
-		//update last hit by
-		if(p.ownerId !== null) {
-			this.lastHitByOwnerId = p.ownerId;
-			this.lastHitByOwnerType = p.ownerType;
-		}
-
 		//go through each character hit effect
 		switch(characterEffectData.type) {
 			case "damage":
 				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
-				this.applyDamageEffect(p.ownerId, value);
+				this.applyDamageEffect(p.ownerId, p.ownerType, value);
 				break;
 			case "heal":
 				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
@@ -890,12 +878,6 @@ class Character {
 	
 
 	collisionHitscan(hitscanResult) {
-		//update last hit by
-		if(hitscanResult.ownerId !== null) {
-			this.lastHitByOwnerId = hitscanResult.ownerId;
-			this.lastHitByOwnerType = hitscanResult.ownerType;
-		}
-
 		//process the hit effects
 		var characterEffectData = [];
 		var hitscanResource = this.gs.rm.getResourceByKey(hitscanResult.hitscanKey);
@@ -912,7 +894,7 @@ class Character {
 		switch(characterEffectData.type) {
 			case "damage":
 				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
-				this.applyDamageEffect(hitscanResult.ownerId, value);
+				this.applyDamageEffect(hitscanResult.ownerId, hitscanResult.ownerType, value);
 				break;
 			case "heal":
 				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
@@ -949,7 +931,7 @@ class Character {
 		if(otherCharacter.collideOtherTeamCharacters) {
 			var u = this.gs.um.getUserByID(otherCharacter.ownerId);
 			if(u !== null) {
-				this.applyDamageEffect(u.id, otherCharacter.contactDamage);
+				this.applyDamageEffect(u.id, u.ownerType, otherCharacter.contactDamage);
 			}
 		}
 	}
@@ -970,8 +952,14 @@ class Character {
 		return this.stateCooldownsTemplates[characterClassStateResourceKey] !== undefined ? this.stateCooldownsTemplates[characterClassStateResourceKey] : null;
 	}
 
-	applyDamageEffect(srcUserId, damage) {
+	applyDamageEffect(ownerId, ownerType, damage) {
 		this.modHealth(-damage);
+
+		//update last hit by
+		if(ownerId !== null) {
+			this.lastHitByOwnerId = ownerId;
+			this.lastHitByOwnerType = ownerType;
+		}
 
 		//create event for clients to notify them of damage
 		var userAgents = this.gs.uam.getUserAgents();
@@ -980,7 +968,7 @@ class Character {
 				"eventName": "characterDamageEffect",
 				"id": this.id,
 				"damage": damage,
-				"srcUserId": srcUserId
+				"srcUserId": ownerId
 			});
 		}
 	}
