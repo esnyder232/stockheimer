@@ -1,3 +1,5 @@
+import ClientConstants from "../client-constants.js"
+
 //A class just used to draw hitscan bullets.
 export default class Hitscan {
 	constructor() {
@@ -29,6 +31,7 @@ export default class Hitscan {
 		this.lineGraphics = this.gc.mainScene.add.graphics();
 		this.line = new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
 		this.lineGraphics.strokeLineShape(this.line);
+		this.lineGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 	}
 
 
