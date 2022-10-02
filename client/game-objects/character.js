@@ -243,6 +243,11 @@ export default class Character {
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
 			this.ms.switchCameraMode(1);
+			
+			//hacky shit to test sniper zoome
+			if(this.characterClassResource.data.name === "Slime Sniper") {
+				this.ms.tempIsSniperClass = true;
+			}
 		}
 
 

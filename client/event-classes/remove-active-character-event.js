@@ -25,6 +25,8 @@ export default class RemoveActiveCharacterEvent {
 				//check if this is your character your controlling. If it is, then switch pointer modes
 				this.gc.mainScene.switchCameraMode(2);
 
+				this.gc.mainScene.tempIsSniperClass = false;
+
 				//also destroy the target line
 				this.gc.mainScene.targetLineGraphic.clear();
 			}

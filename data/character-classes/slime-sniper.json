@@ -33,5 +33,5 @@
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
 	"fireStateKey": "data/character-class-states/slime-bullet.json",
-	"altFireStateKey": "data/character-class-states/slime-fire-small.json"
+	"altFireStateKey": null
 }

@@ -390,13 +390,13 @@ class Character {
 			//step 3 - translate the inputs for this frame into events to set the next states
 			//cooldowns get checked here as well
 			if(this.state == null && this.frameInputController.isFiring.state) {
-				if(!this.stateCooldownsTemplates[this.characterClassResource.data.fireStateKey].onCooldown) {
+				if(this.stateCooldownsTemplates[this.characterClassResource.data.fireStateKey] !== undefined && !this.stateCooldownsTemplates[this.characterClassResource.data.fireStateKey].onCooldown) {
 					this.frameEventQueue.push({"key": this.characterClassResource.data.fireStateKey, "input": "isFiring"});
 				}
 			}
 
 			if(this.state == null && this.frameInputController.isFiringAlt.state) {
-				if(!this.stateCooldownsTemplates[this.characterClassResource.data.altFireStateKey].onCooldown) {
+				if(this.stateCooldownsTemplates[this.characterClassResource.data.altFireStateKey] !== undefined && !this.stateCooldownsTemplates[this.characterClassResource.data.altFireStateKey].onCooldown) {
 					this.frameEventQueue.push({"key": this.characterClassResource.data.altFireStateKey, "input": "isFiringAlt"});
 				}
 			}
