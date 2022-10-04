@@ -58,7 +58,8 @@ export default class MainScene extends Phaser.Scene {
 			y: 0
 		}
 
-		this.cameraZoom = 1.4;
+		// this.cameraZoom = 1.4;
+		this.cameraZoom = 1.0;
 		this.cameraZoomMax = 6;
 		this.cameraZoomMin = 0.4;
 
@@ -144,6 +145,10 @@ export default class MainScene extends Phaser.Scene {
 		this.tempMouseWorldPrevX = 0;
 		this.tempMouseWorldPrevY = 0;
 		this.tempIsSniperClass = false;
+
+		this.tempAnchorX = 0;
+		this.tempAnchorY = 0;
+
 	}
 
 	init(data) {
@@ -414,7 +419,14 @@ export default class MainScene extends Phaser.Scene {
 
 		this.cameraZoom = Math.round(this.cameraZoom * 10)/10;
 
+		//for some reason, i get some tile bleeding SOMETIMES when the zoom is on an odd number (like 1.3, 1.5)
+		//this is just a quick hack to make sure the zoom is always on an even number to stop the tile bleeding
+		var temp = Math.round(this.cameraZoom * 10);
+		this.cameraZoom += temp % 2 === 0 ? 0 : 0.1
+
 		this.cameras.main.setZoom(this.cameraZoom);
+
+		console.log("zoom is now: " + this.cameraZoom);
 	}
 
 	shutdown() {
@@ -506,8 +518,14 @@ export default class MainScene extends Phaser.Scene {
 	{
 		console.log('switching camera mode to ' + mode);
 
+		//exit special cases
 		if(this.cameraMode === 3) {
 			this.input.mouse.releasePointerLock();
+		}
+		else if (this.cameraMode === 5) {
+			//zoom out
+			this.cameraZoom /= 2;
+			this.setCameraZoom();
 		}
 
 		if(mode === 0) //0 - spectator mode
@@ -530,6 +548,19 @@ export default class MainScene extends Phaser.Scene {
 		}
 		else if (mode === 4) { //4 - sniper zoom alternate
 			this.cameraMode = 4;
+		}
+		else if (mode === 5) { //5 - sniper zoom alternate 2
+			this.cameraMode = 5;
+		}
+		else if (mode === 6) { //6 - zniper zoom return (comes after cameraMode 5 to snap the camera back to character)
+			this.cameraMode = 6
+		}
+
+		//enter special cases
+		if(this.cameraMode === 5) {
+			//zoom in
+			this.cameraZoom *= 2;
+			this.setCameraZoom();
 		}
 	}
 
@@ -579,11 +610,28 @@ export default class MainScene extends Phaser.Scene {
 			activeGameObjects[i].sceneUpdate(dt);
 		}
 
+		pointer.updateWorldPoint(this.cameras.main);
+		
+		if(pointer.leftButtonDown()) {
+			this.isFiring = true;
+		}
+		else {
+			this.isFiring = false;
+		}
+
+		if(pointer.rightButtonDown()) {
+			this.isFiringAlt = true;
+		}
+		else {
+			this.isFiringAlt = false;
+		}
+
+
 		//if you control your character, read input and send it to the server if its dirty.
 		if(this.gc.myCharacter !== null) {
 			this.targetLineGraphic.clear();
 
-			pointer.updateWorldPoint(this.cameras.main);
+			// pointer.updateWorldPoint(this.cameras.main);
 
 			//redraw the target line
 			var x1 = this.gc.myCharacter.x * this.planckUnitsToPhaserUnitsRatio;
@@ -602,32 +650,6 @@ export default class MainScene extends Phaser.Scene {
 			Phaser.Geom.Line.SetToAngle(this.targetLine, x1, y1, this.angle, this.targetLineLength);
 
 			this.targetLineGraphic.strokeLineShape(this.targetLine);
-
-			//debugging text
-			this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
-			this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
-			this.debugIsDown.text('isDown: ' + pointer.isDown);
-			this.debugAngle.text('angle: ' + this.angle);
-
-			//check to see if the user wants to fire a bullet
-			if(pointer.leftButtonDown())
-			{
-				this.isFiring = true;
-			}
-			else
-			{
-				this.isFiring = false;
-			}
-
-			//firing alt
-			if(pointer.rightButtonDown())
-			{
-				this.isFiringAlt = true;
-			}
-			else
-			{
-				this.isFiringAlt = false;
-			}
 
 			//if input changes, send the input event
 			if(this.playerController.isDirty)
@@ -739,19 +761,36 @@ export default class MainScene extends Phaser.Scene {
 		// }
 
 		//temp testing for sniper camera zoom alternate
-		if(this.tempIsSniperClass &&  this.prevIsFiringAlt != this.isFiringAlt) {
+		// if(this.tempIsSniperClass &&  this.prevIsFiringAlt != this.isFiringAlt) {
+		// 	if(this.isFiringAlt === true) { 
+		// 		this.switchCameraMode(4);
+		// 		this.tempMouseCameraX = (pointer.worldX) / this.planckUnitsToPhaserUnitsRatio;
+		// 		this.tempMouseCameraY = (pointer.worldY) / this.planckUnitsToPhaserUnitsRatio * -1;
+		// 		this.targetLineLength = this.targetLineLengthSniper;
+		// 	} else {
+		// 		this.switchCameraMode(1);
+		// 		this.targetLineLength = this.targetLineLengthStandard;
+		// 	}
+		// }
+
+		//temp testing for sniper camera zoom alternate
+		if(this.tempIsSniperClass && this.gc.myCharacter !== null && this.prevIsFiringAlt != this.isFiringAlt) {
 			if(this.isFiringAlt === true) { 
-				this.switchCameraMode(4);
-				this.tempMouseCameraX = (pointer.worldX) / this.planckUnitsToPhaserUnitsRatio;
-				this.tempMouseCameraY = (pointer.worldY) / this.planckUnitsToPhaserUnitsRatio * -1;
+				this.switchCameraMode(5);
 				this.targetLineLength = this.targetLineLengthSniper;
+
 			} else {
-				this.switchCameraMode(1);
+				this.switchCameraMode(6);
 				this.targetLineLength = this.targetLineLengthStandard;
 			}
 		}
 
 
+		//debugging text
+		this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
+		this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
+		this.debugIsDown.text('isDown: ' + pointer.isDown);
+		this.debugAngle.text('angle: ' + this.angle);
 
 
 		//camera smoothing
@@ -759,8 +798,6 @@ export default class MainScene extends Phaser.Scene {
 		var cury = this.cameraTarget.y;
 		var targetx = curx;
 		var targety = cury;
-		var actualx = curx;
-		var actualy = cury;
 		var tolerance = 0.05;
 		var mySpeed = 0.07;
 
@@ -792,6 +829,32 @@ export default class MainScene extends Phaser.Scene {
 			targetx = this.tempMouseCameraX;
 			targety = this.tempMouseCameraY;
 		}
+		else if (this.cameraMode === 5) {
+			if(this.gc.myCharacter !== null) {
+				
+				this.tempAnchorX = this.gc.myCharacter.x;
+				this.tempAnchorY = this.gc.myCharacter.y;
+			}
+
+			//put the camera target between the anchor point and the world mouse position
+			var mouseWorldXPlanck = pointer.worldX / this.planckUnitsToPhaserUnitsRatio;
+			var mouseWorldYPlanck = pointer.worldY / this.planckUnitsToPhaserUnitsRatio * -1;
+
+			targetx = this.tempAnchorX + (mouseWorldXPlanck - this.tempAnchorX)/2;
+			targety = this.tempAnchorY + (mouseWorldYPlanck - this.tempAnchorY)/2;
+			mySpeed = 1.0;
+		}
+		else if(this.cameraMode === 6) {
+			//snap the camera back to character in 1 frame
+			if(this.gc.myCharacter !== null) {
+				
+				targetx= this.gc.myCharacter.x;
+				targety = this.gc.myCharacter.y;
+			}
+			mySpeed = 1.0;
+
+			this.switchCameraMode(1);
+		}
 
 
 		//actually move the camera
@@ -799,28 +862,12 @@ export default class MainScene extends Phaser.Scene {
 		if(this.cameraMode === 3) {
 			this.cameras.main.scrollX = this.tempMouseCameraX;
 			this.cameras.main.scrollY = this.tempMouseCameraY;
-		} 
-		else if (this.cameraMode === 4) {
-			actualx = targetx;
-			actualy = targety;
-	
-			//slowly pan to target
-			if(curx <= targetx - tolerance || curx >= targetx + tolerance ) {
-				actualx = ((targetx - curx) * mySpeed) + curx;
-			}
-	
-			if(cury <= targety - tolerance || cury >= targety + tolerance ) {
-				actualy = ((targety - cury) * mySpeed) + cury;
-			}
-		
-			this.cameraTarget.x = actualx;
-			this.cameraTarget.y = actualy;
-			
-			this.cameras.main.scrollX = (this.cameraTarget.x * this.planckUnitsToPhaserUnitsRatio) - (this.scale.width/2);
-			this.cameras.main.scrollY = ((this.cameraTarget.y * this.planckUnitsToPhaserUnitsRatio) * -1) - (this.scale.height/2);
 		}
 		//slowly pan the camera on character
 		else {
+			var actualx = curx;
+			var actualy = cury;
+
 			actualx = targetx;
 			actualy = targety;
 	
