@@ -242,11 +242,11 @@ export default class Character {
 		//check if this is your character your controlling. If it is, then switch camera modes
 		if(this.gc.myCharacter !== null && this.id === this.gc.myCharacter.id)
 		{
-			this.ms.switchCameraMode(1);
+			this.ms.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_FOLLOW_CHARACTER"]);
 			
 			//hacky shit to test sniper zoome
 			if(this.characterClassResource.data.name === "Slime Sniper") {
-				this.ms.tempIsSniperClass = true;
+				this.ms.isSniperClass = true;
 			}
 		}
 

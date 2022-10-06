@@ -1,4 +1,5 @@
 import $ from "jquery"
+import ClientConstants from "../client-constants.js"
 
 export default class RemoveActiveCharacterEvent {
 	constructor() {
@@ -23,9 +24,9 @@ export default class RemoveActiveCharacterEvent {
 				this.gc.myCharacter = null;
 
 				//check if this is your character your controlling. If it is, then switch pointer modes
-				this.gc.mainScene.switchCameraMode(2);
+				this.gc.mainScene.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_DEATH_CAM"]);
 
-				this.gc.mainScene.tempIsSniperClass = false;
+				this.gc.mainScene.isSniperClass = false;
 
 				//also destroy the target line
 				this.gc.mainScene.targetLineGraphic.clear();

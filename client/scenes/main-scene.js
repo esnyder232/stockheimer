@@ -62,6 +62,7 @@ export default class MainScene extends Phaser.Scene {
 		this.cameraZoom = 1.0;
 		this.cameraZoomMax = 6;
 		this.cameraZoomMin = 0.4;
+		this.cameraZoomPrev = this.cameraZoom;
 
 
 		this.defaultCenter = {
@@ -74,16 +75,15 @@ export default class MainScene extends Phaser.Scene {
 			y: 0
 		}
 
-		// cameraMode = 0 means spectator mode
-		// cameraMode = 1 means follow character
-		// cameraMode = 2 means deathcam for 3 seconds
-		this.cameraMode = 0; 
+		this.cameraMode = ClientConstants.CameraModes["CAMERA_MODE_SPECTATOR"]; 
 		this.deathCamTimer = 0;	//in ms, the amount of time stayed in death cam mode
 		this.deathCamTimerInterval = 1500; //in ms, the amount of time to stay in death cam mode until you switch to spectator
 
 
 		this.debugX = null;
 		this.debugY = null;
+		this.debugScreenX = null;
+		this.debugScreenY = null;
 		this.debugIsDown = null;
 		this.debugAngle = null;
 
@@ -138,16 +138,31 @@ export default class MainScene extends Phaser.Scene {
 		this.currentTick = 0;
 		this.previousTick = 0;
 
-		this.tempMouseCameraX = 0;
-		this.tempMouseCameraY = 0;
-		this.tempMouseCameraMovePrevX = 0;
-		this.tempMouseCameraMovePrevY = 0;
-		this.tempMouseWorldPrevX = 0;
-		this.tempMouseWorldPrevY = 0;
-		this.tempIsSniperClass = false;
+		///////////////////////////
+		// various camera variables
+		this.frameCharacterPosX = 0;			//character pos for the frame, planck units
+		this.frameCharacterPosY = 0;
+		this.pointerFromCenterX = 0;			//distance of the pointer from center screen, screen units
+		this.pointerFromCenterY = 0;
+		this.pointerFromCenterPrevX = 0;		//previous distance of the pointer from center screen, screen units
+		this.pointerFromCenterPrevY = 0;
+		//
+		///////////////////////////
 
-		this.tempAnchorX = 0;
-		this.tempAnchorY = 0;
+		///////////////////////////
+		// sniper camera variables
+		this.zoomAnchorX = 0;					//anchor point when zooming in, planck units
+		this.zoomAnchorY = 0;
+		this.zoomMinorPansX = 0;			//accumulation of minor camera pans based on mouse distance from anchor point, planck units
+		this.zoomMinorPansY = 0;
+
+		this.sniperMaxZoomBreakpoint = 1.9;		//zoom break point before the mouse movements become less sensitive
+		this.cameraZoomBeforeSniper = 1.0;		//used to return the camera to previous zoom before they are in scope
+		this.sniperDefaultZoomLevel = 2.0;		//zoom level to jump to when in scope
+		this.bCameraZoomChange = false;
+		this.isSniperClass = false;
+		//
+		///////////////////////////
 
 	}
 
@@ -184,6 +199,8 @@ export default class MainScene extends Phaser.Scene {
 
 		this.debugX = $("#debug-x");
 		this.debugY = $("#debug-y");
+		this.debugScreenX = $("#debug-screen-x");
+		this.debugScreenY = $("#debug-screen-y");
 		this.debugIsDown = $("#debug-is-down");
 		this.debugAngle = $("#debug-angle");
 
@@ -235,7 +252,7 @@ export default class MainScene extends Phaser.Scene {
 		else if(deltaY < 0) {
 			this.cameraZoom += 0.2;
 		}
-		this.setCameraZoom();
+		this.bCameraZoomChange = true;
 	}
 
 
@@ -517,54 +534,52 @@ export default class MainScene extends Phaser.Scene {
 	switchCameraMode(mode)
 	{
 		console.log('switching camera mode to ' + mode);
+		this.cameraMode = mode;
 
-		//exit special cases
-		if(this.cameraMode === 3) {
-			this.input.mouse.releasePointerLock();
-		}
-		else if (this.cameraMode === 5) {
-			//zoom out
-			this.cameraZoom /= 2;
-			this.setCameraZoom();
-		}
-
-		if(mode === 0) //0 - spectator mode
-		{
-			this.cameraMode = 0;
-			this.spectatorCamera.x = this.defaultCenter.x;
-			this.spectatorCamera.y = this.defaultCenter.y;
-		}
-		else if(mode === 1) //1 - follow character
-		{
-			this.cameraMode = 1;
-		}
-		else if (mode === 2) //2 - death cam
-		{
-			this.cameraMode = 2;
-			this.deathCamTimer = 0;
-		}
-		else if (mode === 3) { //3 - sniper zoom
-			this.cameraMode = 3;
-		}
-		else if (mode === 4) { //4 - sniper zoom alternate
-			this.cameraMode = 4;
-		}
-		else if (mode === 5) { //5 - sniper zoom alternate 2
-			this.cameraMode = 5;
-		}
-		else if (mode === 6) { //6 - zniper zoom return (comes after cameraMode 5 to snap the camera back to character)
-			this.cameraMode = 6
+		//here are things that always happen everytime we enter the new camera mode
+		switch(this.cameraMode) {
+			case ClientConstants.CameraModes["CAMERA_MODE_SPECTATOR"]:
+				this.spectatorCamera.x = this.defaultCenter.x;
+				this.spectatorCamera.y = this.defaultCenter.y;
+				break;
+			case ClientConstants.CameraModes["CAMERA_MODE_DEATH_CAM"]:
+				this.deathCamTimer = 0;
+				break;
+			default:
+				//nothing
+				break;
 		}
 
-		//enter special cases
-		if(this.cameraMode === 5) {
-			//zoom in
-			this.cameraZoom *= 2;
-			this.setCameraZoom();
-		}
+
+
+		// if(mode === 0) //0 - spectator mode
+		// {
+		// 	this.spectatorCamera.x = this.defaultCenter.x;
+		// 	this.spectatorCamera.y = this.defaultCenter.y;
+		// }
+		// else if(mode === 1) //1 - follow character
+		// {
+		// 	this.cameraMode = 1;
+		// }
+		// else if (mode === 2) //2 - death cam
+		// {
+		// 	this.cameraMode = 2;
+		// 	this.deathCamTimer = 0;
+		// }
+		// else if (mode === 7) { //7 - zniper zoom 
+		// 	this.cameraMode = 7
+		// }
+		// else if (mode === 8) { //8 - zniper zoom exit
+		// 	this.cameraMode = 8
+		// }
+		// else if (mode === 9) { //9 - sniper zoom enter
+		// 	this.cameraMode = 9
+		// }
 	}
 
 	update(timeElapsed, fakeDt) {
+		// console.log("==== UPDATE " + this.gc.frameNum + " ====");
+		// console.log(". Zooms: " + this.cameraZoom + ", " + this.cameraZoomPrev);
 		this.currentTick = performance.now();
 		var dt = this.currentTick - this.previousTick;
 		var pointer = this.input.activePointer;
@@ -611,6 +626,16 @@ export default class MainScene extends Phaser.Scene {
 		}
 
 		pointer.updateWorldPoint(this.cameras.main);
+
+		//grab the character position for this frame (so I don't have to check for its existance every single time)
+		if(this.gc.myCharacter !== null) {
+			this.frameCharacterPosX = this.gc.myCharacter.x;
+			this.frameCharacterPosY = this.gc.myCharacter.y;
+		}
+
+		//update any various camera variables
+		this.pointerFromCenterX = pointer.x - this.cameras.main.width/2;
+		this.pointerFromCenterY = pointer.y - this.cameras.main.height/2;
 		
 		if(pointer.leftButtonDown()) {
 			this.isFiring = true;
@@ -745,43 +770,37 @@ export default class MainScene extends Phaser.Scene {
 				}
 			}
 		}
-
-		// //temp testing for camera zoom
-		// if(this.tempIsSniperClass && this.prevIsFiringAlt != this.isFiringAlt) {
-		// 	if(this.isFiringAlt === true) {
-		// 		this.switchCameraMode(3);
-		// 		this.tempMouseCameraX = pointer.worldX - this.cameras.main.width/2;
-		// 		this.tempMouseCameraY = pointer.worldY - this.cameras.main.height/2;
-		// 		this.input.mouse.requestPointerLock();
-		// 		this.targetLineLength = this.targetLineLengthSniper;
-		// 	} else {
-		// 		this.switchCameraMode(1);
-		// 		this.targetLineLength = this.targetLineLengthStandard;
-		// 	}
-		// }
-
-		//temp testing for sniper camera zoom alternate
-		// if(this.tempIsSniperClass &&  this.prevIsFiringAlt != this.isFiringAlt) {
-		// 	if(this.isFiringAlt === true) { 
-		// 		this.switchCameraMode(4);
-		// 		this.tempMouseCameraX = (pointer.worldX) / this.planckUnitsToPhaserUnitsRatio;
-		// 		this.tempMouseCameraY = (pointer.worldY) / this.planckUnitsToPhaserUnitsRatio * -1;
-		// 		this.targetLineLength = this.targetLineLengthSniper;
-		// 	} else {
-		// 		this.switchCameraMode(1);
-		// 		this.targetLineLength = this.targetLineLengthStandard;
-		// 	}
-		// }
-
-		//temp testing for sniper camera zoom alternate
-		if(this.tempIsSniperClass && this.gc.myCharacter !== null && this.prevIsFiringAlt != this.isFiringAlt) {
-			if(this.isFiringAlt === true) { 
-				this.switchCameraMode(5);
+		
+		// temp testing for sniper camera zoom alternate 3
+		if(this.isSniperClass && this.gc.myCharacter !== null && this.prevIsFiringAlt != this.isFiringAlt) {
+			if(this.isFiringAlt === true) {
+				this.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_SNIPER_ENTER"]);
 				this.targetLineLength = this.targetLineLengthSniper;
-
 			} else {
-				this.switchCameraMode(6);
+				this.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_SNIPER_EXIT"]);
 				this.targetLineLength = this.targetLineLengthStandard;
+			}
+		}
+
+
+		//if the wheel was scrolled, change the camera zoom
+		if(this.bCameraZoomChange) {
+			this.bCameraZoomChange = false;
+			this.setCameraZoom();
+
+			//if the camera mode is in sniper zoom, pan the camera to the appropriate location as well
+			if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_SNIPER_AIMING"]) {
+				//recalculate the anchor point for the zoom
+				var tempCenterScreenPlanckUnitsX = (this.cameras.main.scrollX + this.cameras.main.width/2) / this.planckUnitsToPhaserUnitsRatio;
+				var tempCenterScreenPlanckUnitsY = (this.cameras.main.scrollY + this.cameras.main.height/2) / this.planckUnitsToPhaserUnitsRatio * -1;
+
+				//when recalculating, we need to "back out" the character position from the current screen position (if we don't, it doubles up and pans the camera in a wierd way)
+				this.zoomAnchorX = tempCenterScreenPlanckUnitsX - this.frameCharacterPosX + (this.pointerFromCenterX * ((1 / this.cameraZoomPrev) - (1 / this.cameraZoom))) / this.planckUnitsToPhaserUnitsRatio;
+				this.zoomAnchorY = tempCenterScreenPlanckUnitsY - this.frameCharacterPosY + (this.pointerFromCenterY * ((1 / this.cameraZoomPrev) - (1 / this.cameraZoom))) / this.planckUnitsToPhaserUnitsRatio * -1;
+	
+				//reset the minor pans
+				this.zoomMinorPansX = 0;
+				this.zoomMinorPansY = 0;
 			}
 		}
 
@@ -789,6 +808,7 @@ export default class MainScene extends Phaser.Scene {
 		//debugging text
 		this.debugX.text('x: ' + Math.round(pointer.worldX) + "(" + Math.round(pointer.worldX*100 / this.planckUnitsToPhaserUnitsRatio)/100 + ")");
 		this.debugY.text('y: ' + Math.round(pointer.worldY) + "(" + Math.round((pointer.worldY*100 / this.planckUnitsToPhaserUnitsRatio))/100 * -1 + ")");
+		this.debugScreenX.text('screen: ' + Math.round(pointer.x) + ', ' + Math.round(pointer.y));
 		this.debugIsDown.text('isDown: ' + pointer.isDown);
 		this.debugAngle.text('angle: ' + this.angle);
 
@@ -802,91 +822,99 @@ export default class MainScene extends Phaser.Scene {
 		var mySpeed = 0.07;
 
 		//decide what the target should be
-		if(this.cameraMode === 0 && this.gc.myCharacter === null) {
+		if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_SPECTATOR"] && this.gc.myCharacter === null) {
 			targetx = this.spectatorCamera.x;
 			targety = this.spectatorCamera.y;
 			mySpeed = 0.15;
 		}
-		else if(this.cameraMode === 1 && this.gc.myCharacter !== null) {
+		else if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_FOLLOW_CHARACTER"] && this.gc.myCharacter !== null) {
 			targetx = this.gc.myCharacter.x;
 			targety = this.gc.myCharacter.y;
 		}
-		else if(this.cameraMode === 2) {
+		else if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_DEATH_CAM"]) {
 			this.deathCamTimer += dt;
 
 			if(this.deathCamTimer >= this.deathCamTimerInterval) {
 				this.deathCamTimer = 0;
-				this.switchCameraMode(0);
+				this.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_SPECTATOR"]);
 			}
 		}
-		else if (this.cameraMode === 3) {
-			if(this.tempMouseCameraMovePrevX !== pointer.movementX || this.tempMouseCameraMovePrevY !== pointer.movementY) {
-				this.tempMouseCameraX += pointer.movementX;
-				this.tempMouseCameraY += pointer.movementY;
-			}
-		}
-		else if (this.cameraMode === 4) {
-			targetx = this.tempMouseCameraX;
-			targety = this.tempMouseCameraY;
-		}
-		else if (this.cameraMode === 5) {
-			if(this.gc.myCharacter !== null) {
-				
-				this.tempAnchorX = this.gc.myCharacter.x;
-				this.tempAnchorY = this.gc.myCharacter.y;
+		else if (this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_SNIPER_AIMING"]) {
+			var diffx = this.pointerFromCenterX - this.pointerFromCenterPrevX;
+			var diffy = this.pointerFromCenterY - this.pointerFromCenterPrevY;
+
+			if(this.cameraZoom <= this.sniperMaxZoomBreakpoint) {
+				this.zoomMinorPansX += diffx / this.planckUnitsToPhaserUnitsRatio;
+				this.zoomMinorPansY += diffy / this.planckUnitsToPhaserUnitsRatio * -1;
+			} else {
+				this.zoomMinorPansX += (diffx/2) / this.planckUnitsToPhaserUnitsRatio;
+				this.zoomMinorPansY += (diffy/2) / this.planckUnitsToPhaserUnitsRatio * -1;
 			}
 
-			//put the camera target between the anchor point and the world mouse position
-			var mouseWorldXPlanck = pointer.worldX / this.planckUnitsToPhaserUnitsRatio;
-			var mouseWorldYPlanck = pointer.worldY / this.planckUnitsToPhaserUnitsRatio * -1;
-
-			targetx = this.tempAnchorX + (mouseWorldXPlanck - this.tempAnchorX)/2;
-			targety = this.tempAnchorY + (mouseWorldYPlanck - this.tempAnchorY)/2;
-			mySpeed = 1.0;
+			//character pos + anchor + mod
+			targetx = this.frameCharacterPosX + this.zoomAnchorX + this.zoomMinorPansX;
+			targety = this.frameCharacterPosY + this.zoomAnchorY + this.zoomMinorPansY;
+			mySpeed = 1.00;
 		}
-		else if(this.cameraMode === 6) {
+		else if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_SNIPER_EXIT"]) {
 			//snap the camera back to character in 1 frame
 			if(this.gc.myCharacter !== null) {
 				
 				targetx= this.gc.myCharacter.x;
 				targety = this.gc.myCharacter.y;
 			}
-			mySpeed = 1.0;
+			mySpeed = 1.00;
+			this.cameraZoom = this.cameraZoomBeforeSniper;
+			this.setCameraZoom();
 
-			this.switchCameraMode(1);
+			this.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_FOLLOW_CHARACTER"]);
+		}
+		else if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_SNIPER_ENTER"]) {
+			//calculate the zoom anchor
+			this.zoomAnchorX = (this.pointerFromCenterX * ((1 / this.cameraZoom) - (1 / this.sniperDefaultZoomLevel))) / this.planckUnitsToPhaserUnitsRatio;
+			this.zoomAnchorY = (this.pointerFromCenterY * ((1 / this.cameraZoom) - (1 / this.sniperDefaultZoomLevel))) / this.planckUnitsToPhaserUnitsRatio * -1;
+
+			//reset the minor pans
+			this.zoomMinorPansX = 0;
+			this.zoomMinorPansY = 0;
+			
+			targetx = this.frameCharacterPosX + this.zoomAnchorX;
+			targety = this.frameCharacterPosY + this.zoomAnchorY;
+			mySpeed = 1.00;
+
+			this.cameraZoomBeforeSniper = this.cameraZoom;
+			if(this.cameraZoom < this.sniperDefaultZoomLevel) {
+				this.cameraZoom = this.sniperDefaultZoomLevel;
+				this.setCameraZoom();
+			}
+
+			this.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_SNIPER_AIMING"]);
 		}
 
 
 		//actually move the camera
-		//let the mouse control the camera
-		if(this.cameraMode === 3) {
-			this.cameras.main.scrollX = this.tempMouseCameraX;
-			this.cameras.main.scrollY = this.tempMouseCameraY;
-		}
 		//slowly pan the camera on character
-		else {
-			var actualx = curx;
-			var actualy = cury;
+		var actualx = curx;
+		var actualy = cury;
 
-			actualx = targetx;
-			actualy = targety;
-	
-			//slowly pan to target
-			if(curx <= targetx - tolerance || curx >= targetx + tolerance ) {
-				actualx = ((targetx - curx) * mySpeed) + curx;
-			}
-	
-			if(cury <= targety - tolerance || cury >= targety + tolerance ) {
-				actualy = ((targety - cury) * mySpeed) + cury;
-			}
-		
-			this.cameraTarget.x = actualx;
-			this.cameraTarget.y = actualy;
-			
-			this.cameras.main.scrollX = (this.cameraTarget.x * this.planckUnitsToPhaserUnitsRatio) - (this.scale.width/2);
-			this.cameras.main.scrollY = ((this.cameraTarget.y * this.planckUnitsToPhaserUnitsRatio) * -1) - (this.scale.height/2);
+		actualx = targetx;
+		actualy = targety;
+
+		//slowly pan to target
+		if(curx <= targetx - tolerance || curx >= targetx + tolerance ) {
+			actualx = ((targetx - curx) * mySpeed) + curx;
 		}
+
+		if(cury <= targety - tolerance || cury >= targety + tolerance ) {
+			actualy = ((targety - cury) * mySpeed) + cury;
+		}
+	
+		this.cameraTarget.x = actualx;
+		this.cameraTarget.y = actualy;
 		
+		this.cameras.main.scrollX = (this.cameraTarget.x * this.planckUnitsToPhaserUnitsRatio) - (this.scale.width/2);
+		this.cameras.main.scrollY = ((this.cameraTarget.y * this.planckUnitsToPhaserUnitsRatio) * -1) - (this.scale.height/2);
+	
 
 		//update inputs
 		this.playerController.update();
@@ -901,15 +929,15 @@ export default class MainScene extends Phaser.Scene {
 		this.controlPointMenu.update(dt);
 		this.kothTimerMenu.update(dt);
 
-		this.tempMouseCameraMovePrevX = pointer.movementX;
-		this.tempMouseCameraMovePrevY = pointer.movementY;
-		this.tempMouseWorldPrevX = pointer.worldX;
-		this.tempMouseWorldPrevY = pointer.worldY;
-
-
+		//save variables for next frame's calculations
 		this.previousTick = this.currentTick;
+		this.cameraZoomPrev = this.cameraZoom;
+		this.pointerFromCenterPrevX = this.pointerFromCenterX;
+		this.pointerFromCenterPrevY = this.pointerFromCenterY;
 		this.frameNum++;
 	}
+
+
 
 	teamChanged(e) {
 		//only call the respawnMenuFlow if the user is the client's user
