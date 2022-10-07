@@ -1,0 +1,7 @@
+{
+	"spriteKey": "data/sprites/slime-sniper.json",
+	"frameTagUp": "scope-idle-up",
+	"frameTagDown": "scope-idle-down",
+	"frameTagLeft": "scope-idle-left",
+	"frameTagRight": "scope-idle-right"
+}

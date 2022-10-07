@@ -549,32 +549,6 @@ export default class MainScene extends Phaser.Scene {
 				//nothing
 				break;
 		}
-
-
-
-		// if(mode === 0) //0 - spectator mode
-		// {
-		// 	this.spectatorCamera.x = this.defaultCenter.x;
-		// 	this.spectatorCamera.y = this.defaultCenter.y;
-		// }
-		// else if(mode === 1) //1 - follow character
-		// {
-		// 	this.cameraMode = 1;
-		// }
-		// else if (mode === 2) //2 - death cam
-		// {
-		// 	this.cameraMode = 2;
-		// 	this.deathCamTimer = 0;
-		// }
-		// else if (mode === 7) { //7 - zniper zoom 
-		// 	this.cameraMode = 7
-		// }
-		// else if (mode === 8) { //8 - zniper zoom exit
-		// 	this.cameraMode = 8
-		// }
-		// else if (mode === 9) { //9 - sniper zoom enter
-		// 	this.cameraMode = 9
-		// }
 	}
 
 	update(timeElapsed, fakeDt) {

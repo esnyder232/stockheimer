@@ -58,6 +58,7 @@ class Character {
 		this.walkingStoppingAccMag = this.walkingAccMag;
 		this.walkingCurrentAccMagx = 0;
 		this.walkingCurrentAccMagy = 0;
+		this.originalSpeed = 4;
 
 		this.bAllowedLook = true;
 		this.bAllowedMove = true;
@@ -180,6 +181,7 @@ class Character {
 		this.hpCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.hp, this.hpCur);
 		this.hpMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.hp, this.hpMax);
 		this.walkingVelMagMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.speed, this.walkingVelMagMax);
+		this.originalSpeed = this.walkingVelMagMax;
 		
 
 		if(this.planckRadius <= 0) {
@@ -831,6 +833,17 @@ class Character {
 		else if(this.hpCur > this.hpMax) {
 			this.hpCur = this.hpMax;
 		}
+	}
+
+	setSpeed(speed) {
+		this.walkingVelMagMax = speed;
+		if(this.walkingVelMagMax < 0) {
+			this.walkingVelMagMax = 0;
+		}
+	}
+
+	resetSpeed() {
+		this.walkingVelMagMax = this.originalSpeed;
 	}
 
 	getProjectileByID(id) {

@@ -1,11 +1,13 @@
 {
-	"name": "Slime Bullet",
+	"name": "Slime Sniper Fire",
 	"type": "hitscan",
-	"animationSet": "cast",
+	"animationSet": "scope-fire",
 	"canLook": false,
 	"canMove": false,
+	"canFire": false,
+	"canAltFire": false,
 	"timeLength": 1000,
-	"projectileKey": "data/projectiles/slime-fire.json",
+	"projectileKey": null,
 	"projectileTime": 0,
 	"hitscanKey": "data/hitscans/slime-bullet.json",
 	"cooldownTimeLength": 3000

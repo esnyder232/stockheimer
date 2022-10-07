@@ -1,0 +1,7 @@
+{
+	"spriteKey": "data/sprites/slime-sniper.json",
+	"frameTagUp": "move-up",
+	"frameTagDown": "move-down",
+	"frameTagLeft": "move-left",
+	"frameTagRight": "move-right"
+}

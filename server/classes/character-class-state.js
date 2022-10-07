@@ -18,6 +18,7 @@ class CharacterClassState {
 		this.canAltFire = false;
 		this.projectileKey = null;
 		this.projectileTime = 0;
+		this.stateSpeed = this.character.originalSpeed;
 
 		this.hitscanKey = null;
 		
@@ -54,6 +55,7 @@ class CharacterClassState {
 
 		this.persistentProjectileKey = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.persistentProjectileKey, this.persistentProjectileKey);
 		this.persistentProjectileTime = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.persistentProjectileTime, this.persistentProjectileTime);
+		this.stateSpeed = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.speed, this.stateSpeed);
 
 		//set characters stuff from data
 		this.character.changeAllowMove(this.canMove);
@@ -72,6 +74,8 @@ class CharacterClassState {
 		if(this.projectileTime < 0) {
 			this.projectileTime = 0;
 		}
+
+		this.character.setSpeed(this.stateSpeed);
 
 		//this is just begging to be split up into different classes
 		switch(this.type) {
@@ -92,10 +96,12 @@ class CharacterClassState {
 				this.enterHitscan(dt)
 				this.updateFunction = this.updateHitscan.bind(this);
 				break;
+			case "sniper-scope":
+				this.updateFunction = this.updateSniperScope.bind(this);
+				break;
 			default:
 				this.updateFunction = this.updateNoType.bind(this);
 				break;
-			
 		}
 	}
 
@@ -116,6 +122,8 @@ class CharacterClassState {
 		if(this.type === "persistent-projectile") {
 			this.exitPersistentProjectile(dt);
 		}
+
+		this.character.resetSpeed();
 	}
 
 
@@ -413,8 +421,19 @@ class CharacterClassState {
 		this.gs.gom.destroyGameObject(this.tempId);
 	}
 
+	//update for sniper scope
+	updateSniperScope(dt) {
+		if(this.character.frameInputController[this.characterClassInput].state === false) {
+			this.character.setCharacterClassState(null);
+		}
 
-
+		//fuck it, we'll hard code it
+		if(this.character.frameInputController.isFiring.state) {
+			if(this.character.stateCooldownsTemplates[this.character.characterClassResource.data.fireStateKey] !== undefined && !this.character.stateCooldownsTemplates[this.character.characterClassResource.data.fireStateKey].onCooldown) {
+				this.character.setCharacterClassState(this.character.characterClassResource.data.fireStateKey, "isFiring");
+			}
+		}
+	}
 }
 
 exports.CharacterClassState = CharacterClassState

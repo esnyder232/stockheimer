@@ -26,12 +26,12 @@
 	"idleMsPerFrame": 300,
 	"moveMsPerFrame": 150,
 	"animationSets": {
-		"idle": "data/animation-sets/slime-mage-idle-set.json",
-		"move": "data/animation-sets/slime-mage-move-set.json",
-		"attack": "data/animation-sets/slime-mage-attack-set.json",
-		"cast": "data/animation-sets/slime-mage-fire-set.json"
+		"idle": "data/animation-sets/slime-sniper-idle-set.json",
+		"move": "data/animation-sets/slime-sniper-move-set.json",
+		"scope-idle": "data/animation-sets/slime-sniper-scope-idle-set.json",
+		"scope-fire": "data/animation-sets/slime-sniper-scope-fire-set.json"
 	},
 	"deathSpriteKey": "data/sprites/gravestone.json",
-	"fireStateKey": "data/character-class-states/slime-bullet.json",
-	"altFireStateKey": null
+	"fireStateKey": "data/character-class-states/slime-sniper-fire.json",
+	"altFireStateKey": "data/character-class-states/slime-sniper-scope.json"
 }
