@@ -111,6 +111,12 @@ class TrackedEntityCreatedState extends TrackedEntityBaseState {
 					if(this.trackedEntity.ent.checkDirtyShield()) {
 						eventData.push(this.trackedEntity.ent.serializeActiveCharacterShieldUpdateEvent());
 					}
+
+					//check if the charge stat is dirty
+					if(this.trackedEntity.ent.checkDirtyCharge()) {
+						eventData.push(this.trackedEntity.ent.serializeUpdateCharacterChargeEvent());
+					}
+
 					break;
 				case "castle":
 					eventData.push(this.trackedEntity.ent.serializeCastleUpdateEvent());

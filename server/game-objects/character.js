@@ -34,6 +34,7 @@ class Character {
 		this.isInputDirty = false;
 		this.isStateDirty = false;
 		this.isShieldDirty = false;
+		this.isChargeDirty = false;
 		this.characterDirectionChanged = false;
 		
 		this.bigBulletCounter = 0;
@@ -42,7 +43,6 @@ class Character {
 		this.hpMax = 25;
 		this.hpCur = 25;
 		this.isDirty = false;
-		this.isShieldDirty = false;
 		this.xStarting = 15;
 		this.yStarting = -15.0;
 		this.forceImpulses = [];
@@ -95,6 +95,13 @@ class Character {
 		this.tempShieldRechargeTimeLength = 250;
 		this.tempShieldRechargeAmount = 8;
 		this.tempShieldRechargeAmountOriginal = 8;
+		
+		this.bResetCharge = false;
+		this.chargeMax = 0;
+		this.chargeCur = 0;
+		this.chargeSyncTimer = 1000;	//time length until the isChargeDirty becomes true again (just to sync with the clients every so often)
+		this.chargeSyncTimerAcc = 0;
+		this.isCharacterCharging = false;
 	}
 
 	changeAllowMove(bAllowedMove) {
@@ -251,6 +258,7 @@ class Character {
 		//get the stat resources
 		this.shieldCur = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shieldCur, this.shieldCur);
 		this.shieldMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shieldMax, this.shieldMax);
+		this.chargeMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.chargeMax, this.chargeMax);
 
 		this.gs.em.emitEvent("character-activated", {characterId: this.id, teamId: this.teamId});
 	}
@@ -582,6 +590,12 @@ class Character {
 			this.gs.gameState.destroyOwnersCharacter(this.ownerId, this.ownerType);
 		}
 
+		//if there was a 'reset' flag set, reset the actual values now.
+		if(this.bResetCharge) {
+			this.resetCharge();
+			this.bResetCharge = false;
+		}
+
 		//update state if there is one
 		if(this.state !== null) {
 			this.state.update(dt);
@@ -602,6 +616,19 @@ class Character {
 				this.modShield(this.tempShieldRechargeAmount);
 			}
 		}
+
+		//update charge stat
+		if(this.isCharacterCharging) {
+			this.modCharge(dt);
+			this.chargeSyncTimerAcc += dt;
+			// console.log("charge cur: " + this.chargeCur + ". charge max: " + this.chargeMax);
+			if(this.chargeSyncTimerAcc >= this.chargeSyncTimer) {
+				this.chargeSyncTimerAcc = 0;
+				this.isChargeDirty = true;
+				// console.log("sync charge rate");
+			}
+		}
+
 
 		//change state if there is a next one
 		if(this.nextCharacterClassResource !== null) {
@@ -768,6 +795,7 @@ class Character {
 		this.isInputDirty = false;
 		this.isStateDirty = false;
 		this.isShieldDirty = false;
+		this.isChargeDirty = false;
 	}
 
 
@@ -822,6 +850,41 @@ class Character {
 		else if(this.shieldCur > this.shieldMax) {
 			this.shieldCur = this.shieldMax;
 		}
+	}
+
+	checkDirtyCharge() {
+		return this.isChargeDirty;
+	}
+
+	modCharge(dt) {
+		this.chargeCur += dt;
+
+		if(this.chargeCur > this.chargeMax) {
+			this.chargeCur = this.chargeMax;
+		}
+
+		if(this.chargeCur < 0) {
+			this.chargeCur = 0;
+		}
+	}
+
+	setIsCharacterCharging(bCharging) {
+		this.isCharacterCharging = bCharging;
+		this.isChargeDirty = true;
+	}
+
+	//sets the flag to reset the charge on the following frame
+	setResetChargeFlag() {
+		this.bResetCharge = true;
+		
+	}
+
+	//actually resets the charge back to 0
+	resetCharge() {
+		this.isChargeDirty = true;
+		this.isCharacterCharging = false;
+		this.chargeCur = 0;
+		this.chargeSyncTimerAcc = 0;
 	}
 
 
@@ -1059,7 +1122,10 @@ class Character {
 			"characterHpCur": this.hpCur,
 			"characterClassResourceId": this.characterClassResourceId,
 			"characterShieldMax": this.shieldMax,
-			"characterShieldCur": this.shieldCur
+			"characterShieldCur": this.shieldCur,
+			"characterChargeMax": this.chargeMax,
+			"characterChargeCur": this.chargeCur,
+			"isCharacterCharging": this.isCharacterCharging
 		};
 		
 		return eventData;
@@ -1130,6 +1196,17 @@ class Character {
 		return eventData;
 	}
 
+	serializeUpdateCharacterChargeEvent() {
+		var eventData = null;
+		eventData = {
+			"eventName": "updateCharacterCharge",
+			"id": this.id,
+			"characterChargeCur": this.chargeCur,
+			"isCharacterCharging": this.isCharacterCharging
+		};
+
+		return eventData;
+	}
 }
 
 exports.Character = Character;

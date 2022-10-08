@@ -46,6 +46,8 @@ import AddWallEvent from "../event-classes/add-wall-event.js"
 import RemoveWallEvent from "../event-classes/remove-wall-event.js"
 import DebugServerRaycastEvent from "../event-classes/debug-server-raycast-event.js"
 import AddHitscanEvent from "../event-classes/add-hitscan-event.js"
+import UpdateCharacterChargeEvent from "../event-classes/update-character-charge-event.js"
+
 
 
 export default class EventProcessor {
@@ -120,6 +122,8 @@ export default class EventProcessor {
 			{eventName: "removeWall", eventClass: new RemoveWallEvent(), enabled: false},
 			{eventName: "debugServerRaycast", eventClass: new DebugServerRaycastEvent(), enabled: false},
 			{eventName: "addHitscan", eventClass: new AddHitscanEvent(), enabled: false},
+			{eventName: "updateCharacterCharge", eventClass: new UpdateCharacterChargeEvent(), enabled: false},
+			
 
 			
 		];

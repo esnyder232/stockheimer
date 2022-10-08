@@ -3,6 +3,7 @@ import GameClientUserLeavingGame from './game-client-user-leaving-game.js';
 import GameClientUserPlaying from './game-client-user-playing.js';
 
 import MainScene from "../scenes/main-scene.js"
+import MainUiScene from "../scenes/main-ui-scene.js"
 
 export default class GameClientUserJoiningGame extends GameClientBaseState {
 	constructor(gc) {
@@ -42,8 +43,15 @@ export default class GameClientUserJoiningGame extends GameClientBaseState {
 			gc: this.gc
 		});
 
+		//create main ui scene
+		this.gc.mainUiScene = this.gc.phaserGame.scene.add("main-ui-scene", MainUiScene, true, {
+			gc: this.gc
+		});
+		
+
 		//put main scene to sleep until we are done preloading everything
 		this.gc.mainScene.scene.sleep();
+		this.gc.mainUiScene.scene.sleep();
 	}
 
 

@@ -32,6 +32,10 @@ export default class Character {
 		this.hpCur = 100;
 		this.shieldCur = 0;
 		this.shieldMax = 0;
+		this.chargeMax = 0;
+		this.chargeCur = 0;
+		this.isCharacterCharging = false;
+		this.bIAmASniper = false;
 
 		this.isDirty = false;
 
@@ -48,7 +52,8 @@ export default class Character {
 		this.serverEventMapping = {
 			"activeCharacterUpdate": this.activeCharacterUpdateEvent.bind(this),
 			"activeCharacterShieldUpdate": this.activeCharacterShieldUpdateEvent.bind(this),
-			"updateCharacterState": this.updateCharacterStateEvent.bind(this)
+			"updateCharacterState": this.updateCharacterStateEvent.bind(this),
+			"updateCharacterCharge": this.updateCharacterChargeEvent.bind(this)
 		}
 
 		this.boxGraphicsStrokeColor = 0;
@@ -181,6 +186,7 @@ export default class Character {
 	characterInit(gameClient) {
 		this.gc = gameClient;
 		this.ms = this.gc.mainScene;
+		this.muis = this.gc.mainUiScene;
 		this.globalfuncs = new GlobalFuncs();
 		this.seq = new ServerEventQueue();
 		this.seq.serverEventQueueInit(this.gc);
@@ -206,6 +212,7 @@ export default class Character {
 		this.idleMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.idleMsPerFrame, this.idleMsPerFrame);
 		this.moveMsPerFrame = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.moveMsPerFrame, this.moveMsPerFrame);
 		this.shieldMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.shield, this.shieldMax);
+		this.chargeMax = this.globalfuncs.getValueDefault(this?.characterClassResource?.data?.chargeMax, this.chargeMax);
 
 		//get colors sorted out
 		this.calculateColors();
@@ -244,8 +251,10 @@ export default class Character {
 		{
 			this.ms.switchCameraMode(ClientConstants.CameraModes["CAMERA_MODE_FOLLOW_CHARACTER"]);
 			
-			//hacky shit to test sniper zoome
-			if(this.characterClassResource.data.name === "Slime Sniper") {
+			//if its a sniper, show the sniper charge bar
+			if(this.chargeMax > 0) {
+				this.bIAmASniper = true;
+				this.muis.showSniperChargeBar(true);
 				this.ms.isSniperClass = true;
 			}
 		}
@@ -448,6 +457,28 @@ export default class Character {
 			var shieldCurrentWidth = (this.shieldCur/this.shieldMax) * this.shieldBarWidthMax;
 			this.shieldBarGraphics.fillRect(this.shieldBarOffsetX, this.shieldBarOffsetY, shieldCurrentWidth, this.shieldBarHeight);
 		}
+	}
+
+	//this updates the chargeCur to try and sync it up on the client side
+	updateChargeClient(dt) {
+		if(this.isCharacterCharging > 0) {
+			this.chargeCur += dt;
+		}
+
+		if(this.chargeCur > this.chargeMax) {
+			this.chargeCur = this.chargeMax;
+		}
+
+		if(this.chargeCur < 0) {
+			this.chargeCur = 0;
+		}
+		// console.log("current charge: " + this.chargeCur);
+	}
+	
+	updateCharacterChargeEvent(e) {
+		// console.log("CHARGE EVENT. client charge: " + this.chargeCur + ", server charge: " + e.characterChargeCur);
+		this.chargeCur = e.characterChargeCur;
+		this.isCharacterCharging = e.isCharacterCharging;
 	}
 
 
@@ -663,6 +694,14 @@ export default class Character {
 		this.directionGraphics.destroy();
 		// this.planckSpriteGraphics.destroy();
 
+
+		//if it was the user's character and they were a sniper, hide the sniper charge bar
+		if(this.bIAmASniper) {
+			this.bIAmASniper = false;
+			this.muis.showSniperChargeBar(false);
+			this.ms.isSniperClass = false;
+		}
+
 		if(this.cooldownGraphics !== null) {
 			this.cooldownGraphics.destroy();
 			this.cooldownGraphics = null;
@@ -797,6 +836,10 @@ export default class Character {
 		//update state
 		this.state.update(dt);
 
+		if(this.bIAmASniper) {
+			this.updateChargeClient(dt);
+		}
+
 		if(this.nextState !== null) {
 			this.state.exit(dt);
 			this.nextState.enter(dt);
@@ -863,6 +906,10 @@ export default class Character {
 			if(this.cooldownTimeAcc >= this.cooldownTimeLength) {
 				this.hideCooldownGraphics();
 			}
+		}
+
+		if(this.bIAmASniper) {
+			this.muis.setSniperChargeBarFill(this.chargeCur / this.chargeMax);
 		}
 
 		this.updateRenderTarget(dt);

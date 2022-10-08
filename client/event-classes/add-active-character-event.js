@@ -22,6 +22,9 @@ export default class AddActiveCharacterEvent {
 		c.characterClassResourceId = e.characterClassResourceId === 0 ? null : e.characterClassResourceId;
 		c.shieldCur = e.characterShieldCur;
 		c.shieldMax = e.characterShieldMax;
+		c.chargeMax = e.characterChargeMax;
+		c.chargeCur = e.characterChargeCur;
+		c.isCharacterCharging = e.isCharacterCharging;
 
 		// c.bShowPlanckSprite = this.gc.bDisplayClientCollisions;
 

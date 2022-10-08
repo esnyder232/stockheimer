@@ -97,6 +97,7 @@ class CharacterClassState {
 				this.updateFunction = this.updateHitscan.bind(this);
 				break;
 			case "sniper-scope":
+				this.enterSniperScope(dt);
 				this.updateFunction = this.updateSniperScope.bind(this);
 				break;
 			default:
@@ -121,6 +122,8 @@ class CharacterClassState {
 
 		if(this.type === "persistent-projectile") {
 			this.exitPersistentProjectile(dt);
+		} else if (this.type === "sniper-scope") {
+			this.exitSniperScope(dt);
 		}
 
 		this.character.resetSpeed();
@@ -421,6 +424,10 @@ class CharacterClassState {
 		this.gs.gom.destroyGameObject(this.tempId);
 	}
 
+	enterSniperScope(dt) {
+		this.character.setIsCharacterCharging(true);
+	}
+
 	//update for sniper scope
 	updateSniperScope(dt) {
 		if(this.character.frameInputController[this.characterClassInput].state === false) {
@@ -433,6 +440,11 @@ class CharacterClassState {
 				this.character.setCharacterClassState(this.character.characterClassResource.data.fireStateKey, "isFiring");
 			}
 		}
+	}
+
+	exitSniperScope(dt) {
+		this.character.setIsCharacterCharging(false);
+		this.character.setResetChargeFlag();
 	}
 }
 

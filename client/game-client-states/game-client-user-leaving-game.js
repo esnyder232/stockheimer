@@ -120,7 +120,11 @@ export default class GameClientUserLeavingGame extends GameClientBaseState {
 
 		this.gc.phaserGame.scene.stop("main-scene");
 		this.gc.phaserGame.scene.remove("main-scene");
+		this.gc.phaserGame.scene.stop("main-ui-scene");
+		this.gc.phaserGame.scene.remove("main-ui-scene");
+
 		this.gc.mainScene = null;
+		this.gc.mainUiScene = null;
 		this.gc.activeTilemap = null;
 	}
 }

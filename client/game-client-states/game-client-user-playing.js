@@ -23,6 +23,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		//sleep the connectin scene, and wkae up the main scene
 		this.gc.userConnectingScene.scene.sleep();
 		this.gc.mainScene.scene.wake();
+		this.gc.mainUiScene.scene.wake();
 
 		//tell the server you are ready to play
 		this.gc.ep.insertClientToServerEvent({
@@ -30,6 +31,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		});
 
 		this.gc.mainScene.stockheimerActivate();
+		this.gc.mainUiScene.stockheimerActivate();
 		this.gc.quickMenu.showMainSceneIcons();
 		this.gc.ep.setAllEventEnable(true);
 	}
@@ -97,6 +99,7 @@ export default class GameClientUserPlaying extends GameClientBaseState {
 		
 		//put main sleep to sleep to hide it, and wake up the connecting scene for feedback
 		this.gc.mainScene.scene.sleep();
+		this.gc.mainUiScene.scene.sleep();
 		this.gc.userConnectingScene.scene.wake();
 	}
 

@@ -74,6 +74,7 @@ class GameServer {
 		
 		this.reportTimer = 0; //counter in ms to report number of objects and users in the server
 		this.reportTimerInterval = 5000; //ms until this console logs the amount of game objects in the game
+		this.frameCount = 0;
 
 		this.minimumUsersPlaying = 0;
 		this.mapTimeLengthDefault = 180000;
@@ -367,7 +368,7 @@ class GameServer {
 		this.currentTick = performance.now();
 		var dt = this.currentTick - this.previousTick;
 		// console.log("game loop called: " + dt);
-
+		this.frameCount++;
 		if(this.gameState)
 		{
 			this.gameState.update(dt);
@@ -378,7 +379,9 @@ class GameServer {
 				logger.log("info", "GameServer Report. Playing Users: " + this.um.getPlayingUsers().length + 
 				". AI: " + this.aim.getAIAgents().length + 
 				". Gameobjects: " + this.gom.getActiveGameObjects().length + 
-				", cached keys: " + this.cache.cacheKeyLength);
+				", cached keys: " + this.cache.cacheKeyLength + 
+				", frameCount:" + this.frameCount);
+				this.frameCount = 0;
 				this.reportTimer = 0;
 				// var temp = this.um.getActiveUsersGroupedByTeams();
 				// console.log(temp);

@@ -65,6 +65,7 @@ export default class GameClient {
 		//scenes
 		this.lobbyScene = null;
 		this.mainScene = null;
+		this.mainUiScene = null;
 		this.userConnectingScene = null;
 		this.resourceLoadingScene = null;
 
@@ -93,6 +94,10 @@ export default class GameClient {
 		this.resourcesApi = "./api/get-resources";
 		this.resourcesResults = [];
 		////////////////////////////////////
+
+		this.frameCount = 0;
+		this.clientReportTime = 5000;
+		this.clientReportTimeAcc = 0;
 	}
 
 	init() {
@@ -372,6 +377,14 @@ export default class GameClient {
 				this.nextGameState = null;
 			}
 
+			this.frameCount++;
+			this.clientReportTimeAcc += dt;
+			if(this.clientReportTimeAcc >= this.clientReportTime) {
+				this.clientReportTimeAcc = 0;
+				console.log("Client Report. FrameCount: " + this.frameCount);
+				this.frameCount = 0;
+			}
+			
 			//this.frameNum++;
 		}
 		catch(ex) {

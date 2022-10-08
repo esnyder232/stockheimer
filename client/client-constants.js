@@ -10,7 +10,8 @@ var PhaserDrawLayers = {
 	serverHitboxLayer: 800,
 	mouseOverLayer: 900,
 	myTextLayer: 1000,
-	tilemapTopLayer: 1100
+	tilemapTopLayer: 1100,
+	UILayer: 2000
 };
 
 var CameraModes = {
