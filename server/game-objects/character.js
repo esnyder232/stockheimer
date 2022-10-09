@@ -1084,7 +1084,7 @@ class Character {
 		if(chargeMax === 0) {
 			chargeMax = 1;
 		}
-		var damage = minDamage + ((maxDamage - minDamage) * (chargeAmount/chargeMax));
+		var damage = Math.round(minDamage + ((maxDamage - minDamage) * (chargeAmount/chargeMax)));
 		this.modHealth(-damage);
 
 		//update last hit by

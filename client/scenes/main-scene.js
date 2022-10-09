@@ -952,7 +952,7 @@ export default class MainScene extends Phaser.Scene {
 		var specRegex = /_spec$/;
 		if(specRegex.test(this.gc.myUser?.username)) {
 			bStop = true;
-			this.cameraZoom -= 0.3;
+			this.cameraZoom = 0.8;
 			this.setCameraZoom();
 		}
 
