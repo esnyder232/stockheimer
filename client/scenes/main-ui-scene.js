@@ -137,6 +137,10 @@ export default class MainUiScene extends Phaser.Scene {
 		}
 	}
 
+	setSniperMeterColor(colorHex) {
+		this.chargeBarMeterColor = colorHex;
+	}
+
 	setSniperChargeBarFill(fillPerc) {
 		this.chargeBarFill = fillPerc;
 	}

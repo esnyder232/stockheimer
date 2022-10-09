@@ -174,6 +174,7 @@ export default class Character {
 		this.healTimer = 0;
 
 		this.characterTintColor = 0xffffff;
+		this.sniperMeterColor = 0xffffff;
 
 		//planck stuff
 		this.plBody = null;
@@ -255,6 +256,7 @@ export default class Character {
 			if(this.chargeMax > 0) {
 				this.bIAmASniper = true;
 				this.muis.showSniperChargeBar(true);
+				this.muis.setSniperMeterColor(this.sniperMeterColor)
 				this.ms.isSniperClass = true;
 			}
 		}
@@ -356,6 +358,7 @@ export default class Character {
 				// this.characterShieldFillColor = team.phaserCharacterShieldFillColor;
 				this.characterTintColor = team.phaserCharacterTintColor;
 				this.teamShaderKey = team.teamShaderKey;
+				this.sniperMeterColor = team.phaserCharacterStrokeColor;
 			}
 		}
 	}

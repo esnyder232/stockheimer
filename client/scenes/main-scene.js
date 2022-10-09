@@ -426,6 +426,10 @@ export default class MainScene extends Phaser.Scene {
 
 		this.spectatorCamera.x = (width/2) * this.planckScale;
 		this.spectatorCamera.y = -(height/2) * this.planckScale;
+
+		//calculate diagonal for sniper scope length
+		this.diagonalLength = Math.ceil(Math.sqrt(width*width + height*height)) * this.planckUnitsToPhaserUnitsRatio;
+		this.targetLineLengthSniper = this.diagonalLength;
 	}
 
 	
