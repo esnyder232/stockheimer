@@ -201,7 +201,9 @@ class CharacterClassState {
 					raycastResult: raycastResult,
 					ownerId: this.character.ownerId,
 					ownerType: this.character.ownerType,
-					hitscanKey: this.hitscanKey
+					hitscanKey: this.hitscanKey,
+					chargeAmount: this.character.chargeCur,
+					chargeMax: this.character.chargeMax
 				}
 
 				switch(raycastResult.gameObjectType) {

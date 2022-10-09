@@ -972,6 +972,14 @@ class Character {
 				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
 				this.applyDamageEffect(hitscanResult.ownerId, hitscanResult.ownerType, value);
 				break;
+			case "charge-damage":
+				var minValue = this.gs.globalfuncs.getValueDefault(characterEffectData.minValue, 0);
+				var maxValue = this.gs.globalfuncs.getValueDefault(characterEffectData.maxValue, 0);
+				var chargeAmount = this.gs.globalfuncs.getValueDefault(hitscanResult.chargeAmount, 0);
+				var chargeMax = this.gs.globalfuncs.getValueDefault(hitscanResult.chargeMax, 1);
+				this.applyChargedDamageEffect(hitscanResult.ownerId, hitscanResult.ownerType, minValue, maxValue, chargeAmount, chargeMax);
+				break;
+
 			case "heal":
 				var value = this.gs.globalfuncs.getValueDefault(characterEffectData.value, 0);
 				this.applyHealEffect(hitscanResult.ownerId, value);
@@ -1029,6 +1037,31 @@ class Character {
 	}
 
 	applyDamageEffect(ownerId, ownerType, damage) {
+		this.modHealth(-damage);
+
+		//update last hit by
+		if(ownerId !== null) {
+			this.lastHitByOwnerId = ownerId;
+			this.lastHitByOwnerType = ownerType;
+		}
+
+		//create event for clients to notify them of damage
+		var userAgents = this.gs.uam.getUserAgents();
+		for(var i = 0; i < userAgents.length; i++) {
+			userAgents[i].insertTrackedEntityEvent("gameobject", this.id, {
+				"eventName": "characterDamageEffect",
+				"id": this.id,
+				"damage": damage,
+				"srcUserId": ownerId
+			});
+		}
+	}
+
+	applyChargedDamageEffect(ownerId, ownerType, minDamage, maxDamage, chargeAmount, chargeMax) {
+		if(chargeMax === 0) {
+			chargeMax = 1;
+		}
+		var damage = minDamage + ((maxDamage - minDamage) * (chargeAmount/chargeMax));
 		this.modHealth(-damage);
 
 		//update last hit by

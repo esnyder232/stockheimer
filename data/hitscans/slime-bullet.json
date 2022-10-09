@@ -33,8 +33,9 @@
 	},
 	"characterEffectData": [
 		{
-			"type": "damage",
-			"value": 80
+			"type": "charge-damage",
+			"minValue": 4,
+			"maxValue": 20
 		},
 		{
 			"type": "hitscan-force",
