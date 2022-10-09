@@ -27,9 +27,19 @@ export default class Hitscan {
 		this.x2 = this.x2 * this.gc.mainScene.planckUnitsToPhaserUnitsRatio;
 		this.y2 = this.y2 * this.gc.mainScene.planckUnitsToPhaserUnitsRatio * -1;
 
+		var team = this.gc.tm.getTeamByServerID(this.teamId);
+		var phaserProjectileStrokeColor = 0xffffff;
+		if(team !== null) {
+			phaserProjectileStrokeColor = team.phaserProjectileStrokeColor;
+			console.log(phaserProjectileStrokeColor);
+		}
+
+
 		//create a line
-		this.lineGraphics = this.gc.mainScene.add.graphics();
+		this.lineGraphics = this.gc.mainScene.add.graphics({});
+		this.lineGraphics.lineStyle(2, phaserProjectileStrokeColor);
 		this.line = new Phaser.Geom.Line(this.x1, this.y1, this.x2, this.y2);
+		
 		this.lineGraphics.strokeLineShape(this.line);
 		this.lineGraphics.setDepth(ClientConstants.PhaserDrawLayers.spriteLayer);
 	}
