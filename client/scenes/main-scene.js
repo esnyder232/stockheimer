@@ -768,17 +768,34 @@ export default class MainScene extends Phaser.Scene {
 
 			//if the camera mode is in sniper zoom, pan the camera to the appropriate location as well
 			if(this.cameraMode === ClientConstants.CameraModes["CAMERA_MODE_SNIPER_AIMING"]) {
-				//recalculate the anchor point for the zoom
-				var tempCenterScreenPlanckUnitsX = (this.cameras.main.scrollX + this.cameras.main.width/2) / this.planckUnitsToPhaserUnitsRatio;
-				var tempCenterScreenPlanckUnitsY = (this.cameras.main.scrollY + this.cameras.main.height/2) / this.planckUnitsToPhaserUnitsRatio * -1;
+				//if the player is zooming IN, then zoom to where the mouse is.
+				if(this.cameraZoom - this.cameraZoomPrev > 0) {
+					//recalculate the anchor point for the zoom
+					var tempCenterScreenPlanckUnitsX = (this.cameras.main.scrollX + this.cameras.main.width/2) / this.planckUnitsToPhaserUnitsRatio;
+					var tempCenterScreenPlanckUnitsY = (this.cameras.main.scrollY + this.cameras.main.height/2) / this.planckUnitsToPhaserUnitsRatio * -1;
 
-				//when recalculating, we need to "back out" the character position from the current screen position (if we don't, it doubles up and pans the camera in a wierd way)
-				this.zoomAnchorX = tempCenterScreenPlanckUnitsX - this.frameCharacterPosX + (this.pointerFromCenterX * ((1 / this.cameraZoomPrev) - (1 / this.cameraZoom))) / this.planckUnitsToPhaserUnitsRatio;
-				this.zoomAnchorY = tempCenterScreenPlanckUnitsY - this.frameCharacterPosY + (this.pointerFromCenterY * ((1 / this.cameraZoomPrev) - (1 / this.cameraZoom))) / this.planckUnitsToPhaserUnitsRatio * -1;
-	
-				//reset the minor pans
-				this.zoomMinorPansX = 0;
-				this.zoomMinorPansY = 0;
+					//when recalculating, we need to "back out" the character position from the current screen position (if we don't, it doubles up and pans the camera in a wierd way)
+					this.zoomAnchorX = tempCenterScreenPlanckUnitsX - this.frameCharacterPosX + (this.pointerFromCenterX * ((1 / this.cameraZoomPrev) - (1 / this.cameraZoom))) / this.planckUnitsToPhaserUnitsRatio;
+					this.zoomAnchorY = tempCenterScreenPlanckUnitsY - this.frameCharacterPosY + (this.pointerFromCenterY * ((1 / this.cameraZoomPrev) - (1 / this.cameraZoom))) / this.planckUnitsToPhaserUnitsRatio * -1;
+
+					//reset the minor pans
+					this.zoomMinorPansX = 0;
+					this.zoomMinorPansY = 0;
+				} 
+				//if the player is zooming OUT, then zoom out from the center of the screen instead
+				else {
+					//recalculate the anchor point for the zoom
+					var tempCenterScreenPlanckUnitsX = (this.cameras.main.scrollX + this.cameras.main.width/2) / this.planckUnitsToPhaserUnitsRatio;
+					var tempCenterScreenPlanckUnitsY = (this.cameras.main.scrollY + this.cameras.main.height/2) / this.planckUnitsToPhaserUnitsRatio * -1;
+
+					//when recalculating, we need to "back out" the character position from the current screen position (if we don't, it doubles up and pans the camera in a wierd way)
+					this.zoomAnchorX = tempCenterScreenPlanckUnitsX - this.frameCharacterPosX;
+					this.zoomAnchorY = tempCenterScreenPlanckUnitsY - this.frameCharacterPosY;
+
+					//reset the minor pans
+					this.zoomMinorPansX = 0;
+					this.zoomMinorPansY = 0;
+				}
 			}
 		}
 
