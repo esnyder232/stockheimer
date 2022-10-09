@@ -139,6 +139,26 @@ class Character {
 		}
 	}
 
+	//forces a cooldown for a particular class state resource key
+	activateStateCooldownForce(characterClassResourceKey, cooldownTimeLength) {
+		var cooldownTemplate = this.stateCooldownsTemplates[characterClassResourceKey];
+
+		if(cooldownTemplate !== undefined) {
+			cooldownTemplate.onCooldown = true;
+		}
+
+		//push your own custom cooldown object
+		var obj = {
+			key: characterClassResourceKey,
+			cooldownTimeLength: this.globalfuncs.getValueDefault(cooldownTimeLength, 0),
+			cooldownTimeAcc: 0
+		}
+
+		this.activeStateCooldowns.push(obj);
+
+	}
+
+
 	//called only once when the character is first created. This is only called once ever.
 	characterInit(gameServer) {
 		this.gs = gameServer;
@@ -577,8 +597,11 @@ class Character {
 			for(var i = this.activeStateCooldowns.length - 1; i >= 0; i--) {
 				this.activeStateCooldowns[i].cooldownTimeAcc += dt;
 				if(this.activeStateCooldowns[i].cooldownTimeAcc >= this.activeStateCooldowns[i].cooldownTimeLength) {
-					this.stateCooldownsTemplates[this.activeStateCooldowns[i].key].onCooldown = false;
-					this.stateCooldownsTemplates[this.activeStateCooldowns[i].key].cooldownTimeAcc = 0;
+					if(this.stateCooldownsTemplates[this.activeStateCooldowns[i].key] !== undefined) {
+						this.stateCooldownsTemplates[this.activeStateCooldowns[i].key].onCooldown = false;
+						this.stateCooldownsTemplates[this.activeStateCooldowns[i].key].cooldownTimeAcc = 0;
+					}
+					
 					this.activeStateCooldowns.splice(i, 1);
 				}
 			}

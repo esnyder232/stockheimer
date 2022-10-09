@@ -10,5 +10,6 @@
 	"projectileKey": null,
 	"projectileTime": 0,
 	"hitscanKey": "data/hitscans/slime-bullet.json",
-	"cooldownTimeLength": 3000
+	"cooldownTimeLength": 3000,
+	"altCooldownTimeLength": 3000
 }

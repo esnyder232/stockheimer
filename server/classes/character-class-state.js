@@ -24,6 +24,7 @@ class CharacterClassState {
 		
 		this.projectileFired = false;
 		this.cooldownTimeLength = 1000;
+		this.altCooldownTimeLength = 0;
 
 		this.updateFunction = null;
 		this.specialDashMag = 0;
@@ -46,6 +47,7 @@ class CharacterClassState {
 		this.projectileKey = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileKey, this.projectileKey);
 		this.projectileTime = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.projectileTime, this.projectileTime);
 		this.cooldownTimeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.cooldownTimeLength, this.cooldownTimeLength);
+		this.altCooldownTimeLength = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.altCooldownTimeLength, this.altCooldownTimeLength);
 		this.type = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.type, this.type);
 		this.specialDashMag = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashMag, this.specialDashMag);
 		this.specialDashTimeStop = this.gs.globalfuncs.getValueDefault(this?.characterClassStateResource?.data?.specialDashTimeStop, this.specialDashTimeStop);
@@ -65,6 +67,11 @@ class CharacterClassState {
 
 		//apply cooldown to state on character
 		this.character.activateStateCooldown(this.characterClassStateResource.key);
+
+		//if the altFireCooldown is defined, set it as well (mostly for preventing sniper charging immediately after fireing)
+		if(this.altCooldownTimeLength > 0) {
+			this.character.activateStateCooldownForce(this.character.characterClassResource.data.altFireStateKey, this.altCooldownTimeLength);
+		}
 
 		//more data validation
 		if(this.timeLength <= 0) {
